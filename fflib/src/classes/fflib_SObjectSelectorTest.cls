@@ -31,10 +31,15 @@ private with sharing class fflib_SObjectSelectorTest
 	static testMethod void testGetFieldListString()
 	{
 		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
+		List<String> fieldList = selector.getFieldListString().split(',');
+		Set<String> fieldSet = new Set<String>(fieldList);
+		system.assertEquals(4, fieldSet.size());
+		system.assert(fieldSet.contains('Name'));
+		system.assert(fieldSet.contains('Id'));
+		system.assert(fieldSet.contains('AccountNumber'));
+		system.assert(fieldSet.contains('AnnualRevenue'));
 		if(UserInfo.isMultiCurrencyOrganization())
-			system.assertEquals('Name,Id,AccountNumber,AnnualRevenue,CurrencyIsoCode',selector.getFieldListString());
-		else
-			system.assertEquals('Name,Id,AccountNumber,AnnualRevenue',selector.getFieldListString());
+			system.assert(fieldSet.contains('CurrencyIsoCode'));
 	}
 	
 	static testMethod void testGetSObjectName()

@@ -61,18 +61,28 @@ private with sharing class fflib_StringBuilderTest
 
     static testMethod void testFieldListBuilder()
     {
-		List<Schema.SObjectField> fields = new List<Schema.SObjectField> { Account.Name, Account.Id, Account.AccountNumber, Account.AnnualRevenue };
+		List<Schema.SObjectField> fields = new List<Schema.SObjectField> { Account.Name, Account.Id, Account.AccountNumber, Account.AccountNumber, Account.AnnualRevenue };
 		fflib_StringBuilder.FieldListBuilder sb = new fflib_StringBuilder.FieldListBuilder(fields);
-		system.assertEquals(sb.getStringValue(),'Name,Id,AccountNumber,AnnualRevenue');
+		List<String> fieldList = sb.getStringValue().split(',');
+		Set<String> fieldSet = new Set<String>(fieldList);
+		system.assertEquals(4, fieldSet.size());
+		system.assert(fieldSet.contains('Name'));
+		system.assert(fieldSet.contains('Id'));
+		system.assert(fieldSet.contains('AccountNumber'));
+		system.assert(fieldSet.contains('AnnualRevenue'));
     }
 
     static testMethod void testMultiCurrencyFieldListBuilder()
     {
 		List<Schema.SObjectField> fields = new List<Schema.SObjectField> { Account.Name, Account.Id, Account.AccountNumber, Account.AnnualRevenue };
 		fflib_StringBuilder.MultiCurrencyFieldListBuilder sb = new fflib_StringBuilder.MultiCurrencyFieldListBuilder(fields);
+		List<String> fieldList = sb.getStringValue().split(',');
+		Set<String> fieldSet = new Set<String>(fieldList);
+		system.assert(fieldSet.contains('Name'));
+		system.assert(fieldSet.contains('Id'));
+		system.assert(fieldSet.contains('AccountNumber'));
+		system.assert(fieldSet.contains('AnnualRevenue'));
 		if(UserInfo.isMultiCurrencyOrganization())
-			system.assertEquals(sb.getStringValue(),'Name,Id,AccountNumber,AnnualRevenue,CurrencyIsoCode');
-		else
-			system.assertEquals(sb.getStringValue(),'Name,Id,AccountNumber,AnnualRevenue');
+			system.assert(fieldSet.contains('CurrencyIsoCode'));
     }
 }
