@@ -6,7 +6,7 @@ fflib-apex-common
 This Library
 ============
 
-Is derived from the Dreamforce 2012 presentation on [Apex Enterprise Patterns](https://github.com/financialforcedev/df12-apex-enterprise-patterns) and progresses the patterns further with a more general ongoing home for them. While also leading up to an updated presentation given at **Dreamforce 2013**. It also adds some form of namespace qualification from the previous version. So that classes are grouped together more easily in the IDE's and packages.
+Is derived from the **Dreamforce 2012** presentation on [Apex Enterprise Patterns](https://github.com/financialforcedev/df12-apex-enterprise-patterns) and progresses the patterns further with a more general ongoing home for them. While also leading up to an updated presentation given at **Dreamforce 2013**. It also adds some form of namespace qualification from the previous version. So that classes are grouped together more easily in the IDE's and packages. Below you can find comprehensive articles and videos on the use of these patterns. There is also a working sample application illustrating the patterns [here](https://github.com/financialforcedev/fflib-apex-common-samplecode).
 
 ![Alt text](/images/patternsturning.png "Optional title")
 
