@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2012, FinancialForce.com, inc
+ * Copyright (c), FinancialForce.com, inc
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, 
@@ -141,7 +141,7 @@ public abstract with sharing class fflib_SObjectSelector
 	 *   - Ordered by the fields returned via getOrderBy
 	 * @returns A list of SObject's
 	 **/
-	public List<SObject> selectSObjectsById(Set<Id> idSet)
+	protected List<SObject> selectSObjectsById(Set<Id> idSet)
 	{
 		assertIsAccessible();
 		return Database.query(buildQuerySObjectById());
@@ -155,7 +155,7 @@ public abstract with sharing class fflib_SObjectSelector
 	 *   - Ordered by the fields returned via getOrderBy
 	 * @returns A QueryLocator (typically for use in a Batch Apex job)
 	 **/
-	public Database.QueryLocator queryLocatorById(Set<Id> idSet)
+	protected Database.QueryLocator queryLocatorById(Set<Id> idSet)
 	{
 		assertIsAccessible();
 		return Database.getQueryLocator(buildQuerySObjectById());
