@@ -141,7 +141,7 @@ public abstract with sharing class fflib_SObjectSelector
 	 *   - Ordered by the fields returned via getOrderBy
 	 * @returns A list of SObject's
 	 **/
-	protected List<SObject> selectSObjectsById(Set<Id> idSet)
+	public List<SObject> selectSObjectsById(Set<Id> idSet)
 	{
 		assertIsAccessible();
 		return Database.query(buildQuerySObjectById());
@@ -155,7 +155,7 @@ public abstract with sharing class fflib_SObjectSelector
 	 *   - Ordered by the fields returned via getOrderBy
 	 * @returns A QueryLocator (typically for use in a Batch Apex job)
 	 **/
-	protected Database.QueryLocator queryLocatorById(Set<Id> idSet)
+	public Database.QueryLocator queryLocatorById(Set<Id> idSet)
 	{
 		assertIsAccessible();
 		return Database.getQueryLocator(buildQuerySObjectById());
