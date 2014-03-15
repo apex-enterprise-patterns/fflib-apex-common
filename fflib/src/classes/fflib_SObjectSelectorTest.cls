@@ -40,11 +40,13 @@ private with sharing class fflib_SObjectSelectorTest
 		system.assert(fieldSet.contains('AnnualRevenue'));
 		if(UserInfo.isMultiCurrencyOrganization())
 			system.assert(fieldSet.contains('CurrencyIsoCode'));
+		system.assertEquals('myprefix.Name,myprefix.AccountNumber,myprefix.Id,myprefix.AnnualRevenue', selector.getRelatedFieldListString('myprefix'));
 	}
 	
 	static testMethod void testGetSObjectName()
 	{
 		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
+		system.assertEquals(null, selector.getSObjectFieldSetList());
 		system.assertEquals('Account',selector.getSObjectName());
 	}
 	
@@ -71,6 +73,36 @@ private with sharing class fflib_SObjectSelectorTest
 		system.assertEquals('TestAccount2',result[1].Name);
 		system.assertEquals('A2',result[1].AccountNumber);
 		system.assertEquals(12345.67,result[1].AnnualRevenue);
+	}
+
+	static testMethod void testQueryLocatorById()
+	{
+		// Inserting in reverse order so that we can test the order by of select 
+		List<Account> accountList = new List<Account> {
+			new Account(Name='TestAccount2',AccountNumber='A2',AnnualRevenue=12345.67),
+			new Account(Name='TestAccount1',AccountNumber='A1',AnnualRevenue=76543.21) };		
+		insert accountList;		
+		Set<Id> idSet = new Set<Id>();
+		for(Account item : accountList)
+			idSet.add(item.Id);
+			
+		Test.startTest();		
+		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
+		Database.QueryLocator result = selector.queryLocatorById(idSet);		
+		System.Iterator<SObject> iteratorResult = result.iterator();
+		Test.stopTest();		
+
+		System.assert(true, iteratorResult.hasNext());
+		Account account = (Account) iteratorResult.next();
+		system.assertEquals('TestAccount1',account.Name);
+		system.assertEquals('A1',account.AccountNumber);
+		system.assertEquals(76543.21,account.AnnualRevenue);				
+		System.assert(true, iteratorResult.hasNext());
+		account = (Account) iteratorResult.next();
+		system.assertEquals('TestAccount2',account.Name);
+		system.assertEquals('A2',account.AccountNumber);
+		system.assertEquals(12345.67,account.AnnualRevenue);				
+		System.assertEquals(false, iteratorResult.hasNext());
 	}
 	
 	static testMethod void testAssertIsAccessible()
