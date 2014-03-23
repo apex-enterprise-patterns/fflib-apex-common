@@ -32,5 +32,5 @@ I'm proud to have been given the opportunity to run a more detailed look at thes
 
 **Other Related Blogs**
 
-- [Unit Testing with Domain Layer](http://andyinthecloud.com/2014/03/23/unit-testing-with-the-domain-layer/)
+- [Unit Testing with the Domain Layer](http://andyinthecloud.com/2014/03/23/unit-testing-with-the-domain-layer/)
 
