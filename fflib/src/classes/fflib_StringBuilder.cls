@@ -31,7 +31,7 @@
  **/
 public virtual with sharing class fflib_StringBuilder
 {
-	protected String m_stringValue;
+	protected List<String> buffer = new List<String>();
 	
 	/**
 	 * Construct an empty StringBuilder
@@ -51,8 +51,7 @@ public virtual with sharing class fflib_StringBuilder
 	 **/
 	public virtual void add(List<String> values)
 	{
-		for(String value : values)
-			add(value);
+		buffer.addAll(values);
 	}
 
 	/**
@@ -60,7 +59,12 @@ public virtual with sharing class fflib_StringBuilder
 	 **/
 	public virtual void add(String value)
 	{
-		m_stringValue = ( m_stringValue==null ? value : m_stringValue + value );
+		buffer.add(value);
+	}
+	
+	public virtual override String toString()
+	{
+		return String.join(buffer, '');
 	}
 
 	/**
@@ -68,15 +72,17 @@ public virtual with sharing class fflib_StringBuilder
 	 **/
 	public virtual String getStringValue()
 	{
-		return m_stringValue;
+		return toString();
 	}
-
 
 	/**
 	 * Subclasses the StringBuilder to produce a comma delimited contactination of strings
 	 **/
 	public virtual with sharing class CommaDelimitedListBuilder extends fflib_StringBuilder
 	{
+		String itemPrefix = '';
+		String delimiter = ',';
+		
 		public CommaDelimitedListBuilder() {}
 
 		public CommaDelimitedListBuilder(List<String> values)
@@ -84,19 +90,25 @@ public virtual with sharing class fflib_StringBuilder
 			super(values);
 		}
 		
-		public virtual override void add(String value)
+		public void setItemPrefix(String itemPrefix)
 		{
-			m_stringValue = ( m_stringValue==null ? '{0}' + value : m_stringValue + ',{0}' + value );
+			this.itemPrefix = itemPrefix;
 		}
 		
-		public override String getStringValue()
+		public void setDelimiter(String delimiter)
 		{
-			return getStringValue('');
+			this.delimiter = delimiter;
 		}
 		
 		public String getStringValue(String itemPrefix)
 		{
-			return m_stringValue==null ? null : String.format(m_stringValue,new List<String>{itemPrefix});
+			setItemPrefix(itemPrefix);
+			return toString();
+		}
+		
+		public override String toString()
+		{
+			return itemPrefix + String.join(buffer, delimiter + itemPrefix);
 		}
 	}
 
@@ -113,14 +125,13 @@ public virtual with sharing class fflib_StringBuilder
 		public FieldListBuilder(List<Schema.SObjectField> values, List<Schema.Fieldset> fieldSets)
 		{
 			// Create a distinct set of fields (or field paths) to select
-			Set<String> selectFields = new Set<String>();			
 			for(Schema.SObjectField value : values)
-				selectFields.add(value.getDescribe().getName());
+				add(String.valueOf(value)); // Alternative to value.getDescribe().getName()
+			
 			if(fieldSets!=null)
 				for(Schema.Fieldset fieldSet : fieldSets)
 					for(Schema.FieldSetMember fieldSetMember : fieldSet.getFields())
-						selectFields.add(fieldSetMember.getFieldPath());
-			add(new List<String>(selectFields));
+						add(fieldSetMember.getFieldPath());
 		}
 	}
 	
