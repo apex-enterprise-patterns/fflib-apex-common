@@ -1,5 +1,5 @@
-Apex Enterprise Patterns
-========================
+FinancialForce Common Apex Lib
+==============================
 
 **[Deploy to Salesforce](https://githubsfdeploy.herokuapp.com/app/githubdeploy/financialforcedev/fflib-apex-common)**
 
