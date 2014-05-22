@@ -3,6 +3,11 @@ FinancialForce Common Apex Lib
 
 **[Deploy to Salesforce](https://githubsfdeploy.herokuapp.com/app/githubdeploy/financialforcedev/fflib-apex-common)**
 
+Comming Soon!
+=============
+
+Watch this space for exciting updates and new components to this libray from us!
+
 This Library
 ============
 
