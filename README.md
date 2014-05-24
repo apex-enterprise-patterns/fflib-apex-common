@@ -3,6 +3,8 @@ FinancialForce Common Apex Lib
 
 **[Deploy to Salesforce](https://githubsfdeploy.herokuapp.com/app/githubdeploy/financialforcedev/fflib-apex-common)**
 
+See here for [MavensMate Templates](http://andyinthecloud.com/2014/05/23/mavensmate-templates-and-apex-enterprise-patterns/)
+
 Comming Soon!
 =============
 
@@ -38,4 +40,5 @@ I'm proud to have been given the opportunity to run a more detailed look at thes
 **Other Related Blogs**
 
 - [Unit Testing with the Domain Layer](http://andyinthecloud.com/2014/03/23/unit-testing-with-the-domain-layer/)
+- [MavensMate Templates](http://andyinthecloud.com/2014/05/23/mavensmate-templates-and-apex-enterprise-patterns/)
 
