@@ -82,6 +82,14 @@ public abstract with sharing class fflib_SObjectSelector
 		return 'Name';
 	}
 
+	/** 
+	 * Returns True if this Selector instance has been instructed by the caller to include Field Set fields
+	 **/
+	public Boolean isIncludeFieldSetFields()
+	{
+		return m_includeFieldSetFields;
+	}
+
 	/**
 	 * Provides access to the builder containing the list of fields base queries are using, this is demand
 	 *   created if one has not already been defined via setFieldListBuilder
@@ -169,6 +177,15 @@ public abstract with sharing class fflib_SObjectSelector
     	if(!getSObjectType().getDescribe().isAccessible())
     	   throw new fflib_SObjectDomain.DomainException(
     	   		'Permission to access an ' + getSObjectType().getDescribe().getName() + ' dennied.');		
+	}
+
+	/**
+	 * Public acccess for the getSObjectType during Mock registration 
+	 *   (adding public to the existing method broken base class API backwards compatability)
+	 **/
+	public SObjectType getSObjectType2()
+	{
+		return getSObjectType();
 	}
 
 	/**

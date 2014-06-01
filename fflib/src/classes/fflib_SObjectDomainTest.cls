@@ -139,6 +139,27 @@ private with sharing class fflib_SObjectDomainTest
 		System.assertEquals(0, fflib_SObjectDomain.Errors.getAll().size());		
 	}
 	
+	@IsTest
+	private static void testTriggerState()
+	{
+		Opportunity opp = new Opportunity ( Name = 'Test', Type = 'Existing Account' );
+		fflib_SObjectDomain.Test.Database.onInsert(new Opportunity[] { opp } );		
+		fflib_SObjectDomain.triggerHandler(fflib_SObjectDomain.TestSObjectStatefulDomainConstructor.class);		
+		System.assertEquals(1, fflib_SObjectDomain.Errors.getAll().size());		
+		System.assertEquals('Error on Record Test', fflib_SObjectDomain.Errors.getAll()[0].message);
+	}	
+
+	@IsTest
+	private static void testRecursiveTriggerState()
+	{
+		Opportunity opp = new Opportunity ( Name = 'Test Recursive 1', Type = 'Existing Account' );
+		fflib_SObjectDomain.Test.Database.onInsert(new Opportunity[] { opp } );		
+		fflib_SObjectDomain.triggerHandler(fflib_SObjectDomain.TestSObjectStatefulDomainConstructor.class);		
+		System.assertEquals(2, fflib_SObjectDomain.Errors.getAll().size());		
+		System.assertEquals('Error on Record Test Recursive 2', fflib_SObjectDomain.Errors.getAll()[0].message);
+		System.assertEquals('Error on Record Test Recursive 1', fflib_SObjectDomain.Errors.getAll()[1].message);
+	}	
+	
 	/**
 	 * Create test user
 	 **/

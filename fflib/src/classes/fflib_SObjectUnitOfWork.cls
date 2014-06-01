@@ -51,7 +51,7 @@
  * TODO: Need to add some more test methods for more complex use cases and some unexpected (e.g. registerDirty and then registerDeleted)
  *
  **/
-public class fflib_SObjectUnitOfWork
+public virtual class fflib_SObjectUnitOfWork
 {
 	private List<Schema.SObjectType> m_sObjectTypes = new List<Schema.SObjectType>();
 	
@@ -62,7 +62,19 @@ public class fflib_SObjectUnitOfWork
 	private Map<String, List<SObject>> m_deletedListByType = new Map<String, List<SObject>>();
 	
 	private Map<String, Relationships> m_relationships = new Map<String, Relationships>();
+
+	private List<IDoWork> m_workList = new List<IDoWork>();
+
+	private SendEmailWork m_emailWork = new SendEmailWork();
 	
+	/**
+	 * Interface describes work to be performed during the commitWork method
+	 **/
+	public interface IDoWork 
+	{
+		void doWork();
+	}
+
 	/**
 	 * Constructs a new UnitOfWork to support work against the given object list
 	 *
@@ -79,6 +91,24 @@ public class fflib_SObjectUnitOfWork
 			m_deletedListByType.put(sObjectType.getDescribe().getName(), new List<SObject>());
 			m_relationships.put(sObjectType.getDescribe().getName(), new Relationships());	
 		}
+
+		m_workList.add(m_emailWork);
+	}
+
+	/**
+	 * Register a generic peace of work to be invoked during the commitWork phase
+	 **/
+	public void registerWork(IDoWork work)
+	{
+		m_workList.add(work);
+	}
+
+	/**
+	 * Registers the given email to be sent during the commitWork
+	 **/
+	public void registerEmail(Messaging.Email email)
+	{
+		m_emailWork.registerEmail(email);
 	}
 	
 	/**
@@ -179,6 +209,9 @@ public class fflib_SObjectUnitOfWork
 			Integer objectIdx = m_sObjectTypes.size() - 1;
 			while(objectIdx>=0)
 				delete m_deletedListByType.get(m_sObjectTypes[objectIdx--].getDescribe().getName());
+			// Generic work
+			for(IDoWork work : m_workList)
+				work.doWork();
 		}
 		catch (Exception e)
 		{
@@ -222,4 +255,27 @@ public class fflib_SObjectUnitOfWork
 	 * UnitOfWork Exception
 	 **/
 	public class UnitOfWorkException extends Exception {}
+
+	/** 
+	 * Internal implementation of Messaging.sendEmail, see outer class registerEmail method
+	 **/
+	private class SendEmailWork implements IDoWork
+	{
+		private List<Messaging.Email> emails;
+
+		public SendEmailWork()
+		{
+			this.emails = new List<Messaging.Email>();
+		}
+
+		public void registerEmail(Messaging.Email email)
+		{
+			this.emails.add(email);
+		}
+
+		public void doWork()
+		{
+			Messaging.sendEmail(emails);
+		}
+	}	
 }
