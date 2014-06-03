@@ -45,9 +45,6 @@
  * - Aggregate functions are not currently supported.
  * - Cross-object references currently require using String argument(s) to selectField(s).
  * - The behavior of serializing and deserializing an fflib_QueryFactory instance is currently untested and undefined.
- *
- * There is a google doc providing additional guideance on the use of this class with field sets at
- * https://docs.google.com/a/financialforce.com/document/d/1I4cxN4xHT4UJj_3Oi0YBL_MJ5chm-KG8kMN1D1un8-g/edit?usp=sharing
 **/
 public class fflib_QueryFactory { //No explicit sharing declaration - inherit from caller
 	public enum SortOrder {ASCENDING, DESCENDING}
