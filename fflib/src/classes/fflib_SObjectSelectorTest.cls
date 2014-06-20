@@ -40,7 +40,7 @@ private with sharing class fflib_SObjectSelectorTest
 		system.assert(fieldSet.contains('AnnualRevenue'));
 		if(UserInfo.isMultiCurrencyOrganization())
 			system.assert(fieldSet.contains('CurrencyIsoCode'));
-		system.assertEquals('myprefix.Name,myprefix.AccountNumber,myprefix.Id,myprefix.AnnualRevenue', selector.getRelatedFieldListString('myprefix'));
+		system.assertEquals('myprefix.Name,myprefix.Id,myprefix.AccountNumber,myprefix.AnnualRevenue', selector.getRelatedFieldListString('myprefix'));
 	}
 	
 	static testMethod void testGetSObjectName()
