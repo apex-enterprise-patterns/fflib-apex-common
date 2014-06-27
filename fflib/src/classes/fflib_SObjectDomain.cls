@@ -58,7 +58,7 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Useful during unit testign to assert at a more granular and robust level for errors raised during the various trigger events
 	 **/	
-	public static ErrorFactory Errors  {get; private set;}
+	public static ErrorFactory Errors {get; private set;}
 	
 	/**
 	 * Useful during unit testing to access mock support for database inserts and udpates (testing without DML)
@@ -72,13 +72,11 @@ public virtual with sharing class fflib_SObjectDomain
 	
 	static
 	{
-		Errors = new ErrorFactory();
-		
-		Test = new TestFactory();
-		
+		Errors = new ErrorFactory();		
+		Test = new TestFactory();		
 		TriggerStateByClass = new Map<Type, List<fflib_SObjectDomain>>();
 	}
-	
+			
 	/**
 	 * Constructs the domain class with the data on which to apply the behaviour implemented within
 	 **/
@@ -89,7 +87,7 @@ public virtual with sharing class fflib_SObjectDomain
 		// Capture SObjectType describe for this domain class
 		SObjectDescribe = Records.getSObjectType().getDescribe();
 		// Configure the Domain object instance 
-		Configuration = new Configuration();		
+		Configuration = new Configuration();
 	}
 	
 	/**
@@ -150,7 +148,7 @@ public virtual with sharing class fflib_SObjectDomain
      * Base handler for the Apex Trigger event Before Update, calls the onBeforeUpdate method
      **/
     public void handleBeforeUpdate(Map<Id,SObject> existingRecords) 
-    {
+    {	    	   
     	onBeforeUpdate(existingRecords);
     }
     
@@ -163,29 +161,36 @@ public virtual with sharing class fflib_SObjectDomain
     }
     
     /**
-     * Base handler for the Apex Trigger event After Insert, checks object security and calls the onValidate and onAfterInsert methods
+     * Base handler for the Apex Trigger event After Insert, checks object and field level security and calls the onValidate and onAfterInsert methods
      *
      * @throws DomainException if the current user context is not able to create records
      **/
     public void handleAfterInsert()
     {
+    	// Retained for backwards compatability 
     	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isCreateable()) 
-    	   throw new DomainException('Permission to create an ' + SObjectDescribe.getName() + ' denied.');
-    	   
+			throw new DomainException('Permission to create an ' + SObjectDescribe.getName() + ' denied.');
+    	    
     	onValidate();
     	onAfterInsert(); 
     }
     
     /**
-     * Base handler for the Apex Trigger event After Update, checks object security and calls the onValidate, onValidate(Map<Id,SObject>) and onAfterUpdate methods
+     * Base handler for the Apex Trigger event After Update, checks object and field level security and calls the onValidate, onValidate(Map<Id,SObject>) and onAfterUpdate methods
      *
      * @throws DomainException if the current user context is not able to update records
      **/
     public void handleAfterUpdate(Map<Id,SObject> existingRecords) 
-    {    	
+    {
+    	// Retained for backwards compatability
     	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isUpdateable()) 			    		
-    	   throw new DomainException('Permission to udpate an ' + SObjectDescribe.getName() + ' denied.');
-    	   
+	   		throw new DomainException('Permission to udpate an ' + SObjectDescribe.getName() + ' denied.');
+    		
+	   	// Is this update a result of a Unit Of Work commit? (aka part of service called by a controller, batch or other Apex context)
+   		if(fflib_SObjectUnitOfWork.isCommitting && fflib_SObjectUnitOfWork.CurrentCommit.enforcingSecurity(SObjectDescribe.getSObjectType()))
+   			if(checkUpdateSecurity(existingRecords))
+   				return;
+    	
     	onValidate();
     	onValidate(existingRecords);
     	onAfterUpdate(existingRecords); 
@@ -198,14 +203,70 @@ public virtual with sharing class fflib_SObjectDomain
      **/
     public void handleAfterDelete() 
     {
+    	// Retained for backwards compatability
     	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isDeletable())
-    	   throw new DomainException('Permission to delete an ' + SObjectDescribe.getName() + ' denied.');
+    		throw new DomainException('Permission to delete an ' + SObjectDescribe.getName() + ' denied.');
     	   
     	onAfterDelete();
     }	
+
+	/**
+	 * Scans the records for popualted fields and ensures the users permisisons permit them to set them
+	 **/
+	public static void checkInsertSecurity(SObjectType sObjectType, List<SObject> records)
+	{
+    	// Scan the records in this domain class for modified fields
+    	Set<String> populatedFields = new Set<String>();
+    	for(SObject record: Records)
+    		populatedFields.addAll(resolvePopulatedFields(record));
+    	// Check populated fields against the users permissions and throw an exception for any failure
+    	fflib_SecurityUtils.checkInsert(sObjectType, new List<String>(populatedFields));
+	}
+	
+	/**
+	 * Scans the records being commited for fields modified (not equal) given the passed in existing records map
+	 **/    
+    private Boolean checkUpdateSecurity(Map<Id, SObject> existingRecords)
+    {
+    	// Scan the records originally commited for modified fields against those existing provided by the trigger context
+    	Set<String> populatedFields = new Set<String>();
+    	for(SObject record: Records)
+    	{
+    		// Compare against the record as it was provided to the uow (prior to any platform defaults or calculated fields that may cause false positives)
+    		SObject uowRecord = fflib_SObjectUnitOfWork.CurrentCommit.Records.get(record.Id);
+    		if(uowRecord==null)
+    			continue; // Assume this record came from a third party trigger during the commit cycle? 
+    		// Compare those fields set with those in the existing record, if they have changed add to the list of fields to check for FLS
+    		for(String field : resolvePopulatedFields(uowRecord))
+    			if(uowRecord.get(field)!=existingRecords.get(record.Id).get(field))
+    				populatedFields.add(field);
+    	}
+		try {
+    		// Check the fields against the user permissions and relay any failure via addError on the Trigger.new records
+			fflib_SecurityUtils.checkUpdate(SObjectDescribe.getSObjectType(), new List<String>(populatedFields));
+		} catch (fflib_SecurityUtils.FlsException e) {
+			for(SObject record : Records)
+				record.addError(e.getMessage());
+			return true;
+   		}    	
+   		return false;
+    }
+    
+    /**
+     * Determines which fields have acctually been set in the given SObject
+     **/
+    private static Set<String> resolvePopulatedFields(SObject record)
+    {
+    	// Please upvote https://success.salesforce.com/ideaView?id=08730000000l5vbAAA)
+		Set<String> populatedFieldsFromRecord = ((Map<String, Object>)JSON.deserializeUntyped(JSON.serialize(record))).keySet();
+		populatedFieldsFromRecord.remove('attributes');
+		return populatedFieldsFromRecord;
+    }
 	
 	/**
 	 * Interface used to aid the triggerHandler in constructing instances of Domain classes
+	 *
+	 * @depricated Please extend Constructor instead of implementing this interface
 	 **/
 	public interface IConstructable
 	{
@@ -263,9 +324,9 @@ public virtual with sharing class fflib_SObjectDomain
 		if(domainObject==null)
 		{		
 			// Construct the domain class constructor class
-			String domainClassName = domainClass.getName();
+			String domainClassName = domainClass.getName(); 
 			Type constructableClass = domainClassName.endsWith('Constructor') ? Type.forName(domainClassName) : Type.forName(domainClassName+'.Constructor');
-			IConstructable domainConstructor = (IConstructable) constructableClass.newInstance();
+			IConstructable domainConstructor = (IConstructable) constructableClass.newInstance();			
 	
 			// Construct the domain class with the approprite record set		
 	        if(isInsert) domainObject = domainConstructor.construct(newRecords);
@@ -313,7 +374,7 @@ public virtual with sharing class fflib_SObjectDomain
 		if(domains==null || domains.size()==0)
 			return null;		
 		fflib_SObjectDomain domain = domains.remove(domains.size()-1);
-		domain.Records = records;
+		domain.Records = records; // Re-assigned as the SObject is a difference instead in after phase
 		return domain;
 	}
 	
@@ -377,7 +438,7 @@ public virtual with sharing class fflib_SObjectDomain
 			return this;
 		}
 	}
-	
+		
 	/**
 	 * General exception class for the domain layer
 	 **/
@@ -558,158 +619,4 @@ public virtual with sharing class fflib_SObjectDomain
 			return records!=null && records.size()>0 || oldRecords!=null && oldRecords.size()>0;
 		}
 	}
-
-	/**
-	 * Test domain class (ideally this would be in the test class, however Type.newInstance does not see such classes)
-	 **/
-	public with sharing class TestSObjectDomain extends fflib_SObjectDomain
-	{
-		private String someState;
-		
-		public TestSObjectDomain(List<Opportunity> sObjectList)
-		{
-			// Domain classes are initialised with lists to enforce bulkification throughout
-			super(sObjectList);
-		}
-		
-		public override void onApplyDefaults()
-		{
-			// Not required in production code
-			super.onApplyDefaults();
-			
-			// Apply defaults to Testfflib_SObjectDomain
-			for(Opportunity opportunity : (List<Opportunity>) Records)
-			{
-				opportunity.CloseDate = System.today().addDays(30);						
-			}
-		}
-	
-		public override void onValidate()	
-		{
-			// Not required in production code
-			super.onValidate();
-			
-			// Validate Testfflib_SObjectDomain
-			for(Opportunity opp : (List<Opportunity>) Records)
-			{
-				if(opp.Type!=null && opp.Type.startsWith('Existing') && opp.AccountId == null)
-				{
-					opp.AccountId.addError( error('You must provide an Account for Opportunities for existing Customers.', opp, Opportunity.AccountId) );					
-				}			
-			}		
-		}
-		
-		public override void onValidate(Map<Id,SObject> existingRecords)
-		{
-			// Not required in production code	
-			super.onValidate(existingRecords);
-			
-			// Validate changes to Testfflib_SObjectDomain
-			for(Opportunity opp : (List<Opportunity>) Records)
-			{
-				Opportunity existingOpp = (Opportunity) existingRecords.get(opp.Id);
-				if(opp.Type != existingOpp.Type)
-				{
-					opp.Type.addError( error('You cannot change the Opportunity type once it has been created.', opp, Opportunity.Type) );
-				}
-			}
-		}
-		
-		public override void onBeforeDelete()
-		{
-			// Not required in production code
-			super.onBeforeDelete();
-			
-			// Validate changes to Testfflib_SObjectDomain
-			for(Opportunity opp : (List<Opportunity>) Records)
-			{
-				opp.addError( error('You cannot delete this Opportunity.', opp) );
-			}			
-		}
-		
-		public override void onBeforeInsert()
-		{
-			// Assert this variable is null in the after insert (since this domain class is stateless)
-			someState = 'This should not survice the trigger after phase';
-		}
-		
-		public override void onAfterInsert()
-		{
-			// This is a stateless domain class, so should not retain anything betweet before and after
-			System.assertEquals(null, someState);
-		}
-	}	
-	
-	/**
-	 * Typically an inner class to the domain class, supported here for test purposes
-	 **/	
-	public class TestSObjectDomainConstructor implements fflib_SObjectDomain.IConstructable
-	{
-		public fflib_SObjectDomain construct(List<SObject> sObjectList)
-		{
-			return new TestSObjectDomain(sObjectList);
-		}
-	}
-	
-	/**
-	 * Test domain class (ideally this would be in the test class, however Type.newInstance does not see such classes)
-	 **/
-	public with sharing class TestSObjectStatefulDomain 
-		extends fflib_SObjectDomain 
-	{
-		public String someState;
-		
-		public TestSObjectStatefulDomain(List<Opportunity> sObjectList)
-		{
-			super(sObjectList);
-
-			// Ensure this instance is re-used in the after trigger phase (subject to recursive scenarios)		
-			Configuration.enableTriggerState();			
-		}
-		
-		public override void onBeforeInsert() 
-		{
-			// This must always be null, as we do not reuse domain instances within recursive scenarios (different record sets)
-			System.assertEquals(null, someState);
-			
-			// Process records			 
-			List<Opportunity> newOpps = new List<Opportunity>();
-			for(Opportunity opp : (List<Opportunity>) Records)
-			{
-				// Set some state sensitive to the incoming records
-				someState = 'Error on Record ' + opp.Name;
-				
-				// Create a new Opportunity record to trigger recursive code path?
-				if(opp.Name.equals('Test Recursive 1'))
-					newOpps.add(new Opportunity ( Name = 'Test Recursive 2', Type = 'Existing Account' ));
-			}				
-			
-			// If testing recursiving emulate an insert 	
-			if(newOpps.size()>0)
-			{
-				// This will force recursion and thus validate via the above assert results in a new domain instance
-				fflib_SObjectDomain.Test.Database.onInsert(newOpps);		
-				fflib_SObjectDomain.triggerHandler(fflib_SObjectDomain.TestSObjectStatefulDomainConstructor.class);
-			}								
-		}
-		
-		public override void onAfterInsert() 
-		{ 
-			// Use the state set in the before insert (since this is a stateful domain class)
-			if(someState!=null)
-				for(Opportunity opp : (List<Opportunity>) Records)
-					opp.addError(error(someState, opp));
-		}		
-	}	
-	
-	/**
-	 * Typically an inner class to the domain class, supported here for test purposes
-	 **/	
-	public class TestSObjectStatefulDomainConstructor implements fflib_SObjectDomain.IConstructable
-	{
-		public fflib_SObjectDomain construct(List<SObject> sObjectList)
-		{
-			return new TestSObjectStatefulDomain(sObjectList);
-		}				
-	}				
 }

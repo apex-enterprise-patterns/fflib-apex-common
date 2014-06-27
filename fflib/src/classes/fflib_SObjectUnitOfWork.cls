@@ -53,6 +53,16 @@
  **/
 public virtual class fflib_SObjectUnitOfWork
 {
+	/**
+	 * True if the unit of work is executing the commitWork method
+	 **/
+	public static Boolean isCommitting = false;
+	
+	/**
+	 * If a unit of work is executing the commitWork method represents information about that unit of work
+	 **/
+	public static CommitScope CurrentCommit {get; private set;}
+	
 	private List<Schema.SObjectType> m_sObjectTypes = new List<Schema.SObjectType>();
 	
 	private Map<String, List<SObject>> m_newListByType = new Map<String, List<SObject>>();
@@ -66,6 +76,8 @@ public virtual class fflib_SObjectUnitOfWork
 	private List<IDoWork> m_workList = new List<IDoWork>();
 
 	private SendEmailWork m_emailWork = new SendEmailWork();
+	
+	private Set<SObjectType> m_disabledSecurity = new Set<SObjectType>();
 	
 	/**
 	 * Interface describes work to be performed during the commitWork method
@@ -188,10 +200,30 @@ public virtual class fflib_SObjectUnitOfWork
 	}
 	
 	/**
+	 * Can disable the Field Level Security code in the fflib_SObjectDomain class (if enabled via Configuration property)
+	 *   Use this method sparginly and only when you believe the DML being executed is purely system level not user level
+	 **/
+	public void enforceSecurity(SObjectType sObjectType, Boolean enable)
+	{
+		if(enable)
+			m_disabledSecurity.remove(sObjectType);
+		else
+			m_disabledSecurity.add(sObjectType);
+	}
+	
+	/**
+	 * Confirm if the given SObject type requires Field Level security enforcement (currently via the fflib_SObjectDomain class)
+	 **/
+	public boolean enforcingSecurity(SObjectType sObjectType)
+	{
+		return m_disabledSecurity.contains(sObjectType) ? false : true;
+	}
+	
+	/**
 	 * Takes all the work that has been registered with the UnitOfWork and commits it to the database
 	 **/
 	public void commitWork()
-	{
+	{		
 		// Wrap the work in its own transaction 
 		Savepoint sp = Database.setSavePoint();		
 		try
@@ -199,12 +231,35 @@ public virtual class fflib_SObjectUnitOfWork
 			// Insert by type
 			for(Schema.SObjectType sObjectType : m_sObjectTypes)
 			{
+				// Ensure any relatonships are set and obtain the list of SObject's to insert for this type
 				m_relationships.get(sObjectType.getDescribe().getName()).resolve();
-				insert m_newListByType.get(sObjectType.getDescribe().getName());
+				List<SObject> recordsToInsert = m_newListByType.get(sObjectType.getDescribe().getName());
+				// FLS checking for this sobject?
+				if(enforcingSecurity(sObjectType))
+					fflib_SObjectDomain.checkInsertSecurity(sObjectType, recordsToInsert);
+				// Perform DML to insert records
+				insert recordsToInsert;
 			}					
 			// Update by type
 			for(Schema.SObjectType sObjectType : m_sObjectTypes)
-				update m_dirtyListByType.get(sObjectType.getDescribe().getName());		
+			{
+				try 
+				{
+					// Indicate to the fflib_SObjectDomain there is a unit of work commiting work at present
+					isCommitting = true;
+					CurrentCommit = new CommitScope(this); // TODO: Push (in case an trigger invoked code also utilises the unit of work)			
+					List<SObject> recordsToUpdate = m_dirtyListByType.get(sObjectType.getDescribe().getName());
+					CurrentCommit.Records = new Map<Id, SObject>(recordsToUpdate);
+					// Perform DML to update records (FLS checking done within trigger execution via fflib_SObjectDomain.handleAfterUpdate)
+					update recordsToUpdate;
+				}
+				finally
+				{
+					// Indicate to others the unit of work is no longer commiting			
+					CurrentCommit = null; // TODO: Pop (in case an trigger invoked code also utilises the unit of work)
+					isCommitting = CurrentCommit!=null;					
+				}
+			}		
 			// Delete by type (in reverse dependency order)
 			Integer objectIdx = m_sObjectTypes.size() - 1;
 			while(objectIdx>=0)
@@ -221,6 +276,32 @@ public virtual class fflib_SObjectUnitOfWork
 			throw e;
 		}
 	}
+		
+	/**
+	 * Class used to express information about a commit in progress (used by fflib_SObjectDomain to determine if FLS enforcement should be applied)
+	 **/
+	public class CommitScope 
+	{
+		private fflib_SObjectUnitOfWork m_uow; 
+		
+		/**
+		 * Exposes the records being updated as part of the commit scope
+		 **/
+		public Map<Id, SObject> Records {get; private set;}
+		
+		private CommitScope(fflib_SObjectUnitOfWork uow)
+		{
+			m_uow = uow;
+		}
+		
+		/**
+		 * Confirm if the given SObject type requires Field Level security enforcement (currently via the fflib_SObjectDomain class) within this current commit scope
+		 **/
+		public boolean enforcingSecurity(SObjectType sObjectType)
+		{
+			return m_uow.enforcingSecurity(sObjectType);
+		}			
+	}	
 	
 	private class Relationships
 	{

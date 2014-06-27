@@ -30,7 +30,7 @@ private with sharing class fflib_SObjectDomainTest
 	@IsTest
 	private static void testValidationWithoutDML()
 	{
-		fflib_SObjectDomain.TestSObjectDomain opps = new fflib_SObjectDomain.TestSObjectDomain(new Opportunity[] { new Opportunity ( Name = 'Test', Type = 'Existing Account' ) } );
+		fflib_SObjectDomainTestCases.TestSObjectDomain opps = new fflib_SObjectDomainTestCases.TestSObjectDomain(new Opportunity[] { new Opportunity ( Name = 'Test', Type = 'Existing Account' ) } );
 		opps.onValidate();
 		System.assertEquals(1, fflib_SObjectDomain.Errors.getAll().size());		
 		System.assertEquals('You must provide an Account for Opportunities for existing Customers.', fflib_SObjectDomain.Errors.getAll()[0].message);
@@ -44,7 +44,7 @@ private with sharing class fflib_SObjectDomainTest
 		System.assertEquals(false, fflib_SObjectDomain.Test.Database.hasRecords());
 		fflib_SObjectDomain.Test.Database.onInsert(new Opportunity[] { opp } );		
 		System.assertEquals(true, fflib_SObjectDomain.Test.Database.hasRecords());
-		fflib_SObjectDomain.triggerHandler(fflib_SObjectDomain.TestSObjectDomainConstructor.class);		
+		fflib_SObjectDomain.triggerHandler(fflib_SObjectDomainTestCases.TestSObjectDomainConstructor.class);		
 		System.assertEquals(1, fflib_SObjectDomain.Errors.getAll().size());		
 		System.assertEquals('You must provide an Account for Opportunities for existing Customers.', fflib_SObjectDomain.Errors.getAll()[0].message);
 		System.assertEquals(Opportunity.AccountId, ((fflib_SObjectDomain.FieldError)fflib_SObjectDomain.Errors.getAll()[0]).field); 		
@@ -62,7 +62,7 @@ private with sharing class fflib_SObjectDomainTest
 		System.assertEquals(false, fflib_SObjectDomain.Test.Database.hasRecords());		
 		fflib_SObjectDomain.Test.Database.onUpdate(new Opportunity[] { newOpp }, new Map<Id, SObject> { newOpp.Id => oldOpp } );
 		System.assertEquals(true, fflib_SObjectDomain.Test.Database.hasRecords());				
-		fflib_SObjectDomain.triggerHandler(fflib_SObjectDomain.TestSObjectDomainConstructor.class);		
+		fflib_SObjectDomain.triggerHandler(fflib_SObjectDomainTestCases.TestSObjectDomainConstructor.class);		
 		System.assertEquals(1, fflib_SObjectDomain.Errors.getAll().size());		
 		System.assertEquals('You cannot change the Opportunity type once it has been created.', fflib_SObjectDomain.Errors.getAll()[0].message);
 		System.assertEquals(Opportunity.Type, ((fflib_SObjectDomain.FieldError)fflib_SObjectDomain.Errors.getAll()[0]).field); 		
@@ -77,7 +77,7 @@ private with sharing class fflib_SObjectDomainTest
 		System.assertEquals(false, fflib_SObjectDomain.Test.Database.hasRecords());		
 		fflib_SObjectDomain.Test.Database.onDelete(new Map<ID, Opportunity> { opp.Id => opp } );		
 		System.assertEquals(true, fflib_SObjectDomain.Test.Database.hasRecords());				
-		fflib_SObjectDomain.triggerHandler(fflib_SObjectDomain.TestSObjectDomainConstructor.class);		
+		fflib_SObjectDomain.triggerHandler(fflib_SObjectDomainTestCases.TestSObjectDomainConstructor.class);		
 		System.assertEquals(1, fflib_SObjectDomain.Errors.getAll().size());		
 		System.assertEquals('You cannot delete this Opportunity.', fflib_SObjectDomain.Errors.getAll()[0].message);
 	}
@@ -95,7 +95,7 @@ private with sharing class fflib_SObjectDomainTest
 			Opportunity opp = new Opportunity ( Name = 'Test', Type = 'Existing Account' );
 			fflib_SObjectDomain.Test.Database.onInsert(new Opportunity[] { opp } );
 			try {
-				fflib_SObjectDomain.triggerHandler(fflib_SObjectDomain.TestSObjectDomainConstructor.class);
+				fflib_SObjectDomain.triggerHandler(fflib_SObjectDomainTestCases.TestSObjectDomainConstructor.class);
 				System.assert(false, 'Expected access denied exception');						
 			} catch (Exception e) {
 				System.assertEquals('Permission to create an Opportunity denied.', e.getMessage());
@@ -107,7 +107,7 @@ private with sharing class fflib_SObjectDomainTest
 			existingOpp.Type = 'Existing Account'; 			
 			fflib_SObjectDomain.Test.Database.onUpdate(new List<Opportunity> { opp }, new Map<Id, Opportunity> { opp.Id => opp } );
 			try {
-				fflib_SObjectDomain.triggerHandler(fflib_SObjectDomain.TestSObjectDomainConstructor.class);
+				fflib_SObjectDomain.triggerHandler(fflib_SObjectDomainTestCases.TestSObjectDomainConstructor.class);
 				System.assert(false, 'Expected access denied exception');						
 			} catch (Exception e) {
 				System.assertEquals('Permission to udpate an Opportunity denied.', e.getMessage());
@@ -116,7 +116,7 @@ private with sharing class fflib_SObjectDomainTest
 			// Test Delete object security
 			fflib_SObjectDomain.Test.Database.onDelete(new Map<Id, Opportunity> { opp.Id => opp });
 			try {
-				fflib_SObjectDomain.triggerHandler(fflib_SObjectDomain.TestSObjectDomainConstructor.class);
+				fflib_SObjectDomain.triggerHandler(fflib_SObjectDomainTestCases.TestSObjectDomainConstructor.class);
 				System.assert(false, 'Expected access denied exception');						
 			} catch (Exception e) {
 				System.assertEquals('Permission to delete an Opportunity denied.', e.getMessage());
@@ -144,7 +144,7 @@ private with sharing class fflib_SObjectDomainTest
 	{
 		Opportunity opp = new Opportunity ( Name = 'Test', Type = 'Existing Account' );
 		fflib_SObjectDomain.Test.Database.onInsert(new Opportunity[] { opp } );		
-		fflib_SObjectDomain.triggerHandler(fflib_SObjectDomain.TestSObjectStatefulDomainConstructor.class);		
+		fflib_SObjectDomain.triggerHandler(fflib_SObjectDomainTestCases.TestSObjectStatefulDomainConstructor.class);		
 		System.assertEquals(1, fflib_SObjectDomain.Errors.getAll().size());		
 		System.assertEquals('Error on Record Test', fflib_SObjectDomain.Errors.getAll()[0].message);
 	}	
@@ -154,7 +154,7 @@ private with sharing class fflib_SObjectDomainTest
 	{
 		Opportunity opp = new Opportunity ( Name = 'Test Recursive 1', Type = 'Existing Account' );
 		fflib_SObjectDomain.Test.Database.onInsert(new Opportunity[] { opp } );		
-		fflib_SObjectDomain.triggerHandler(fflib_SObjectDomain.TestSObjectStatefulDomainConstructor.class);		
+		fflib_SObjectDomain.triggerHandler(fflib_SObjectDomainTestCases.TestSObjectStatefulDomainConstructor.class);		
 		System.assertEquals(2, fflib_SObjectDomain.Errors.getAll().size());		
 		System.assertEquals('Error on Record Test Recursive 2', fflib_SObjectDomain.Errors.getAll()[0].message);
 		System.assertEquals('Error on Record Test Recursive 1', fflib_SObjectDomain.Errors.getAll()[1].message);
