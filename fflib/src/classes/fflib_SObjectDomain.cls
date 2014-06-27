@@ -49,6 +49,11 @@ public virtual with sharing class fflib_SObjectDomain
 	 * Derived from the records provided during construction, provides the native describe for the standard or custom object
 	 **/
 	public Schema.DescribeSObjectResult SObjectDescribe {get; private set;}
+
+	/**
+	 * Exposes the configuration for this domain class instance
+	 **/ 
+	public Configuration Configuration {get; private set;}    
 		
 	/**
 	 * Useful during unit testign to assert at a more granular and robust level for errors raised during the various trigger events
@@ -61,7 +66,7 @@ public virtual with sharing class fflib_SObjectDomain
 	public static TestFactory Test  {get; private set;}
 	
 	/**
-	 * Retains instances of domain classes implementing ITriggerStateful
+	 * Retains instances of domain classes implementing trigger stateful
 	 **/
 	private static Map<Type, List<fflib_SObjectDomain>> TriggerStateByClass; 
 	
@@ -79,9 +84,12 @@ public virtual with sharing class fflib_SObjectDomain
 	 **/
 	public fflib_SObjectDomain(List<SObject> sObjectList)
 	{
-		Records = sObjectList.clone(); // Ensure the domain class has its own copy of the data
-		
+		// Ensure the domain class has its own copy of the data
+		Records = sObjectList.clone(); 
+		// Capture SObjectType describe for this domain class
 		SObjectDescribe = Records.getSObjectType().getDescribe();
+		// Configure the Domain object instance 
+		Configuration = new Configuration();		
 	}
 	
 	/**
@@ -161,7 +169,7 @@ public virtual with sharing class fflib_SObjectDomain
      **/
     public void handleAfterInsert()
     {
-    	if(!SObjectDescribe.isCreateable())
+    	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isCreateable()) 
     	   throw new DomainException('Permission to create an ' + SObjectDescribe.getName() + ' denied.');
     	   
     	onValidate();
@@ -174,8 +182,8 @@ public virtual with sharing class fflib_SObjectDomain
      * @throws DomainException if the current user context is not able to update records
      **/
     public void handleAfterUpdate(Map<Id,SObject> existingRecords) 
-    {
-    	if(!SObjectDescribe.isUpdateable())
+    {    	
+    	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isUpdateable()) 			    		
     	   throw new DomainException('Permission to udpate an ' + SObjectDescribe.getName() + ' denied.');
     	   
     	onValidate();
@@ -190,7 +198,7 @@ public virtual with sharing class fflib_SObjectDomain
      **/
     public void handleAfterDelete() 
     {
-    	if(!SObjectDescribe.isDeletable())
+    	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isDeletable())
     	   throw new DomainException('Permission to delete an ' + SObjectDescribe.getName() + ' denied.');
     	   
     	onAfterDelete();
@@ -203,13 +211,6 @@ public virtual with sharing class fflib_SObjectDomain
 	{
 		fflib_SObjectDomain construct(List<SObject> sObjectList);
 	}
-	
-	/**
-	 * Interface used to indicate the same instance of the Domain class should be shared between
-	 *   trigger invocations, e.g. between before and after trigger invocations, also see
-	 *   getTriggerInstance method
-	 **/
-	public interface ITriggerStateful { }
 	
 	/**
 	 * For Domain classes implementing the ITriggerStateful interface returns the instance 
@@ -272,7 +273,7 @@ public virtual with sharing class fflib_SObjectDomain
 	        else if(isDelete) domainObject = domainConstructor.construct(oldRecordsMap.values());
 	        
 	        // Should this instance be reused on the next trigger invocation?
-	        if(domainObject instanceof ITriggerStateful)
+	        if(domainObject.Configuration.TriggerStateEnabled)
 	        	// Push this instance onto the stack to be popped during the after phase
 	        	pushTriggerInstance(domainClass, domainObject);	
 		}
@@ -314,6 +315,67 @@ public virtual with sharing class fflib_SObjectDomain
 		fflib_SObjectDomain domain = domains.remove(domains.size()-1);
 		domain.Records = records;
 		return domain;
+	}
+	
+	/**
+	 * Fluent style Configuration system for Domain class creation
+	 **/
+	public class Configuration
+	{
+		/**
+		 * True if the base class is checking the users CRUD requirements before invoking trigger methods
+		 **/ 
+		public Boolean EnforcingTriggerCRUDSecurity {get; private set;}
+		
+		/**
+		 * Enables reuse of the same Domain instance between before and after trigger phases (subject to recursive scenarios)
+		 **/
+		public Boolean TriggerStateEnabled {get; private set;}
+			
+		/**
+		 * Default configuration 
+		 **/
+		public Configuration()
+		{
+			EnforcingTriggerCRUDSecurity = true; // Default is true for backwards compatability
+			TriggerStateEnabled = false;
+		}
+		
+		/**
+		 * See associated property
+		 **/
+		public Configuration enableTriggerState()
+		{
+			TriggerStateEnabled = true;
+			return this;	
+		}
+		
+		/**
+		 * See associated property
+		 **/
+		public Configuration disableTriggerState()
+		{
+			TriggerStateEnabled = false;
+			return this;	
+		}
+
+		/**
+		 * See associated property
+		 **/
+		public Configuration enforceTriggerCRUDSecurity()
+		{
+			EnforcingTriggerCRUDSecurity = true;
+			return this;
+		}
+
+		/**
+		 * See associated property
+		 **/
+		public Configuration disableTriggerCRUDSecurity()
+		{
+			EnforcingTriggerCRUDSecurity = false;
+			return this;
+		}
 	}
 	
 	/**
@@ -594,13 +656,15 @@ public virtual with sharing class fflib_SObjectDomain
 	 **/
 	public with sharing class TestSObjectStatefulDomain 
 		extends fflib_SObjectDomain 
-		implements fflib_SObjectDomain.ITriggerStateful
 	{
 		public String someState;
 		
 		public TestSObjectStatefulDomain(List<Opportunity> sObjectList)
 		{
 			super(sObjectList);
+
+			// Ensure this instance is re-used in the after trigger phase (subject to recursive scenarios)		
+			Configuration.enableTriggerState();			
 		}
 		
 		public override void onBeforeInsert() 
