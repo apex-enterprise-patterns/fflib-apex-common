@@ -5,10 +5,24 @@ FinancialForce Common Apex Lib
 
 See here for [MavensMate Templates](http://andyinthecloud.com/2014/05/23/mavensmate-templates-and-apex-enterprise-patterns/)
 
-Comming Soon!
-=============
+Expirimental CRUD and FLS Support
+=================================
 
-Watch this space for exciting updates and new components to this libray from us!
+**WARNING:** This branch is expirimental and should not be used in production without careful consideration. 
+
+**Salesforce Security** review has recently [started requiring FLS checking to be implemented in Apex code](https://developer.salesforce.com/forums/?id=906F00000009JFXIA2) as per the documents [here](https://developer.salesforce.com/page/Enforcing_CRUD_and_FLS) and [here](https://developer.salesforce.com/page/Testing_CRUD_and_FLS_Enforcement). Distributing these kind of manual CRUD and FLS checks accross a large code base is not appealing and fragile! So this branch of the **Apex Enterprise Patterns** is exploring a more generic implementation that is handled seamlessly. 
+
+Implementing FLS checking generically in Apex code is hard on the Force.com platform currently! This branch of the Apex Enterprise Patterns is attempting to accomplish it by combining the Unit of Work, Domain and Selector layer patterns. The responsibility of enforcing, create, update and delete security is distributed as follows. 
+
+- The **Unit Of Work** commit code checks **create** security at object and field level prior to executing the insert DML operation. 
+- The **Domain layer** checks **update** security at object and field level, since during the Apex Trigger handling, it has access to existing records and field values (via Trigger.old) it can determine dynamically which fields have been changed. This is only performed if it is able to determine that there is an outer Unit of Work commit in progress. Note that historically the Domain layer has always been checking create, update and delete object security.
+- The **Selector layer** has been updated in the main branch to utilise the amazing fflib_QueryFactory, which also now supports **read** security at the object and field level. This can be enabled by passing the approprite parameter to the Selector constructor or by calling the approprite method on the QueryFactory class.
+
+**Current Result...**
+
+The above allows the [existing sample application](https://github.com/financialforcedev/fflib-apex-common-samplecode) to support CRUD and FLS checking without any code changes! Which is one of the aims of this experiment, should Salesforce add **platform support** for this in the future we want to minimise changes to the framework code only.
+
+So far so good.... but both the Unit of Work and Domain layer require knowledge of which fields have been populated on the SObject passed to them. This is not as easy as you might think, see [fflib_SObjectDomain.resolvePopulatedFields](https://github.com/financialforcedev/fflib-apex-common/blob/fls-support-experiment/fflib/src/classes/fflib_SObjectDomain.cls#L258) method. I'll be going into the pros and cons of this experiment in a blog post coming soon!
 
 This Library
 ============
