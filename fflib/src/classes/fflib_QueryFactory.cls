@@ -60,6 +60,19 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	private Integer offset;
 	private List<Ordering> order;
 	/**
+	 * each item in sortExpressions contains the field and the direction (ascending or descending)
+	 * use the addSort method to add fields to sort by.  the sort fields
+	 * appear in the SOQL query in the order they are added to the query.
+	**/ 
+	private List<SortExpression> sortExpressions;
+	/**
+	/* Integrate checking for READ Field Level Security within the selectField(s) methods
+	/* This can optionally be enforced (or not) by calling the setEnforceFLS method prior to calling 
+	/* one of the selectField or selectFieldset methods.
+	**/
+	private Boolean enforceFLS;
+	
+	/**
 	 * The relationship and  subselectQueryMap variables are used to support subselect queries.  Subselects can be added to 
 	 * a query, as long as it isn't a subselect query itself.  You may have many subselects inside
 	 * a query, but they may only be 1 level deep (no subselect inside a subselect)
@@ -74,6 +87,8 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			Schema.SObjectField token = fflib_SObjectDescribe.getDescribe(table).getField(fieldName);
 			if(token == null)
 				throw new InvalidFieldException(fieldName,this.table);
+			if (enforceFLS) 
+				fflib_SecurityUtils.checkFieldIsReadable(this.table, token);	
 			result = new QueryField(table,token);
 		}else{ //traversing FK relationship(s)
 			List<Schema.SObjectField> fieldPath = new List<Schema.SObjectField>();
@@ -82,6 +97,8 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			while(i.hasNext()){
 				String field = i.next();
 				Schema.SObjectField token = fflib_SObjectDescribe.getDescribe(lastSObjectType).getField(field);
+				if (token != null && enforceFLS) 
+					fflib_SecurityUtils.checkFieldIsReadable(lastSObjectType, token);
 				if(token != null && i.hasNext() && token.getDescribe().getSOAPType() == Schema.SOAPType.ID){
 					lastSObjectType = token.getDescribe().getReferenceTo()[0]; //if it's polymorphic doesn't matter which one we get
 					fieldPath.add(token);
@@ -93,7 +110,6 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 					else
 						throw new NonReferenceFieldException(lastSObjectType+'.'+field+' is not a lookup or master-detail field but is used in a cross-object query field.');
 				}
-
 			}
 			result = new QueryField(this.table, fieldPath);
 		}
@@ -121,6 +137,8 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		this.table = table;
 		fields = new Set<QueryField>();
 		order = new List<Ordering>();
+		sortExpressions = new List<SortExpression>();
+		enforceFLS = false;
 	}
 	/**
 	 * Construct a new fflib_QueryFactory instance with no options other than the FROM clause and the relationship.
@@ -133,6 +151,27 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		this(relationship.getChildSObject()); 
 		this.relationship = relationship;
 	}
+
+	/**
+	 * This method checks to see if the User has Read Access on {@link #table}. 
+	 * Asserts true if User has access.
+	 **/
+	public fflib_QueryFactory assertCRUD(){
+		fflib_SecurityUtils.checkObjectIsReadable(table);
+		return this;
+	}
+
+	/**
+	 * This method sets a flag to indicate that this query should have FLS Read
+	 * permission enforced.  If this method is not called, the default behavior
+	 * is that FLS read permission will not be checked.
+	 * @param enforce whether to enforce field level security (read)
+	 **/
+	public fflib_QueryFactory setEnforceFLS(Boolean enforce){
+		this.enforceFLS = enforce;
+		return this;
+	}
+
 	/**
 	 * Selects a single field from the SObject specified in {@link #table}.
 	 * Selecting fields is idempotent, if this field is already selected calling this method will have no additional impact.
@@ -151,6 +190,8 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	public fflib_QueryFactory selectField(Schema.SObjectField field){
 		if(field == null)
 			throw new InvalidFieldException(null,this.table);
+		if (enforceFLS) 
+			fflib_SecurityUtils.checkFieldIsReadable(table, field);
 		fields.add( new QueryField(table,field) );
 		return this;
 	}
@@ -184,7 +225,9 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	public fflib_QueryFactory selectFields(Set<Schema.SObjectField> fields){
 		for(Schema.SObjectField token:fields){
 			if(token == null)
-				throw new InvalidFieldException();
+				throw new InvalidFieldException();	
+			if (enforceFLS) 
+				fflib_SecurityUtils.checkFieldIsReadable(table, token);	
 			this.fields.add( new QueryField(table, token) );
 		}
 		return this;
@@ -198,6 +241,8 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		for(Schema.SObjectField token:fields){
 			if(token == null)
 				throw new InvalidFieldException();
+			if (enforceFLS) 
+				fflib_SecurityUtils.checkFieldIsReadable(table, token);		
 			this.fields.add( new QueryField(table, token) );
 		}
 		return this;
@@ -216,10 +261,25 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	**/
 	public fflib_QueryFactory selectFieldSet(Schema.FieldSet fieldSet, Boolean allowCrossObject){ 
 		if(fieldSet.getSObjectType() != table)
-			throw new InvalidFieldSetException('Field set "'+fieldSet.getName()+'" is not for SObject type "'+table+'"');
+			throw new InvalidFieldSetException(
+				String.format(
+					System.label.fflib_QueryFactory_fieldset_wrong_sobject_error,
+					new List<String>{
+						fieldSet.getName(),
+						table.getDescribe().getName()
+					}
+				)
+			);
 		for(Schema.FieldSetMember field: fieldSet.getFields()){
 			if(!allowCrossObject && field.getFieldPath().contains('.'))
-				throw new InvalidFieldSetException('Cross-object fields not allowed and field "'+field.getFieldPath()+'"" is a cross-object field.');
+				throw new InvalidFieldSetException(
+					String.format(
+						System.label.fflib_QueryFactory_crossobject_fieldsets_not_allowed_error,
+						new List<String>{
+							field.getFieldPath()
+						}
+					)
+				);
 			fields.add( getFieldToken(field.getFieldPath()) );
 		}
 		return this;
@@ -263,24 +323,41 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	public List<Ordering> getOrderings(){
 		return this.order;
 	}
+
+	/**
+	 * @returns the selected fields
+	 **/
+	public Set<QueryField> getSelectedFields() { 
+		return this.fields;
+	}
+
+	/**
+	 * Add a subquery query to this query.  If a subquery for this relationship already exists, it will be returned.
+	 * If not, a new one will be created and returned.
+	 * @exception InvalidSubqueryRelationshipException If this method is called on a subselectQuery or with an invalid relationship 
+	 * @param related The related object type
+	**/
+	public fflib_QueryFactory subselectQuery(SObjectType related){ 
+		return setSubselectQuery(getChildRelationship(related));
+	}
+
 	/**
 	 * Add a subquery query to this query.  If a subquery for this relationship already exists, it will be returned.
 	 * If not, a new one will be created and returned.
 	 * @exception InvalidSubqueryRelationshipException If this method is called on a subselectQuery or with an invalid relationship 
 	 * @param relationship The ChildRelationship to be added as a subquery
 	**/
-	public fflib_QueryFactory subselectQuery(ChildRelationship relationship){
+	public fflib_QueryFactory setSubselectQuery(ChildRelationship relationship){
+		if (this.relationship != null){
+			throw new InvalidSubqueryRelationshipException(System.label.fflib_QueryFactory_recursive_subquery_error);
+		} 
 		if (this.subselectQueryMap == null){
 			this.subselectQueryMap = new Map<ChildRelationship, fflib_QueryFactory>();
 		}
 		if (this.subselectQueryMap.containsKey(relationship)){
 			return subselectQueryMap.get(relationship);
 		}
-		if (this.relationship != null){
-			throw new InvalidSubqueryRelationshipException('Invalid call to subselectQuery.  You may not add a subselect query to a subselect query.');
-		} else if (!isRelationshipValid(relationship)) {
-			throw new InvalidSubqueryRelationshipException('Invalid call to subselectQuery.  Invalid relationship for table.');
-		}	
+		
 		fflib_QueryFactory subselectQuery = new fflib_QueryFactory(relationship);
 		subselectQueryMap.put(relationship, subSelectQuery);
 		return subSelectQuery;
@@ -294,18 +371,51 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		}	
 		return null;
 	}
+
 	/**
-	 * When a subselect is being added, check to make sure that the relationship on that object
-	 * is valid for the parent's object type (table)
+	 * Get the ChildRelationship from the Table for the object type passed in.
+	 * @param objType The object type of the child relationship to get
 	**/
-	private boolean isRelationshipValid(Schema.ChildRelationship relationship){
-        for (Schema.ChildRelationship childRow : table.getDescribe().getChildRelationships()) {
-            if (childRow.getRelationshipName() == relationship.getRelationshipName()) {
-                return true;
-            }
+ 	private Schema.ChildRelationship getChildRelationship(sObjectType objType){
+        for (Schema.ChildRelationship childRow : table.getDescribe().getChildRelationships()){
+        	//occasionally on some standard objects (Like Contact child of Contact) do not have a relationship name.  
+        	//if there is no relationship name, we cannot query on it, so throw an exception.
+            if (childRow.getChildSObject() == objType && childRow.getRelationshipName() != null){ 
+                return childRow;
+            }   
         }
-        return false;
-	}
+        throw new InvalidSubqueryRelationshipException(System.label.fflib_QueryFactory_subquery_invalid_relationship);
+    }
+
+	/**
+	 * Add a field to be sorted on.  This may be a direct field or a field 
+	 * related through an object lookup or master-detail relationship.
+	 * Use the set to store unique field names, since we only want to sort
+	 * by the same field one time.  The sort expressions are stored in a list
+	 * so that they are applied to the SOQL in the same order that they
+	 * were added in. 
+	 * @param fieldName The string value of the field to be sorted on
+	 * @param SortOrder the direction to be sorted on (ASCENDING or DESCENDING)
+	**/  
+    public fflib_QueryFactory addSort(String fieldName, SortOrder direction){
+		sortExpressions.add(new SortExpression(getFieldToken(fieldName), direction));	
+		return this;
+    }
+
+     /**
+	 * Add a field to be sorted on.  This may be a direct field or a field 
+	 * related through an object lookup or master-detail relationship.
+	 * Use the set to store unique field names, since we only want to sort
+	 * by the same field one time.  The sort expressions are stored in a list
+	 * so that they are applied to the SOQL in the same order that they
+	 * were added in. 
+	 * @param field The SObjectfield to sort.  This can only be a direct reference.
+	 * @param SortOrder the direction to be sorted on (ASCENDING or DESCENDING)
+	**/
+    public fflib_QueryFactory addSort(SObjectField field, SortOrder direction){
+		sortExpressions.add(new SortExpression(new QueryField(table, field), direction));	
+		return this;
+    }
 
 	/**
 	 * Convert the values provided to this instance into a full SOQL string for use with Database.query
@@ -313,23 +423,46 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	**/
 	public String toSOQL(){
 		String result = 'SELECT ';
-		for(QueryField field:fields){
-			result += field + ', ';
-		}
-		if (subselectQueryMap != null && !subselectQueryMap.isEmpty()) {
-			for (fflib_QueryFactory childRow : subselectQueryMap.values()) {
+		//if no fields have been added, just add the Id field so that the query or subquery will not just fail
+		if (fields.size() == 0){
+			if (enforceFLS) fflib_SecurityUtils.checkFieldIsReadable(table, 'Id');
+			result += 'Id  ';
+		}else{
+			for(QueryField field:fields){
+				result += field + ', ';
+			}
+		}	
+		if(subselectQueryMap != null && !subselectQueryMap.isEmpty()){
+			for (fflib_QueryFactory childRow : subselectQueryMap.values()){
 				result += ' (' + childRow.toSOQL() + '), ';
 			}	
 		}
 		result = result.substring(0,result.length()-2) + ' FROM ' + (relationship != null ? relationship.getRelationshipName() : table.getDescribe().getName());
 		if(conditionExpression != null)
 			result += ' WHERE '+conditionExpression;
+		/**
+		 *  check both the order and sortexpressions for fields to order by.  the order list uses an older method of sorting (addOrdering method), but does not work well with sorting related object fields.
+		 *  newer method uses sortExpressions list (addSort method), which work with all fields and can handle multiple sorts expressions (ie. order by last name desc, first name asc)
+		 *  both methods may be used together on a single query factory 
+		**/
 		if(order.size() > 0){
 			result += ' ORDER BY ';
 			for(Ordering o:order)
 				result += o.toSOQL() +', ';
 			result = result.substring(0,result.length()-2);
 		}
+	
+		if (sortExpressions.size() > 0){ 
+			if (order.size() == 0){
+				result += ' ORDER BY ';
+			} else{
+				result += ', ';
+			}
+			for(SortExpression o:sortExpressions)
+				result += o.toSOQL() +', ';
+			result = result.substring(0,result.length()-2);	
+		}	
+		System.debug('resultaft='+result);
 		if(limitCount != null)
 			result += ' LIMIT '+limitCount;
 		return result;
@@ -365,9 +498,35 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		}
 	}
 
-	@testVisible 
-	private class QueryField{
+	@TestVisible
+	private class SortExpression{
+		SortOrder direction;
+		QueryField field;
+		public SortExpression(QueryField field, SortOrder direction){
+			this.field = field;
+			this.direction = direction;
+		}
+		public String toSOQL(){
+			return field + ' ' + (direction == SortOrder.ASCENDING ? 'ASC' : 'DESC');
+		}
+	}	
+
+	public class QueryField{
 		List<Schema.SObjectField> fields;
+
+		/**
+		 * The first field in the path to to field being queried
+		 **/
+		public SObjectField getBaseField(){
+			return fields[0];
+		}
+		 
+		/**
+		 * The full list of fields representing the path to the field being queried
+		 **/
+		public List<SObjectField> getFieldPath(){
+			return fields.clone();
+		}
 
 		@testVisible 
 		private QueryField(Schema.SObjectType table, List<Schema.SObjectField> fields){

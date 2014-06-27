@@ -7,6 +7,7 @@
         <members>fflib_SObjectDescribeTest</members>
         <members>fflib_SObjectDomain</members>
         <members>fflib_SObjectDomainTest</members>
+        <members>fflib_SObjectDomainTestCases</members>
         <members>fflib_SObjectSelector</members>
         <members>fflib_SObjectSelectorTest</members>
         <members>fflib_SObjectUnitOfWork</members>

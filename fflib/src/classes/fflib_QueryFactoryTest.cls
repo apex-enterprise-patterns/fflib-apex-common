@@ -206,13 +206,14 @@ private class fflib_QueryFactoryTest {
 		System.assertNotEquals(null,e);
 	}
 
+	//Constructing a queryfield with no fields should never happen, but queryfield protects against it anyways
 	@isTest
 	static void invalidFields_noQueryFields(){
 		Exception e;
 		List<Schema.SObjectField> sObjectFields = new List<Schema.SObjectField>();
 		try {
 			fflib_QueryFactory.QueryField qfld = new fflib_QueryFactory.QueryField(Contact.SObjectType, sObjectFields);
-		} catch (Exception ex) {
+		} catch (fflib_QueryFactory.InvalidFieldException ex) {
 			e = ex;
 		}	  
 		System.assertNotEquals(null,e);
@@ -271,21 +272,11 @@ private class fflib_QueryFactoryTest {
         tsk.Subject = 'test';
         tsk.ActivityDate = System.today();
         insert tsk;
+
 		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
-		qf.selectField('name');
-		qf.selectField('Id');
-		qf.setCondition( 'name like \'%test%\'' );
-		qf.addOrdering( new fflib_QueryFactory.Ordering('Contact','name',fflib_QueryFactory.SortOrder.ASCENDING) ).addOrdering( new fflib_QueryFactory.Ordering('Contact','CreatedDate',fflib_QueryFactory.SortOrder.DESCENDING) );
+		qf.selectField('name').selectField('Id').setCondition( 'name like \'%test%\'' ).addSort('CreatedDate',fflib_QueryFactory.SortOrder.DESCENDING);
 		Schema.DescribeSObjectResult descResult = Contact.SObjectType.getDescribe();
-       	ChildRelationship relationship;
-        for (Schema.ChildRelationship childRow : descResult.getChildRelationships()) {
-            if (childRow.getRelationshipName() == 'Tasks') {
-                relationship = childRow;
-            }
-        }
-		fflib_QueryFactory childQf = qf.subselectQuery(relationship);
-		childQf.selectField('Id');
-		childQf.selectField('Subject');
+		qf.subselectQuery(Task.SObjectType).selectField('Id').selectField('Subject').setCondition(' IsDeleted = false ');
 		List<fflib_QueryFactory> queries = qf.getSubselectQueries();
 		System.assert(queries != null);
 		String query = qf.toSOQL();
@@ -314,7 +305,7 @@ private class fflib_QueryFactoryTest {
 		qf.selectField('name');
 		qf.selectField('Id');
 		qf.setCondition( 'name like \'%test%\'' );
-		qf.addOrdering( new fflib_QueryFactory.Ordering('Contact','name',fflib_QueryFactory.SortOrder.ASCENDING) ).addOrdering( new fflib_QueryFactory.Ordering('Contact','CreatedDate',fflib_QueryFactory.SortOrder.DESCENDING) );
+		qf.addOrdering( new fflib_QueryFactory.Ordering('Contact','name',fflib_QueryFactory.SortOrder.ASCENDING) ).addSort('CreatedBy.Name',fflib_QueryFactory.SortOrder.DESCENDING);
 		Schema.DescribeSObjectResult descResult = Contact.SObjectType.getDescribe();
        	ChildRelationship relationship;
         for (Schema.ChildRelationship childRow : descResult.getChildRelationships()) {
@@ -323,8 +314,8 @@ private class fflib_QueryFactoryTest {
             }
         }
         System.assert(qf.getSubselectQueries() == null);
-		fflib_QueryFactory childQf = qf.subselectQuery(relationship);
-		fflib_QueryFactory childQf2 = qf.subselectQuery(relationship);
+		fflib_QueryFactory childQf = qf.subselectQuery(Task.SObjectType);
+		fflib_QueryFactory childQf2 = qf.subselectQuery(Task.SObjectType);
 		List<fflib_QueryFactory> queries = qf.getSubselectQueries();
 		System.assert(queries != null);
 		System.assert(queries.size() == 1);
@@ -344,17 +335,11 @@ private class fflib_QueryFactoryTest {
 		qf.selectField('name');
 		qf.selectField('email');
 		qf.setCondition( 'name like \'%test%\'' );
-		qf.addOrdering( new fflib_QueryFactory.Ordering('Contact','name',fflib_QueryFactory.SortOrder.ASCENDING) ).addOrdering( new fflib_QueryFactory.Ordering('Contact','CreatedDATE',fflib_QueryFactory.SortOrder.DESCENDING) );
+		qf.addOrdering( new fflib_QueryFactory.Ordering('Contact','name',fflib_QueryFactory.SortOrder.ASCENDING) ).addSort( 'CreatedDATE',fflib_QueryFactory.SortOrder.DESCENDING);
 		Schema.DescribeSObjectResult descResult = Account.SObjectType.getDescribe();
-       	ChildRelationship relationship;
-        for (Schema.ChildRelationship childRow : descResult.getChildRelationships()) {
-            if (childRow.getRelationshipName() == 'Contacts') {
-                relationship = childRow;
-            }
-        }
         Exception e;
 		try {
-			fflib_QueryFactory childQf = qf.subselectQuery(relationship);
+			fflib_QueryFactory childQf = qf.subselectQuery(Contact.SObjectType);
 			childQf.selectField('Id');
 		} catch (Exception ex) {
 			e = ex;
@@ -377,25 +362,47 @@ private class fflib_QueryFactoryTest {
 		qf.selectField('name');
 		qf.selectField('email');
 		qf.setCondition( 'name like \'%test%\'' );
-		qf.addOrdering( new fflib_QueryFactory.Ordering('Contact','name',fflib_QueryFactory.SortOrder.ASCENDING) ).addOrdering( new fflib_QueryFactory.Ordering('Contact','CreatedDATE',fflib_QueryFactory.SortOrder.DESCENDING) );
+		qf.addOrdering( new fflib_QueryFactory.Ordering('Contact','name',fflib_QueryFactory.SortOrder.ASCENDING) ).addSort('CreatedDATE',fflib_QueryFactory.SortOrder.DESCENDING);
 		Schema.DescribeSObjectResult descResult = Contact.SObjectType.getDescribe();
-       	ChildRelationship relationship;
-        for (Schema.ChildRelationship childRow : descResult.getChildRelationships()) {
-            if (childRow.getRelationshipName() == 'Tasks') {
-                relationship = childRow;
-            }
-        }
-		fflib_QueryFactory childQf = qf.subselectQuery(relationship);
+  
+		fflib_QueryFactory childQf = qf.subselectQuery(Task.SObjectType);
 		childQf.selectField('Id');
 		childQf.selectField('Subject');
 		Exception e;
 		try {
-			fflib_QueryFactory subChildQf = childQf.subselectQuery(relationship);
+			fflib_QueryFactory subChildQf = childQf.subselectQuery(Task.SObjectType);
 		} catch (Exception ex) {
-			e = ex;
+			e = ex;   
 		}	
 		System.assertNotEquals(e, null);
 		System.assert(e.getMessage().containsIgnoreCase('invalid'));
 		System.assert(e.getMessage().containsIgnoreCase('subselect query'));
 	}
+
+	@isTest
+	static void checkFieldObjectRead(){
+		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
+		qf.assertCRUD()
+		  .setEnforceFLS(true) 
+		  .selectField('createdby.name')
+		  .selectField(Contact.LastModifiedById)
+		  .selectFields(new List<SObjectField>{Contact.LastModifiedDate})
+		  .setEnforceFLS(false)
+		  .selectField(Contact.LastName)
+		  .selectFields(new List<SObjectField>{Contact.Id})
+		  .setCondition( 'name like \'%test%\'' )
+		  .selectFields(new Set<SObjectField>{Contact.FirstName})
+		  .addOrdering(new fflib_QueryFactory.Ordering('Contact','name',fflib_QueryFactory.SortOrder.ASCENDING) )
+		  .addSort(Contact.LastModifiedDate,fflib_QueryFactory.SortOrder.DESCENDING);
+		qf.getSelectedFields();  
+		qf.toSOQL();
+	}  
+
+	@isTest
+	static void queryWithNoFields(){
+		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
+		qf.assertCRUD().setEnforceFLS(true).setCondition( 'name like \'%test%\'' ).addSort('CreatedDate',fflib_QueryFactory.SortOrder.DESCENDING);
+		String query = qf.toSOQL();
+		System.assert(query.containsIgnoreCase('Id FROM'));
+	}  
 }

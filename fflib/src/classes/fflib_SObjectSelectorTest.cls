@@ -67,12 +67,12 @@ private with sharing class fflib_SObjectSelectorTest
 		Test.stopTest();
 		
 		system.assertEquals(2,result.size());
-		system.assertEquals('TestAccount1',result[0].Name);
-		system.assertEquals('A1',result[0].AccountNumber);
-		system.assertEquals(76543.21,result[0].AnnualRevenue);
-		system.assertEquals('TestAccount2',result[1].Name);
-		system.assertEquals('A2',result[1].AccountNumber);
-		system.assertEquals(12345.67,result[1].AnnualRevenue);
+		system.assertEquals('TestAccount2',result[0].Name);
+		system.assertEquals('A2',result[0].AccountNumber);
+		system.assertEquals(12345.67,result[0].AnnualRevenue);
+		system.assertEquals('TestAccount1',result[1].Name);
+		system.assertEquals('A1',result[1].AccountNumber);
+		system.assertEquals(76543.21,result[1].AnnualRevenue);
 	}
 
 	static testMethod void testQueryLocatorById()
@@ -94,14 +94,14 @@ private with sharing class fflib_SObjectSelectorTest
 
 		System.assert(true, iteratorResult.hasNext());
 		Account account = (Account) iteratorResult.next();
-		system.assertEquals('TestAccount1',account.Name);
-		system.assertEquals('A1',account.AccountNumber);
-		system.assertEquals(76543.21,account.AnnualRevenue);				
-		System.assert(true, iteratorResult.hasNext());
-		account = (Account) iteratorResult.next();
 		system.assertEquals('TestAccount2',account.Name);
 		system.assertEquals('A2',account.AccountNumber);
 		system.assertEquals(12345.67,account.AnnualRevenue);				
+		System.assert(true, iteratorResult.hasNext());
+		account = (Account) iteratorResult.next();
+		system.assertEquals('TestAccount1',account.Name);
+		system.assertEquals('A1',account.AccountNumber);
+		system.assertEquals(76543.21,account.AnnualRevenue);				
 		System.assertEquals(false, iteratorResult.hasNext());
 	}
 	
@@ -133,9 +133,66 @@ private with sharing class fflib_SObjectSelectorTest
 			}
 		}
 	}
+
+	static testMethod void testCRUDOff()
+	{
+		List<Account> accountList = new List<Account> {
+			new Account(Name='TestAccount2',AccountNumber='A2',AnnualRevenue=12345.67),
+			new Account(Name='TestAccount1',AccountNumber='A1',AnnualRevenue=76543.21) };		
+		insert accountList;		
+		Set<Id> idSet = new Set<Id>();
+		for(Account item : accountList)
+			idSet.add(item.Id);
+		
+		// Create a user which will not have access to the test object type
+		User testUser = createChatterExternalUser();
+		if(testUser==null)
+			return; // Abort the test if unable to create a user with low enough acess
+		System.runAs(testUser)
+		{					
+			Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector(false, false, false);
+			try
+			{
+				List<Account> result = (List<Account>) selector.selectSObjectsById(idSet);
+			}
+			catch(fflib_SObjectDomain.DomainException e)
+			{
+				System.assert(false,'Did not expect an exception to be thrown');
+			}
+		}
+	}
+	
+	static testMethod void testSOQL()
+	{
+		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
+		System.assertEquals('SELECT AccountNumber, AnnualRevenue, Id, Name FROM Account ORDER BY Name DESC, AnnualRevenue ASC', selector.newQueryFactory().toSOQL());
+	}
+	
+	static testMethod void testDefaultConfig()
+	{
+		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
+		System.assertEquals(false, selector.isEnforcingFLS());
+		System.assertEquals(true, selector.isEnforcingCRUD());
+		System.assertEquals(false, selector.isIncludeFieldSetFields());
+		System.assertEquals('Name,AccountNumber,Id,AnnualRevenue', selector.getFieldListBuilder().getStringValue());
+		System.assertEquals('Name,AccountNumber,Id,AnnualRevenue', selector.getFieldListString());
+		System.assertEquals('LookupField__r.Name,LookupField__r.AccountNumber,LookupField__r.Id,LookupField__r.AnnualRevenue', selector.getRelatedFieldListString('LookupField__r'));
+		System.assertEquals('Account', selector.getSObjectName());
+		System.assertEquals(Account.SObjectType, selector.getSObjectType2());
+	}
 	
 	private class Testfflib_SObjectSelector extends fflib_SObjectSelector
 	{
+		public Testfflib_SObjectSelector()
+		{
+			super();
+		}
+
+		public Testfflib_SObjectSelector(Boolean includeFieldSetFields, Boolean enforceCRUD, Boolean enforceFLS)
+		{
+			super(includeFieldSetFields, enforceCRUD, enforceFLS);
+		}
+		
 		public List<Schema.SObjectField> getSObjectFieldList()
 		{
 			return new List<Schema.SObjectField> {
@@ -149,6 +206,11 @@ private with sharing class fflib_SObjectSelectorTest
 		public Schema.SObjectType getSObjectType()
 		{
 			return Account.sObjectType;
+		}
+		
+		public override String getOrderBy()
+		{
+			return 'Name DESC, AnnualRevenue ASC';
 		}
 	}
 	
