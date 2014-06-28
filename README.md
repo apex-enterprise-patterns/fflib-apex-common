@@ -18,6 +18,10 @@ Implementing FLS checking generically in Apex code is hard on the Force.com plat
 - The **Domain layer** checks **update** security at object and field level, since during the Apex Trigger handling, it has access to existing records and field values (via Trigger.old) it can determine dynamically which fields have been changed. This is only performed if it is able to determine that there is an outer Unit of Work commit in progress. Note that historically the Domain layer has always been checking create, update and delete object security.
 - The **Selector layer** has been updated in the main branch to utilise the amazing fflib_QueryFactory, which also now supports **read** security at the object and field level. This can be enabled by passing the approprite parameter to the Selector constructor or by calling the approprite method on the QueryFactory class.
 
+This class diagram shows how the various pattern base classes interact with the **fflib_SecurityUtils** and **fflib_QueryFactory** classes described in more detail in this [blog](http://andyinthecloud.com/2014/06/28/financialforce-apex-common-updates/).
+
+![alt tag](https://andrewfawcett.files.wordpress.com/2014/06/flspocclassdiagram.png)
+
 **Current Result...**
 
 The above allows the [existing sample application](https://github.com/financialforcedev/fflib-apex-common-samplecode) to support CRUD and FLS checking without any code changes! Which is one of the aims of this experiment, should Salesforce add **platform support** for this in the future we want to minimise changes to the framework code only.
