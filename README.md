@@ -26,7 +26,7 @@ This class diagram shows how the various pattern base classes updated in this br
 
 The above allows the [existing sample application](https://github.com/financialforcedev/fflib-apex-common-samplecode) to support CRUD and FLS checking without any code changes! Which is one of the aims of this experiment, should Salesforce add **platform support** for this in the future we want to minimise changes to the framework code only.
 
-So far so good.... but both the Unit of Work and Domain layer require knowledge of which fields have been populated on the SObject passed to them. This is not as easy as you might think, see [fflib_SObjectDomain.resolvePopulatedFields](https://github.com/financialforcedev/fflib-apex-common/blob/fls-support-experiment/fflib/src/classes/fflib_SObjectDomain.cls#L258) method. I'll be going into the pros and cons of this experiment in a blog post coming soon!
+So far so good.... but both the Unit of Work and Domain layer **require knowledge of which fields have been populated on the SObjects** passed to them. This is not as easy or straightforward as you might think, see [fflib_SObjectDomain.resolvePopulatedFields](https://github.com/financialforcedev/fflib-apex-common/blob/fls-support-experiment/fflib/src/classes/fflib_SObjectDomain.cls#L258) method. I'll be going into the pros and cons of this experiment in a blog post coming soon!
 
 This Library
 ============
