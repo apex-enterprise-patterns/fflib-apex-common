@@ -1,5 +1,5 @@
-FinancialForce Common Apex Lib
-==============================
+FinancialForce Apex Common
+==========================
 
 **[Deploy to Salesforce](https://githubsfdeploy.herokuapp.com/app/githubdeploy/financialforcedev/fflib-apex-common)**
 
