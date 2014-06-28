@@ -1,7 +1,7 @@
 FinancialForce Common Apex Lib
 ==============================
 
-**[Deploy to Salesforce](https://githubsfdeploy.herokuapp.com/app/githubdeploy/financialforcedev/fflib-apex-common)**
+**NOTE:** The GitHub Deploy to Salesforce tool does not work with branches currently, to try this out clone the repo and deploy via MavensMate or by dragging into an Eclipse workspace. Then use the Deploy to Salesforce link on the sample application repo Readme as normal.
 
 See here for [MavensMate Templates](http://andyinthecloud.com/2014/05/23/mavensmate-templates-and-apex-enterprise-patterns/)
 
