@@ -218,7 +218,7 @@ public abstract with sharing class fflib_SObjectSelector
     {
         if(!getSObjectType().getDescribe().isAccessible())
            throw new fflib_SObjectDomain.DomainException(
-                'Permission to access an ' + getSObjectType().getDescribe().getName() + ' dennied.');       
+                'Permission to access an ' + getSObjectType().getDescribe().getName() + ' denied.');       
     }
 
     /**
@@ -318,7 +318,7 @@ public abstract with sharing class fflib_SObjectSelector
         	} catch (fflib_SecurityUtils.CrudException e) {
         		// Marshal exception into DomainException for backwards compatability
 				throw new fflib_SObjectDomain.DomainException(
-	                'Permission to access an ' + getSObjectType().getDescribe().getName() + ' dennied.');               		
+	                'Permission to access an ' + getSObjectType().getDescribe().getName() + ' denied.');               		
         	}
         }
         queryFactory.setEnforceFLS(enforceFLS);
