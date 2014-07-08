@@ -129,7 +129,7 @@ private with sharing class fflib_SObjectSelectorTest
 			}
 			catch(fflib_SObjectDomain.DomainException e)
 			{
-				System.assertEquals('Permission to access an Account dennied.',e.getMessage());
+				System.assertEquals('Permission to access an Account denied.',e.getMessage());
 			}
 		}
 	}
@@ -197,8 +197,8 @@ private with sharing class fflib_SObjectSelectorTest
 		{
 			return new List<Schema.SObjectField> {
 				Account.Name,
-				Account.Id,
 				Account.AccountNumber,
+				Account.Id,
 				Account.AnnualRevenue
 			};
 		}
