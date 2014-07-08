@@ -102,7 +102,7 @@ public abstract with sharing class fflib_SObjectSelector
      **/
     public virtual String getOrderBy()
     {
-        return 'Name';
+        return 'CreatedDate';
     }
 
     /** 
