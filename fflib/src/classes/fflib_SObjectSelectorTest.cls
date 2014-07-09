@@ -40,7 +40,7 @@ private with sharing class fflib_SObjectSelectorTest
 		system.assert(fieldSet.contains('AnnualRevenue'));
 		if(UserInfo.isMultiCurrencyOrganization())
 			system.assert(fieldSet.contains('CurrencyIsoCode'));
-		system.assertEquals('myprefix.Name,myprefix.Id,myprefix.AccountNumber,myprefix.AnnualRevenue', selector.getRelatedFieldListString('myprefix'));
+		system.assertEquals('myprefix.AccountNumber,myprefix.AnnualRevenue,myprefix.Id,myprefix.Name', selector.getRelatedFieldListString('myprefix'));
 	}
 	
 	static testMethod void testGetSObjectName()
@@ -129,7 +129,7 @@ private with sharing class fflib_SObjectSelectorTest
 			}
 			catch(fflib_SObjectDomain.DomainException e)
 			{
-				System.assertEquals('Permission to access an Account dennied.',e.getMessage());
+				System.assertEquals('Permission to access an Account denied.',e.getMessage());
 			}
 		}
 	}
@@ -174,9 +174,9 @@ private with sharing class fflib_SObjectSelectorTest
 		System.assertEquals(false, selector.isEnforcingFLS());
 		System.assertEquals(true, selector.isEnforcingCRUD());
 		System.assertEquals(false, selector.isIncludeFieldSetFields());
-		System.assertEquals('Name,AccountNumber,Id,AnnualRevenue', selector.getFieldListBuilder().getStringValue());
-		System.assertEquals('Name,AccountNumber,Id,AnnualRevenue', selector.getFieldListString());
-		System.assertEquals('LookupField__r.Name,LookupField__r.AccountNumber,LookupField__r.Id,LookupField__r.AnnualRevenue', selector.getRelatedFieldListString('LookupField__r'));
+		System.assertEquals('AccountNumber,AnnualRevenue,Id,Name', selector.getFieldListBuilder().getStringValue());
+		System.assertEquals('AccountNumber,AnnualRevenue,Id,Name', selector.getFieldListString());
+		System.assertEquals('LookupField__r.AccountNumber,LookupField__r.AnnualRevenue,LookupField__r.Id,LookupField__r.Name', selector.getRelatedFieldListString('LookupField__r'));
 		System.assertEquals('Account', selector.getSObjectName());
 		System.assertEquals(Account.SObjectType, selector.getSObjectType2());
 	}
