@@ -48,7 +48,42 @@ public abstract with sharing class fflib_SObjectSelector
      * Enforce CRUD Security
      **/
    	private Boolean m_enforceCRUD;
-    
+   	
+   /**
+   * Describe helper
+   **/
+   	private fflib_SObjectDescribe describeWrapper
+   	{
+   		get
+   		{
+   			if(describeWrapper == null)
+   				describeWrapper = fflib_SObjectDescribe.getDescribe(getSObjectType());
+   			return describeWrapper;
+   		}
+   		set;
+   	}
+   	
+    /**
+    * Order by field
+    **/
+    	private String orderBy
+   	{
+   		get
+   		{
+   			if(orderBy == null)
+   			{
+   				orderBy = 'CreatedDate';
+   				
+   				if(describeWrapper.getNameField() != null)
+			    	{
+			    		orderBy = describeWrapper.getNameField().getDescribe().getName();
+			    	}
+			}
+   			return orderBy;
+   		}
+   		set;
+   	}
+  
     /**
      * Implement this method to inform the base class of the SObject (custom or standard) to be queried
      **/
@@ -98,11 +133,12 @@ public abstract with sharing class fflib_SObjectSelector
     }
     
     /**
-     * Override this method to control the default ordering of records returned by the base queries, defaults to Name
+     * Override this method to control the default ordering of records returned by the base queries, 
+     * defaults to the name field of the object or CreatedDate if there is none
      **/
     public virtual String getOrderBy()
     {
-        return 'CreatedDate';
+        return orderBy;
     }
 
     /** 
@@ -180,7 +216,7 @@ public abstract with sharing class fflib_SObjectSelector
      **/
     public String getSObjectName()
     {
-        return getSObjectType().getDescribe().getName();
+        return describeWrapper.getDescribe().getName();
     }
     
     /**
