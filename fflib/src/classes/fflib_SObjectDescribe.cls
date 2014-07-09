@@ -72,6 +72,20 @@ public class fflib_SObjectDescribe {
 		}
 		set;
 	}
+	private Schema.SObjectField nameField {
+		get{
+			if(nameField == null) {
+				for(Schema.SObjectField field : wrappedFields.values()) {
+					if(field.getDescribe().isNameField()) {
+						nameField = field;
+						break;
+					}
+				}
+			}
+			return nameField;
+		}
+		set;
+	}
 	private fflib_SObjectDescribe(Schema.SObjectType token){	
 		if(token == null)
 			throw new InvalidDescribeException('Invalid SObject type: null');
@@ -111,17 +125,6 @@ public class fflib_SObjectDescribe {
 	**/
 	public Schema.SObjectField getNameField()
 	{
-		Schema.SObjectField nameField = null;
-		
-		for(Schema.SObjectField field : wrappedFields.values())
-		{
-			if(field.getDescribe().isNameField())
-			{
-				nameField = field;
-				break;
-			}
-		}
-		
 		return nameField;
 	}
 	
