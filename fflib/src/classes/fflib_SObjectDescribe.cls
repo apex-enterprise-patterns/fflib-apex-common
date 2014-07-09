@@ -105,6 +105,26 @@ public class fflib_SObjectDescribe {
 		}
 		return result;
 	}
+	
+	/**
+	* Returns the field where isNameField() is true (if any); otherwise returns null
+	**/
+	public Schema.SObjectField getNameField()
+	{
+		Schema.SObjectField nameField = null;
+		
+		for(Schema.SObjectField field : wrappedFields.values())
+		{
+			if(field.getDescribe().isNameField())
+			{
+				nameField = field;
+				break;
+			}
+		}
+		
+		return nameField;
+	}
+	
 	/**
 	 * Returns the raw Schema.DescribeSObjectResult an fflib_SObjectDescribe instance wraps.
 	**/
