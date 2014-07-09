@@ -52,10 +52,8 @@ public abstract with sharing class fflib_SObjectSelector
    /**
    * Describe helper
    **/
-   	private fflib_SObjectDescribe describeWrapper
-   	{
-   		get
-   		{
+   	private fflib_SObjectDescribe describeWrapper {
+   		get {
    			if(describeWrapper == null)
    				describeWrapper = fflib_SObjectDescribe.getDescribe(getSObjectType());
    			return describeWrapper;
@@ -66,16 +64,11 @@ public abstract with sharing class fflib_SObjectSelector
     /**
     * Order by field
     **/
-    	private String orderBy
-   	{
-   		get
-   		{
-   			if(orderBy == null)
-   			{
+    	private String orderBy {
+   		get {
+   			if(orderBy == null) {
    				orderBy = 'CreatedDate';
-   				
-   				if(describeWrapper.getNameField() != null)
-			    	{
+   				if(describeWrapper.getNameField() != null) {
 			    		orderBy = describeWrapper.getNameField().getDescribe().getName();
 			    	}
 			}
