@@ -39,7 +39,7 @@
 public class fflib_SObjectDescribe {
 	//internal implementation details
 	private Schema.SObjectType token;
-	private String nameField;
+	private Schema.SObjectField nameField;
 	private Schema.DescribeSObjectResult describe { //lazy load - keep this leightweight until we need more data
 		get{
 			if(describe == null)
