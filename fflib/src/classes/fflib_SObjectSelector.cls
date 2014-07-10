@@ -50,6 +50,11 @@ public abstract with sharing class fflib_SObjectSelector
    	private Boolean m_enforceCRUD;
    	
    /**
+    * Order by field
+    **/
+    	private String m_orderBy;
+  
+   /**
    * Describe helper
    **/
    	private fflib_SObjectDescribe describeWrapper {
@@ -61,22 +66,6 @@ public abstract with sharing class fflib_SObjectSelector
    		set;
    	}
    	
-    /**
-    * Order by field
-    **/
-    	private String orderBy {
-   		get {
-   			if(orderBy == null) {
-   				orderBy = 'CreatedDate';
-   				if(describeWrapper.getNameField() != null) {
-			    		orderBy = describeWrapper.getNameField().getDescribe().getName();
-			    	}
-			}
-   			return orderBy;
-   		}
-   		set;
-   	}
-  
     /**
      * Implement this method to inform the base class of the SObject (custom or standard) to be queried
      **/
@@ -131,7 +120,13 @@ public abstract with sharing class fflib_SObjectSelector
      **/
     public virtual String getOrderBy()
     {
-        return orderBy;
+        if(m_orderBy == null) {
+   		m_orderBy = 'CreatedDate';
+   		if(describeWrapper.getNameField() != null) {
+	    		m_orderBy = describeWrapper.getNameField().getDescribe().getName();
+	    	}
+	}
+   	return m_orderBy;
     }
 
     /** 
