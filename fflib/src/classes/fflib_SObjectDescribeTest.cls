@@ -112,6 +112,13 @@ private class fflib_SObjectDescribeTest {
 		System.assertEquals(1, Limits.getFieldSetsDescribes() );
 		//no asserts on result size to avoid a requirement on field sets existing
 	}
+	
+	@isTest
+    	static void simpleAccountGetNameField(){
+        	fflib_SObjectDescribe d = fflib_SObjectDescribe.getDescribe(Account.SObjectType);
+        	Schema.SObjectField nameField = d.getNameField();
+        	System.assertEquals('Name', nameField.getDescribe().getName());
+	}
 
 	@isTest
 	static void flushCache(){

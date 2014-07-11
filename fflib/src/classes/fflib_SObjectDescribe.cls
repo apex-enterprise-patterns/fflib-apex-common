@@ -39,6 +39,7 @@
 public class fflib_SObjectDescribe {
 	//internal implementation details
 	private Schema.SObjectType token;
+	private Schema.SObjectField nameField;
 	private Schema.DescribeSObjectResult describe { //lazy load - keep this leightweight until we need more data
 		get{
 			if(describe == null)
@@ -72,6 +73,7 @@ public class fflib_SObjectDescribe {
 		}
 		set;
 	}
+
 	private fflib_SObjectDescribe(Schema.SObjectType token){	
 		if(token == null)
 			throw new InvalidDescribeException('Invalid SObject type: null');
@@ -105,6 +107,23 @@ public class fflib_SObjectDescribe {
 		}
 		return result;
 	}
+	
+	/**
+	* Returns the field where isNameField() is true (if any); otherwise returns null
+	**/
+	public Schema.SObjectField getNameField()
+	{
+		if(nameField == null) {
+			for(Schema.SObjectField field : wrappedFields.values()) {
+				if(field.getDescribe().isNameField()) {
+					nameField = field;
+					break;
+				}
+			}
+		}
+		return nameField;
+	}
+	
 	/**
 	 * Returns the raw Schema.DescribeSObjectResult an fflib_SObjectDescribe instance wraps.
 	**/
