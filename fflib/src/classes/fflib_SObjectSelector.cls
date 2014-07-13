@@ -314,7 +314,7 @@ public abstract with sharing class fflib_SObjectSelector
         {
         	try { 
         		// Leverage QueryFactory for CRUD checking 
-        		queryFactory.assertCRUD();
+        		queryFactory.assertIsAccessible();
         	} catch (fflib_SecurityUtils.CrudException e) {
         		// Marshal exception into DomainException for backwards compatability
 				throw new fflib_SObjectDomain.DomainException(
@@ -352,7 +352,7 @@ public abstract with sharing class fflib_SObjectSelector
                 fieldSortOrder = fflib_QueryFactory.SortOrder.DESCENDING;
             else if(fieldSortOrderPart.equalsIgnoreCase('ASC'))
                 fieldSortOrder = fflib_QueryFactory.SortOrder.ASCENDING;
-            queryFactory.addSort(fieldNamePart, fieldSortOrder);
+            queryFactory.addOrdering(fieldNamePart, fieldSortOrder);
         }           
                 
         return queryFactory;    
