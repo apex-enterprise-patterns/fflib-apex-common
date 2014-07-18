@@ -168,8 +168,8 @@ private with sharing class fflib_SObjectSelectorTest
 	static testMethod void testSOQL()
 	{
 		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
-		String soql = Userinfo.isMultiCurrencyOrganization() ? 'SELECT AccountNumber, CurrencyIsoCode, AnnualRevenue, Id, Name FROM Account ORDER BY Name DESC, AnnualRevenue ASC'
-            		: 'SELECT AccountNumber, AnnualRevenue, Id, Name FROM Account ORDER BY Name DESC, AnnualRevenue ASC';
+		String soql = Userinfo.isMultiCurrencyOrganization() ? 'SELECT AccountNumber, CurrencyIsoCode, AnnualRevenue, Id, Name FROM Account ORDER BY Name DESC NULLS FIRST , AnnualRevenue ASC NULLS FIRST '
+            		: 'SELECT AccountNumber, AnnualRevenue, Id, Name FROM Account ORDER BY Name DESC NULLS FIRST , AnnualRevenue ASC NULLS FIRST ';
         	System.assertEquals(soql, selector.newQueryFactory().toSOQL());
 	}
 	
