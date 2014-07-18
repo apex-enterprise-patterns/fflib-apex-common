@@ -33,14 +33,17 @@ private with sharing class fflib_SObjectSelectorTest
 		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
 		List<String> fieldList = selector.getFieldListString().split(',');
 		Set<String> fieldSet = new Set<String>(fieldList);
-		system.assertEquals(4, fieldSet.size());
+		system.assertEquals(Userinfo.isMultiCurrencyOrganization() ? 5 : 4, fieldSet.size());
 		system.assert(fieldSet.contains('Name'));
 		system.assert(fieldSet.contains('Id'));
 		system.assert(fieldSet.contains('AccountNumber'));
 		system.assert(fieldSet.contains('AnnualRevenue'));
 		if(UserInfo.isMultiCurrencyOrganization())
 			system.assert(fieldSet.contains('CurrencyIsoCode'));
-		system.assertEquals('myprefix.AccountNumber,myprefix.AnnualRevenue,myprefix.Id,myprefix.Name', selector.getRelatedFieldListString('myprefix'));
+		
+		String relatedFieldListString = Userinfo.isMultiCurrencyOrganization() ? 'myprefix.AccountNumber,myprefix.CurrencyIsoCode,myprefix.AnnualRevenue,myprefix.Id,myprefix.Name'
+            		: 'myprefix.AccountNumber,myprefix.AnnualRevenue,myprefix.Id,myprefix.Name';
+		system.assertEquals(relatedFieldListString, selector.getRelatedFieldListString('myprefix'));
 	}
 	
 	static testMethod void testGetSObjectName()
@@ -165,7 +168,9 @@ private with sharing class fflib_SObjectSelectorTest
 	static testMethod void testSOQL()
 	{
 		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
-		System.assertEquals('SELECT AccountNumber, AnnualRevenue, Id, Name FROM Account ORDER BY Name DESC, AnnualRevenue ASC', selector.newQueryFactory().toSOQL());
+		String soql = Userinfo.isMultiCurrencyOrganization() ? 'SELECT AccountNumber, CurrencyIsoCode, AnnualRevenue, Id, Name FROM Account ORDER BY Name DESC, AnnualRevenue ASC'
+            		: 'SELECT AccountNumber, AnnualRevenue, Id, Name FROM Account ORDER BY Name DESC, AnnualRevenue ASC';
+        	System.assertEquals(soql, selector.newQueryFactory().toSOQL());
 	}
 	
 	static testMethod void testDefaultConfig()
@@ -174,9 +179,16 @@ private with sharing class fflib_SObjectSelectorTest
 		System.assertEquals(false, selector.isEnforcingFLS());
 		System.assertEquals(true, selector.isEnforcingCRUD());
 		System.assertEquals(false, selector.isIncludeFieldSetFields());
-		System.assertEquals('AccountNumber,AnnualRevenue,Id,Name', selector.getFieldListBuilder().getStringValue());
-		System.assertEquals('AccountNumber,AnnualRevenue,Id,Name', selector.getFieldListString());
-		System.assertEquals('LookupField__r.AccountNumber,LookupField__r.AnnualRevenue,LookupField__r.Id,LookupField__r.Name', selector.getRelatedFieldListString('LookupField__r'));
+		
+		String fieldListString = Userinfo.isMultiCurrencyOrganization() ? 'AccountNumber,CurrencyIsoCode,AnnualRevenue,Id,Name'
+            		: 'AccountNumber,AnnualRevenue,Id,Name';
+        	System.assertEquals(fieldListString, selector.getFieldListBuilder().getStringValue());
+		System.assertEquals(fieldListString, selector.getFieldListString());
+		
+		String relatedFieldListString = Userinfo.isMultiCurrencyOrganization() ? 'LookupField__r.AccountNumber,LookupField__r.CurrencyIsoCode,LookupField__r.AnnualRevenue,LookupField__r.Id,LookupField__r.Name'
+            		: 'LookupField__r.AccountNumber,LookupField__r.AnnualRevenue,LookupField__r.Id,LookupField__r.Name';
+		System.assertEquals(relatedFieldListString, selector.getRelatedFieldListString('LookupField__r'));
+		
 		System.assertEquals('Account', selector.getSObjectName());
 		System.assertEquals(Account.SObjectType, selector.getSObjectType2());
 	}
