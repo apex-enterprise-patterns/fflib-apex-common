@@ -185,8 +185,9 @@ public virtual with sharing class fflib_SObjectDomain
     {    	
     	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isUpdateable()) 			    		
     	   throw new DomainException('Permission to udpate an ' + SObjectDescribe.getName() + ' denied.');
-    	   
-    	onValidate();
+    	
+    	if(Configuration.OldOnUpdateValidateBehaviour)
+    		onValidate();
     	onValidate(existingRecords);
     	onAfterUpdate(existingRecords); 
     }
@@ -322,6 +323,10 @@ public virtual with sharing class fflib_SObjectDomain
 	 **/
 	public class Configuration
 	{
+		/** 
+		 * Backwards compatability mode for handleAfterUpdate routing to onValidate()
+		 **/
+		public Boolean OldOnUpdateValidateBehaviour {get; private set;}		
 		/**
 		 * True if the base class is checking the users CRUD requirements before invoking trigger methods
 		 **/ 
@@ -339,6 +344,7 @@ public virtual with sharing class fflib_SObjectDomain
 		{
 			EnforcingTriggerCRUDSecurity = true; // Default is true for backwards compatability
 			TriggerStateEnabled = false;
+			OldOnUpdateValidateBehaviour = false; // Breaking change, but felt to better practice
 		}
 		
 		/**
@@ -374,6 +380,24 @@ public virtual with sharing class fflib_SObjectDomain
 		public Configuration disableTriggerCRUDSecurity()
 		{
 			EnforcingTriggerCRUDSecurity = false;
+			return this;
+		}
+
+		/**
+		 * See associated property
+		 **/
+		public Configuration enableOldOnUpdateValidateBehaviour()
+		{
+			OldOnUpdateValidateBehaviour = true;
+			return this;
+		}
+
+		/**
+		 * See associated property
+		 **/
+		public Configuration disableOldOnUpdateValidateBehaviour()
+		{
+			OldOnUpdateValidateBehaviour = false;
 			return this;
 		}
 	}
@@ -711,5 +735,38 @@ public virtual with sharing class fflib_SObjectDomain
 		{
 			return new TestSObjectStatefulDomain(sObjectList);
 		}				
-	}				
+	}
+	
+	/**
+	 * Test domain class (ideally this would be in the test class, however Type.newInstance does not see such classes)
+	 **/
+	public with sharing class TestSObjectOnValidateBehaviour 
+		extends fflib_SObjectDomain 
+	{
+		public TestSObjectOnValidateBehaviour(List<Opportunity> sObjectList)
+		{
+			super(sObjectList);
+			
+			// Enable old behaviour based on the test Opportunity name passed in 
+			if(sObjectList[0].Name == 'Test Enable Old Behaviour')
+				Configuration.enableOldOnUpdateValidateBehaviour();
+		}
+		
+		public override void onValidate() 
+		{
+			// Throw exception to give the test somethign to assert on
+			throw new DomainException('onValidate called');
+		}
+	}	
+	
+	/**
+	 * Typically an inner class to the domain class, supported here for test purposes
+	 **/	
+	public class TestSObjectOnValidateBehaviourConstructor implements fflib_SObjectDomain.IConstructable
+	{
+		public fflib_SObjectDomain construct(List<SObject> sObjectList)
+		{
+			return new TestSObjectOnValidateBehaviour(sObjectList);
+		}				
+	}					
 }
