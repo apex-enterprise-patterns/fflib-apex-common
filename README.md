@@ -8,6 +8,7 @@ See here for [MavensMate Templates](http://andyinthecloud.com/2014/05/23/mavensm
 Updates
 =======
 
+- **July 2014**, **IMPORTANT CHANGE**, prior 23rd July, both the fflib_SObjectDomain.onValidate() and fflib_SObjectDomain.onValidate(Map<Id, SObject> existingRecords) methods where called during an on **after update** trigger event. From this point on the onValidate() method will only be called during on **after insert**. If you still require the orignal behaviour add the line Configuration.enableOldOnUpdateValidateBehaviour(); into your constructor.
 - **June 2014**, New classes providing utilities to support security and dynamic queries, in addition to improvements to existing Apex Enterprise Pattern base classes. Read more [here](http://andyinthecloud.com/2014/06/28/financialforce-apex-common-updates/).
 - **June 2014**, Experimental [branch](https://github.com/financialforcedev/fflib-apex-common/tree/fls-support-experiment) supporting automated FLS checking, see [README](https://github.com/financialforcedev/fflib-apex-common/tree/fls-support-experiment#expirimental-crud-and-fls-support) for more details.
 
