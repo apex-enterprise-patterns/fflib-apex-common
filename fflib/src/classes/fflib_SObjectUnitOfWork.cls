@@ -67,6 +67,8 @@ public virtual class fflib_SObjectUnitOfWork
 
 	private SendEmailWork m_emailWork = new SendEmailWork();
 	
+	private IDML m_dml;
+	
 	/**
 	 * Interface describes work to be performed during the commitWork method
 	 **/
@@ -75,12 +77,37 @@ public virtual class fflib_SObjectUnitOfWork
 		void doWork();
 	}
 
+	public interface IDML
+	{
+		void dmlInsert(List<SObject> objList);
+		void dmlUpdate(List<SObject> objList);
+		void dmlDelete(List<SObject> objList);
+	}
+	
+	public class SimpleDML implements IDML
+	{
+		public void dmlInsert(List<SObject> objList){
+			insert objList;
+		}
+		public void dmlUpdate(List<SObject> objList){
+			update objList;
+		}
+		public void dmlDelete(List<SObject> objList){
+			delete objList;
+		}
+	}
 	/**
 	 * Constructs a new UnitOfWork to support work against the given object list
 	 *
 	 * @param sObjectList A list of objects given in dependency order (least dependent first)
 	 */
 	public fflib_SObjectUnitOfWork(List<Schema.SObjectType> sObjectTypes)
+	{
+		this(sObjectTypes,new SimpleDML());
+	}
+
+
+	public fflib_SObjectUnitOfWork(List<Schema.SObjectType> sObjectTypes, IDML dml)
 	{
 		m_sObjectTypes = sObjectTypes.clone();
 			
@@ -93,6 +120,8 @@ public virtual class fflib_SObjectUnitOfWork
 		}
 
 		m_workList.add(m_emailWork);
+		
+		m_dml = dml;
 	}
 
 	/**
@@ -171,7 +200,7 @@ public virtual class fflib_SObjectUnitOfWork
 			throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
 		m_dirtyListByType.get(sObjectType).add(record);		
 	}
-	
+
 	/**
 	 * Register an existing record to be deleted during the commitWork method
 	 *
@@ -200,15 +229,15 @@ public virtual class fflib_SObjectUnitOfWork
 			for(Schema.SObjectType sObjectType : m_sObjectTypes)
 			{
 				m_relationships.get(sObjectType.getDescribe().getName()).resolve();
-				insert m_newListByType.get(sObjectType.getDescribe().getName());
+				m_dml.dmlInsert(m_newListByType.get(sObjectType.getDescribe().getName()));
 			}					
 			// Update by type
 			for(Schema.SObjectType sObjectType : m_sObjectTypes)
-				update m_dirtyListByType.get(sObjectType.getDescribe().getName());		
+				m_dml.dmlUpdate(m_dirtyListByType.get(sObjectType.getDescribe().getName()));		
 			// Delete by type (in reverse dependency order)
 			Integer objectIdx = m_sObjectTypes.size() - 1;
 			while(objectIdx>=0)
-				delete m_deletedListByType.get(m_sObjectTypes[objectIdx--].getDescribe().getName());
+				m_dml.dmlDelete(m_deletedListByType.get(m_sObjectTypes[objectIdx--].getDescribe().getName()));
 			// Generic work
 			for(IDoWork work : m_workList)
 				work.doWork();
