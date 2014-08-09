@@ -139,6 +139,58 @@ private with sharing class fflib_SObjectDomainTest
 		System.assertEquals(0, fflib_SObjectDomain.Errors.getAll().size());		
 	}
 	
+	@IsTest
+	private static void testTriggerState()
+	{
+		Opportunity opp = new Opportunity ( Name = 'Test', Type = 'Existing Account' );
+		fflib_SObjectDomain.Test.Database.onInsert(new Opportunity[] { opp } );		
+		fflib_SObjectDomain.triggerHandler(fflib_SObjectDomain.TestSObjectStatefulDomainConstructor.class);		
+		System.assertEquals(1, fflib_SObjectDomain.Errors.getAll().size());		
+		System.assertEquals('Error on Record Test', fflib_SObjectDomain.Errors.getAll()[0].message);
+	}	
+
+	@IsTest
+	private static void testRecursiveTriggerState()
+	{
+		Opportunity opp = new Opportunity ( Name = 'Test Recursive 1', Type = 'Existing Account' );
+		fflib_SObjectDomain.Test.Database.onInsert(new Opportunity[] { opp } );		
+		fflib_SObjectDomain.triggerHandler(fflib_SObjectDomain.TestSObjectStatefulDomainConstructor.class);		
+		System.assertEquals(2, fflib_SObjectDomain.Errors.getAll().size());		
+		System.assertEquals('Error on Record Test Recursive 2', fflib_SObjectDomain.Errors.getAll()[0].message);
+		System.assertEquals('Error on Record Test Recursive 1', fflib_SObjectDomain.Errors.getAll()[1].message);
+	}	
+
+	@IsTest
+	private static void testOnValidateBehaviorDefault()
+	{
+		Opportunity oldOpp = (Opportunity) Opportunity.sObjectType.newSObject('006E0000006mkRQ');
+		oldOpp.Name = 'Test Default Behaviour';
+		oldOpp.Type = 'Existing Account'; 
+		Opportunity newOpp = (Opportunity) Opportunity.sObjectType.newSObject('006E0000006mkRQ'); 
+		newOpp.Name = 'Test Default Behaviour';
+		newOpp.Type = 'New Account'; 		
+		fflib_SObjectDomain.Test.Database.onUpdate(new Opportunity[] { newOpp }, new Map<Id, SObject> { newOpp.Id => oldOpp } );		
+		fflib_SObjectDomain.triggerHandler(fflib_SObjectDomain.TestSObjectOnValidateBehaviourConstructor.class);		
+	}	
+
+	@IsTest
+	private static void testOnValidateBehaviorOld()
+	{
+		Opportunity oldOpp = (Opportunity) Opportunity.sObjectType.newSObject('006E0000006mkRQ');
+		oldOpp.Name = 'Test Enable Old Behaviour';
+		oldOpp.Type = 'Existing Account'; 
+		Opportunity newOpp = (Opportunity) Opportunity.sObjectType.newSObject('006E0000006mkRQ'); 
+		newOpp.Name = 'Test Enable Old Behaviour';
+		newOpp.Type = 'New Account'; 		
+		fflib_SObjectDomain.Test.Database.onUpdate(new Opportunity[] { newOpp }, new Map<Id, SObject> { newOpp.Id => oldOpp } );
+		try {		
+			fflib_SObjectDomain.triggerHandler(fflib_SObjectDomain.TestSObjectOnValidateBehaviourConstructor.class);
+			System.assert(false, 'Expected exception');
+		} catch (Exception e) {
+			System.assertEquals('onValidate called', e.getMessage());
+		}
+	}	
+	
 	/**
 	 * Create test user
 	 **/
