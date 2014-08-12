@@ -131,14 +131,14 @@ public virtual class fflib_SObjectUnitOfWork
 	 **/
 	public void registerNew(SObject record, Schema.sObjectField relatedToParentField, SObject relatedToParentRecord)
 	{
-		if(record.Id != null)
-			throw new UnitOfWorkException('Only new records can be registered as new');
+		// Need to think about how to handle this
+		//if(record.Id != null)
+		//	throw new UnitOfWorkException('Only new records can be registered as new');
 		String sObjectType = record.getSObjectType().getDescribe().getName();			
 		if(!m_newListByType.containsKey(sObjectType))
 			throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
 		m_newListByType.get(sObjectType).add(record);				
-		if(relatedToParentRecord!=null && relatedToParentField!=null)
-			registerRelationship(record, relatedToParentField, relatedToParentRecord);
+		registerRelationship(record, relatedToParentField, relatedToParentRecord);
 	}
 	
 	/**
@@ -154,7 +154,10 @@ public virtual class fflib_SObjectUnitOfWork
 		String sObjectType = record.getSObjectType().getDescribe().getName();		
 		if(!m_newListByType.containsKey(sObjectType))
 			throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
-		m_relationships.get(sObjectType).add(record, relatedToField, relatedTo);
+		if(relatedTo!=null && relatedToField!=null)
+			m_relationships.get(sObjectType).add(record, relatedToField, relatedTo);
+		else
+			m_relationships.get(sObjectType).add(record);
 	}
 	
 	/**
@@ -199,8 +202,12 @@ public virtual class fflib_SObjectUnitOfWork
 			// Insert by type
 			for(Schema.SObjectType sObjectType : m_sObjectTypes)
 			{
-				m_relationships.get(sObjectType.getDescribe().getName()).resolve();
-				insert m_newListByType.get(sObjectType.getDescribe().getName());
+				List<SObject> resolved;
+	                
+				while((resolved = m_relationships.get(sObjectType.getDescribe().getName()).resolve()).size() > 0)
+				{
+					insert resolved;
+				}
 			}					
 			// Update by type
 			for(Schema.SObjectType sObjectType : m_sObjectTypes)
@@ -224,15 +231,72 @@ public virtual class fflib_SObjectUnitOfWork
 	
 	private class Relationships
 	{
-		private List<Relationship> m_relationships = new List<Relationship>();
+		private SObjectRelationshipMap m_SObjectRelationshipMap = new SObjectRelationshipMap(/*128, 0.8*/);
 
-		public void resolve()
+		public List<SObject> resolve()
 		{
 			// Resolve relationships
-			for(Relationship relationship : m_relationships)
-				relationship.Record.put(relationship.RelatedToField, relationship.RelatedTo.Id);
+			List<SObject> fullyResolved = new List<SObject>();
+            
+			for(SObjectRelationshipMapIterator i = m_SObjectRelationshipMap.iterator(); i.hasNext();)
+			{
+				SObjectRelationshipMapEntry entry = i.next();
+				SObjectReferenceWrapper obj = entry.getKey();
+				List<Relationship> objRelationships = entry.getValue();
+                        
+				String cachedId = String.valueOf(obj.Record.Id);
+				obj.Record.Id = null;
+                
+				for(Relationship relationship : objRelationships)
+				{
+					if(relationship.RelatedTo.Id != null)
+					{
+						relationship.Record.put(relationship.RelatedToField, relationship.RelatedTo.Id);
+						relationship.Resolved = true;
+					}
+				}
+                        
+				obj.Record.Id = cachedId;
+                
+				Integer j = 0;
+                
+				while (j < objRelationships.size())
+				{
+					if(objRelationships.get(j).Resolved)
+					{
+						objRelationships.remove(j);
+					}
+					else
+					{
+						j++;
+					}
+				}
+                
+				if(objRelationships.size() == 0)
+				{
+					m_SObjectRelationshipMap.remove(obj);
+                                
+					obj.Record.Id = null;
+					fullyResolved.add(obj.Record);
+				}
+			}
+            
+			return fullyResolved;
 		}
 		
+		public void add(SObject record)
+		{
+			// Object with no relationship
+			SObjectReferenceWrapper obj = new SObjectReferenceWrapper(record);
+			List<Relationship> rels = m_SObjectRelationshipMap.get(obj);
+            
+			if(rels == null)
+			{
+				rels = new List<Relationship>();
+				m_SObjectRelationshipMap.put(obj, rels);
+			}
+		}
+        
 		public void add(SObject record, Schema.sObjectField relatedToField, SObject relatedTo)
 		{
 			// Relationship to resolve
@@ -240,7 +304,18 @@ public virtual class fflib_SObjectUnitOfWork
 			relationship.Record = record;
 			relationship.RelatedToField = relatedToField;
 			relationship.RelatedTo = relatedTo;
-			m_relationships.add(relationship);
+			relationship.Resolved = false;
+            
+			SObjectReferenceWrapper obj = new SObjectReferenceWrapper(record);
+			List<Relationship> rels = m_SObjectRelationshipMap.get(obj);
+            
+			if(rels == null)
+			{
+				rels = new List<Relationship>();
+				m_SObjectRelationshipMap.put(obj, rels);
+			}
+            
+			rels.add(relationship);
 		}
 	}
 	
@@ -249,6 +324,332 @@ public virtual class fflib_SObjectUnitOfWork
 		public SObject Record;
 		public Schema.sObjectField RelatedToField;
 		public SObject RelatedTo;
+		public Boolean Resolved;
+	}
+	
+	static Integer s_num = 1;
+    
+	public static String getFakeId(Schema.SObjectType sot)
+	{
+		String result = String.valueOf(s_num++);
+		return sot.getDescribe().getKeyPrefix() + '0'.repeat(12-result.length()) + result;
+	}
+	
+	private class SObjectReferenceWrapper
+	{
+		public SObject Record;
+		private Integer hashCode;
+    
+		public SObjectReferenceWrapper(SObject record)
+		{
+			this.Record = record;
+
+			if(record.Id == null)
+			{
+				record.Id = getFakeId(record.getSObjectType());
+			}
+            
+			hashCode = String.valueOf(record.Id).hashCode();
+		}
+    
+		public Boolean equals(Object obj) 
+		{
+			if (obj instanceof SObjectReferenceWrapper) 
+			{
+				SObjectReferenceWrapper o = (SObjectReferenceWrapper)obj;
+				return (Record === o.Record);
+			}
+    
+			return false;
+		}
+        
+		public Integer hashCode()
+		{
+			return hashCode;
+		}
+	}
+	
+	/* Internal hashmap implementation specificly for this class, this is to work around a bug where
+	* Salesforce does not always use hashCode when it's implemented on classes (even though it should) */
+	private class SObjectRelationshipMap
+	{
+		private final Integer DEFAULT_INITIAL_CAPACITY = 16;
+		private final Integer MAXIMUM_CAPACITY = 1 << 30;
+		private final Decimal DEFAULT_LOAD_FACTOR = 0.75;
+        
+		private SObjectRelationshipMapEntry[] table;
+		private Integer size;
+		private Integer threshold;
+		private final Decimal loadFactor;
+        
+		private SObjectRelationshipMapIterator iterator;
+    
+		public SObjectRelationshipMap() 
+		{
+			this.size = 0;
+			this.loadFactor = DEFAULT_LOAD_FACTOR;
+			this.threshold = (Integer)(DEFAULT_INITIAL_CAPACITY * DEFAULT_LOAD_FACTOR);
+			this.table = new SObjectRelationshipMapEntry[DEFAULT_INITIAL_CAPACITY];
+		}
+    
+		// internal utilities
+		private Integer hash(Integer h) 
+		{
+			// This function ensures that hashCodes that differ only by
+			// constant multiples at each bit position have a bounded
+			// number of collisions (approximately 8 at default load factor).
+			h ^= (h >>> 20) ^ (h >>> 12);
+			return (h ^ (h >>> 7)) ^ (h >>> 4);
+		}
+    
+		private Integer indexFor(Integer h, Integer length) 
+		{
+			return h & (length-1);
+		}
+    
+		// public interface
+		public List<Relationship> get(SObjectReferenceWrapper key) 
+		{
+			Integer hash = hash(key.hashCode());
+			Integer length = table.size();
+            
+			for (SObjectRelationshipMapEntry e = table[indexFor(hash, length)];  e != null; e = e.next) 
+			{
+				SObjectReferenceWrapper k;
+                
+				if (e.hash == hash && ((k = e.key) == key || key.equals(k)))
+				{
+					return e.value;
+				}
+			}
+            
+			return null;
+		}
+    
+		public List<Relationship> put(SObjectReferenceWrapper key, List<Relationship> value) 
+		{
+			Integer hash = hash(key.hashCode());
+			Integer i = indexFor(hash, table.size());
+            
+			for (SObjectRelationshipMapEntry e = table[i]; e != null; e = e.next) 
+			{
+				SObjectReferenceWrapper k;
+                
+				if (e.hash == hash && ((k = e.key) == key || key.equals(k))) 
+				{
+					List<Relationship> oldValue = e.value;
+					e.value = value;
+					return oldValue;
+				}
+			}
+    
+			addEntry(hash, key, value, i);
+			return null;
+		}
+    
+		private void resize(Integer newCapacity) 
+		{
+			SObjectRelationshipMapEntry[] oldTable = table;
+			Integer oldCapacity = oldTable.size();
+            
+			if (oldCapacity == MAXIMUM_CAPACITY) 
+			{
+				threshold = 2147483647; // Used since Integer.MAX_VALUE is not available in Apex
+				return;
+			}
+    
+			SObjectRelationshipMapEntry[] newTable = new SObjectRelationshipMapEntry[newCapacity];
+			transfer(newTable);
+			table = newTable;
+			threshold = (Integer)(newCapacity * loadFactor);
+		}
+    
+		private void transfer(SObjectRelationshipMapEntry[] newTable) 
+		{
+			SObjectRelationshipMapEntry[] src = table;
+			Integer newCapacity = newTable.size();
+			Integer length = src.size();
+            
+			for (Integer j = 0; j < length; j++) 
+			{
+				SObjectRelationshipMapEntry e = src[j];
+                
+				if (e != null) 
+				{
+					src[j] = null;
+                    
+					do 
+					{
+						SObjectRelationshipMapEntry next = e.next;
+						Integer i = indexFor(e.hash, newCapacity);
+						e.next = newTable[i];
+						newTable[i] = e;
+						e = next;
+					} 
+					while (e != null);
+				}
+			}
+		}
+    
+		public List<Relationship> remove(SObjectReferenceWrapper key) 
+		{
+			SObjectRelationshipMapEntry e = removeEntryForKey(key);
+			return (e == null ? null : e.value);
+		}
+        
+		private void addEntry(Integer hash, SObjectReferenceWrapper key, List<Relationship> value, Integer bucketIndex) 
+		{
+			SObjectRelationshipMapEntry e = table[bucketIndex];
+			table[bucketIndex] = new SObjectRelationshipMapEntry(hash, key, value, e);
+            
+			if (size++ >= threshold)
+			{
+				resize(2 * table.size());
+			}
+		}
+    
+		private SObjectRelationshipMapEntry removeEntryForKey(SObjectReferenceWrapper key) 
+		{
+			Integer hash = (key == null) ? 0 : hash(key.hashCode());
+			Integer i = indexFor(hash, table.size());
+			SObjectRelationshipMapEntry prev = table[i];
+			SObjectRelationshipMapEntry e = prev;
+    
+			while (e != null) 
+			{
+				SObjectRelationshipMapEntry next = e.next;
+				SObjectReferenceWrapper k;
+                
+				if (e.hash == hash && ((k = e.key) == key || (key != null && key.equals(k)))) 
+				{
+					size--;
+                    
+					if (prev == e)
+					{
+						table[i] = next;
+					}
+					else
+					{
+						prev.next = next;
+					}
+                    
+					return e;
+				}
+                
+				prev = e;
+				e = next;
+			}
+    
+			return e;
+		}
+    
+        
+    
+		public SObjectRelationshipMapIterator iterator() 
+		{
+			return iterator != null ? iterator : (iterator = new SObjectRelationshipMapIterator(this));
+		}
+	}
+    
+	private class SObjectRelationshipMapEntry
+	{
+		private final SObjectReferenceWrapper key;
+		private List<Relationship> value;
+		private SObjectRelationshipMapEntry next;
+		private final Integer hash;
+
+		private SObjectRelationshipMapEntry(Integer h, SObjectReferenceWrapper k, List<Relationship> v, SObjectRelationshipMapEntry n) 
+		{
+			this.value = v;
+			this.next = n;
+			this.key = k;
+			this.hash = h;
+		}
+
+		public SObjectReferenceWrapper getKey() 
+		{
+			return key;
+		}
+
+		public List<Relationship> getValue() 
+		{
+			return value;
+		}
+
+		public Boolean equals(Object o) 
+		{
+			if (!(o instanceof SObjectRelationshipMapEntry))
+				return false;
+                
+			SObjectRelationshipMapEntry e = (SObjectRelationshipMapEntry)o;
+			SObjectReferenceWrapper k1 = getKey();
+			SObjectReferenceWrapper k2 = e.getKey();
+            
+			if (k1 == k2 || (k1 != null && k1.equals(k2))) 
+			{
+				List<Relationship> v1 = getValue();
+				List<Relationship> v2 = e.getValue();
+                
+				if (v1 == v2 || (v1 != null && v1.equals(v2)))
+				{
+					return true;
+				}
+			}
+            
+			return false;
+		}
+	}
+    
+	private class SObjectRelationshipMapIterator implements System.Iterator<SObjectRelationshipMapEntry>
+	{
+		private SObjectRelationshipMap m;
+        
+		private SObjectRelationshipMapEntry next;        // next entry to return
+		private Integer index;              // current slot
+		private SObjectRelationshipMapEntry current;     // current entry
+
+		private SObjectRelationshipMapIterator(SObjectRelationshipMap m) 
+		{
+			this.m = m;
+			this.index = 0;
+            
+			if (m.size > 0) 
+			{ // advance to first entry
+				SObjectRelationshipMapEntry[] t = m.table;
+				Integer length = t.size();
+                
+				while (index < length && (next = t[index++]) == null)
+					;
+			}
+		}
+
+		public Boolean hasNext() 
+		{
+			return next != null;
+		}
+
+		public SObjectRelationshipMapEntry next() 
+		{
+			SObjectRelationshipMapEntry e = next;
+	            
+			if (e == null)
+			{
+				throw new UnitOfWorkException/*NoSuchElementException*/();
+			}
+
+			if ((next = e.next) == null) 
+			{
+				SObjectRelationshipMapEntry[] t = m.table;
+				Integer length = t.size();
+                
+				while (index < length && (next = t[index++]) == null)
+					;
+			}
+            
+			current = e;
+            
+			return e;
+		}
 	}
 	
 	/**
