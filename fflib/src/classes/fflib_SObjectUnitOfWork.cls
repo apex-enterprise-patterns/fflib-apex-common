@@ -244,9 +244,12 @@ public virtual class fflib_SObjectUnitOfWork
 				SObjectReferenceWrapper obj = entry.getKey();
 				List<Relationship> objRelationships = entry.getValue();
                         
+                        	// Cache the Id to allow editing of fields that normally get locked
+                        	// for editing after insert
 				String cachedId = String.valueOf(obj.Record.Id);
 				obj.Record.Id = null;
                 
+                		// Resolve as many relationships as possible
 				for(Relationship relationship : objRelationships)
 				{
 					if(relationship.RelatedTo.Id != null)
@@ -256,10 +259,12 @@ public virtual class fflib_SObjectUnitOfWork
 					}
 				}
                         
+                        	// Retore the Id
 				obj.Record.Id = cachedId;
                 
 				Integer j = 0;
                 
+                		// Clear out any resolved relationships
 				while (j < objRelationships.size())
 				{
 					if(objRelationships.get(j).Resolved)
@@ -272,6 +277,8 @@ public virtual class fflib_SObjectUnitOfWork
 					}
 				}
                 
+                		// If all relationships are resolved add it to the list to be returned
+                		// and remove it from future processing
 				if(objRelationships.size() == 0)
 				{
 					m_SObjectRelationshipMap.remove(obj);
@@ -344,14 +351,23 @@ public virtual class fflib_SObjectUnitOfWork
 		{
 			this.Record = record;
 
+			// Id is the only field guaranteed to be on every object
+			// so keep a unique reference in it
+			// We can't use the standard SObject hashCode to determine
+			// unique records as it's based purely on field values, if there
+			// was a way of getting the memory address this could work around it
 			if(record.Id == null)
 			{
 				record.Id = getFakeId(record.getSObjectType());
 			}
             
+            		// We need a hashCode for fast map put operations, cache the result
+            		// Use the String hashCode of the Id as System.hashCode(object.Id) does not
+            		// return the same result on every call for an object
 			hashCode = String.valueOf(record.Id).hashCode();
 		}
     
+    		// Fallback for hash collisions, compared the memory address of objects using exact equality operator
 		public Boolean equals(Object obj) 
 		{
 			if (obj instanceof SObjectReferenceWrapper) 
