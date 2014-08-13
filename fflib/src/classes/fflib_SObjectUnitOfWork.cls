@@ -252,7 +252,7 @@ public virtual class fflib_SObjectUnitOfWork
                 		// Resolve as many relationships as possible
 				for(Relationship relationship : objRelationships)
 				{
-					if(relationship.RelatedTo.Id != null)
+					if(relationship.RelatedTo.Id != null && !fakeIds.contains(relationship.RelatedTo.Id))
 					{
 						relationship.Record.put(relationship.RelatedToField, relationship.RelatedTo.Id);
 						relationship.Resolved = true;
@@ -335,11 +335,16 @@ public virtual class fflib_SObjectUnitOfWork
 	}
 	
 	static Integer s_num = 1;
+	// Keep a list of the fakeIds used, this is by no means foolproof as they could clash with a real
+	// Id, there has to be a better way
+	static Set<Id> fakeIds = new Set<Id>();
     
 	public static String getFakeId(Schema.SObjectType sot)
 	{
 		String result = String.valueOf(s_num++);
-		return sot.getDescribe().getKeyPrefix() + '0'.repeat(12-result.length()) + result;
+		String id = sot.getDescribe().getKeyPrefix() + '0'.repeat(12-result.length()) + result;
+		fakeIds.add(id);
+		return id;
 	}
 	
 	private class SObjectReferenceWrapper
