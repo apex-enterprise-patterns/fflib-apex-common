@@ -397,8 +397,6 @@ public virtual class fflib_SObjectUnitOfWork
 		private Integer size;
 		private Integer threshold;
 		private final Decimal loadFactor;
-        
-		private SObjectRelationshipMapIterator iterator;
     
 		public SObjectRelationshipMap() 
 		{
@@ -563,7 +561,7 @@ public virtual class fflib_SObjectUnitOfWork
     
 		public SObjectRelationshipMapIterator iterator() 
 		{
-			return iterator != null ? iterator : (iterator = new SObjectRelationshipMapIterator(this));
+			return new SObjectRelationshipMapIterator(this);
 		}
 	}
     
