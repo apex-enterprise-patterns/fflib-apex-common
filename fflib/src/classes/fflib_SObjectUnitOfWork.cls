@@ -304,7 +304,7 @@ public virtual class fflib_SObjectUnitOfWork
 
 		public void doWork()
 		{
-			Messaging.sendEmail(emails);
+			if(emails.size() > 0) Messaging.sendEmail(emails);
 		}
 	}	
 }
