@@ -39,6 +39,7 @@
  *
  **/
 public virtual with sharing class fflib_SObjectDomain
+	implements fflib_ISObjectDomain
 {
 	/**
 	 * Provides access to the data represented by this domain class
@@ -204,7 +205,31 @@ public virtual with sharing class fflib_SObjectDomain
     	   
     	onAfterDelete();
     }	
-	
+
+    /**
+     * Returns the SObjectType this Domain class represents
+     **/
+    public SObjectType getSObjectType()
+    {
+    	return SObjectDescribe.getSObjectType();
+    }
+
+    /**
+     * Returns the SObjectType this Domain class represents
+     **/
+    public SObjectType sObjectType()
+    {
+    	return getSObjectType();
+    }
+
+    /**
+     * Alternative to the Records property, provided to support mocking of Domain classes
+     **/
+    public List<SObject> getRecords()
+    {
+    	return Records;
+    }
+    
 	/**
 	 * Interface used to aid the triggerHandler in constructing instances of Domain classes
 	 **/

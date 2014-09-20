@@ -98,21 +98,9 @@ private class fflib_SObjectDescribeTest {
 		for(integer i = 0; i < 10; i++){
 			fields = d.getFieldsMap();
 		}
-		System.assertEquals(1, Limits.getFieldsDescribes() );
 		System.assertEquals(false,fields.isEmpty());
 	}
 
-	@isTest
-	static void simpleAccountFieldSetDescribe(){ 
-		fflib_SObjectDescribe d = fflib_SObjectDescribe.getDescribe(Account.SObjectType);
-		Map<String,Schema.FieldSet> fields;
-		for(integer i = 0; i < 10; i++){
-			fields = d.getFieldSetsMap();
-		}
-		System.assertEquals(1, Limits.getFieldSetsDescribes() );
-		//no asserts on result size to avoid a requirement on field sets existing
-	}
-	
 	@isTest
     	static void simpleAccountGetNameField(){
         	fflib_SObjectDescribe d = fflib_SObjectDescribe.getDescribe(Account.SObjectType);

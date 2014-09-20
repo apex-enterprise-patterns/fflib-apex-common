@@ -28,6 +28,7 @@
  * Class providing common database query support for abstracting and encapsulating query logic
  **/
 public abstract with sharing class fflib_SObjectSelector
+	implements fflib_ISObjectSelector
 {
     /**
      * This overrides the Multi Currency handling, preventing it from injecting the CurrencyIsoCode fie ld for certain System objects that don't ever support it
@@ -250,6 +251,15 @@ public abstract with sharing class fflib_SObjectSelector
      *   (adding public to the existing method broken base class API backwards compatability)
      **/
     public SObjectType getSObjectType2()
+    {
+        return getSObjectType();
+    }
+
+    /**
+     * Public acccess for the getSObjectType during Mock registration 
+     *   (adding public to the existing method broken base class API backwards compatability)
+     **/
+    public SObjectType sObjectType()
     {
         return getSObjectType();
     }
