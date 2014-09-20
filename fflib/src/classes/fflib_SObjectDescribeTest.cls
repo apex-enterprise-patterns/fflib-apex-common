@@ -98,7 +98,6 @@ private class fflib_SObjectDescribeTest {
 		for(integer i = 0; i < 10; i++){
 			fields = d.getFieldsMap();
 		}
-		
 		System.assertEquals(false,fields.isEmpty());
 	}
 
@@ -115,7 +114,7 @@ private class fflib_SObjectDescribeTest {
 	}
 	
 	@isTest
-    	static void simpleAccountGetNameField(){
+	static void simpleAccountGetNameField(){
         	fflib_SObjectDescribe d = fflib_SObjectDescribe.getDescribe(Account.SObjectType);
         	Schema.SObjectField nameField = d.getNameField();
         	System.assertEquals('Name', nameField.getDescribe().getName());
