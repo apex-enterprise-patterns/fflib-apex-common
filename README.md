@@ -4,6 +4,7 @@ FinancialForce Apex Common
 **Dependencies:** Must deploy [ApexMocks](https://github.com/financialforcedev/fflib-apex-mocks) before deploying this library
 
 **[Deploy to Salesforce](https://githubsfdeploy.herokuapp.com/app/githubdeploy/financialforcedev/fflib-apex-common)**
+**[Deploy to Salesforce (Sandbox)](https://githubsfdeploy-sandbox.herokuapp.com/app/githubdeploy/financialforcedev/fflib-apex-common)**
 
 See here for [MavensMate Templates](http://andyinthecloud.com/2014/05/23/mavensmate-templates-and-apex-enterprise-patterns/)
 
