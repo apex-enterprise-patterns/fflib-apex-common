@@ -453,6 +453,57 @@ private class fflib_QueryFactoryTest {
 		System.assert(query.containsIgnoreCase('Id FROM'));
 	}  
 
+	@isTest
+	static void queryField_compareTo(){
+		String otherType = 'bob';
+		fflib_QueryFactory.QueryField qf = new fflib_QueryFactory.QueryField(Contact.SObjectType.fields.Name);
+		fflib_QueryFactory.QueryField joinQf = new fflib_QueryFactory.QueryField(new List<Schema.SObjectField>{
+			Contact.SObjectType.fields.LastModifiedById,
+			Account.SObjectType.fields.OwnerId,
+			User.SObjectType.fields.Name
+		});
+		fflib_QueryFactory.QueryField otherJoinQf = new fflib_QueryFactory.QueryField(new List<Schema.SObjectField>{
+			Contact.SObjectType.fields.AccountId,
+			Account.SObjectType.fields.CreatedById,
+			User.SObjectType.fields.Name
+		});
+		System.assertEquals(-2, qf.compareTo(otherType));
+		System.assertEquals(0, qf.compareTo(qf));
+		System.assertEquals(
+			0, 
+			qf.compareTo(new fflib_QueryFactory.QueryField(Contact.SObjectType.fields.Name)),
+			'An equal but non-identical instance should return 0'
+		);
+		System.assertEquals(-1 , qf.compareTo(joinQf));
+		System.assertEquals(1, joinQf.compareTo(qf));
+		System.assert(joinQf.compareTo(otherJoinQf) > 0);
+		System.assert(otherJoinQf.compareTo(joinQf) < 0);
+	}
+
+	@isTest
+	static void deterministic_toSOQL(){
+		fflib_QueryFactory qf1 = new fflib_QueryFactory(User.SObjectType);
+		fflib_QueryFactory qf2 = new fflib_QueryFactory(User.SObjectType);
+		for(fflib_QueryFactory qf:new Set<fflib_QueryFactory>{qf1,qf2}){
+			qf.selectFields(new List<String>{
+				'Id',
+				'FirstName',
+				'LastName',
+				'CreatedBy.Name',
+				'CreatedBy.Manager',
+				'LastModifiedBy.Email'
+			});
+		}
+		String expectedQuery = 
+			'SELECT '
+			+'FirstName, Id, LastName, ' //less joins come first, alphabetically
+			+'CreatedBy.ManagerId, CreatedBy.Name, LastModifiedBy.Email ' //alphabetical on the same number of joinrs'
+			+'FROM User';
+		System.assertEquals(qf1.toSOQL(), qf2.toSOQL());
+		System.assertEquals(expectedQuery, qf1.toSOQL());
+		System.assertEquals(expectedQuery, qf2.toSOQL());
+	}
+
 	public static User createTestUser_noAccess(){
 		User usr;
 		try {

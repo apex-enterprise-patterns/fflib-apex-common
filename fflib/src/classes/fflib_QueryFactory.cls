@@ -131,7 +131,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	public boolean equals(Object obj){
 		if( !(obj instanceof fflib_QueryFactory) || ((fflib_QueryFactory)obj).table != this.table || ((fflib_QueryFactory)obj).fields.size() != this.fields.size() )
 			return false;
-		return ((fflib_QueryFactory)obj).toString() == this.toString();
+		return ((fflib_QueryFactory)obj).toSOQL() == this.toSOQL();
 	}
 
 	/**
@@ -478,7 +478,9 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			if (enforceFLS) fflib_SecurityUtils.checkFieldIsReadable(table, 'Id');
 			result += 'Id  ';
 		}else{
-			for(QueryField field:fields){
+			List<QueryField> fieldsToQuery = new List<QueryField>(fields);
+			fieldsToQuery.sort(); //delegates to QueryFilter's comparable implementation
+			for(QueryField field:fieldsToQuery){
 				result += field + ', ';
 			}
 		}	
@@ -490,11 +492,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		result = result.substring(0,result.length()-2) + ' FROM ' + (relationship != null ? relationship.getRelationshipName() : table.getDescribe().getName());
 		if(conditionExpression != null)
 			result += ' WHERE '+conditionExpression;
-		/**
-		 *  check both the order and sortexpressions for fields to order by.  the order list uses an older method of sorting (addOrdering method), but does not work well with sorting related object fields.
-		 *  newer method uses sortExpressions list (addOrdering method), which work with all fields and can handle multiple sorts expressions (ie. order by last name desc, first name asc)
-		 *  both methods may be used together on a single query factory 
-		**/
+
 		if(order.size() > 0){
 			result += ' ORDER BY ';
 			for(Ordering o:order)
@@ -559,7 +557,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	}
 
 
-	public class QueryField{
+	public class QueryField implements Comparable{
 		List<Schema.SObjectField> fields;
 
 		/**
@@ -614,6 +612,33 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			objFields.retainAll(this.fields);
 			objFields.removeAll(this.fields);
 			return objFields.size() == 0;
+		}
+		/**
+		 * Allows sorting QueryField instances, which means we'll get deterministic field ordering by just sorting the parent
+		 * QueryFactory's array when toSOQL'ing.
+		 *
+		 * Returns:
+		 * - Objects that are not QueryField instances as -2, which functions as -1 but with more flair
+		 * - QueryField instances with less joins in their path as -1
+		 * - QueryField instances with an equal number of joins and alphabetically first as an undefined negative integer
+		 * - equals as 0
+		 * - anything else an undefined positive integer (usually, but not always 1)
+		 **/
+		public Integer compareTo(Object o){
+			if(!(o instanceof QueryField))
+				return -2; //We can't possibly do a sane comparison against an unknwon type, go athead and let it "win"
+			QueryField that = (QueryField) o;
+			if(this.fields.size() < that.fields.size()){
+				return -1;
+			}else if( this.fields.size() == that.fields.size() ){
+				if(this.equals(that)){
+					return 0;
+				}else{
+					return this.toString().compareTo(that.toString());
+				}
+			}else{
+				return 1;
+			}
 		}
 	}
 	
