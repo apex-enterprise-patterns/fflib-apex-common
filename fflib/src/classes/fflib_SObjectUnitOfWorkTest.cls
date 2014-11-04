@@ -99,7 +99,11 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 			uow.registerRelationship(newOppLineItem, OpportunityLineItem.PricebookEntryId, pbe);
 			uow.registerNew(newOppLineItem, OpportunityLineItem.OpportunityId, opp);			
 			OpportunityLineItem existingOppLine = opp.OpportunityLineItems[0];
+			// Test that operations on the same object can be daisy chained, and the same object registered as dirty more than once
+			// This verifies that using a Map to back the dirty records collection prevents duplicate registration.
 			existingOppLine.Quantity = 2;
+			uow.registerDirty(existingOppLine);
+			existingOppLine.TotalPrice = 20;
 			uow.registerDirty(existingOppLine);
 			uow.commitWork();
 		}
@@ -108,16 +112,23 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 		// TODO: Need to re-instate this check with a better approach, as it is not possible when 
 		//       product triggers contribute to DML (e.g. in sample app Opportunity trigger)		
 		// System.assertEquals(11, Limits.getDmlStatements());				
-		opps = [select Id, Name, (Select Id, PricebookEntry.Product2.Name, Quantity from OpportunityLineItems Order By PricebookEntry.Product2.Name) from Opportunity where Name like 'UoW Test Name %' order by Name];
+		opps = [select Id, Name, (Select Id, PricebookEntry.Product2.Name, Quantity, TotalPrice from OpportunityLineItems Order By PricebookEntry.Product2.Name) from Opportunity where Name like 'UoW Test Name %' order by Name];
 		System.assertEquals(10, opps.size());
 		System.assertEquals('UoW Test Name 0 Changed', opps[0].Name);
 		System.assertEquals(2, opps[0].OpportunityLineItems.size());
-		System.assertEquals(2, opps[0].OpportunityLineItems[0].Quantity);		
+		// Verify that both fields were updated properly
+		System.assertEquals(2, opps[0].OpportunityLineItems[0].Quantity);
+		System.assertEquals(20, opps[0].OpportunityLineItems[0].TotalPrice);
 		System.assertEquals('UoW Test Name 0 Changed : New Product', opps[0].OpportunityLineItems[1].PricebookEntry.Product2.Name);
 		
 		// Delete some records with the UnitOfWork
 		{
 			fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);	
+			uow.registerDeleted(opps[0].OpportunityLineItems[1].PricebookEntry.Product2); // Delete PricebookEntry Product 
+			uow.registerDeleted(opps[0].OpportunityLineItems[1].PricebookEntry); // Delete PricebookEntry
+			uow.registerDeleted(opps[0].OpportunityLineItems[1]); // Delete OpportunityLine Item
+			// Register the same deletions more than once.
+			// This verifies that using a Map to back the deleted records collection prevents duplicate registration.
 			uow.registerDeleted(opps[0].OpportunityLineItems[1].PricebookEntry.Product2); // Delete PricebookEntry Product 
 			uow.registerDeleted(opps[0].OpportunityLineItems[1].PricebookEntry); // Delete PricebookEntry
 			uow.registerDeleted(opps[0].OpportunityLineItems[1]); // Delete OpportunityLine Item
