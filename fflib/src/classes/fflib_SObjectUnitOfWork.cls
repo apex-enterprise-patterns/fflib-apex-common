@@ -58,9 +58,9 @@ public virtual class fflib_SObjectUnitOfWork
 	
 	private Map<String, List<SObject>> m_newListByType = new Map<String, List<SObject>>();
 	
-	private Map<String, List<SObject>> m_dirtyListByType = new Map<String, List<SObject>>();
+	private Map<String, Map<Id, SObject>> m_dirtyMapByType = new Map<String, Map<Id, SObject>>();
 	
-	private Map<String, List<SObject>> m_deletedListByType = new Map<String, List<SObject>>();
+	private Map<String, Map<Id, SObject>> m_deletedMapByType = new Map<String, Map<Id, SObject>>();
 	
 	private Map<String, Relationships> m_relationships = new Map<String, Relationships>();
 
@@ -115,8 +115,8 @@ public virtual class fflib_SObjectUnitOfWork
 		for(Schema.SObjectType sObjectType : m_sObjectTypes)
 		{
 			m_newListByType.put(sObjectType.getDescribe().getName(), new List<SObject>());
-			m_dirtyListByType.put(sObjectType.getDescribe().getName(), new List<SObject>());
-			m_deletedListByType.put(sObjectType.getDescribe().getName(), new List<SObject>());
+			m_dirtyMapByType.put(sObjectType.getDescribe().getName(), new Map<Id, SObject>());
+			m_deletedMapByType.put(sObjectType.getDescribe().getName(), new Map<Id, SObject>());
 			m_relationships.put(sObjectType.getDescribe().getName(), new Relationships());	
 		}
 
@@ -197,9 +197,9 @@ public virtual class fflib_SObjectUnitOfWork
 		if(record.Id == null)
 			throw new UnitOfWorkException('New records cannot be registered as dirty');
 		String sObjectType = record.getSObjectType().getDescribe().getName();			
-		if(!m_dirtyListByType.containsKey(sObjectType))
+		if(!m_dirtyMapByType.containsKey(sObjectType))
 			throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
-		m_dirtyListByType.get(sObjectType).add(record);		
+		m_dirtyMapByType.get(sObjectType).put(record.Id, record);		
 	}
 
 	/**
@@ -212,9 +212,9 @@ public virtual class fflib_SObjectUnitOfWork
 		if(record.Id == null)
 			throw new UnitOfWorkException('New records cannot be registered for deletion');
 		String sObjectType = record.getSObjectType().getDescribe().getName();			
-		if(!m_deletedListByType.containsKey(sObjectType))
+		if(!m_deletedMapByType.containsKey(sObjectType))
 			throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
-		m_deletedListByType.get(sObjectType).add(record);							
+		m_deletedMapByType.get(sObjectType).put(record.Id, record);							
 	}
 	
 	/**
@@ -234,11 +234,11 @@ public virtual class fflib_SObjectUnitOfWork
 			}					
 			// Update by type
 			for(Schema.SObjectType sObjectType : m_sObjectTypes)
-				m_dml.dmlUpdate(m_dirtyListByType.get(sObjectType.getDescribe().getName()));		
+				m_dml.dmlUpdate(m_dirtyMapByType.get(sObjectType.getDescribe().getName()).values());		
 			// Delete by type (in reverse dependency order)
 			Integer objectIdx = m_sObjectTypes.size() - 1;
 			while(objectIdx>=0)
-				m_dml.dmlDelete(m_deletedListByType.get(m_sObjectTypes[objectIdx--].getDescribe().getName()));
+				m_dml.dmlDelete(m_deletedMapByType.get(m_sObjectTypes[objectIdx--].getDescribe().getName()).values());
 			// Generic work
 			for(IDoWork work : m_workList)
 				work.doWork();
