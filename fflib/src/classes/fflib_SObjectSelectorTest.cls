@@ -160,16 +160,12 @@ private with sharing class fflib_SObjectSelectorTest
 	{
 		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
 		String soql = selector.newQueryFactory().toSOQL();
-		Pattern p = Pattern.compile('SELECT (.*) FROM (.*) ORDER BY (.*)');
+		Pattern p = Pattern.compile('SELECT (.*) FROM Account ORDER BY Name DESC NULLS FIRST , AnnualRevenue ASC NULLS FIRST ');
 		Matcher m = p.matcher(soql);
 		System.assert(m.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
-		System.assertEquals(3, m.groupCount(), 'Unexpected number of groups captured.');
+		System.assertEquals(1, m.groupCount(), 'Unexpected number of groups captured.');
 		String fieldListString = m.group(1);
 		assertFieldListString(fieldListString, null);
-		String fromString = m.group(2);
-		System.assertEquals('Account', fromString);
-		String orderByString = m.group(3);
-		System.assertEquals('Name DESC NULLS FIRST , AnnualRevenue ASC NULLS FIRST ', orderByString);
 	}
 	
 	static testMethod void testDefaultConfig()
