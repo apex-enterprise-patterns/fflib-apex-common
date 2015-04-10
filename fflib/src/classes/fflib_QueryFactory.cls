@@ -90,7 +90,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	private QueryField getFieldToken(String fieldName){
 		QueryField result;
 		if(!fieldName.contains('.')){ //single field
-			Schema.SObjectField token = fflib_SObjectDescribe.getDescribe(table).getField(fieldName);
+			Schema.SObjectField token = fflib_SObjectDescribe.getDescribe(table).getField(fieldName.toLowerCase());
 			if(token == null)
 				throw new InvalidFieldException(fieldName,this.table);
 			if (enforceFLS) 
@@ -102,7 +102,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			Iterator<String> i = fieldName.split('\\.').iterator();
 			while(i.hasNext()){
 				String field = i.next();
-				Schema.SObjectField token = fflib_SObjectDescribe.getDescribe(lastSObjectType).getField(field);
+				Schema.SObjectField token = fflib_SObjectDescribe.getDescribe(lastSObjectType).getField(field.toLowerCase());
 				if (token != null && enforceFLS) 
 					fflib_SecurityUtils.checkFieldIsReadable(lastSObjectType, token);
 				if(token != null && i.hasNext() && token.getDescribe().getSOAPType() == Schema.SOAPType.ID){
