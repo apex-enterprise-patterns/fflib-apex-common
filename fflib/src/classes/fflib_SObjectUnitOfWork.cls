@@ -152,6 +152,19 @@ public virtual class fflib_SObjectUnitOfWork
 	}
 
 	/**
+	 * Register a list of newly created SObject instances to be inserted when commitWork is called
+	 *
+	 * @param records A list of newly created SObject instances to be inserted during commitWork
+	 **/
+	public void registerNew(List<SObject> records)
+	{
+		for(SObject record : records)
+		{
+			registerNew(record, null, null);
+		}
+	}
+
+	/**
 	 * Register a newly created SObject instance to be inserted when commitWork is called, 
 	 *   you may also provide a reference to the parent record instance (should also be registered as new separatly)
 	 *
@@ -203,6 +216,19 @@ public virtual class fflib_SObjectUnitOfWork
 	}
 
 	/**
+	 * Register a list of existing records to be updated during the commitWork method
+	 *
+	 * @param records A list of existing records
+	 **/
+	public void registerDirty(List<SObject> records)
+	{
+		for(SObject record : record)
+		{
+			this.registerDirty(record);
+		}
+	}
+
+	/**
 	 * Register an existing record to be deleted during the commitWork method
 	 *
 	 * @param record An existing record
@@ -215,6 +241,19 @@ public virtual class fflib_SObjectUnitOfWork
 		if(!m_deletedMapByType.containsKey(sObjectType))
 			throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
 		m_deletedMapByType.get(sObjectType).put(record.Id, record);							
+	}
+	
+	/**
+	 * Register a list of existing records to be deleted during the commitWork method
+	 *
+	 * @param records A list of existing records
+	 **/
+	public void registerDeleted(List<SObject> records)
+	{
+		for(SObject record : records)
+		{
+			this.registerDeleted(record);
+		}
 	}
 	
 	/**
