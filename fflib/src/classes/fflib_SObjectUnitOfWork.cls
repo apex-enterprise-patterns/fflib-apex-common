@@ -222,7 +222,7 @@ public virtual class fflib_SObjectUnitOfWork
 	 **/
 	public void registerDirty(List<SObject> records)
 	{
-		for(SObject record : record)
+		for(SObject record : records)
 		{
 			this.registerDirty(record);
 		}
