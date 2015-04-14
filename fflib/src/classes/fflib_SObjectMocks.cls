@@ -195,6 +195,14 @@ public class fflib_SObjectMocks
 				mocks.recordMethod(this, 'registerNew', new List<Object> {record});
 			}
 		}
+		
+		public void registerNew(List<SObject> records)
+		{
+			for(SObject record : records)
+			{
+				registerNew(record);
+			}
+		}
 
 		public void registerNew(SObject record, Schema.sObjectField relatedToParentField, SObject relatedToParentRecord)
 		{
@@ -231,6 +239,14 @@ public class fflib_SObjectMocks
 				mocks.recordMethod(this, 'registerDirty', new List<Object> {record});
 			}
 		}
+		
+		public void registerDirty(List<SObject> records)
+		{
+			for(SObject record : records)
+			{
+				registerDirty(record);
+			}
+		}
 
 		public void registerDeleted(SObject record)
 		{
@@ -241,6 +257,14 @@ public class fflib_SObjectMocks
 			else
 			{
 				mocks.recordMethod(this, 'registerDeleted', new List<Object> {record});
+			}
+		}
+		
+		public void registerDeleted(List<SObject> records)
+		{
+			for(SObject record : records)
+			{
+				registerDeleted(record);
 			}
 		}
 
