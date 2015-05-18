@@ -52,20 +52,23 @@
  *
  **/
 public virtual class fflib_SObjectUnitOfWork
+	implements fflib_ISObjectUnitOfWork
 {
 	private List<Schema.SObjectType> m_sObjectTypes = new List<Schema.SObjectType>();
 	
 	private Map<String, List<SObject>> m_newListByType = new Map<String, List<SObject>>();
 	
-	private Map<String, List<SObject>> m_dirtyListByType = new Map<String, List<SObject>>();
+	private Map<String, Map<Id, SObject>> m_dirtyMapByType = new Map<String, Map<Id, SObject>>();
 	
-	private Map<String, List<SObject>> m_deletedListByType = new Map<String, List<SObject>>();
+	private Map<String, Map<Id, SObject>> m_deletedMapByType = new Map<String, Map<Id, SObject>>();
 	
 	private Map<String, Relationships> m_relationships = new Map<String, Relationships>();
 
 	private List<IDoWork> m_workList = new List<IDoWork>();
 
 	private SendEmailWork m_emailWork = new SendEmailWork();
+	
+	private IDML m_dml;
 	
 	/**
 	 * Interface describes work to be performed during the commitWork method
@@ -75,6 +78,25 @@ public virtual class fflib_SObjectUnitOfWork
 		void doWork();
 	}
 
+	public interface IDML
+	{
+		void dmlInsert(List<SObject> objList);
+		void dmlUpdate(List<SObject> objList);
+		void dmlDelete(List<SObject> objList);
+	}
+	
+	public class SimpleDML implements IDML
+	{
+		public void dmlInsert(List<SObject> objList){
+			insert objList;
+		}
+		public void dmlUpdate(List<SObject> objList){
+			update objList;
+		}
+		public void dmlDelete(List<SObject> objList){
+			delete objList;
+		}
+	}
 	/**
 	 * Constructs a new UnitOfWork to support work against the given object list
 	 *
@@ -82,17 +104,25 @@ public virtual class fflib_SObjectUnitOfWork
 	 */
 	public fflib_SObjectUnitOfWork(List<Schema.SObjectType> sObjectTypes)
 	{
+		this(sObjectTypes,new SimpleDML());
+	}
+
+
+	public fflib_SObjectUnitOfWork(List<Schema.SObjectType> sObjectTypes, IDML dml)
+	{
 		m_sObjectTypes = sObjectTypes.clone();
 			
 		for(Schema.SObjectType sObjectType : m_sObjectTypes)
 		{
 			m_newListByType.put(sObjectType.getDescribe().getName(), new List<SObject>());
-			m_dirtyListByType.put(sObjectType.getDescribe().getName(), new List<SObject>());
-			m_deletedListByType.put(sObjectType.getDescribe().getName(), new List<SObject>());
+			m_dirtyMapByType.put(sObjectType.getDescribe().getName(), new Map<Id, SObject>());
+			m_deletedMapByType.put(sObjectType.getDescribe().getName(), new Map<Id, SObject>());
 			m_relationships.put(sObjectType.getDescribe().getName(), new Relationships());	
 		}
 
 		m_workList.add(m_emailWork);
+		
+		m_dml = dml;
 	}
 
 	/**
@@ -119,6 +149,19 @@ public virtual class fflib_SObjectUnitOfWork
 	public void registerNew(SObject record)
 	{
 		registerNew(record, null, null);
+	}
+
+	/**
+	 * Register a list of newly created SObject instances to be inserted when commitWork is called
+	 *
+	 * @param records A list of newly created SObject instances to be inserted during commitWork
+	 **/
+	public void registerNew(List<SObject> records)
+	{
+		for(SObject record : records)
+		{
+			registerNew(record, null, null);
+		}
 	}
 
 	/**
@@ -167,11 +210,24 @@ public virtual class fflib_SObjectUnitOfWork
 		if(record.Id == null)
 			throw new UnitOfWorkException('New records cannot be registered as dirty');
 		String sObjectType = record.getSObjectType().getDescribe().getName();			
-		if(!m_dirtyListByType.containsKey(sObjectType))
+		if(!m_dirtyMapByType.containsKey(sObjectType))
 			throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
-		m_dirtyListByType.get(sObjectType).add(record);		
+		m_dirtyMapByType.get(sObjectType).put(record.Id, record);		
 	}
-	
+
+	/**
+	 * Register a list of existing records to be updated during the commitWork method
+	 *
+	 * @param records A list of existing records
+	 **/
+	public void registerDirty(List<SObject> records)
+	{
+		for(SObject record : records)
+		{
+			this.registerDirty(record);
+		}
+	}
+
 	/**
 	 * Register an existing record to be deleted during the commitWork method
 	 *
@@ -182,9 +238,22 @@ public virtual class fflib_SObjectUnitOfWork
 		if(record.Id == null)
 			throw new UnitOfWorkException('New records cannot be registered for deletion');
 		String sObjectType = record.getSObjectType().getDescribe().getName();			
-		if(!m_deletedListByType.containsKey(sObjectType))
+		if(!m_deletedMapByType.containsKey(sObjectType))
 			throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
-		m_deletedListByType.get(sObjectType).add(record);							
+		m_deletedMapByType.get(sObjectType).put(record.Id, record);							
+	}
+	
+	/**
+	 * Register a list of existing records to be deleted during the commitWork method
+	 *
+	 * @param records A list of existing records
+	 **/
+	public void registerDeleted(List<SObject> records)
+	{
+		for(SObject record : records)
+		{
+			this.registerDeleted(record);
+		}
 	}
 	
 	/**
@@ -200,15 +269,15 @@ public virtual class fflib_SObjectUnitOfWork
 			for(Schema.SObjectType sObjectType : m_sObjectTypes)
 			{
 				m_relationships.get(sObjectType.getDescribe().getName()).resolve();
-				insert m_newListByType.get(sObjectType.getDescribe().getName());
+				m_dml.dmlInsert(m_newListByType.get(sObjectType.getDescribe().getName()));
 			}					
 			// Update by type
 			for(Schema.SObjectType sObjectType : m_sObjectTypes)
-				update m_dirtyListByType.get(sObjectType.getDescribe().getName());		
+				m_dml.dmlUpdate(m_dirtyMapByType.get(sObjectType.getDescribe().getName()).values());		
 			// Delete by type (in reverse dependency order)
 			Integer objectIdx = m_sObjectTypes.size() - 1;
 			while(objectIdx>=0)
-				delete m_deletedListByType.get(m_sObjectTypes[objectIdx--].getDescribe().getName());
+				m_dml.dmlDelete(m_deletedMapByType.get(m_sObjectTypes[objectIdx--].getDescribe().getName()).values());
 			// Generic work
 			for(IDoWork work : m_workList)
 				work.doWork();
@@ -275,7 +344,7 @@ public virtual class fflib_SObjectUnitOfWork
 
 		public void doWork()
 		{
-			Messaging.sendEmail(emails);
+			if(emails.size() > 0) Messaging.sendEmail(emails);
 		}
 	}	
 }

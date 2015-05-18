@@ -85,6 +85,12 @@ public class fflib_SObjectDescribe {
 
 	//public instace methods
 	/**
+	 * Returns the Schema.SObjectType this fflib_SObjectDescribe instance is based on.
+	**/
+	public Schema.SObjectType getSObjectType(){
+		return token;
+	}
+	/**
 	 * This method is a convenient shorthand for calling getField(name, true)
 	**/
 	public Schema.SObjectField getField(String name){
