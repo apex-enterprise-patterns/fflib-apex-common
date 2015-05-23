@@ -186,98 +186,47 @@ public class fflib_SObjectMocks
 
 		public void registerNew(SObject record)
 		{
-			if (mocks.Verifying)
-			{
-				mocks.verifyMethodCall(this, 'registerNew', new List<Object> {record});
-			}
-			else
-			{
-				mocks.recordMethod(this, 'registerNew', new List<Object> {record});
-			}
+			mocks.mockVoidMethod(this, 'registerNew', new List<Object> {record});
 		}
 		
 		public void registerNew(List<SObject> records)
 		{
-			for(SObject record : records)
-			{
-				registerNew(record);
-			}
+			mocks.mockVoidMethod(this, 'registerNew', new List<Object> {records});
 		}
 
 		public void registerNew(SObject record, Schema.sObjectField relatedToParentField, SObject relatedToParentRecord)
 		{
-			if (mocks.Verifying)
-			{
-				mocks.verifyMethodCall(this, 'registerNew', new List<Object> {record, relatedToParentField, relatedToParentRecord});
-			}
-			else
-			{
-				mocks.recordMethod(this, 'registerNew', new List<Object> {record, relatedToParentField, relatedToParentRecord});
-			}
+			mocks.mockVoidMethod(this, 'registerNew', new List<Object> {record, relatedToParentField, relatedToParentRecord});
 		}
 
 		public void registerRelationship(SObject record, Schema.sObjectField relatedToField, SObject relatedTo)
 		{
-			if (mocks.Verifying)
-			{
-				mocks.verifyMethodCall(this, 'registerRelationship', new List<Object> {record, relatedToField, relatedTo});
-			}
-			else
-			{
-				mocks.recordMethod(this, 'registerRelationship', new List<Object> {record, relatedToField, relatedTo});
-			}
+			mocks.mockVoidMethod(this, 'registerRelationship', new List<Object> {record, relatedToField, relatedTo});
 		}
 
 		public void registerDirty(SObject record)
 		{
-			if (mocks.Verifying)
-			{
-				mocks.verifyMethodCall(this, 'registerDirty', new List<Object> {record});
-			}
-			else
-			{
-				mocks.recordMethod(this, 'registerDirty', new List<Object> {record});
-			}
+			mocks.mockVoidMethod(this, 'registerDirty', new List<Object> {record});
 		}
 		
 		public void registerDirty(List<SObject> records)
 		{
-			for(SObject record : records)
-			{
-				registerDirty(record);
-			}
+			mocks.mockVoidMethod(this, 'registerDirty', new List<Object> {records});
 		}
 
 		public void registerDeleted(SObject record)
 		{
-			if (mocks.Verifying)
-			{
-				mocks.verifyMethodCall(this, 'registerDeleted', new List<Object> {record});
-			}
-			else
-			{
-				mocks.recordMethod(this, 'registerDeleted', new List<Object> {record});
-			}
+			mocks.mockVoidMethod(this, 'registerDeleted', new List<Object> {record});
 		}
 		
 		public void registerDeleted(List<SObject> records)
 		{
-			for(SObject record : records)
-			{
-				registerDeleted(record);
-			}
+			mocks.mockVoidMethod(this, 'registerDeleted', new List<Object> {record});
 		}
 
 		public void commitWork()
 		{
-			if (mocks.Verifying)
-			{
-				mocks.verifyMethodCall(this, 'commitWork', new List<Object> {});
-			}
-			else
-			{
-				mocks.recordMethod(this, 'commitWork', new List<Object> {});
-			}
+			mocks.mockVoidMethod(this, 'commitWork', new List<Object> {});
 		}
 	}
 }
