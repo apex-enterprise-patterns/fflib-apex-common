@@ -221,7 +221,7 @@ public class fflib_SObjectMocks
 		
 		public void registerDeleted(List<SObject> records)
 		{
-			mocks.mockVoidMethod(this, 'registerDeleted', new List<Object> {record});
+			mocks.mockVoidMethod(this, 'registerDeleted', new List<Object> {records});
 		}
 
 		public void commitWork()
