@@ -492,7 +492,11 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 				query.Add('), ');
 			}
 		}
-		result = result.substring(0,result.length()-2) + ' FROM ' + (relationship != null ? relationship.getRelationshipName() : table.getDescribe().getName());
+		query.Remove(query.size()-1);
+		query.Remove(query.size()-1);
+		query.Add(' FROM ');
+		query.Add((relationship != null ? relationship.getRelationshipName() : table.getDescribe().getName()));
+
 		if(conditionExpression != null)	{
 			query.Add(' WHERE ');
 			query.Add(conditionExpression);
