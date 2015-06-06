@@ -481,7 +481,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			List<QueryField> fieldsToQuery = new List<QueryField>(fields);
 			fieldsToQuery.sort(); //delegates to QueryFilter's comparable implementation
 			for(QueryField field:fieldsToQuery){
-				query.Add(field);
+				query.Add(field.toString());
 				query.Add(', ');
 			}
 		}
