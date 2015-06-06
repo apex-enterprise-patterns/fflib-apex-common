@@ -515,7 +515,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 
 		if(limitCount != null) {
 			query.Add(' LIMIT ');
-			query.Add(limitCount);
+			query.Add(limitCount.format());
 		}
 
 		return query.toString();
