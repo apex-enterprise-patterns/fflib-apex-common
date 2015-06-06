@@ -472,7 +472,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * Check to see if subqueries queries need to be added after the field list.
 	**/
 	public String toSOQL(){
-		StringBuilder query = new StringBuilder('SELECT ');
+		fflib_StringBuilder query = new fflib_StringBuilder('SELECT ');
 		//if no fields have been added, just add the Id field so that the query or subquery will not just fail
 		if (fields.size() == 0){
 			if (enforceFLS) fflib_SecurityUtils.checkFieldIsReadable(table, 'Id');
