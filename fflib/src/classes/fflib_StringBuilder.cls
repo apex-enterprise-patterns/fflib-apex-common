@@ -70,6 +70,22 @@ public virtual class fflib_StringBuilder
 		buffer.add(value);
 	}
 
+	/**
+	 * Remove the given index to the StringBuilder
+	 **/
+	public virtual String remove(Integer index)
+	{
+		return buffer.remove(index);
+	}
+
+	/**
+	 * Number of string in the buffer
+	 **/
+	public virtual Integer size()
+	{
+		return buffer.size();
+	}
+
 	public virtual override String toString()
 	{
 		return String.join(buffer, '');
