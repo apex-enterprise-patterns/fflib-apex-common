@@ -472,37 +472,49 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * Check to see if subqueries queries need to be added after the field list.
 	**/
 	public String toSOQL(){
-		String result = 'SELECT ';
+		StringBuilder query = new StringBuilder('SELECT ');
 		//if no fields have been added, just add the Id field so that the query or subquery will not just fail
 		if (fields.size() == 0){
 			if (enforceFLS) fflib_SecurityUtils.checkFieldIsReadable(table, 'Id');
-			result += 'Id  ';
+				query.Add('Id  ');
 		}else{
 			List<QueryField> fieldsToQuery = new List<QueryField>(fields);
 			fieldsToQuery.sort(); //delegates to QueryFilter's comparable implementation
 			for(QueryField field:fieldsToQuery){
-				result += field + ', ';
+				query.Add(field);
+				query.Add(', ');
 			}
 		}	
 		if(subselectQueryMap != null && !subselectQueryMap.isEmpty()){
 			for (fflib_QueryFactory childRow : subselectQueryMap.values()){
-				result += ' (' + childRow.toSOQL() + '), ';
+				query.Add(' (');
+				query.Add(childRow.toSOQL());
+				query.Add('), ');
 			}	
 		}
 		result = result.substring(0,result.length()-2) + ' FROM ' + (relationship != null ? relationship.getRelationshipName() : table.getDescribe().getName());
-		if(conditionExpression != null)
-			result += ' WHERE '+conditionExpression;
+		if(conditionExpression != null)	{
+			query.Add(' WHERE ');
+			query.Add(conditionExpression);
+		}
 
 		if(order.size() > 0){
-			result += ' ORDER BY ';
-			for(Ordering o:order)
-				result += o.toSOQL() +', ';
-			result = result.substring(0,result.length()-2);
+			query.Add(' ORDER BY ');
+			List<String> OrderArgs = new List<String>();
+			for(Ordering o:order) {
+				OrderArgs.Add(o.toSOQL());
+				OrderArgs.Add(', ');
+			}
+			OrderArgs.remove(OrderArgs.size()-1);
+			query.Add(OrderArgs);
 		}
 	
-		if(limitCount != null)
-			result += ' LIMIT '+limitCount;
-		return result;
+		if(limitCount != null) {
+			query.Add(' LIMIT ');
+			query.Add(limitCount);
+		}
+		
+		return query.toString();
 	}
 	
 	public class Ordering{
