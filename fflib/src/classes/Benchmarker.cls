@@ -1,3 +1,4 @@
+/* Documentation generated with docco for apex */
 //This is the Benchmarker class
 //====================
 
@@ -13,7 +14,7 @@
 //### Benchmarker class definition
 //> The default Threashold is here to handle the maximum threashold available for
 //> a user context. It can be overriden to specify a lower context for specific
-//> purpose. 
+//> purpose.
 global without sharing class Benchmarker {
 
 	private static final decimal DEFAULT_THREASHOLD = 0.95;
@@ -28,7 +29,7 @@ global without sharing class Benchmarker {
 	// Two constructor :
 	//1. Constructor per default, use the default threashold
 	//2. Constructor allowing a specific threashold. To the user responsability
-	// The init method instanciate the result list. 
+	// The init method instanciate the result list.
 	public Benchmarker() {
 		this.threashold = Benchmarker.DEFAULT_THREASHOLD;
 		this.init();
@@ -40,7 +41,7 @@ global without sharing class Benchmarker {
 	}
 
 	private void init(){
-		this.thePRlist = new map<integer,list<ProfilingResult>>();	
+		this.thePRlist = new map<integer,list<ProfilingResult>>();
 	}
 
 	//### Benchmarker Setter
@@ -55,14 +56,14 @@ global without sharing class Benchmarker {
 		return this;
 	}
 
-	public Benchmarker setBenchmarkStrategy(AbstractBenchmarkStrategy aBS) {		
+	public Benchmarker setBenchmarkStrategy(AbstractBenchmarkStrategy aBS) {
 		this.theBS = aBS;
 		return this;
 	}
 
 	//### Benchmarker Template Method
 	// This is the main algorythm for this class
-	// Basically it just iterate while the threashold is 
+	// Basically it just iterate while the threashold is
 	// not reached (against CPU Time consuption)
 	// This method will test incrementally to Apply the Benchmarker Stragegy
 	// Using the profiler before and after (in the opposite order) to get the metrics
@@ -71,8 +72,8 @@ global without sharing class Benchmarker {
 		if(this.theBS == null) {
 			throw new BenchmarkException('No Benchmark Strategy set');
 		}
-		for(integer i = 0 ; 
-			Limits.getCpuTime()/Limits.getLimitCpuTime() < this.threashold; 
+		for(integer i = 0 ;
+			Limits.getCpuTime()/Limits.getLimitCpuTime() < this.threashold;
 			++i) {
 			list<ProfilingResult> aPRl = new list<ProfilingResult>();
 			for(AProfiler aP : this.thePlist) {
@@ -144,7 +145,7 @@ global without sharing class Benchmarker {
 	}
 
 	//### Concrete Instantiation for AProfiler, monitoring the time
-	private class TimeProfiler extends AProfiler {		
+	private class TimeProfiler extends AProfiler {
 		private override long GetMetric(){
 			long m = DateTime.now().gettime();
 			system.debug('#=> TimeProfiler.GetMetric ' + m);

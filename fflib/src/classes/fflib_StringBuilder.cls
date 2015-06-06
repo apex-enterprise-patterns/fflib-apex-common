@@ -75,7 +75,7 @@ public virtual class fflib_StringBuilder
 	 **/
 	public virtual String remove(Integer index)
 	{
-		return buffer.remove(index);
+		return this.buffer.remove(index);
 	}
 
 	/**
@@ -83,7 +83,7 @@ public virtual class fflib_StringBuilder
 	 **/
 	public virtual Integer size()
 	{
-		return buffer.size();
+		return this.buffer.size();
 	}
 
 	public virtual override String toString()

@@ -505,7 +505,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		if(order.size() > 0){
 			query.Add(' ORDER BY ');
 			List<String> OrderArgs = new List<String>();
-			for(Ordering o:order) {
+			for(Ordering o : order) {
 				OrderArgs.Add(o.toSOQL());
 				OrderArgs.Add(', ');
 			}
