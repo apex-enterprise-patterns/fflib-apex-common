@@ -196,11 +196,11 @@ global without sharing class Benchmarker {
 	//### Concrete Instantiation for AbstractBenchmarkStrategy, Join string
 	private class StringJoinBenchmarkStrategy extends AbstractBenchmarkStrategy {
 		public override void DoBenchmark(integer iteration){
-			list<string> ls = new list<string>();
+			fflib_StringBuilder ls = new fflib_StringBuilder();
 			for(integer i = 0 ; i < iteration ; ++i) {
 				ls.add('s');
 			}
-			string.join(ls,'');
+			ls.getStringValue();
 		}
 	}
 

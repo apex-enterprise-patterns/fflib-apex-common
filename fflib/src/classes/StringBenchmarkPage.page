@@ -1,0 +1,28 @@
+<apex:page controller="StringBenchmarkCtrl">
+    <div>
+          <apex:form >
+              <apex:commandButton styleClass="btn-export" value="Join" action="{!getConcatBenchmarkQuick}" rerender="join"/>
+              <apex:commandButton styleClass="btn-export" value="Concat" action="{!getConcatBenchmark}" rerender="concat"/>
+          </apex:form>
+    </div>
+
+
+    <apex:chart height="400" width="700" data="{!aRctl}" id="join">
+        <apex:axis type="Numeric" position="left" fields="timeMetric"
+            title="Time Consumption String join" grid="true"/>
+        <apex:axis type="Numeric" position="bottom" fields="index"
+            title="String Length">
+        </apex:axis>
+        <apex:lineSeries axis="left" xField="index" yField="timeMetric"
+            markerType="cross" markerSize="2" markerFill="#FF0000"/>
+    </apex:chart>
+    <apex:chart height="400" width="700" data="{!aRctl}" id="concat">
+        <apex:axis type="Numeric" position="left" fields="timeMetric"
+            title="Time Consumption String concat" grid="true"/>
+        <apex:axis type="Numeric" position="bottom" fields="index"
+            title="String Length">
+        </apex:axis>
+        <apex:lineSeries axis="left" xField="index" yField="timeMetric"
+            markerType="cross" markerSize="2" markerFill="#FF0000"/>
+    </apex:chart>
+</apex:page>
