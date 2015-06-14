@@ -3,7 +3,7 @@ FinancialForce Apex Common
 
 **Dependencies:** Must deploy [ApexMocks](https://github.com/financialforcedev/fflib-apex-mocks) before deploying this library
 
-<a href="https://githubsfdeploy.herokuapp.com?owner=sebastien77&repo=fflib-apex-common">
+<a href="https://githubsfdeploy.herokuapp.com?owner=ForceComDeveloper&repo=fflib-apex-common">
   <img alt="Deploy to Salesforce"
        src="https://raw.githubusercontent.com/afawcett/githubsfdeploy/master/src/main/webapp/resources/img/deploy.png">
 </a>
