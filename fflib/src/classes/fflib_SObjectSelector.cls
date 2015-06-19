@@ -365,8 +365,9 @@ public abstract with sharing class fflib_SObjectSelector
         {
 	        // select the Selector fields and Fieldsets and set order
 	        queryFactory.selectFields(new Set<SObjectField>(getSObjectFieldList()));
-	        if(m_includeFieldSetFields)
-	            for(Schema.FieldSet fieldSet : getSObjectFieldSetList())
+	        List<Schema.FieldSet> fieldSetList = getSObjectFieldSetList();
+	        if(m_includeFieldSetFields && fieldSetList != null)
+	            for(Schema.FieldSet fieldSet : fieldSetList)
 	                queryFactory.selectFieldSet(fieldSet);
 	
 	        // Automatically select the CurrencyIsoCode for MC orgs (unless the object is a known exception to the rule)
