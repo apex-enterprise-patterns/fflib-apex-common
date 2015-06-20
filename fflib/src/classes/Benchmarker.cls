@@ -1,4 +1,7 @@
-/* Documentation generated with docco for apex */
+/*
+Documentation generated with docco for apex
+https://github.com/ForceComDeveloper/docco-apex.git
+ */
 //This is the Benchmarker class
 //====================
 
