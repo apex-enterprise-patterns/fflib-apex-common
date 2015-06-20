@@ -353,7 +353,7 @@ public abstract with sharing class fflib_SObjectSelector
      **/
     private String buildQuerySObjectById(Set<id> idSet)
     {
-        return newQueryFactory().setCondition('id in :idSet').toSOQL();
+        return newQueryFactory().setCondition('id in (\'' +string.join(idSet,'\',\')+'\')').toSOQL();
     }
 
 	/**
