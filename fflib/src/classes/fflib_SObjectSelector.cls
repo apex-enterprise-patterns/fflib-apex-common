@@ -410,11 +410,24 @@ public abstract with sharing class fflib_SObjectSelector
         return queryFactory;
     }
 
+    /*
+			Memoize the queries
+    */
     private static final Map<string,List<SObject>> memoizeQuery = new Map<string,List<SObject>>();
+
+    /*
+			Memoize the querylocators
+    */
     private static final Map<string,Database.QueryLocator> memoizeLocator = new Map<string,Database.QueryLocator>();
 
+    /*
+			boolean to activate the memoization. Not activated by default
+    */
     private Boolean memoize = false;
 
+    /*
+			Method to (de)activate the memoization
+    */
     public void Memoize(Boolean memoize) {
     	this.memoize = memoize;
     }
