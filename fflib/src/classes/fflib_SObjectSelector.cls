@@ -222,7 +222,14 @@ public abstract with sharing class fflib_SObjectSelector
      **/
     public List<SObject> selectSObjectsById(Set<Id> idSet)
     {
-        return Database.query(buildQuerySObjectById());
+  		string query = buildQuerySObjectById(idSet);
+  		if(this.memoize) {
+  			if(!fflib_SObjectSelector.memoizeQuery.containsKey(query)) {
+  				fflib_SObjectSelector.memoizeQuery.put(query,Database.query(query));
+  			}
+  			return fflib_SObjectSelector.memoizeQuery.get(query);
+  		}
+      return Database.query(query);
     }
 
     /**
@@ -235,7 +242,14 @@ public abstract with sharing class fflib_SObjectSelector
      **/
     public Database.QueryLocator queryLocatorById(Set<Id> idSet)
     {
-        return Database.getQueryLocator(buildQuerySObjectById());
+    	string query = buildQuerySObjectById(idSet);
+  		if(this.memoize) {
+  			if(!fflib_SObjectSelector.memoizeLocator.containsKey(query)) {
+  				fflib_SObjectSelector.memoizeLocator.put(query,Database.getQueryLocator(query));
+  			}
+  			return fflib_SObjectSelector.memoizeLocator.get(query);
+  		}
+      return Database.getQueryLocator(query);
     }
 
     /**
@@ -337,7 +351,7 @@ public abstract with sharing class fflib_SObjectSelector
     /**
      * Constructs the default SOQL query for this selector, see selectSObjectsById and queryLocatorById
      **/
-    private String buildQuerySObjectById()
+    private String buildQuerySObjectById(Set<id> idSet)
     {
         return newQueryFactory().setCondition('id in :idSet').toSOQL();
     }
@@ -394,5 +408,14 @@ public abstract with sharing class fflib_SObjectSelector
         }
 
         return queryFactory;
+    }
+
+    private static final Map<string,List<SObject>> memoizeQuery = new Map<string,List<SObject>>();
+    private static final Map<string,Database.QueryLocator> memoizeLocator = new Map<string,Database.QueryLocator>();
+
+    private Boolean memoize = false;
+
+    public void Memoize(Boolean memoize) {
+    	this.memoize = memoize;
     }
 }
