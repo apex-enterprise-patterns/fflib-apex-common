@@ -2,22 +2,22 @@
  * Copyright (c), FinancialForce.com, inc
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification, 
+ * Redistribution and use in source and binary forms, with or without modification,
  *   are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, 
+ * - Redistributions of source code must retain the above copyright notice,
  *      this list of conditions and the following disclaimer.
- * - Redistributions in binary form must reproduce the above copyright notice, 
- *      this list of conditions and the following disclaimer in the documentation 
+ * - Redistributions in binary form must reproduce the above copyright notice,
+ *      this list of conditions and the following disclaimer in the documentation
  *      and/or other materials provided with the distribution.
- * - Neither the name of the FinancialForce.com, inc nor the names of its contributors 
- *      may be used to endorse or promote products derived from this software without 
+ * - Neither the name of the FinancialForce.com, inc nor the names of its contributors
+ *      may be used to endorse or promote products derived from this software without
  *      specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
- *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES 
- *  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
- *  THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ *  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+ *  THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
  *  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
  *  OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
@@ -25,14 +25,14 @@
 **/
 
 @IsTest
-private with sharing class fflib_SObjectUnitOfWorkTest 
+private with sharing class fflib_SObjectUnitOfWorkTest
 {
-	// SObjects (in order of dependency) used by UnitOfWork in tests bellow	
-	private static List<Schema.SObjectType> MY_SOBJECTS = 
-		new Schema.SObjectType[] { 
-			Product2.SObjectType, 
-			PricebookEntry.SObjectType, 
-			Opportunity.SObjectType, 
+	// SObjects (in order of dependency) used by UnitOfWork in tests bellow
+	private static List<Schema.SObjectType> MY_SOBJECTS =
+		new Schema.SObjectType[] {
+			Product2.SObjectType,
+			PricebookEntry.SObjectType,
+			Opportunity.SObjectType,
 			OpportunityLineItem.SObjectType };
 
 	@isTest
@@ -68,19 +68,19 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 			}
 			uow.commitWork();
 		}
-		
-		// Assert Results 
+
+		// Assert Results
 		assertResults('UoW');
-		// TODO: Need to re-instate this check with a better approach, as it is not possible when 
+		// TODO: Need to re-instate this check with a better approach, as it is not possible when
 		//       product triggers contribute to DML (e.g. in sample app Opportunity trigger)
 		// System.assertEquals(5 /* Oddly a setSavePoint consumes a DML */, Limits.getDmlStatements());
 
 		// Records to update
 		List<Opportunity> opps = [select Id, Name, (Select Id from OpportunityLineItems) from Opportunity where Name like 'UoW Test Name %' order by Name];
-		
+
 		// Update some records with UnitOfWork
 		{
-			fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);	
+			fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
 			Opportunity opp = opps[0];
 			opp.Name = opp.Name + ' Changed';
 			uow.registerDirty(new List<SObject>{opp});
@@ -107,9 +107,9 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 			uow.registerDirty(new List<SObject>{existingOppLine});
 			uow.commitWork();
 		}
-		
+
 		// Assert Results
-		// TODO: Need to re-instate this check with a better approach, as it is not possible when 
+		// TODO: Need to re-instate this check with a better approach, as it is not possible when
 		//       product triggers contribute to DML (e.g. in sample app Opportunity trigger)
 		// System.assertEquals(11, Limits.getDmlStatements());
 		opps = [select Id, Name, (Select Id, PricebookEntry.Product2.Name, Quantity, TotalPrice from OpportunityLineItems Order By PricebookEntry.Product2.Name) from Opportunity where Name like 'UoW Test Name %' order by Name];
@@ -120,23 +120,23 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 		System.assertEquals(2, opps[0].OpportunityLineItems[0].Quantity);
 		System.assertEquals(20, opps[0].OpportunityLineItems[0].TotalPrice);
 		System.assertEquals('UoW Test Name 0 Changed : New Product', opps[0].OpportunityLineItems[1].PricebookEntry.Product2.Name);
-		
+
 		// Delete some records with the UnitOfWork
 		{
-			fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);	
-			uow.registerDeleted(new List<SObject>{opps[0].OpportunityLineItems[1].PricebookEntry.Product2}); // Delete PricebookEntry Product 
+			fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
+			uow.registerDeleted(new List<SObject>{opps[0].OpportunityLineItems[1].PricebookEntry.Product2}); // Delete PricebookEntry Product
 			uow.registerDeleted(new List<SObject>{opps[0].OpportunityLineItems[1].PricebookEntry}); // Delete PricebookEntry
 			uow.registerDeleted(new List<SObject>{opps[0].OpportunityLineItems[1]}); // Delete OpportunityLine Item
 			// Register the same deletions more than once.
 			// This verifies that using a Map to back the deleted records collection prevents duplicate registration.
-			uow.registerDeleted(new List<SObject>{opps[0].OpportunityLineItems[1].PricebookEntry.Product2}); // Delete PricebookEntry Product 
+			uow.registerDeleted(new List<SObject>{opps[0].OpportunityLineItems[1].PricebookEntry.Product2}); // Delete PricebookEntry Product
 			uow.registerDeleted(new List<SObject>{opps[0].OpportunityLineItems[1].PricebookEntry}); // Delete PricebookEntry
 			uow.registerDeleted(new List<SObject>{opps[0].OpportunityLineItems[1]}); // Delete OpportunityLine Item
 			uow.commitWork();
 		}
-		
+
 		// Assert Results
-		// TODO: Need to re-instate this check with a better approach, as it is not possible when 
+		// TODO: Need to re-instate this check with a better approach, as it is not possible when
 		//       product triggers contribute to DML (e.g. in sample app Opportunity trigger)
 		// System.assertEquals(15, Limits.getDmlStatements());
 		opps = [select Id, Name, (Select Id, PricebookEntry.Product2.Name, Quantity from OpportunityLineItems Order By PricebookEntry.Product2.Name) from Opportunity where Name like 'UoW Test Name %' order by Name];
@@ -146,7 +146,28 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 		System.assertEquals(1, opps[0].OpportunityLineItems.size()); // Should have deleted OpportunityLineItem added above
 		System.assertEquals(0, prods.size()); // Should have deleted Product added above
 	}
-	
+
+	@isTest
+	private static void testUnitOfWorkNewWithReflectiveLookups()
+	{
+        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork( new List<Schema.SObjectType> { Account.SObjectType } );
+        Account accountTop = new Account( Name = 'Top Account' );
+        Account accountMiddle = new Account( Name = 'Middle Account' );
+        Account accountBottom = new Account( Name = 'Bottom Account' );
+        uow.registerNew(accountTop);
+        uow.registerNew(accountMiddle, Account.ParentId, accountTop);
+        uow.registerNew(accountBottom, Account.ParentId, accountMiddle);
+        Test.startTest();
+        uow.commitWork();
+        Test.stopTest();
+        accountTop = [SELECT Id, ParentId FROM Account WHERE Id = :accountTop.Id];
+        accountMiddle = [SELECT Id, ParentId FROM Account WHERE Id = :accountMiddle.Id];
+        accountBottom = [SELECT Id, ParentId FROM Account WHERE Id = :accountBottom.Id];
+        System.assertEquals(null, accountTop.ParentId, 'The top account should not be related to a parent account');
+        System.assertEquals(accountTop.Id, accountMiddle.ParentId, 'The middle account should be related to the top account');
+        System.assertEquals(accountMiddle.Id, accountBottom.ParentId, 'The bottom account should be related to the middle account');
+    }
+
 	private static void assertResults(String prefix)
 	{
 		// Standard Assertions on tests data inserted by tests
