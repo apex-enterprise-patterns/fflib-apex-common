@@ -15,6 +15,10 @@
 public interface fflib_ISObjectUnitOfWork
 {
 	/**
+	 * Register a generic peace of work to be invoked during the commitWork phase
+	 **/
+	public void registerWork(IDoWork work)
+	/**
 	 * Register a newly created SObject instance to be inserted when commitWork is called
 	 *
 	 * @param record A newly created SObject instance to be inserted during commitWork
