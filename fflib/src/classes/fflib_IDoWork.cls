@@ -30,4 +30,4 @@
 public interface fflib_IDoWork 
 {
     void doWork();
-	}
+}
