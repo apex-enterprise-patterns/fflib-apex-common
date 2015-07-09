@@ -15,13 +15,9 @@
 public interface fflib_ISObjectUnitOfWork
 {
 	/**
-	 * Interface describes work to be performed during the commitWork method
-	 **/
-	interface IDoWork 
-	/**
 	 * Register a generic peace of work to be invoked during the commitWork phase
 	 **/
-	void registerWork(IDoWork work);
+    void registerWork(fflib_IDoWork work);
 	/**
 	 * Register a newly created SObject instance to be inserted when commitWork is called
 	 *

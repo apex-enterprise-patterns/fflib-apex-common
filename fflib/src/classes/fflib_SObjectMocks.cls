@@ -183,6 +183,10 @@ public class fflib_SObjectMocks
 		{
 			this.mocks = mocks;
 		}
+        public void registerWork(fflib_IDoWork work)
+        {
+			mocks.mockVoidMethod(this, 'registerWork', new List<Object> {work});
+        }
 
 		public void registerNew(SObject record)
 		{

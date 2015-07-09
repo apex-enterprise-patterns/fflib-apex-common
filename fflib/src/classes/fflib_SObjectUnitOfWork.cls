@@ -64,19 +64,12 @@ public virtual class fflib_SObjectUnitOfWork
 	
 	private Map<String, Relationships> m_relationships = new Map<String, Relationships>();
 
-	private List<IDoWork> m_workList = new List<IDoWork>();
+	private List<fflib_IDoWork> m_workList = new List<fflib_IDoWork>();
 
 	private SendEmailWork m_emailWork = new SendEmailWork();
 	
 	private IDML m_dml;
 	
-	/**
-	 * Interface describes work to be performed during the commitWork method
-	 **/
-	public interface IDoWork 
-	{
-		void doWork();
-	}
 
 	public interface IDML
 	{
@@ -128,7 +121,7 @@ public virtual class fflib_SObjectUnitOfWork
 	/**
 	 * Register a generic peace of work to be invoked during the commitWork phase
 	 **/
-	public void registerWork(IDoWork work)
+	public void registerWork(fflib_IDoWork work)
 	{
 		m_workList.add(work);
 	}
@@ -279,7 +272,7 @@ public virtual class fflib_SObjectUnitOfWork
 			while(objectIdx>=0)
 				m_dml.dmlDelete(m_deletedMapByType.get(m_sObjectTypes[objectIdx--].getDescribe().getName()).values());
 			// Generic work
-			for(IDoWork work : m_workList)
+			for(fflib_IDoWork work : m_workList)
 				work.doWork();
 		}
 		catch (Exception e)
@@ -328,7 +321,7 @@ public virtual class fflib_SObjectUnitOfWork
 	/** 
 	 * Internal implementation of Messaging.sendEmail, see outer class registerEmail method
 	 **/
-	private class SendEmailWork implements IDoWork
+	private class SendEmailWork implements fflib_IDoWork
 	{
 		private List<Messaging.Email> emails;
 
