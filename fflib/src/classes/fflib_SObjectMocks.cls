@@ -184,6 +184,16 @@ public class fflib_SObjectMocks
 			this.mocks = mocks;
 		}
 
+        public void registerWork(fflib_IDoWork work)
+        {
+			mocks.mockVoidMethod(this, 'registerWork', new List<Object> {work});
+        }
+
+        public void registerEmail(Messaging.Email email)
+        {
+			mocks.mockVoidMethod(this, 'registerEmail', new List<Object> {email});
+        }
+
 		public void registerNew(SObject record)
 		{
 			mocks.mockVoidMethod(this, 'registerNew', new List<Object> {record});
