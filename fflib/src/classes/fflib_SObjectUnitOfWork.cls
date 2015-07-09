@@ -127,7 +127,7 @@ public virtual class fflib_SObjectUnitOfWork
 	}
 
 	/**
-	 * Registers the given email to be sent during the commitWork
+	 * Register the given email to be sent during the commitWork
 	 **/
 	public void registerEmail(Messaging.Email email)
 	{

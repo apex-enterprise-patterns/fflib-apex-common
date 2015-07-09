@@ -19,6 +19,10 @@ public interface fflib_ISObjectUnitOfWork
 	 **/
     void registerWork(fflib_IDoWork work);
 	/**
+	 * Register the given email to be sent during the commitWork
+	 **/
+	void registerEmail(Messaging.Email email);
+	/**
 	 * Register a newly created SObject instance to be inserted when commitWork is called
 	 *
 	 * @param record A newly created SObject instance to be inserted during commitWork
