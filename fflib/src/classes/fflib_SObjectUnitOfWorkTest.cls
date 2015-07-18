@@ -164,4 +164,255 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 		System.assertEquals(9, opps[8].OpportunityLineItems.size());
 		System.assertEquals(10, opps[9].OpportunityLineItems.size());
 	}
+
+	/**
+	 * Create uow with new records and commit
+	 *
+	 *	Testing: 
+	 *
+	 *		- Correct events are fired when commitWork completes successfully
+	 *
+	 */
+	@isTest
+	private static void testDerivedUnitOfWork_CommitSuccess() 
+	{
+		// Insert Opporunities with UnitOfWork
+		DerivedUnitOfWork uow = new DerivedUnitOfWork(MY_SOBJECTS);
+		for(Integer o=0; o<10; o++)
+		{
+			Opportunity opp = new Opportunity();
+			opp.Name = 'UoW Test Name ' + o;
+			opp.StageName = 'Open';
+			opp.CloseDate = System.today();
+			uow.registerNew(new List<SObject>{opp});
+			for(Integer i=0; i<o+1; i++)
+			{
+				Product2 product = new Product2();
+				product.Name = opp.Name + ' : Product : ' + i;
+				uow.registerNew(new List<SObject>{product});
+				PricebookEntry pbe = new PricebookEntry();
+				pbe.UnitPrice = 10;
+				pbe.IsActive = true;
+				pbe.UseStandardPrice = false;
+				pbe.Pricebook2Id = Test.getStandardPricebookId();
+				uow.registerNew(pbe, PricebookEntry.Product2Id, product);
+				OpportunityLineItem oppLineItem = new OpportunityLineItem();
+				oppLineItem.Quantity = 1;
+				oppLineItem.TotalPrice = 10;
+				uow.registerRelationship(oppLineItem, OpportunityLineItem.PricebookEntryId, pbe);
+				uow.registerNew(oppLineItem, OpportunityLineItem.OpportunityId, opp);
+			}
+		}
+		uow.commitWork();
+		
+		// Assert Results 
+		assertResults('UoW');
+
+		assertEvents(new Set<String> {
+				'onCommitWorkStarting'
+				, 'onDMLStarting'
+				, 'onDMLFinished'
+				, 'onDoWorkStarting'
+				, 'onDoWorkFinished'
+				, 'onCommitWorkFinished - true'
+			}
+			, uow.getCommitWorkEventsFired(), new Set<Schema.SObjectType>(MY_SOBJECTS), uow.getRegisteredTypes());
+	}
+
+	/**
+	 * Create uow with data that results in DML Exception
+	 *
+	 *	Testing: 
+	 *
+	 *		- Correct events are fired when commitWork fails during DML processing
+	 *
+	 */
+	@isTest
+	private static void testDerivedUnitOfWork_CommitDMLFail() 
+	{
+		// Insert Opporunities with UnitOfWork forcing a failure on DML by not setting 'Name' field
+		DerivedUnitOfWork uow = new DerivedUnitOfWork(MY_SOBJECTS);
+		Opportunity opp = new Opportunity();
+		uow.registerNew(new List<SObject>{opp});
+		Boolean didFail = false;
+		System.DmlException caughtEx = null;
+
+		try {
+			uow.commitWork();    
+		}
+		catch (System.DmlException dmlex) {
+			didFail = true;
+			caughtEx = dmlex;
+		}	
+		
+		// Assert Results 
+		System.assertEquals(didFail, true, 'didFail');
+		System.assert(caughtEx.getMessage().contains('REQUIRED_FIELD_MISSING'), String.format('Exception message was ', new List<String> { caughtEx.getMessage() }));
+
+		assertEvents(new Set<String> { 
+				'onCommitWorkStarting'
+				, 'onDMLStarting'
+				, 'onCommitWorkFinished - false' 
+			}
+			, uow.getCommitWorkEventsFired(), new Set<Schema.SObjectType>(MY_SOBJECTS), uow.getRegisteredTypes());
+	}
+
+	/**
+	 * Create uow with work that fails
+	 *
+	 *	Testing: 
+	 *
+	 *		- Correct events are fired when commitWork fails during DoWork processing
+	 *
+	 */
+	@isTest
+	private static void testDerivedUnitOfWork_CommitDoWorkFail() 
+	{
+		// Insert Opporunities with UnitOfWork
+		DerivedUnitOfWork uow = new DerivedUnitOfWork(MY_SOBJECTS);
+		Opportunity opp = new Opportunity();
+		opp.Name = 'UoW Test Name 1';
+		opp.StageName = 'Open';
+		opp.CloseDate = System.today();
+		uow.registerNew(new List<SObject>{opp});
+
+		// register work that will fail during processing
+		FailDoingWork fdw = new FailDoingWork();
+		uow.registerWork(fdw);
+
+		Boolean didFail = false;
+		FailDoingWorkException caughtEx = null;
+
+		try {
+			uow.commitWork();    
+		}
+		catch (FailDoingWorkException fdwe) {
+			didFail = true;
+			caughtEx = fdwe;
+		}	
+		
+		// Assert Results 
+		System.assertEquals(didFail, true, 'didFail');
+		System.assert(caughtEx.getMessage().contains('Work failed.'), String.format('Exception message was ', new List<String> { caughtEx.getMessage() }));
+
+		assertEvents(new Set<String> { 
+				'onCommitWorkStarting'
+				, 'onDMLStarting'
+				, 'onDMLFinished'
+				, 'onDoWorkStarting'
+				, 'onCommitWorkFinished - false' 
+			}
+			, uow.getCommitWorkEventsFired(), new Set<Schema.SObjectType>(MY_SOBJECTS), uow.getRegisteredTypes());
+	}	
+
+	/**
+	 * Assert that actual events exactly math expected events (size and type)
+	 */
+	private static void assertEvents(Set<String> expectedEvents, Set<String> actualEvents, Set<Schema.SObjectType> expectedTypes, Set<Schema.SObjectType> actualTypes) 
+	{
+		// assert that events match
+		System.assertEquals(expectedEvents.size(), actualEvents.size(), 'events size');
+		for (String event :expectedEvents)
+		{
+			System.assertEquals(true, actualEvents.contains(event), String.format('Event {0} was not fired.', new List<String> { event }));
+		}
+
+		// assert that types match
+		System.assertEquals(expectedTypes.size(), actualTypes.size(), 'types size');
+		for (Schema.SObjectType sObjectType :expectedTypes)
+		{
+			System.assertEquals(true, actualTypes.contains(sObjectType), String.format('Type {0} was not registered.', new List<String> { sObjectType.getDescribe().getName() }));	
+		}
+	}
+
+	/**
+	 * DoWork implementation that throws exception during processing
+	 */
+	private class FailDoingWork implements fflib_SObjectUnitOfWork.IDoWork
+	{
+		public void doWork()
+		{
+			throw new FailDoingWorkException('Work failed.');
+		}
+	}
+
+	/**
+	 * Derived unit of work that tracks event notifications and handle registration of type
+	 */
+	private class DerivedUnitOfWork extends fflib_SObjectUnitOfWork
+	{
+		private Set<String> m_commitWorkEventsFired = new Set<String>();
+		private Set<Schema.SObjectType> m_registeredTypes = new Set<Schema.SObjectType>();
+
+		public Set<String> getCommitWorkEventsFired()
+		{
+			return m_commitWorkEventsFired.clone();
+		}
+
+		public Set<Schema.SObjectType> getRegisteredTypes()
+		{
+			return m_registeredTypes.clone();
+		}
+
+		public DerivedUnitOfWork(List<Schema.SObjectType> sObjectTypes)
+		{
+			super(sObjectTypes);
+		}
+
+		public DerivedUnitOfWork(List<Schema.SObjectType> sObjectTypes, IDML dml)
+		{
+			super(sObjectTypes, dml);
+		}
+
+		private void addEvent(String event) 
+		{
+			if (m_commitWorkEventsFired.contains(event))
+			{
+				throw new DerivedUnitOfWorkException(String.format('Event {0} has already been fired.', new List<String> { event }));
+			}
+			m_commitWorkEventsFired.add(event);
+		}
+
+		public override void onRegisterType(Schema.SObjectType sObjectType)
+		{
+			if (m_registeredTypes.contains(sObjectType))
+			{
+				throw new DerivedUnitOfWorkException(String.format('Type {0} has already been registered.', new List<String> { sObjectType.getDescribe().getName() }));
+			}
+			m_registeredTypes.add(sObjectType);
+		}
+
+		public override void onCommitWorkStarting()
+		{
+			addEvent('onCommitWorkStarting');
+		}
+
+		public override void onDMLStarting()
+		{
+			addEvent('onDMLStarting');
+		}
+
+		public override void onDMLFinished()
+		{
+			addEvent('onDMLFinished');
+		}		
+
+		public override void onDoWorkStarting()
+		{
+			addEvent('onDoWorkStarting');
+		}
+
+		public override void onDoWorkFinished()
+		{
+			addEvent('onDoWorkFinished');
+		}		
+
+		public override void onCommitWorkFinished(Boolean wasSuccessful)
+		{
+			addEvent('onCommitWorkFinished - ' + wasSuccessful);
+		}
+	}
+
+	public class DerivedUnitOfWorkException extends Exception {}
+	public class FailDoingWorkException extends Exception {}
 }
