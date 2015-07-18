@@ -62,6 +62,22 @@ public class fflib_Application
 			return new fflib_SObjectUnitOfWork(m_objectTypes);
 		}
 
+		/**
+		 * Returns a new fflib_SObjectUnitOfWork configured with the 
+		 *   SObjectType list specified, returns a Mock implementation
+		 *   if set via the setMock method
+		 *
+		 * @remark If mock is set, the list of SObjectType in the mock could be different
+		 *         then the list of SObjectType specified in this method call
+		 **/
+		public fflib_ISObjectUnitOfWork newInstance(List<SObjectType> objectTypes)
+		{
+			// Mock?
+			if(m_mockUow!=null)
+				return m_mockUow;
+			return new fflib_SObjectUnitOfWork(objectTypes);
+		}
+
 		@TestVisible
 		private void setMock(fflib_ISObjectUnitOfWork mockUow)
 		{
