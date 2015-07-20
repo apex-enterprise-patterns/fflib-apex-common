@@ -130,6 +130,7 @@ public virtual class fflib_SObjectUnitOfWork
 	public virtual void onDMLFinished() {}
 	public virtual void onDoWorkStarting() {}
 	public virtual void onDoWorkFinished() {}
+	public virtual void onCommitWorkFinishing() {}
 	public virtual void onCommitWorkFinished(Boolean wasSuccessful) {}
 
 	/**
@@ -319,6 +320,9 @@ public virtual class fflib_SObjectUnitOfWork
 				work.doWork();
 			// notify we've completed processing registered work
 			onDoWorkFinished();
+
+			// notify we've completed all steps and are in the final stage of completing
+			onCommitWorkFinishing();
 
 			// mark tracker to indicate success
 			wasSuccessful = true;

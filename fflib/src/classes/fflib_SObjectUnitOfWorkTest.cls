@@ -208,12 +208,13 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 		// Assert Results 
 		assertResults('UoW');
 
-		assertEvents(new Set<String> {
+		assertEvents(new List<String> {
 				'onCommitWorkStarting'
 				, 'onDMLStarting'
 				, 'onDMLFinished'
 				, 'onDoWorkStarting'
 				, 'onDoWorkFinished'
+				, 'onCommitWorkFinishing'
 				, 'onCommitWorkFinished - true'
 			}
 			, uow.getCommitWorkEventsFired(), new Set<Schema.SObjectType>(MY_SOBJECTS), uow.getRegisteredTypes());
@@ -249,7 +250,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 		System.assertEquals(didFail, true, 'didFail');
 		System.assert(caughtEx.getMessage().contains('REQUIRED_FIELD_MISSING'), String.format('Exception message was ', new List<String> { caughtEx.getMessage() }));
 
-		assertEvents(new Set<String> { 
+		assertEvents(new List<String> { 
 				'onCommitWorkStarting'
 				, 'onDMLStarting'
 				, 'onCommitWorkFinished - false' 
@@ -295,7 +296,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 		System.assertEquals(didFail, true, 'didFail');
 		System.assert(caughtEx.getMessage().contains('Work failed.'), String.format('Exception message was ', new List<String> { caughtEx.getMessage() }));
 
-		assertEvents(new Set<String> { 
+		assertEvents(new List<String> { 
 				'onCommitWorkStarting'
 				, 'onDMLStarting'
 				, 'onDMLFinished'
@@ -306,15 +307,16 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 	}	
 
 	/**
-	 * Assert that actual events exactly math expected events (size and type)
+	 * Assert that actual events exactly match expected events (size, order and name)
+	 * and types match expected types
 	 */
-	private static void assertEvents(Set<String> expectedEvents, Set<String> actualEvents, Set<Schema.SObjectType> expectedTypes, Set<Schema.SObjectType> actualTypes) 
+	private static void assertEvents(List<String> expectedEvents, List<String> actualEvents, Set<Schema.SObjectType> expectedTypes, Set<Schema.SObjectType> actualTypes) 
 	{
 		// assert that events match
 		System.assertEquals(expectedEvents.size(), actualEvents.size(), 'events size');
-		for (String event :expectedEvents)
+		for (Integer i = 0; i < expectedEvents.size(); i++)
 		{
-			System.assertEquals(true, actualEvents.contains(event), String.format('Event {0} was not fired.', new List<String> { event }));
+			System.assertEquals(expectedEvents[i], actualEvents[i], String.format('Event {0} was not fired in order expected.', new List<String> { expectedEvents[i] }));
 		}
 
 		// assert that types match
@@ -341,10 +343,10 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 	 */
 	private class DerivedUnitOfWork extends fflib_SObjectUnitOfWork
 	{
-		private Set<String> m_commitWorkEventsFired = new Set<String>();
+		private List<String> m_commitWorkEventsFired = new List<String>();
 		private Set<Schema.SObjectType> m_registeredTypes = new Set<Schema.SObjectType>();
 
-		public Set<String> getCommitWorkEventsFired()
+		public List<String> getCommitWorkEventsFired()
 		{
 			return m_commitWorkEventsFired.clone();
 		}
@@ -366,9 +368,14 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 
 		private void addEvent(String event) 
 		{
-			if (m_commitWorkEventsFired.contains(event))
+			// events should only be fired one time
+			// ensure that this event has not been fired already
+			for (String eventName :m_commitWorkEventsFired)
 			{
-				throw new DerivedUnitOfWorkException(String.format('Event {0} has already been fired.', new List<String> { event }));
+				if (event == eventName)
+				{
+					throw new DerivedUnitOfWorkException(String.format('Event {0} has already been fired.', new List<String> { event }));	
+				}
 			}
 			m_commitWorkEventsFired.add(event);
 		}
@@ -406,6 +413,11 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 		{
 			addEvent('onDoWorkFinished');
 		}		
+
+		public override void onCommitWorkFinishing()
+		{
+			addEvent('onCommitWorkFinishing');
+		}
 
 		public override void onCommitWorkFinished(Boolean wasSuccessful)
 		{
