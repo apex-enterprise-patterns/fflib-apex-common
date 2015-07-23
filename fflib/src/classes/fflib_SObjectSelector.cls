@@ -35,8 +35,10 @@ public abstract with sharing class fflib_SObjectSelector
      **/
     private static Set<String> STANDARD_WITHOUT_CURRENCYISO = new Set<String> { AsyncApexJob.SObjectType.getDescribe().getName()
                                                                                 , ApexClass.SObjectType.getDescribe().getName()
+                                                                                , ApexTrigger.SObjectType.getDescribe().getName()
                                                                                 , Attachment.SObjectType.getDescribe().getName()
-                                                                                , RecordType.SObjectType.getDescribe().getName() };
+                                                                                , RecordType.SObjectType.getDescribe().getName() 
+    };
      
     /**
      * Should this selector automatically include the FieldSet fields when building queries?
