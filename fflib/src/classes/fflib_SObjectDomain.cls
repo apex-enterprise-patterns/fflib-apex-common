@@ -139,6 +139,33 @@ public virtual with sharing class fflib_SObjectDomain
     public virtual void onAfterDelete() { }	
 	
 	/**
+	 * Override this to perform check insert permission during after insert phase, this is called by the handleAfterInsert method
+	 **/
+	public virtual void onCheckInsertPermission()
+	{
+		if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isCreateable()) 
+			throw new DomainException('Permission to create an ' + SObjectDescribe.getName() + ' denied.');
+	}
+
+	/**
+	 * Override this to perform check update permission during after insert phase, this is called by the handleAfterUpdate method
+	 **/
+	public virtual void onCheckUpdatePermission()
+	{
+		if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isUpdateable()) 			    		
+			throw new DomainException('Permission to udpate an ' + SObjectDescribe.getName() + ' denied.');
+	}
+
+	/**
+	 * Override this to perform check delete permission during after insert phase, this is called by the handleAfterDelete method
+	 **/
+	public virtual void onCheckDeletePermission()
+	{
+		if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isDeletable())
+			throw new DomainException('Permission to delete an ' + SObjectDescribe.getName() + ' denied.');		
+	}
+
+	/**
 	 * Base handler for the Apex Trigger event Before Insert, calls the onApplyDefaults method, followed by onBeforeInsert
 	 **/
     public virtual void handleBeforeInsert() 
@@ -162,7 +189,7 @@ public virtual with sharing class fflib_SObjectDomain
     {
     	onBeforeDelete();
     }
-    
+
     /**
      * Base handler for the Apex Trigger event After Insert, checks object security and calls the onValidate and onAfterInsert methods
      *
@@ -170,9 +197,7 @@ public virtual with sharing class fflib_SObjectDomain
      **/
     public void handleAfterInsert()
     {
-    	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isCreateable()) 
-    	   throw new DomainException('Permission to create an ' + SObjectDescribe.getName() + ' denied.');
-    	   
+    	onCheckInsertPermission();
     	onValidate();
     	onAfterInsert(); 
     }
@@ -184,9 +209,8 @@ public virtual with sharing class fflib_SObjectDomain
      **/
     public void handleAfterUpdate(Map<Id,SObject> existingRecords) 
     {    	
-    	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isUpdateable()) 			    		
-    	   throw new DomainException('Permission to udpate an ' + SObjectDescribe.getName() + ' denied.');
-    	
+    	onCheckUpdatePermission();
+
     	if(Configuration.OldOnUpdateValidateBehaviour)
     		onValidate();
     	onValidate(existingRecords);
@@ -200,9 +224,7 @@ public virtual with sharing class fflib_SObjectDomain
      **/
     public void handleAfterDelete() 
     {
-    	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isDeletable())
-    	   throw new DomainException('Permission to delete an ' + SObjectDescribe.getName() + ' denied.');
-    	   
+    	onCheckDeletePermission();    	   
     	onAfterDelete();
     }	
 
