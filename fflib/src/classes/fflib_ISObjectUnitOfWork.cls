@@ -72,4 +72,16 @@ public interface fflib_ISObjectUnitOfWork
 	 * Takes all the work that has been registered with the UnitOfWork and commits it to the database
 	 **/
 	void commitWork();
+	/**
+	 * Register a generic peace of work to be invoked during the commitWork phase
+	 *
+	 * @param work Work to be registered
+	 **/
+	void registerWork(fflib_SObjectUnitOfWork.IDoWork work);
+	/**
+	 * Registers the given email to be sent during the commitWork
+	 *
+	 * @param email Email to be sent
+	 **/	 
+	void registerEmail(Messaging.Email email);
 }
