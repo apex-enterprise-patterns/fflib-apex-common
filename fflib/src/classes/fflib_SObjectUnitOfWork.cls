@@ -114,10 +114,8 @@ public virtual class fflib_SObjectUnitOfWork
 			
 		for(Schema.SObjectType sObjectType : m_sObjectTypes)
 		{
-			m_newListByType.put(sObjectType.getDescribe().getName(), new List<SObject>());
-			m_dirtyMapByType.put(sObjectType.getDescribe().getName(), new Map<Id, SObject>());
-			m_deletedMapByType.put(sObjectType.getDescribe().getName(), new Map<Id, SObject>());
-			m_relationships.put(sObjectType.getDescribe().getName(), new Relationships());	
+			// register the type
+			handleRegisterType(sObjectType);
 		}
 
 		m_workList.add(m_emailWork);
@@ -125,6 +123,34 @@ public virtual class fflib_SObjectUnitOfWork
 		m_dml = dml;
 	}
 
+	// default implementations for commitWork events
+	public virtual void onRegisterType(Schema.SObjectType sObjectType) {}
+	public virtual void onCommitWorkStarting() {}
+	public virtual void onDMLStarting() {}
+	public virtual void onDMLFinished() {}
+	public virtual void onDoWorkStarting() {}
+	public virtual void onDoWorkFinished() {}
+	public virtual void onCommitWorkFinishing() {}
+	public virtual void onCommitWorkFinished(Boolean wasSuccessful) {}
+
+	/**
+	 * Registers the type to be used for DML operations
+	 *
+	 * @param sObjectType - The type to register
+	 *
+	 */
+	private void handleRegisterType(Schema.SObjectType sObjectType)
+	{
+		// add type to dml operation tracking
+		m_newListByType.put(sObjectType.getDescribe().getName(), new List<SObject>());
+		m_dirtyMapByType.put(sObjectType.getDescribe().getName(), new Map<Id, SObject>());
+		m_deletedMapByType.put(sObjectType.getDescribe().getName(), new Map<Id, SObject>());
+		m_relationships.put(sObjectType.getDescribe().getName(), new Relationships());	
+
+		// give derived class opportunity to register the type
+		onRegisterType(sObjectType);		
+	}
+	
 	/**
 	 * Register a generic peace of work to be invoked during the commitWork phase
 	 **/
@@ -261,10 +287,16 @@ public virtual class fflib_SObjectUnitOfWork
 	 **/
 	public void commitWork()
 	{
+		// notify we're starting the commit work
+		onCommitWorkStarting();
+
 		// Wrap the work in its own transaction 
-		Savepoint sp = Database.setSavePoint();		
+		Savepoint sp = Database.setSavePoint();
+		Boolean wasSuccessful = false;	
 		try
 		{		
+			// notify we're starting the DML operations
+			onDMLStarting();
 			// Insert by type
 			for(Schema.SObjectType sObjectType : m_sObjectTypes)
 			{
@@ -278,9 +310,22 @@ public virtual class fflib_SObjectUnitOfWork
 			Integer objectIdx = m_sObjectTypes.size() - 1;
 			while(objectIdx>=0)
 				m_dml.dmlDelete(m_deletedMapByType.get(m_sObjectTypes[objectIdx--].getDescribe().getName()).values());
+			// notify we're done with DML
+			onDMLFinished();
+
+			// notify we're starting to process registered work
+			onDoWorkStarting();
 			// Generic work
 			for(IDoWork work : m_workList)
 				work.doWork();
+			// notify we've completed processing registered work
+			onDoWorkFinished();
+
+			// notify we've completed all steps and are in the final stage of completing
+			onCommitWorkFinishing();
+
+			// mark tracker to indicate success
+			wasSuccessful = true;
 		}
 		catch (Exception e)
 		{
@@ -288,6 +333,11 @@ public virtual class fflib_SObjectUnitOfWork
 			Database.rollback(sp);
 			// Throw exception on to caller
 			throw e;
+		}
+		finally
+		{			
+			// notify we're done with commit work
+			onCommitWorkFinished(wasSuccessful);
 		}
 	}
 	
