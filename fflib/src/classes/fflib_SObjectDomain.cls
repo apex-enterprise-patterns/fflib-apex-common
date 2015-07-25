@@ -159,7 +159,7 @@ public virtual with sharing class fflib_SObjectDomain
     }
     
     /**
-     * Base handler for the Apex Trigger event Before Update, calls the onBeforeValidate followed by the onBeforeUpdate method
+     * Base handler for the Apex Trigger event Before Update, calls the onBeforeValidate(Map<Id,SObject>) followed by the onBeforeUpdate method
      **/
     public virtual void handleBeforeUpdate(Map<Id,SObject> existingRecords) 
     {
