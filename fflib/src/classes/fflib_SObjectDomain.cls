@@ -149,7 +149,7 @@ public virtual with sharing class fflib_SObjectDomain
     public virtual void onAfterDelete() { }	
 	
 	/**
-	 * Base handler for the Apex Trigger event Before Insert, calls the onApplyDefaults method, followed by onBeforeInsert
+	 * Base handler for the Apex Trigger event Before Insert, calls the onBeforeValidate, followed by the onApplyDefaults method, followed by onBeforeInsert
 	 **/
     public virtual void handleBeforeInsert() 
     { 
@@ -159,7 +159,7 @@ public virtual with sharing class fflib_SObjectDomain
     }
     
     /**
-     * Base handler for the Apex Trigger event Before Update, calls the onBeforeUpdate method
+     * Base handler for the Apex Trigger event Before Update, calls the onBeforeValidate followed by the onBeforeUpdate method
      **/
     public virtual void handleBeforeUpdate(Map<Id,SObject> existingRecords) 
     {
