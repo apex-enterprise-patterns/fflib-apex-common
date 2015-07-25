@@ -191,7 +191,7 @@ public virtual with sharing class fflib_SObjectDomain
     }
 
     /**
-     * Base handler for the Apex Trigger event After Insert, checks object security and calls the onValidate and onAfterInsert methods
+     * Base handler for the Apex Trigger event After Insert, calls onCheckInsertPermission then calls the onValidate and onAfterInsert methods
      *
      * @throws DomainException if the current user context is not able to create records
      **/
@@ -203,7 +203,7 @@ public virtual with sharing class fflib_SObjectDomain
     }
     
     /**
-     * Base handler for the Apex Trigger event After Update, checks object security and calls the onValidate, onValidate(Map<Id,SObject>) and onAfterUpdate methods
+     * Base handler for the Apex Trigger event After Update, calls onCheckUpdatePermission then calls the onValidate, onValidate(Map<Id,SObject>) and onAfterUpdate methods
      *
      * @throws DomainException if the current user context is not able to update records
      **/
@@ -218,7 +218,7 @@ public virtual with sharing class fflib_SObjectDomain
     }
     
     /**
-     * Base handler for the Apex Trigger event After Delete, checks object security and calls the onAfterDelete method
+     * Base handler for the Apex Trigger event After Delete, calls onCheckDeletePermission then calls the onAfterDelete method
      *
      * @throws DomainException if the current user context is not able to delete records
      **/
