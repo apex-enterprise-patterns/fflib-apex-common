@@ -36,6 +36,16 @@ private with sharing class fflib_SObjectDomainTest
 		System.assertEquals('You must provide an Account for Opportunities for existing Customers.', fflib_SObjectDomain.Errors.getAll()[0].message);
 		System.assertEquals(Opportunity.AccountId, ((fflib_SObjectDomain.FieldError)fflib_SObjectDomain.Errors.getAll()[0]).field); 		
 	}
+
+	@IsTest
+	private static void testBeforeValidationWithoutDML()
+	{
+		fflib_SObjectDomain.TestSObjectDomain opps = new fflib_SObjectDomain.TestSObjectDomain(new Opportunity[] { new Opportunity ( Name = 'Test', Amount = 2000000 ) } );
+		opps.onBeforeValidate();
+		System.assertEquals(1, fflib_SObjectDomain.Errors.getAll().size());		
+		System.assertEquals('Amount exceeds your limit.', fflib_SObjectDomain.Errors.getAll()[0].message);
+		System.assertEquals(Opportunity.Amount, ((fflib_SObjectDomain.FieldError)fflib_SObjectDomain.Errors.getAll()[0]).field); 		
+	}	
 	
 	@IsTest
 	private static void testInsertValidationFailedWithoutDML()
@@ -49,6 +59,19 @@ private with sharing class fflib_SObjectDomainTest
 		System.assertEquals('You must provide an Account for Opportunities for existing Customers.', fflib_SObjectDomain.Errors.getAll()[0].message);
 		System.assertEquals(Opportunity.AccountId, ((fflib_SObjectDomain.FieldError)fflib_SObjectDomain.Errors.getAll()[0]).field); 		
 	}
+
+	@IsTest
+	private static void testInsertBeforeValidationFailedWithoutDML()
+	{
+		Opportunity opp = new Opportunity ( Name = 'Test', Amount = 2000000 );
+		System.assertEquals(false, fflib_SObjectDomain.Test.Database.hasRecords());
+		fflib_SObjectDomain.Test.Database.onInsert(new Opportunity[] { opp } );		
+		System.assertEquals(true, fflib_SObjectDomain.Test.Database.hasRecords());
+		fflib_SObjectDomain.triggerHandler(fflib_SObjectDomain.TestSObjectDomainConstructor.class);		
+		System.assertEquals(1, fflib_SObjectDomain.Errors.getAll().size());		
+		System.assertEquals('Amount exceeds your limit.', fflib_SObjectDomain.Errors.getAll()[0].message);
+		System.assertEquals(Opportunity.Amount, ((fflib_SObjectDomain.FieldError)fflib_SObjectDomain.Errors.getAll()[0]).field); 		
+	}	
 
 	@IsTest
 	private static void testUpdateValidationFailedWithoutDML()
@@ -67,6 +90,26 @@ private with sharing class fflib_SObjectDomainTest
 		System.assertEquals('You cannot change the Opportunity type once it has been created.', fflib_SObjectDomain.Errors.getAll()[0].message);
 		System.assertEquals(Opportunity.Type, ((fflib_SObjectDomain.FieldError)fflib_SObjectDomain.Errors.getAll()[0]).field); 		
 	}
+
+	@IsTest
+	private static void testUpdateBeforeValidationFailedWithoutDML()
+	{
+		Opportunity oldOpp = (Opportunity) Opportunity.sObjectType.newSObject('006E0000006mkRQ');
+		oldOpp.Name = 'Test';
+		oldOpp.Type = 'Existing Account';
+		oldOpp.StageName = 'Qualification';
+		Opportunity newOpp = (Opportunity) Opportunity.sObjectType.newSObject('006E0000006mkRQ'); 
+		newOpp.Name = 'Test';
+		newOpp.Type = 'Existing Account'; 
+		newOpp.StageName = 'Prospecting';
+		System.assertEquals(false, fflib_SObjectDomain.Test.Database.hasRecords());		
+		fflib_SObjectDomain.Test.Database.onUpdate(new Opportunity[] { newOpp }, new Map<Id, SObject> { newOpp.Id => oldOpp } );
+		System.assertEquals(true, fflib_SObjectDomain.Test.Database.hasRecords());				
+		fflib_SObjectDomain.triggerHandler(fflib_SObjectDomain.TestSObjectDomainConstructor.class);		
+		System.assertEquals(1, fflib_SObjectDomain.Errors.getAll().size());		
+		System.assertEquals('You cannot change the Opportunity stage back to Prospecting.', fflib_SObjectDomain.Errors.getAll()[0].message);
+		System.assertEquals(Opportunity.StageName, ((fflib_SObjectDomain.FieldError)fflib_SObjectDomain.Errors.getAll()[0]).field); 		
+	}	
 	
 	@IsTest
 	private static void testOnBeforeDeleteWithoutDML()

@@ -94,6 +94,16 @@ public virtual with sharing class fflib_SObjectDomain
 	}
 	
 	/**
+	 * Override this to apply general validation to be performed before insert, called by the handleBeforeInsert method
+	 **/	
+	public virtual void onBeforeValidate() { }
+
+	/**
+	 * Override this to apply general validation to be performed before update, called by handleBeforeUpdate method
+	 **/
+	public virtual void onBeforeValidate(Map<Id,SObject> existingRecords) { }
+
+	/**
 	 * Override this to apply defaults to the records, this is called by the handleBeforeInsert method
 	 **/
 	public virtual void onApplyDefaults() { }
@@ -143,6 +153,7 @@ public virtual with sharing class fflib_SObjectDomain
 	 **/
     public virtual void handleBeforeInsert() 
     { 
+    	onBeforeValidate();
     	onApplyDefaults(); 
     	onBeforeInsert();
     }
@@ -150,15 +161,16 @@ public virtual with sharing class fflib_SObjectDomain
     /**
      * Base handler for the Apex Trigger event Before Update, calls the onBeforeUpdate method
      **/
-    public void handleBeforeUpdate(Map<Id,SObject> existingRecords) 
+    public virtual void handleBeforeUpdate(Map<Id,SObject> existingRecords) 
     {
+    	onBeforeValidate(existingRecords);    	
     	onBeforeUpdate(existingRecords);
     }
     
     /**
      * Base handler for the Apex Trigger event Before Delete, calls the onBeforeDelete method
      **/
-    public void handleBeforeDelete() 
+    public virtual void handleBeforeDelete() 
     {
     	onBeforeDelete();
     }
@@ -168,7 +180,7 @@ public virtual with sharing class fflib_SObjectDomain
      *
      * @throws DomainException if the current user context is not able to create records
      **/
-    public void handleAfterInsert()
+    public virtual void handleAfterInsert()
     {
     	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isCreateable()) 
     	   throw new DomainException('Permission to create an ' + SObjectDescribe.getName() + ' denied.');
@@ -182,7 +194,7 @@ public virtual with sharing class fflib_SObjectDomain
      *
      * @throws DomainException if the current user context is not able to update records
      **/
-    public void handleAfterUpdate(Map<Id,SObject> existingRecords) 
+    public virtual void handleAfterUpdate(Map<Id,SObject> existingRecords) 
     {    	
     	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isUpdateable()) 			    		
     	   throw new DomainException('Permission to udpate an ' + SObjectDescribe.getName() + ' denied.');
@@ -198,7 +210,7 @@ public virtual with sharing class fflib_SObjectDomain
      *
      * @throws DomainException if the current user context is not able to delete records
      **/
-    public void handleAfterDelete() 
+    public virtual void handleAfterDelete() 
     {
     	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isDeletable())
     	   throw new DomainException('Permission to delete an ' + SObjectDescribe.getName() + ' denied.');
@@ -630,6 +642,37 @@ public virtual with sharing class fflib_SObjectDomain
 			for(Opportunity opportunity : (List<Opportunity>) Records)
 			{
 				opportunity.CloseDate = System.today().addDays(30);						
+			}
+		}
+
+		public override void onBeforeValidate()
+		{
+			// Not required in production code			
+			super.onBeforeValidate();
+
+			// Validate Testfflib_SObjectDomain
+			for(Opportunity opp : (List<Opportunity>) Records)
+			{
+				if((opp.Amount != null) && (opp.Amount > 1000000))
+				{
+					opp.AccountId.addError( error('Amount exceeds your limit.', opp, Opportunity.Amount) );					
+				}			
+			}
+		}
+
+		public override void onBeforeValidate(Map<Id,SObject> existingRecords)
+		{
+			// Not required in production code			
+			super.onBeforeValidate(existingRecords);
+
+			// Validate changes to Testfflib_SObjectDomain
+			for(Opportunity opp : (List<Opportunity>) Records)
+			{
+				Opportunity existingOpp = (Opportunity) existingRecords.get(opp.Id);				
+				if(opp.StageName != existingOpp.StageName && opp.StageName.startsWith('Prospecting'))
+				{
+					opp.StageName.addError( error('You cannot change the Opportunity stage back to Prospecting.', opp, Opportunity.StageName) );
+				}
 			}
 		}
 	
