@@ -228,5 +228,15 @@ public class fflib_SObjectMocks
 		{
 			mocks.mockVoidMethod(this, 'commitWork', new List<Object> {});
 		}
+
+		public void registerWork(fflib_SObjectUnitOfWork.IDoWork work)
+		{
+			mocks.mockVoidMethod(this, 'registerWork', new List<Object> {work});
+		}
+
+		public void registerEmail(Messaging.Email email)
+		{
+			mocks.mockVoidMethod(this, 'registerEmail', new List<Object> {email});
+		}
 	}
 }
