@@ -139,6 +139,33 @@ public virtual with sharing class fflib_SObjectDomain
     public virtual void onAfterDelete() { }	
 	
 	/**
+	 * Override this to perform check insert permission during after insert phase, this is called by the handleAfterInsert method
+	 **/
+	public virtual void onCheckInsertPermission()
+	{
+		if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isCreateable()) 
+			throw new DomainException('Permission to create an ' + SObjectDescribe.getName() + ' denied.');
+	}
+
+	/**
+	 * Override this to perform check update permission during after insert phase, this is called by the handleAfterUpdate method
+	 **/
+	public virtual void onCheckUpdatePermission()
+	{
+		if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isUpdateable()) 			    		
+			throw new DomainException('Permission to udpate an ' + SObjectDescribe.getName() + ' denied.');
+	}
+
+	/**
+	 * Override this to perform check delete permission during after insert phase, this is called by the handleAfterDelete method
+	 **/
+	public virtual void onCheckDeletePermission()
+	{
+		if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isDeletable())
+			throw new DomainException('Permission to delete an ' + SObjectDescribe.getName() + ' denied.');		
+	}
+
+	/**
 	 * Base handler for the Apex Trigger event Before Insert, calls the onApplyDefaults method, followed by onBeforeInsert
 	 **/
     public virtual void handleBeforeInsert() 
@@ -162,31 +189,28 @@ public virtual with sharing class fflib_SObjectDomain
     {
     	onBeforeDelete();
     }
-    
+
     /**
-     * Base handler for the Apex Trigger event After Insert, checks object security and calls the onValidate and onAfterInsert methods
+     * Base handler for the Apex Trigger event After Insert, calls onCheckInsertPermission then calls the onValidate and onAfterInsert methods
      *
      * @throws DomainException if the current user context is not able to create records
      **/
     public void handleAfterInsert()
     {
-    	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isCreateable()) 
-    	   throw new DomainException('Permission to create an ' + SObjectDescribe.getName() + ' denied.');
-    	   
+    	onCheckInsertPermission();
     	onValidate();
     	onAfterInsert(); 
     }
     
     /**
-     * Base handler for the Apex Trigger event After Update, checks object security and calls the onValidate, onValidate(Map<Id,SObject>) and onAfterUpdate methods
+     * Base handler for the Apex Trigger event After Update, calls onCheckUpdatePermission then calls the onValidate, onValidate(Map<Id,SObject>) and onAfterUpdate methods
      *
      * @throws DomainException if the current user context is not able to update records
      **/
     public void handleAfterUpdate(Map<Id,SObject> existingRecords) 
     {    	
-    	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isUpdateable()) 			    		
-    	   throw new DomainException('Permission to udpate an ' + SObjectDescribe.getName() + ' denied.');
-    	
+    	onCheckUpdatePermission();
+
     	if(Configuration.OldOnUpdateValidateBehaviour)
     		onValidate();
     	onValidate(existingRecords);
@@ -194,15 +218,13 @@ public virtual with sharing class fflib_SObjectDomain
     }
     
     /**
-     * Base handler for the Apex Trigger event After Delete, checks object security and calls the onAfterDelete method
+     * Base handler for the Apex Trigger event After Delete, calls onCheckDeletePermission then calls the onAfterDelete method
      *
      * @throws DomainException if the current user context is not able to delete records
      **/
     public void handleAfterDelete() 
     {
-    	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isDeletable())
-    	   throw new DomainException('Permission to delete an ' + SObjectDescribe.getName() + ' denied.');
-    	   
+    	onCheckDeletePermission();    	   
     	onAfterDelete();
     }	
 
