@@ -632,7 +632,7 @@ public virtual with sharing class fflib_SObjectDomain
 				opportunity.CloseDate = System.today().addDays(30);						
 			}
 		}
-
+		
 		public override void onValidate()	
 		{
 			// Not required in production code
