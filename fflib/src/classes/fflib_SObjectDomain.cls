@@ -94,16 +94,6 @@ public virtual with sharing class fflib_SObjectDomain
 	}
 	
 	/**
-	 * Override this to apply general validation to be performed before insert, called by the handleBeforeInsert method
-	 **/	
-	public virtual void onBeforeValidate() { }
-
-	/**
-	 * Override this to apply general validation to be performed before update, called by handleBeforeUpdate method
-	 **/
-	public virtual void onBeforeValidate(Map<Id,SObject> existingRecords) { }
-
-	/**
 	 * Override this to apply defaults to the records, this is called by the handleBeforeInsert method
 	 **/
 	public virtual void onApplyDefaults() { }
@@ -149,21 +139,19 @@ public virtual with sharing class fflib_SObjectDomain
     public virtual void onAfterDelete() { }	
 	
 	/**
-	 * Base handler for the Apex Trigger event Before Insert, calls the onBeforeValidate, followed by the onApplyDefaults method, followed by onBeforeInsert
+	 * Base handler for the Apex Trigger event Before Insert, calls the onApplyDefaults method, followed by onBeforeInsert
 	 **/
     public virtual void handleBeforeInsert() 
     { 
-    	onBeforeValidate();
     	onApplyDefaults(); 
     	onBeforeInsert();
     }
     
     /**
-     * Base handler for the Apex Trigger event Before Update, calls the onBeforeValidate(Map<Id,SObject>) followed by the onBeforeUpdate method
+     * Base handler for the Apex Trigger event Before Update, calls the onBeforeUpdate method
      **/
     public virtual void handleBeforeUpdate(Map<Id,SObject> existingRecords) 
     {
-    	onBeforeValidate(existingRecords);    	
     	onBeforeUpdate(existingRecords);
     }
     
@@ -645,37 +633,6 @@ public virtual with sharing class fflib_SObjectDomain
 			}
 		}
 
-		public override void onBeforeValidate()
-		{
-			// Not required in production code			
-			super.onBeforeValidate();
-
-			// Validate Testfflib_SObjectDomain
-			for(Opportunity opp : (List<Opportunity>) Records)
-			{
-				if((opp.Amount != null) && (opp.Amount > 1000000))
-				{
-					opp.AccountId.addError( error('Amount exceeds your limit.', opp, Opportunity.Amount) );					
-				}			
-			}
-		}
-
-		public override void onBeforeValidate(Map<Id,SObject> existingRecords)
-		{
-			// Not required in production code			
-			super.onBeforeValidate(existingRecords);
-
-			// Validate changes to Testfflib_SObjectDomain
-			for(Opportunity opp : (List<Opportunity>) Records)
-			{
-				Opportunity existingOpp = (Opportunity) existingRecords.get(opp.Id);				
-				if(opp.StageName != existingOpp.StageName && opp.StageName.startsWith('Prospecting'))
-				{
-					opp.StageName.addError( error('You cannot change the Opportunity stage back to Prospecting.', opp, Opportunity.StageName) );
-				}
-			}
-		}
-	
 		public override void onValidate()	
 		{
 			// Not required in production code
