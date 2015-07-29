@@ -83,6 +83,18 @@ private with sharing class fflib_SObjectDomainTest
 	}
 	
 	@IsTest
+	private static void testOnAfterUndeleteWithoutDML()
+	{
+		Opportunity opp = (Opportunity) Opportunity.sObjectType.newSObject('006E0000006mkRQ'); 
+		opp.Name = 'Test';
+		opp.Type = 'Existing Account';
+		System.assertEquals(false, fflib_SObjectDomain.Test.Database.hasRecords());		
+		fflib_SObjectDomain.Test.Database.onUndelete(new list<Opportunity> { opp } );		
+		System.assertEquals(true, fflib_SObjectDomain.Test.Database.hasRecords());				
+		fflib_SObjectDomain.triggerHandler(fflib_SObjectDomain.TestSObjectDomainConstructor.class);		
+	}
+	
+	@IsTest
 	private static void testObjectSecurity()
 	{
 		// Create a user which will not have access to the test object type
