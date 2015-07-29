@@ -155,7 +155,7 @@ public virtual with sharing class fflib_SObjectDomain
     /**
      * Base handler for the Apex Trigger event Before Update, calls the onBeforeUpdate method
      **/
-    public void handleBeforeUpdate(Map<Id,SObject> existingRecords) 
+    public virtual void handleBeforeUpdate(Map<Id,SObject> existingRecords) 
     {
     	onBeforeUpdate(existingRecords);
     }
@@ -163,7 +163,7 @@ public virtual with sharing class fflib_SObjectDomain
     /**
      * Base handler for the Apex Trigger event Before Delete, calls the onBeforeDelete method
      **/
-    public void handleBeforeDelete() 
+    public virtual void handleBeforeDelete() 
     {
     	onBeforeDelete();
     }
@@ -173,7 +173,7 @@ public virtual with sharing class fflib_SObjectDomain
      *
      * @throws DomainException if the current user context is not able to create records
      **/
-    public void handleAfterInsert()
+    public virtual void handleAfterInsert()
     {
     	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isCreateable()) 
     	   throw new DomainException('Permission to create an ' + SObjectDescribe.getName() + ' denied.');
@@ -187,7 +187,7 @@ public virtual with sharing class fflib_SObjectDomain
      *
      * @throws DomainException if the current user context is not able to update records
      **/
-    public void handleAfterUpdate(Map<Id,SObject> existingRecords) 
+    public virtual void handleAfterUpdate(Map<Id,SObject> existingRecords) 
     {    	
     	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isUpdateable()) 			    		
     	   throw new DomainException('Permission to udpate an ' + SObjectDescribe.getName() + ' denied.');
@@ -203,7 +203,7 @@ public virtual with sharing class fflib_SObjectDomain
      *
      * @throws DomainException if the current user context is not able to delete records
      **/
-    public void handleAfterDelete() 
+    public virtual void handleAfterDelete() 
     {
     	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isDeletable())
     	   throw new DomainException('Permission to delete an ' + SObjectDescribe.getName() + ' denied.');
