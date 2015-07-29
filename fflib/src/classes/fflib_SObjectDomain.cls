@@ -528,11 +528,11 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Ensures logging of errors in the Domain context for later assertions in tests
 	 **/
-	public class FieldError extends ObjectError
+	public virtual class FieldError extends ObjectError
 	{
 		public SObjectField field;
 		
-		private FieldError()
+		public FieldError()
 		{		
 			
 		}
@@ -545,7 +545,7 @@ public virtual with sharing class fflib_SObjectDomain
 	{
 		public SObject record;
 		
-		private ObjectError()
+		public ObjectError()
 		{
 		
 		}
