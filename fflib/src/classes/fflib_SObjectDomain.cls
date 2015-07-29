@@ -139,6 +139,11 @@ public virtual with sharing class fflib_SObjectDomain
     public virtual void onAfterDelete() { }	
 	
 	/**
+	 * Override this to perform processing during the after undelete phase, this is called by the handleAfterDelete method
+	 **/    
+    public virtual void onAfterUndelete() { }	
+	
+	/**
 	 * Base handler for the Apex Trigger event Before Insert, calls the onApplyDefaults method, followed by onBeforeInsert
 	 **/
     public virtual void handleBeforeInsert() 
@@ -204,6 +209,19 @@ public virtual with sharing class fflib_SObjectDomain
     	   throw new DomainException('Permission to delete an ' + SObjectDescribe.getName() + ' denied.');
     	   
     	onAfterDelete();
+    }	
+
+    /**
+     * Base handler for the Apex Trigger event After Undelete, checks object security and calls the onAfterUndelete method
+     *
+     * @throws DomainException if the current user context is not able to delete records
+     **/
+    public void handleAfterUndelete() 
+    {
+    	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isCreateable())
+    	   throw new DomainException('Permission to create an ' + SObjectDescribe.getName() + ' denied.');
+    	   
+    	onAfterUndelete();
     }	
 
     /**
@@ -274,6 +292,7 @@ public virtual with sharing class fflib_SObjectDomain
 				Trigger.isInsert, 
 				Trigger.isUpdate, 
 				Trigger.isDelete, 
+				Trigger.isUnDelete,
 				Trigger.new, 
 				Trigger.oldMap);
 		}
@@ -282,7 +301,7 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Calls the applicable override methods such as beforeInsert, beforeUpdate etc. based on a Trigger context
 	 **/
-	private static void triggerHandler(Type domainClass, Boolean isBefore, Boolean isAfter, Boolean isInsert, Boolean isUpdate, Boolean isDelete, List<SObject> newRecords, Map<Id, SObject> oldRecordsMap)
+	private static void triggerHandler(Type domainClass, Boolean isBefore, Boolean isAfter, Boolean isInsert, Boolean isUpdate, Boolean isDelete, Boolean isUndelete, List<SObject> newRecords, Map<Id, SObject> oldRecordsMap)
 	{	
 		// After phase of trigger will reuse prior instance of domain class if ITriggerStateful implemented 
 		fflib_SObjectDomain domainObject = isBefore ? null : popTriggerInstance(domainClass, isDelete ? oldRecordsMap.values() : newRecords);
@@ -297,6 +316,7 @@ public virtual with sharing class fflib_SObjectDomain
 	        if(isInsert) domainObject = domainConstructor.construct(newRecords);
 	        else if(isUpdate) domainObject = domainConstructor.construct(newRecords);
 	        else if(isDelete) domainObject = domainConstructor.construct(oldRecordsMap.values());
+	        else if(isUndelete) domainObject = domainConstructor.construct(newRecords);
 	        
 	        // Should this instance be reused on the next trigger invocation?
 	        if(domainObject.Configuration.TriggerStateEnabled)
@@ -316,6 +336,7 @@ public virtual with sharing class fflib_SObjectDomain
 	        if(isInsert) domainObject.handleAfterInsert();
 	        else if(isUpdate) domainObject.handleAfterUpdate(oldRecordsMap);
 	        else if(isDelete) domainObject.handleAfterDelete();
+	        else if(isUndelete) domainObject.handleAfterUndelete();
 	    }				
 	}
 	
@@ -560,6 +581,7 @@ public virtual with sharing class fflib_SObjectDomain
 		private Boolean isInsert = false;
 		private Boolean isUpdate = false;
 		private Boolean isDelete = false;
+		private Boolean isUndelete = false;
 		private List<SObject> records = new List<SObject>();
 		private Map<Id, SObject> oldRecords = new Map<Id, SObject>();
 		
@@ -571,10 +593,10 @@ public virtual with sharing class fflib_SObjectDomain
 		private void testTriggerHandler(Type domainClass)
 		{
 			// Mock Before
-			triggerHandler(domainClass, true, false, isInsert, isUpdate, isDelete, records, oldRecords);
+			triggerHandler(domainClass, true, false, isInsert, isUpdate, isDelete, isUndelete, records, oldRecords);
 			
 			// Mock After
-			triggerHandler(domainClass, false, true, isInsert, isUpdate, isDelete, records, oldRecords);
+			triggerHandler(domainClass, false, true, isInsert, isUpdate, isDelete, isUndelete, records, oldRecords);
 		}
 		
 		public void onInsert(List<SObject> records)
@@ -582,6 +604,7 @@ public virtual with sharing class fflib_SObjectDomain
 			this.isInsert = true;
 			this.isUpdate = false;
 			this.isDelete = false;
+			this.isUndelete = false;
 			this.records = records;
 		}
 		
@@ -591,6 +614,7 @@ public virtual with sharing class fflib_SObjectDomain
 			this.isUpdate = true;
 			this.isDelete = false;
 			this.records = records;
+			this.isUndelete = false;
 			this.oldRecords = oldRecords;
 		}
 		
@@ -599,7 +623,17 @@ public virtual with sharing class fflib_SObjectDomain
 			this.isInsert = false;
 			this.isUpdate = false;
 			this.isDelete = true;
+			this.isUndelete = false;
 			this.oldRecords = records;
+		}
+		
+		public void onUndelete(List<SObject> records)
+		{
+			this.isInsert = false;
+			this.isUpdate = false;
+			this.isDelete = false;
+			this.isUndelete = true;
+			this.records = records;
 		}
 		
 		public Boolean hasRecords()
@@ -674,6 +708,12 @@ public virtual with sharing class fflib_SObjectDomain
 			{
 				opp.addError( error('You cannot delete this Opportunity.', opp) );
 			}			
+		}
+		
+		public override void onAfterUndelete()
+		{
+			// Not required in production code
+			super.onAfterUndelete();
 		}
 		
 		public override void onBeforeInsert()
