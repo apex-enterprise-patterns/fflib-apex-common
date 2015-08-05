@@ -2,6 +2,7 @@
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
     <types>
         <members>fflib_Application</members>
+        <members>fflib_ApplicationTest</members>
         <members>fflib_ISObjectDomain</members>
         <members>fflib_ISObjectSelector</members>
         <members>fflib_ISObjectUnitOfWork</members>

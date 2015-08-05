@@ -58,9 +58,9 @@ public virtual class fflib_SObjectUnitOfWork
 	
 	private Map<String, List<SObject>> m_newListByType = new Map<String, List<SObject>>();
 	
-	private Map<String, List<SObject>> m_dirtyListByType = new Map<String, List<SObject>>();
+	private Map<String, Map<Id, SObject>> m_dirtyMapByType = new Map<String, Map<Id, SObject>>();
 	
-	private Map<String, List<SObject>> m_deletedListByType = new Map<String, List<SObject>>();
+	private Map<String, Map<Id, SObject>> m_deletedMapByType = new Map<String, Map<Id, SObject>>();
 	
 	private Map<String, Relationships> m_relationships = new Map<String, Relationships>();
 
@@ -114,10 +114,8 @@ public virtual class fflib_SObjectUnitOfWork
 			
 		for(Schema.SObjectType sObjectType : m_sObjectTypes)
 		{
-			m_newListByType.put(sObjectType.getDescribe().getName(), new List<SObject>());
-			m_dirtyListByType.put(sObjectType.getDescribe().getName(), new List<SObject>());
-			m_deletedListByType.put(sObjectType.getDescribe().getName(), new List<SObject>());
-			m_relationships.put(sObjectType.getDescribe().getName(), new Relationships());	
+			// register the type
+			handleRegisterType(sObjectType);
 		}
 
 		m_workList.add(m_emailWork);
@@ -125,6 +123,34 @@ public virtual class fflib_SObjectUnitOfWork
 		m_dml = dml;
 	}
 
+	// default implementations for commitWork events
+	public virtual void onRegisterType(Schema.SObjectType sObjectType) {}
+	public virtual void onCommitWorkStarting() {}
+	public virtual void onDMLStarting() {}
+	public virtual void onDMLFinished() {}
+	public virtual void onDoWorkStarting() {}
+	public virtual void onDoWorkFinished() {}
+	public virtual void onCommitWorkFinishing() {}
+	public virtual void onCommitWorkFinished(Boolean wasSuccessful) {}
+
+	/**
+	 * Registers the type to be used for DML operations
+	 *
+	 * @param sObjectType - The type to register
+	 *
+	 */
+	private void handleRegisterType(Schema.SObjectType sObjectType)
+	{
+		// add type to dml operation tracking
+		m_newListByType.put(sObjectType.getDescribe().getName(), new List<SObject>());
+		m_dirtyMapByType.put(sObjectType.getDescribe().getName(), new Map<Id, SObject>());
+		m_deletedMapByType.put(sObjectType.getDescribe().getName(), new Map<Id, SObject>());
+		m_relationships.put(sObjectType.getDescribe().getName(), new Relationships());	
+
+		// give derived class opportunity to register the type
+		onRegisterType(sObjectType);		
+	}
+	
 	/**
 	 * Register a generic peace of work to be invoked during the commitWork phase
 	 **/
@@ -149,6 +175,19 @@ public virtual class fflib_SObjectUnitOfWork
 	public void registerNew(SObject record)
 	{
 		registerNew(record, null, null);
+	}
+
+	/**
+	 * Register a list of newly created SObject instances to be inserted when commitWork is called
+	 *
+	 * @param records A list of newly created SObject instances to be inserted during commitWork
+	 **/
+	public void registerNew(List<SObject> records)
+	{
+		for(SObject record : records)
+		{
+			registerNew(record, null, null);
+		}
 	}
 
 	/**
@@ -197,9 +236,22 @@ public virtual class fflib_SObjectUnitOfWork
 		if(record.Id == null)
 			throw new UnitOfWorkException('New records cannot be registered as dirty');
 		String sObjectType = record.getSObjectType().getDescribe().getName();			
-		if(!m_dirtyListByType.containsKey(sObjectType))
+		if(!m_dirtyMapByType.containsKey(sObjectType))
 			throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
-		m_dirtyListByType.get(sObjectType).add(record);		
+		m_dirtyMapByType.get(sObjectType).put(record.Id, record);		
+	}
+
+	/**
+	 * Register a list of existing records to be updated during the commitWork method
+	 *
+	 * @param records A list of existing records
+	 **/
+	public void registerDirty(List<SObject> records)
+	{
+		for(SObject record : records)
+		{
+			this.registerDirty(record);
+		}
 	}
 
 	/**
@@ -212,9 +264,22 @@ public virtual class fflib_SObjectUnitOfWork
 		if(record.Id == null)
 			throw new UnitOfWorkException('New records cannot be registered for deletion');
 		String sObjectType = record.getSObjectType().getDescribe().getName();			
-		if(!m_deletedListByType.containsKey(sObjectType))
+		if(!m_deletedMapByType.containsKey(sObjectType))
 			throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
-		m_deletedListByType.get(sObjectType).add(record);							
+		m_deletedMapByType.get(sObjectType).put(record.Id, record);							
+	}
+	
+	/**
+	 * Register a list of existing records to be deleted during the commitWork method
+	 *
+	 * @param records A list of existing records
+	 **/
+	public void registerDeleted(List<SObject> records)
+	{
+		for(SObject record : records)
+		{
+			this.registerDeleted(record);
+		}
 	}
 	
 	/**
@@ -222,10 +287,16 @@ public virtual class fflib_SObjectUnitOfWork
 	 **/
 	public void commitWork()
 	{
+		// notify we're starting the commit work
+		onCommitWorkStarting();
+
 		// Wrap the work in its own transaction 
-		Savepoint sp = Database.setSavePoint();		
+		Savepoint sp = Database.setSavePoint();
+		Boolean wasSuccessful = false;	
 		try
 		{		
+			// notify we're starting the DML operations
+			onDMLStarting();
 			// Insert by type
 			for(Schema.SObjectType sObjectType : m_sObjectTypes)
 			{
@@ -234,14 +305,27 @@ public virtual class fflib_SObjectUnitOfWork
 			}					
 			// Update by type
 			for(Schema.SObjectType sObjectType : m_sObjectTypes)
-				m_dml.dmlUpdate(m_dirtyListByType.get(sObjectType.getDescribe().getName()));		
+				m_dml.dmlUpdate(m_dirtyMapByType.get(sObjectType.getDescribe().getName()).values());		
 			// Delete by type (in reverse dependency order)
 			Integer objectIdx = m_sObjectTypes.size() - 1;
 			while(objectIdx>=0)
-				m_dml.dmlDelete(m_deletedListByType.get(m_sObjectTypes[objectIdx--].getDescribe().getName()));
+				m_dml.dmlDelete(m_deletedMapByType.get(m_sObjectTypes[objectIdx--].getDescribe().getName()).values());
+			// notify we're done with DML
+			onDMLFinished();
+
+			// notify we're starting to process registered work
+			onDoWorkStarting();
 			// Generic work
 			for(IDoWork work : m_workList)
 				work.doWork();
+			// notify we've completed processing registered work
+			onDoWorkFinished();
+
+			// notify we've completed all steps and are in the final stage of completing
+			onCommitWorkFinishing();
+
+			// mark tracker to indicate success
+			wasSuccessful = true;
 		}
 		catch (Exception e)
 		{
@@ -249,6 +333,11 @@ public virtual class fflib_SObjectUnitOfWork
 			Database.rollback(sp);
 			// Throw exception on to caller
 			throw e;
+		}
+		finally
+		{			
+			// notify we're done with commit work
+			onCommitWorkFinished(wasSuccessful);
 		}
 	}
 	

@@ -33,7 +33,12 @@ public abstract with sharing class fflib_SObjectSelector
     /**
      * This overrides the Multi Currency handling, preventing it from injecting the CurrencyIsoCode fie ld for certain System objects that don't ever support it
      **/
-    private static Set<String> STANDARD_WITHOUT_CURRENCYISO = new Set<String> { 'AsyncApexJob' };
+    private static Set<String> STANDARD_WITHOUT_CURRENCYISO = new Set<String> { AsyncApexJob.SObjectType.getDescribe().getName()
+                                                                                , ApexClass.SObjectType.getDescribe().getName()
+                                                                                , ApexTrigger.SObjectType.getDescribe().getName()
+                                                                                , Attachment.SObjectType.getDescribe().getName()
+                                                                                , RecordType.SObjectType.getDescribe().getName() 
+    };
      
     /**
      * Should this selector automatically include the FieldSet fields when building queries?
@@ -362,8 +367,9 @@ public abstract with sharing class fflib_SObjectSelector
         {
 	        // select the Selector fields and Fieldsets and set order
 	        queryFactory.selectFields(new Set<SObjectField>(getSObjectFieldList()));
-	        if(m_includeFieldSetFields)
-	            for(Schema.FieldSet fieldSet : getSObjectFieldSetList())
+	        List<Schema.FieldSet> fieldSetList = getSObjectFieldSetList();
+	        if(m_includeFieldSetFields && fieldSetList != null)
+	            for(Schema.FieldSet fieldSet : fieldSetList)
 	                queryFactory.selectFieldSet(fieldSet);
 	
 	        // Automatically select the CurrencyIsoCode for MC orgs (unless the object is a known exception to the rule)
