@@ -26,6 +26,17 @@
 
 @isTest
 private class fflib_QueryFactoryTest {
+
+	@isTest
+	static void fieldSelections(){
+		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
+		qf.selectField('firstName');
+		qf.selectField(Schema.Contact.SObjectType.fields.lastName);
+		qf.selectFields( new Set<String>{'acCounTId', 'account.name'} );
+		qf.selectFields( new List<String>{'homePhonE','fAX'} );
+		qf.selectFields( new List<Schema.SObjectField>{ Contact.Email, Contact.Title } );
+	}
+
 	@isTest
 	static void simpleFieldSelection() {
 		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
@@ -36,16 +47,6 @@ private class fflib_QueryFactoryTest {
 		qf.setLimit(100);
 		System.assertEquals(100,qf.getLimit());
 		System.assert( qf.toSOQL().endsWithIgnoreCase('LIMIT '+qf.getLimit()), 'Failed to respect limit clause:'+qf.toSOQL() );
-	}
-
-	@isTest
-	static void fieldSelections(){
-		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
-		qf.selectField('firstName');
-		qf.selectField(Schema.Contact.SObjectType.fields.lastName);
-		qf.selectFields( new Set<String>{'acCounTId', 'account.name'} );
-		qf.selectFields( new List<String>{'homePhonE','fAX'} );
-		qf.selectFields( new List<Schema.SObjectField>{ Contact.Email, Contact.Title } );
 	}
 
 	@isTest
@@ -254,6 +255,167 @@ private class fflib_QueryFactoryTest {
 		fflib_QueryFactory.QueryField qfld = new fflib_QueryFactory.QueryField(new List<Schema.SObjectField>{
 			Schema.Contact.SObjectType.fields.AccountId});
 		System.assert(!qfld.equals(new Contact()));	
+	}
+
+	@isTest
+	static void addChildQueriesWithChildRelationship_success(){
+		Account acct = new Account();
+		acct.Name = 'testchildqueriesacct';
+		insert acct;
+		Contact cont = new Contact();
+		cont.FirstName = 'test';
+		cont.LastName = 'test';
+		cont.AccountId = acct.Id;
+		insert cont;
+        Task tsk = new Task();
+        tsk.WhoId = cont.Id;
+        tsk.Subject = 'test';
+        tsk.ActivityDate = System.today();
+        insert tsk;
+
+		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
+		qf.selectField('name').selectField('Id').setCondition( 'name like \'%test%\'' ).addOrdering('CreatedDate',fflib_QueryFactory.SortOrder.DESCENDING, true);
+		Schema.DescribeSObjectResult descResult = Contact.SObjectType.getDescribe();
+		//explicitly assert object accessibility when creating the subselect
+		qf.subselectQuery('Tasks', true).selectField('Id').selectField('Subject').setCondition(' IsDeleted = false ');
+		List<fflib_QueryFactory> queries = qf.getSubselectQueries();
+		System.assert(queries != null);
+		List<Contact> contacts = Database.query(qf.toSOQL());
+		System.assert(contacts != null && contacts.size() == 1);
+		System.assert(contacts[0].Tasks.size() == 1);
+		System.assert(contacts[0].Tasks[0].Subject == 'test');
+	}
+
+	@isTest
+	static void addChildQueriesWithChildRelationshipNoAccessibleCheck_success(){
+		Account acct = new Account();
+		acct.Name = 'testchildqueriesacct';
+		insert acct;
+		Contact cont = new Contact();
+		cont.FirstName = 'test';
+		cont.LastName = 'test';
+		cont.AccountId = acct.Id;
+		insert cont;
+        Task tsk = new Task();
+        tsk.WhoId = cont.Id;
+        tsk.Subject = 'test';
+        tsk.ActivityDate = System.today();
+        insert tsk;
+
+		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
+		qf.selectField('name').selectField('Id').setCondition( 'name like \'%test%\'' ).addOrdering('CreatedDate',fflib_QueryFactory.SortOrder.DESCENDING, true);
+		//explicitly assert object accessibility when creating the subselect
+		qf.subselectQuery('Tasks').selectField('Id').selectField('Subject').setCondition(' IsDeleted = false ');
+		List<fflib_QueryFactory> queries = qf.getSubselectQueries();
+		System.assert(queries != null);
+		List<Contact> contacts = Database.query(qf.toSOQL());
+		System.assert(contacts != null && contacts.size() == 1);
+		System.assert(contacts[0].Tasks.size() == 1);
+		System.assert(contacts[0].Tasks[0].Subject == 'test');
+	}
+
+	@isTest
+	static void addChildQueriesWithChildRelationshipObjCheckIsAccessible_success(){
+		Account acct = new Account();
+		acct.Name = 'testchildqueriesacct';
+		insert acct;
+		Contact cont = new Contact();
+		cont.FirstName = 'test';
+		cont.LastName = 'test';
+		cont.AccountId = acct.Id;
+		insert cont;
+        Task tsk = new Task();
+        tsk.WhoId = cont.Id;
+        tsk.Subject = 'test';
+        tsk.ActivityDate = System.today();
+        insert tsk;
+
+		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
+		qf.selectField('name').selectField('Id').setCondition( 'name like \'%test%\'' ).addOrdering('CreatedDate',fflib_QueryFactory.SortOrder.DESCENDING, true);
+		Schema.DescribeSObjectResult descResult = Contact.SObjectType.getDescribe();
+		Schema.ChildRelationship relationship;
+		for (Schema.ChildRelationship childRow : descResult.getChildRelationships()){
+        	//occasionally on some standard objects (Like Contact child of Contact) do not have a relationship name.  
+        	//if there is no relationship name, we cannot query on it, so throw an exception.
+            if (childRow.getRelationshipName() == 'Tasks'){ 
+                relationship = childRow;
+            }   
+        }
+       	//explicitly assert object accessibility when creating the subselect
+		qf.subselectQuery(relationship, true).selectField('Id').selectField('Subject').setCondition(' IsDeleted = false ');
+		List<fflib_QueryFactory> queries = qf.getSubselectQueries();
+		System.assert(queries != null);
+		List<Contact> contacts = Database.query(qf.toSOQL());
+		System.assert(contacts != null && contacts.size() == 1);
+		System.assert(contacts[0].Tasks.size() == 1);
+		System.assert(contacts[0].Tasks[0].Subject == 'test');
+	}
+
+	@isTest
+	static void addChildQueriesWithChildRelationshipObj_success(){
+		Account acct = new Account();
+		acct.Name = 'testchildqueriesacct';
+		insert acct;
+		Contact cont = new Contact();
+		cont.FirstName = 'test';
+		cont.LastName = 'test';
+		cont.AccountId = acct.Id;
+		insert cont;
+        Task tsk = new Task();
+        tsk.WhoId = cont.Id;
+        tsk.Subject = 'test';
+        tsk.ActivityDate = System.today();
+        insert tsk;
+
+		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
+		qf.selectField('name').selectField('Id').setCondition( 'name like \'%test%\'' ).addOrdering('CreatedDate',fflib_QueryFactory.SortOrder.DESCENDING, true);
+		Schema.DescribeSObjectResult descResult = Contact.SObjectType.getDescribe();
+		Schema.ChildRelationship relationship;
+		for (Schema.ChildRelationship childRow : descResult.getChildRelationships()){
+        	//occasionally on some standard objects (Like Contact child of Contact) do not have a relationship name.  
+        	//if there is no relationship name, we cannot query on it, so throw an exception.
+            if (childRow.getRelationshipName() == 'Tasks'){ 
+                relationship = childRow;
+            }   
+        }
+       	//explicitly assert object accessibility when creating the subselect
+		qf.subselectQuery(relationship).selectField('Id').selectField('Subject').setCondition(' IsDeleted = false ');
+		List<fflib_QueryFactory> queries = qf.getSubselectQueries();
+		System.assert(queries != null);
+		List<Contact> contacts = Database.query(qf.toSOQL());
+		System.assert(contacts != null && contacts.size() == 1);
+		System.assert(contacts[0].Tasks.size() == 1);
+		System.assert(contacts[0].Tasks[0].Subject == 'test');
+	}
+
+	@isTest
+	static void addChildQueriesWithChildRelationshipNoAccessibleCheck_fail(){
+		Account acct = new Account();
+		acct.Name = 'testchildqueriesacct';
+		insert acct;
+		Contact cont = new Contact();
+		cont.FirstName = 'test';
+		cont.LastName = 'test';
+		cont.AccountId = acct.Id;
+		insert cont;
+        Task tsk = new Task();
+        tsk.WhoId = cont.Id;
+        tsk.Subject = 'test';
+        tsk.ActivityDate = System.today();
+        insert tsk;
+
+		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
+		qf.selectField('name').selectField('Id').setCondition( 'name like \'%test%\'' ).addOrdering('CreatedDate',fflib_QueryFactory.SortOrder.DESCENDING, true);
+		Schema.DescribeSObjectResult descResult = Contact.SObjectType.getDescribe();
+		//explicitly assert object accessibility when creating the subselect
+		//
+		Exception e;
+		try {
+			qf.subselectQuery('Tas').selectField('Id').selectField('Subject').setCondition(' IsDeleted = false ');
+		} catch (fflib_QueryFactory.InvalidSubqueryRelationshipException ex) {
+			e = ex;   
+		}	
+		System.assertNotEquals(e, null);
 	}
 
 	@isTest
@@ -502,6 +664,115 @@ private class fflib_QueryFactoryTest {
 		System.assertEquals(qf1.toSOQL(), qf2.toSOQL());
 		System.assertEquals(expectedQuery, qf1.toSOQL());
 		System.assertEquals(expectedQuery, qf2.toSOQL());
+	}
+
+	@isTest
+	static void deepCloneBasicNoChanges() {
+		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType)	
+		.setLimit(10)
+		.setCondition('id=12345')
+		.selectField('Description')
+		.addOrdering(new fflib_QueryFactory.Ordering('Contact','name',fflib_QueryFactory.SortOrder.ASCENDING) )
+		.addOrdering( new fflib_QueryFactory.Ordering('Contact','CreatedDATE',fflib_QueryFactory.SortOrder.DESCENDING))
+		.setEnforceFLS(true);
+
+		fflib_QueryFactory qf2 = qf.deepClone();
+
+		System.assertEquals(qf2, qf);
+
+		System.assertEquals(qf.getLimit(), qf2.getLimit());
+		System.assertEquals(qf.getCondition(), qf2.getCondition());
+		System.assertEquals(qf.toSOQL(), qf2.toSOQL());
+		System.assertEquals(qf.getOrderings(), qf2.getOrderings());
+	}
+
+	@isTest
+	static void deepCloneSubqueryNoChanges() {
+		fflib_QueryFactory qf = new fflib_QueryFactory(Account.SObjectType)	
+		.setLimit(10)
+		.setCondition('id=12345')
+		.selectField('Description')
+		.addOrdering(new fflib_QueryFactory.Ordering('Account','Name',fflib_QueryFactory.SortOrder.ASCENDING) )
+		.addOrdering( new fflib_QueryFactory.Ordering('Account','Description',fflib_QueryFactory.SortOrder.DESCENDING))
+		.setEnforceFLS(true);
+
+		qf.subselectQuery('Contacts', true);	
+
+		fflib_QueryFactory qf2 = qf.deepClone();
+
+		System.assertEquals(qf, qf2);
+
+		System.assertEquals(qf.getLimit(), qf2.getLimit());
+		System.assertEquals(qf.getCondition(), qf2.getCondition());
+		System.assertEquals(qf.toSOQL(), qf2.toSOQL());
+		System.assertEquals(qf.getOrderings(), qf2.getOrderings());
+		System.assertEquals(qf.getSubselectQueries(), qf2.getSubselectQueries());
+	}
+
+	@isTest
+	static void deepCloneBasic() {
+		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType)	
+		.setLimit(10)
+		.setCondition('id=12345')
+		.selectField('Description')
+		.addOrdering(new fflib_QueryFactory.Ordering('Contact','name',fflib_QueryFactory.SortOrder.ASCENDING) )
+		.addOrdering( new fflib_QueryFactory.Ordering('Contact','CreatedDATE',fflib_QueryFactory.SortOrder.DESCENDING))
+		.setEnforceFLS(true);
+
+
+		fflib_QueryFactory qf2 = qf.deepClone()
+			.setLimit(200)
+			.setCondition('id=54321')
+			.selectField('Fax')
+			.addOrdering( new fflib_QueryFactory.Ordering('Contact','Fax',fflib_QueryFactory.SortOrder.ASCENDING))
+			.setEnforceFLS(false);
+
+		qf2.getOrderings().remove(0);
+
+		System.assertEquals(10, qf.getLimit());
+		System.assertEquals(200, qf2.getLimit());
+
+		System.assertEquals('id=12345', qf.getCondition());
+		System.assertEquals('id=54321', qf2.getCondition());
+
+		String query = qf.toSOQL();
+		String query2 = qf2.toSOQL();
+
+		System.assert(query.containsIgnoreCase('Fax') == false);
+		System.assert(query.containsIgnoreCase('Description'));
+		System.assert(query2.containsIgnoreCase('Description'));
+		System.assert(query2.containsIgnoreCase('Fax'));
+
+		System.assertEquals(2, qf.getOrderings().size());
+		System.assertEquals(Contact.name, qf.getOrderings()[0].getField() );
+		System.assertEquals(fflib_QueryFactory.SortOrder.DESCENDING, qf.getOrderings()[1].getDirection());
+
+		System.assertEquals(2, qf2.getOrderings().size());
+		System.assertEquals(Contact.Fax, qf2.getOrderings()[1].getField());
+		System.assertEquals(fflib_QueryFactory.SortOrder.ASCENDING, qf2.getOrderings()[1].getDirection());
+
+	}
+
+	@isTest
+	static void deepCloneSubquery() {
+		fflib_QueryFactory qf = new fflib_QueryFactory(Account.SObjectType);
+		qf.subselectQuery('Contacts', true);
+
+		fflib_QueryFactory qf2 = qf.deepClone();
+		qf2.subselectQuery('Opportunities', true);
+
+		List<fflib_QueryFactory> subqueries = qf.getSubselectQueries();
+		List<fflib_QueryFactory> subqueries2 = qf2.getSubselectQueries();
+
+		fflib_QueryFactory subquery2_0 = subqueries2.get(0);
+
+		subquery2_0.addOrdering(new fflib_QueryFactory.Ordering('Contact','Name',fflib_QueryFactory.SortOrder.ASCENDING));
+
+		System.assert(subqueries.size() == 1);
+		System.assert(subqueries2.size() == 2);
+
+		System.assert(qf.getSubselectQueries().get(0).getOrderings().size() == 0);
+		System.assert(qf2.getSubselectQueries().get(0).getOrderings().size() == 1);
 	}
 
 	public static User createTestUser_noAccess(){

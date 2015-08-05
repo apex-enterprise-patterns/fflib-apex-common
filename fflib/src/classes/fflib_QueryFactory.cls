@@ -25,7 +25,7 @@
 **/
 
 /**
- * QueryFactor provides an object-oriented way of building SOQL queries without resorting to string manipulation.
+ * QueryFactory provides an object-oriented way of building SOQL queries without resorting to string manipulation.
  * This class is not meant to be used as a replacement for all SOQL queries, and due to the relativley high overhead in both CPU and describe calls 
  * should be used in places where highly dynamic queries, such as those that include field sets or are mutated heavilly
  * in multiple locations are a good fit for use with fflib_QueryFactory.
@@ -36,10 +36,10 @@
  * Currently the WHERE clause of the query is manipulated as a single string, and is decidedly less OO-styled than other methods.
  * This is expected to be expanded upon in the future.
  * 
- * To include one or more sort expression(s), use one of the addOrdering methods.  If not specified, the "NULLS FIRST" keywords
- * will be included by default. 
+ * To include one or more ORDER BY clause(s), use one of the addOrdering methods.  If not specified, the "NULLS FIRST" keywords
+ * will be included by default. Constructing Ordering instances manually is discouraged.
  * 
- * Subselect Queries are supported with the subselectQuery method.  
+ * Subselect Queries are supported with the subselectQuery methods.  
  * More than one sub-query can be added to a single query, but sub-queries can only be 1 level deep.  
  * An exception will thrown from the subselectQuery method when there is an attempt to add a subquery to a sub-query
  * or to add a subquery to a query with an invalid relationship.
@@ -66,11 +66,6 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	private Integer limitCount;
 	private Integer offset;
 	private List<Ordering> order;
-	/**
-	 * each item in sortExpressions contains the field and the direction (ascending or descending)
-	 * use the addOrdering method to add fields to sort by.  the sort fields
-	 * appear in the SOQL query in the order they are added to the query.
-	**/ 
 	/**
 	/* Integrate checking for READ Field Level Security within the selectField(s) methods
 	/* This can optionally be enforced (or not) by calling the setEnforceFLS method prior to calling 
@@ -327,22 +322,72 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	/**
 	 * Add a subquery query to this query.  If a subquery for this relationship already exists, it will be returned.
 	 * If not, a new one will be created and returned.
+	 * @deprecated  Replaced by {@link #subselectQuery(String relationshipName)} and {@link #subselectQuery(ChildRelationship relationship)}
 	 * @exception InvalidSubqueryRelationshipException If this method is called on a subselectQuery or with an invalid relationship 
 	 * @param related The related object type
 	**/
 	public fflib_QueryFactory subselectQuery(SObjectType related){ 
+		System.debug(LoggingLevel.WARN, 'fflib_QueryFactory.subselectQuery(Schema.SObjectType) is deprecated and will be removed in a future release. Use fflib_QueryFactory.subselectQuery(String) or fflib_QueryFactory.subselectQuery(ChildRelationship) instead.');
 		return setSubselectQuery(getChildRelationship(related), false);
 	}
 
 	/**
 	 * Add a subquery query to this query.  If a subquery for this relationship already exists, it will be returned.
 	 * If not, a new one will be created and returned.
+	 * @deprecated  Replaced by {@link #subselectQuery(String relationshipName, Boolean assertIsAccessible)} and {@link #subselectQuery(ChildRelationship relationship, Boolean assertIsAccessible)}
 	 * @exception InvalidSubqueryRelationshipException If this method is called on a subselectQuery or with an invalid relationship 
 	 * @param related The related object type
 	 * @param assertIsAccessible indicates whether to check if the user has access to the subquery object
 	**/
-	public fflib_QueryFactory subselectQuery(SObjectType related, Boolean assertIsAccessible){ 
+	public fflib_QueryFactory subselectQuery(SObjectType related, Boolean assertIsAccessible){
+		System.debug(LoggingLevel.WARN, 'fflib_QueryFactory.subselectQuery(Schema.SObjectType, Boolean) is deprecated and will be removed in a future release. Use fflib_QueryFactory.subselectQuery(String, Boolean) or fflib_QueryFactory.subselectQuery(ChildRelationship, Boolean) instead.'); 
 		return setSubselectQuery(getChildRelationship(related), assertIsAccessible);
+	}
+
+	/**
+	 * Add a subquery query to this query.  If a subquery for this relationshipName already exists, it will be returned.
+	 * If not, a new one will be created and returned.
+	 * @exception InvalidSubqueryRelationshipException If this method is called on a subselectQuery or with an invalid relationship 
+	 * @param relationshipName The relationshipName to be added as a subquery
+	**/
+	public fflib_QueryFactory subselectQuery(String relationshipName){ 
+		return subselectQuery(relationshipName, false);
+	}
+
+	/**
+	 * Add a subquery query to this query.  If a subquery for this relationship already exists, it will be returned.
+	 * If not, a new one will be created and returned.
+	 * @exception InvalidSubqueryRelationshipException If this method is called on a subselectQuery or with an invalid relationship 
+	 * @param relationshipName The relationshipName to be added as a subquery
+	 * @param assertIsAccessible indicates whether to check if the user has access to the subquery object
+	**/
+	public fflib_QueryFactory subselectQuery(String relationshipName, Boolean assertIsAccessible){
+		ChildRelationship relationship = getChildRelationship(relationshipName);
+		if (relationship != null) {
+			return setSubselectQuery(relationship, assertIsAccessible);
+		}
+		throw new InvalidSubqueryRelationshipException('Invalid call to subselectQuery with relationshipName = '+relationshipName +'.  Relationship does not exist for ' + table.getDescribe().getName());	
+	}
+
+	/**
+	 * Add a subquery query to this query.  If a subquery for this relationshipName already exists, it will be returned.
+	 * If not, a new one will be created and returned.
+	 * @exception InvalidSubqueryRelationshipException If this method is called on a subselectQuery or with an invalid relationship 
+	 * @param relationship The ChildRelationship to be added as a subquery
+	**/
+	public fflib_QueryFactory subselectQuery(ChildRelationship relationship){ 
+		return subselectQuery(relationship, false);
+	}
+
+	/**
+	 * Add a subquery query to this query.  If a subquery for this relationship already exists, it will be returned.
+	 * If not, a new one will be created and returned.
+	 * @exception InvalidSubqueryRelationshipException If this method is called on a subselectQuery or with an invalid relationship 
+	 * @param relationship The ChildRelationship to be added as a subquery
+	 * @param assertIsAccessible indicates whether to check if the user has access to the subquery object
+	**/
+	public fflib_QueryFactory subselectQuery(ChildRelationship relationship, Boolean assertIsAccessible){
+		return setSubselectQuery(relationship, assertIsAccessible);
 	}
 
 	/**
@@ -391,6 +436,19 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
             }   
         }
         throw new InvalidSubqueryRelationshipException('Invalid call to subselectQuery.  Invalid relationship for table '+table + ' and objtype='+objType);
+    }
+
+	/**
+	 * Get the ChildRelationship from the Table for the relationship name passed in.
+	 * @param relationshipName The name of the object's ChildRelationship on get
+	**/
+ 	private Schema.ChildRelationship getChildRelationship(String relationshipName){
+        for (Schema.ChildRelationship childRow : table.getDescribe().getChildRelationships()){
+            if (childRow.getRelationshipName() == relationshipName){ 
+                return childRow;
+            }   
+        }
+        return null;
     }
 
 	/**
@@ -503,6 +561,33 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		if(limitCount != null)
 			result += ' LIMIT '+limitCount;
 		return result;
+	}
+
+	/**
+	 * Create a "deep" clone of this object that can be safely mutated without affecting the cloned instance
+	 * @return a deep clone of this fflib_QueryFactory
+	**/
+	public fflib_QueryFactory deepClone(){	
+
+		fflib_QueryFactory clone = new fflib_QueryFactory(this.table)
+			.setLimit(this.limitCount)
+			.setCondition(this.conditionExpression)
+			.setEnforceFLS(this.enforceFLS);
+
+		Map<Schema.ChildRelationship, fflib_QueryFactory> subqueries = this.subselectQueryMap;
+		if(subqueries != null) {
+			Map<Schema.ChildRelationship, fflib_QueryFactory> clonedSubqueries = new Map<Schema.ChildRelationship, fflib_QueryFactory>();
+			for(Schema.ChildRelationship key : subqueries.keySet()) {
+				clonedSubqueries.put(key, subqueries.get(key).deepClone());
+			}
+			clone.subselectQueryMap = clonedSubqueries;
+		}
+
+		clone.relationship = this.relationship;
+		clone.order = this.order.clone();
+		clone.fields = this.fields.clone();
+
+		return clone;
 	}
 	
 	public class Ordering{
