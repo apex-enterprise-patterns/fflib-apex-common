@@ -216,7 +216,7 @@ public virtual with sharing class fflib_SObjectDomain
      *
      * @throws DomainException if the current user context is not able to delete records
      **/
-    public void handleAfterUndelete() 
+    public virtual void handleAfterUndelete() 
     {
     	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isCreateable())
     	   throw new DomainException('Permission to create an ' + SObjectDescribe.getName() + ' denied.');
