@@ -35,6 +35,11 @@ private with sharing class fflib_SObjectDomainTest
 		System.assertEquals(1, fflib_SObjectDomain.Errors.getAll().size());		
 		System.assertEquals('You must provide an Account for Opportunities for existing Customers.', fflib_SObjectDomain.Errors.getAll()[0].message);
 		System.assertEquals(Opportunity.AccountId, ((fflib_SObjectDomain.FieldError)fflib_SObjectDomain.Errors.getAll()[0]).field); 		
+
+		opps = new fflib_SObjectDomain.TestSObjectDomain(new SObject[] { new Opportunity ( Name = 'Test', Type = 'Existing Account' ) }, Opportunity.SObjectType );
+		System.assertEquals(1, fflib_SObjectDomain.Errors.getAll().size());		
+		System.assertEquals('You must provide an Account for Opportunities for existing Customers.', fflib_SObjectDomain.Errors.getAll()[0].message);
+		System.assertEquals(Opportunity.AccountId, ((fflib_SObjectDomain.FieldError)fflib_SObjectDomain.Errors.getAll()[0]).field);		
 	}
 	
 	@IsTest

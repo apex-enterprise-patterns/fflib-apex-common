@@ -42,6 +42,18 @@ private class fflib_ApplicationTest
 		System.assert(domainObjectAcct instanceof AccountsDomain);
 		System.assertEquals(testAccountId, domainObjectAcct.getRecords()[0].Id);
 
+		// Registered Accounts domain class by SObject List
+		testAccountId = fflib_IDGenerator.generate(Account.SObjectType);
+		domainObjectAcct = 
+			Domain.newInstance(
+				new List<SObject> 
+					{ new Account( 
+						Id = testAccountId,
+						Name = 'Test Account') }
+				, Account.SObjectType);
+		System.assert(domainObjectAcct instanceof AccountsDomain);
+		System.assertEquals(testAccountId, domainObjectAcct.getRecords()[0].Id);		
+
 		// Registered Opportunities domain class by SObject List
 		Id testOpportunityId = fflib_IDGenerator.generate(Opportunity.SObjectType);
 		fflib_ISObjectDomain domainObjectOpp = 
@@ -50,6 +62,19 @@ private class fflib_ApplicationTest
 					{ new Opportunity( 
 						Id = testOpportunityId,
 						Name = 'Test Opportunity') });
+		System.assertEquals(testOpportunityId, domainObjectOpp.getRecords()[0].Id);		
+		System.assert(domainObjectOpp instanceof OpportuntiesDomain);
+
+		// Test failure for creating new instance using IConstructable2
+		// for domain class that does not support it
+		testOpportunityId = fflib_IDGenerator.generate(Opportunity.SObjectType);
+		domainObjectOpp = 
+			Domain.newInstance(
+				new List<SObject> 
+					{ new Opportunity( 
+						Id = testOpportunityId,
+						Name = 'Test Opportunity') }
+				, Opportunity.SObjectType);
 		System.assertEquals(testOpportunityId, domainObjectOpp.getRecords()[0].Id);		
 		System.assert(domainObjectOpp instanceof OpportuntiesDomain);
 
@@ -71,6 +96,18 @@ private class fflib_ApplicationTest
 
 		// Then
 		System.assert(domainObjectAcct instanceof fflib_SObjectMocks.SObjectDomain);
+
+		// When
+		domainObjectAcct = 
+			Domain.newInstance(
+				new List<SObject> 
+					{ new Account( 
+						Id = testAccountId,
+						Name = 'Test Account') }
+				, Account.SObjectType);
+
+		// Then
+		System.assert(domainObjectAcct instanceof fflib_SObjectMocks.SObjectDomain);		
 	}
 
 	@IsTest
@@ -116,6 +153,17 @@ private class fflib_ApplicationTest
 	}
 
 	@IsTest
+	private static void callingDomainFactoryWithNoSObjectTypeShouldGiveException()
+	{
+		try {
+			Domain.newInstance(new List<SObject>(), null);
+			System.assert(false, 'Expected exception');
+		} catch (fflib_Application.DeveloperException e) {
+			System.assertEquals('Must specify sObjectType', e.getMessage());
+		}
+	}	
+
+	@IsTest
 	private static void callingDomainFactoryWithInAccessableConstructorShouldGiveException()
 	{
 		try {
@@ -124,7 +172,32 @@ private class fflib_ApplicationTest
 		} catch (fflib_Application.DeveloperException e) {
 			System.assertEquals('Domain constructor class not found for SObjectType Product2', e.getMessage());
 		}
+
+		try {
+			Domain.newInstance(new List<SObject>{ new Product2(Name = 'Test Product') }, Product2.SObjectType);
+			System.assert(false, 'Expected exception');
+		} catch (fflib_Application.DeveloperException e) {
+			System.assertEquals('Domain constructor class not found for SObjectType Product2', e.getMessage());
+		}		
 	}
+
+	@IsTest
+	private static void callingDomainFactoryWithContructorClassThatDoesNotSupportIConstructableShouldGiveException()
+	{
+		try {
+			Domain.newInstance(new List<Contact>{ new Contact(LastName = 'TestContactLName') });
+			System.assert(false, 'Expected exception');
+		} catch (System.TypeException e) {
+			System.assertEquals('Invalid conversion from runtime type fflib_ApplicationTest.ContactsConstructor to fflib_SObjectDomain.IConstructable', e.getMessage());
+		}	
+
+		try {
+			Domain.newInstance(new List<SObject>{ new Contact(LastName = 'TestContactLName') }, Contact.SObjectType);
+			System.assert(false, 'Expected exception');
+		} catch (System.TypeException e) {
+			System.assertEquals('Invalid conversion from runtime type fflib_ApplicationTest.ContactsConstructor to fflib_SObjectDomain.IConstructable2', e.getMessage());
+		}		
+	}	
 
 	@IsTest
 	private static void callingUnitOfWorkFactoryShouldGivenStandardImplsAndMockImpls()
@@ -302,7 +375,8 @@ private class fflib_ApplicationTest
 			fflib_ApplicationTest.Selector,
 			new Map<SObjectType, Type> {
 					Account.SObjectType => AccountsConstructor.class,
-					Opportunity.SObjectType => OpportuntiesConstructor.class });
+					Opportunity.SObjectType => OpportuntiesConstructor.class,
+					Contact.SObjectType => ContactsConstructor.class });
 
 	public class AccountsDomain extends fflib_SObjectDomain
 	{
@@ -310,14 +384,24 @@ private class fflib_ApplicationTest
 		{
 			super(sObjectList);
 		}
+
+		public AccountsDomain(List<SObject> sObjectList, SObjectType sObjectType)
+		{
+			super(sObjectList, sObjectType);
+		}
 	}			
 
-	public class AccountsConstructor implements fflib_SObjectDomain.IConstructable
+	public class AccountsConstructor implements fflib_SObjectDomain.IConstructable2
 	{
 		public fflib_SObjectDomain construct(List<SObject> sObjectList)
 		{
 			return new AccountsDomain(sObjectList);
 		}
+
+		public fflib_SObjectDomain construct(List<SObject> sObjectList, SObjectType sObjectType)
+		{
+			return new AccountsDomain(sObjectList, sObjectType);
+		}		
 	}	
 
 	public class OpportuntiesDomain extends fflib_SObjectDomain
@@ -326,15 +410,44 @@ private class fflib_ApplicationTest
 		{
 			super(sObjectList);
 		}
+
+		public OpportuntiesDomain(List<SObject> sObjectList, SObjectType sObjectType)
+		{
+			super(sObjectList, sObjectType);
+		}		
 	}	
 
-	public class OpportuntiesConstructor implements fflib_SObjectDomain.IConstructable
+	public class OpportuntiesConstructor implements fflib_SObjectDomain.IConstructable2
 	{
 		public fflib_SObjectDomain construct(List<SObject> sObjectList)
 		{
 			return new OpportuntiesDomain(sObjectList);
 		}
-	}	
+
+		public fflib_SObjectDomain construct(List<SObject> sObjectList, SObjectType sObjectType)
+		{
+			return new OpportuntiesDomain(sObjectList, sObjectType);
+		}		
+	}
+
+	public class ContactsDomain extends fflib_SObjectDomain
+	{
+		public ContactsDomain(List<Opportunity> sObjectList)
+		{
+			super(sObjectList);
+		}
+
+		public ContactsDomain(List<SObject> sObjectList, SObjectType sObjectType)
+		{
+			super(sObjectList, sObjectType);
+		}
+	}			
+
+	// Intentionally does not support IConstructable or IConstructable2 interfaces in order to support testing
+	public class ContactsConstructor
+	{
+
+	}		
 
 	class OpportuntiesSelector extends fflib_SObjectSelector
 	{
