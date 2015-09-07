@@ -380,7 +380,7 @@ private class fflib_ApplicationTest
 
 	public class AccountsDomain extends fflib_SObjectDomain
 	{
-		public AccountsDomain(List<Opportunity> sObjectList)
+		public AccountsDomain(List<Account> sObjectList)
 		{
 			super(sObjectList);
 		}
