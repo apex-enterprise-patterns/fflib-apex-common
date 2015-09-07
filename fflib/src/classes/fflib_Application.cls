@@ -304,6 +304,37 @@ public class fflib_Application
 			return (fflib_ISObjectDomain) domainConstructor.construct(records);
 		}	
 
+		/**
+		 * Dynamically constructs an instace of the Domain class for the given records and SObjectType
+		 *   Will return a Mock implementation if one has been provided via setMock
+		 *
+		 * @param records A list records
+		 * @param domainSObjectType SObjectType for list of records
+		 * @exception Throws an exception if the SObjectType is not specified or if constructor for Domain class was not registered for the SObjectType
+		 *
+		 * @remark Will support List<SObject> but all records in the list will be assumed to be of
+		 *         the type specified in sObjectType
+		 **/
+		public fflib_ISObjectDomain newInstance(List<SObject> records, SObjectType domainSObjectType)
+		{
+			if(domainSObjectType==null)
+				throw new DeveloperException('Must specify sObjectType');
+
+			// Mock implementation?
+			if(m_sObjectByMockDomain.containsKey(domainSObjectType))
+				return m_sObjectByMockDomain.get(domainSObjectType);
+
+			// Determine SObjectType and Apex classes for Domain class
+			Type domainConstructorClass = m_sObjectByDomainConstructorType.get(domainSObjectType);
+			if(domainConstructorClass==null)
+				throw new DeveloperException('Domain constructor class not found for SObjectType ' + domainSObjectType);
+
+			// Construct Domain class passing in the queried records
+			fflib_SObjectDomain.IConstructable2 domainConstructor = 
+				(fflib_SObjectDomain.IConstructable2) domainConstructorClass.newInstance();
+			return (fflib_ISObjectDomain) domainConstructor.construct(records, domainSObjectType);
+		}
+
 		@TestVisible
 		private void setMock(fflib_ISObjectDomain mockDomain)
 		{

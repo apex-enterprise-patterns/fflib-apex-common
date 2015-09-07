@@ -82,13 +82,30 @@ public virtual with sharing class fflib_SObjectDomain
 	
 	/**
 	 * Constructs the domain class with the data on which to apply the behaviour implemented within
+	 *
+	 * @param sObjectList A concreate list (e.g. List<Account> vs List<SObject>) of records
+
 	 **/
 	public fflib_SObjectDomain(List<SObject> sObjectList)
+	{
+		this(sObjectList, sObjectList.getSObjectType());
+	}
+
+	/**
+	 * Constructs the domain class with the data and type on which to apply the behaviour implemented within
+	 *
+	 * @param sObjectList A list (e.g. List<Opportunity>, List<Account>, etc.) of records
+	 * @param sObjectType The Schema.SObjectType of the records contained in the list
+	 *
+	 * @remark Will support List<SObject> but all records in the list will be assumed to be of
+	 *         the type specified in sObjectType
+	 **/
+	public fflib_SObjectDomain(List<SObject> sObjectList, SObjectType sObjectType)
 	{
 		// Ensure the domain class has its own copy of the data
 		Records = sObjectList.clone(); 
 		// Capture SObjectType describe for this domain class
-		SObjectDescribe = Records.getSObjectType().getDescribe();
+		SObjectDescribe = sObjectType.getDescribe();
 		// Configure the Domain object instance 
 		Configuration = new Configuration();		
 	}
@@ -255,6 +272,14 @@ public virtual with sharing class fflib_SObjectDomain
 	{
 		fflib_SObjectDomain construct(List<SObject> sObjectList);
 	}
+
+	/**
+	 * Interface used to aid the triggerHandler in constructing instances of Domain classes
+	 **/
+	public interface IConstructable2 extends IConstructable
+	{
+		fflib_SObjectDomain construct(List<SObject> sObjectList, SObjectType sObjectType);
+	}	
 	
 	/**
 	 * For Domain classes implementing the ITriggerStateful interface returns the instance 
@@ -654,6 +679,12 @@ public virtual with sharing class fflib_SObjectDomain
 			// Domain classes are initialised with lists to enforce bulkification throughout
 			super(sObjectList);
 		}
+
+		public TestSObjectDomain(List<Opportunity> sObjectList, SObjectType sObjectType)
+		{
+			// Domain classes are initialised with lists to enforce bulkification throughout
+			super(sObjectList, sObjectType);
+		}			
 		
 		public override void onApplyDefaults()
 		{
