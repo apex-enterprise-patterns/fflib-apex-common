@@ -37,7 +37,7 @@ public abstract with sharing class fflib_SObjectSelector
                                                                                 , ApexClass.SObjectType.getDescribe().getName()
                                                                                 , ApexTrigger.SObjectType.getDescribe().getName()
                                                                                 , Attachment.SObjectType.getDescribe().getName()
-                                                                                , RecordType.SObjectType.getDescribe().getName() 
+                                                                                , RecordType.getSObjectType().getDescribe().getName() 
     };
      
     /**
