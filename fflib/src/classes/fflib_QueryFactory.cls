@@ -408,7 +408,9 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		}
 		
 		fflib_QueryFactory subselectQuery = new fflib_QueryFactory(relationship);
-		subSelectQuery.assertIsAccessible();
+		if(assertIsAccessible){
+			subSelectQuery.assertIsAccessible();
+		}
 		subselectQueryMap.put(relationship, subSelectQuery);
 		return subSelectQuery;
 	}
