@@ -59,6 +59,12 @@ public abstract with sharing class fflib_SObjectSelector
     * Order by field
     **/
     	private String m_orderBy;
+
+    /**
+     * Sort the query fields in the select statement (defaults to true, at the expense of performance).
+     * Switch this off if you need more performant queries.
+     **/
+    private Boolean m_sortSelectFields;
   
    /**
    * Describe helper
@@ -107,9 +113,20 @@ public abstract with sharing class fflib_SObjectSelector
      **/
     public fflib_SObjectSelector(Boolean includeFieldSetFields, Boolean enforceCRUD, Boolean enforceFLS)
     {
+        this(includeFieldSetFields, enforceCRUD, enforceFLS, true);
+    }
+
+    /**
+     * Constructs the Selector
+     *
+     * @param includeFieldSetFields Set to true if the Selector queries are to include Fieldset fields as well 
+     **/
+    public fflib_SObjectSelector(Boolean includeFieldSetFields, Boolean enforceCRUD, Boolean enforceFLS, Boolean sortSelectFields)
+    {
         m_includeFieldSetFields = includeFieldSetFields;
         m_enforceCRUD = enforceCRUD;
         m_enforceFLS = enforceFLS;
+        m_sortSelectFields = sortSelectFields;
     }
 
     /**
@@ -366,7 +383,8 @@ public abstract with sharing class fflib_SObjectSelector
         if(includeSelectorFields)
         {
 	        // select the Selector fields and Fieldsets and set order
-	        queryFactory.selectFields(new Set<SObjectField>(getSObjectFieldList()));
+            queryFactory.selectFields(getSObjectFieldList());
+
 	        List<Schema.FieldSet> fieldSetList = getSObjectFieldSetList();
 	        if(m_includeFieldSetFields && fieldSetList != null)
 	            for(Schema.FieldSet fieldSet : fieldSetList)
@@ -394,7 +412,9 @@ public abstract with sharing class fflib_SObjectSelector
                 fieldSortOrder = fflib_QueryFactory.SortOrder.ASCENDING;
             queryFactory.addOrdering(fieldNamePart, fieldSortOrder);
         }           
-                
+        
+        queryFactory.setSortSelectFields(m_sortSelectFields);           
+
         return queryFactory;    
     }    
 }
