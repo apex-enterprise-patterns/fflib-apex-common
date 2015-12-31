@@ -630,6 +630,7 @@ private class fflib_QueryFactoryTest {
 			User.SObjectType.fields.Name
 		});
 		System.assertEquals(-2, qf.compareTo(otherType));
+		System.assertEquals(-2, qf.compareTo(null));
 		System.assertEquals(0, qf.compareTo(qf));
 		System.assertEquals(
 			0, 
