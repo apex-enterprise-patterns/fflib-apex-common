@@ -73,6 +73,8 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	**/
 	private Boolean enforceFLS;
 	
+	private Boolean sortSelectFields = true;
+	
 	/**
 	 * The relationship and  subselectQueryMap variables are used to support subselect queries.  Subselects can be added to 
 	 * a query, as long as it isn't a subselect query itself.  You may have many subselects inside
@@ -173,6 +175,17 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		return this;
 	}
 
+	/**
+	 * Sets a flag to indicate that this query should have ordered
+	 * query fields in the select statement (this at a small cost to performance).
+	 * If you are processing large query sets, you should switch this off.
+	 * @param whether or not select fields should be sorted in the soql statement.
+	 **/
+	public fflib_QueryFactory setSortSelectFields(Boolean doSort){
+		this.sortSelectFields = doSort;
+		return this;
+	}
+	
 	/**
 	 * Selects a single field from the SObject specified in {@link #table}.
 	 * Selecting fields is idempotent, if this field is already selected calling this method will have no additional impact.
@@ -408,6 +421,10 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		}
 		
 		fflib_QueryFactory subselectQuery = new fflib_QueryFactory(relationship);
+		
+		//The child queryFactory should be configured in the same way as the parent by default - can override after if required
+		subSelectQuery.setSortSelectFields(sortSelectFields);
+
 		if(assertIsAccessible){
 			subSelectQuery.assertIsAccessible();
 		}
@@ -537,13 +554,17 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		if (fields.size() == 0){
 			if (enforceFLS) fflib_SecurityUtils.checkFieldIsReadable(table, 'Id');
 			result += 'Id  ';
-		}else{
+		}else if(sortSelectFields){
 			List<QueryField> fieldsToQuery = new List<QueryField>(fields);
 			fieldsToQuery.sort(); //delegates to QueryFilter's comparable implementation
 			for(QueryField field:fieldsToQuery){
 				result += field + ', ';
 			}
-		}	
+		}else{
+			for (QueryField field : fields)
+				result += field + ', ';
+		}
+		
 		if(subselectQueryMap != null && !subselectQueryMap.isEmpty()){
 			for (fflib_QueryFactory childRow : subselectQueryMap.values()){
 				result += ' (' + childRow.toSOQL() + '), ';

@@ -775,6 +775,35 @@ private class fflib_QueryFactoryTest {
 		System.assert(qf.getSubselectQueries().get(0).getOrderings().size() == 0);
 		System.assert(qf2.getSubselectQueries().get(0).getOrderings().size() == 1);
 	}
+	
+	@isTest
+	static void testSoql_unsortedSelectFields(){
+		//Given
+		fflib_QueryFactory qf = new fflib_QueryFactory(User.SObjectType);
+		qf.selectFields(new List<String>{
+			'Id',
+			'FirstName',
+			'LastName',
+			'CreatedBy.Name',
+			'CreatedBy.Manager',
+			'LastModifiedBy.Email'
+		});
+
+		qf.setSortSelectFields(false);
+
+		String orderedQuery =
+			'SELECT '
+			+'FirstName, Id, LastName, ' //less joins come first, alphabetically
+			+'CreatedBy.ManagerId, CreatedBy.Name, LastModifiedBy.Email ' //alphabetical on the same number of joins'
+			+'FROM User';
+
+		//When
+		String actualSoql = qf.toSOQL();
+
+		//Then		
+		System.assertNotEquals(orderedQuery, actualSoql);
+	}
+
 
 	public static User createTestUser_noAccess(){
 		User usr;
