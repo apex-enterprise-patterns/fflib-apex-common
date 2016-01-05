@@ -57,6 +57,11 @@ public virtual with sharing class fflib_SObjectDomain
 	public Configuration Configuration {get; private set;}    
 		
 	/**
+	 * Exposes the configuration for this domain class instance
+	 **/ 
+	public TriggerEvent TriggerEvent {get; private set;}	
+
+	/**
 	 * Useful during unit testign to assert at a more granular and robust level for errors raised during the various trigger events
 	 **/	
 	public static ErrorFactory Errors  {get; private set;}
@@ -71,6 +76,11 @@ public virtual with sharing class fflib_SObjectDomain
 	 **/
 	private static Map<Type, List<fflib_SObjectDomain>> TriggerStateByClass; 
 	
+	/**
+	 * Retains the trigger tracking configuraiton used for each domain
+	 **/
+	private static Map<Type, TriggerEvent> TriggerEventByClass;
+
 	static
 	{
 		Errors = new ErrorFactory();
@@ -78,6 +88,8 @@ public virtual with sharing class fflib_SObjectDomain
 		Test = new TestFactory();
 		
 		TriggerStateByClass = new Map<Type, List<fflib_SObjectDomain>>();
+
+		TriggerEventByClass = new Map<Type, TriggerEvent>();
 	}
 	
 	/**
@@ -349,6 +361,11 @@ public virtual with sharing class fflib_SObjectDomain
 	        	pushTriggerInstance(domainClass, domainObject);	
 		}
 		
+		if(!isTriggerEventEnabled(domainClass))
+		{
+			return;
+		}
+
 		// Invoke the applicable handler
 		if(isBefore)
 	    {
@@ -389,6 +406,141 @@ public virtual with sharing class fflib_SObjectDomain
 		return domain;
 	}
 	
+	/**
+	 * Utilise to check if the current trigger mode is turned off
+	 **/
+	private static boolean isTriggerEventEnabled(Type domainClass)
+	{
+		if(domainClass == null || TriggerEventByClass == null)
+		{
+			return true;
+		}
+
+		System.Debug(domainClass);
+		System.Debug(TriggerEventByClass.keySet());
+
+		if(!TriggerEventByClass.containsKey(domainClass))
+		{
+			TriggerEventByClass.put(domainClass, new TriggerEvent());
+		}
+
+		if(Trigger.isBefore)
+		{
+			if(Trigger.isInsert)
+			{
+				return TriggerEventByClass.get(domainClass).BeforeInsertEnabled;
+			}
+			else if(Trigger.isUpdate)
+			{
+				return TriggerEventByClass.get(domainClass).BeforeUpdateEnabled;
+			}
+			else if(Trigger.isDelete)
+			{
+				return TriggerEventByClass.get(domainClass).BeforeDeleteEnabled;
+			}
+		}
+		else if(Trigger.isAfter)
+		{
+			if(Trigger.isInsert)
+			{
+				return TriggerEventByClass.get(domainClass).AfterInsertEnabled;
+			}
+			else if(Trigger.isUpdate)
+			{
+				return TriggerEventByClass.get(domainClass).AfterUpdateEnabled;
+			}
+			else if(Trigger.isDelete)
+			{
+				return TriggerEventByClass.get(domainClass).AfterDeleteEnabled;
+			}
+			else if(Trigger.isUndelete)
+			{
+				return TriggerEventByClass.get(domainClass).AfterUndeleteEnabled;
+			}
+		}
+		
+		// will never get here unless there are some amazing updates to SFDC that allow tertiary logic :)
+		return true;
+	}
+
+	public TriggerEvent getTriggerEvent(Type domainClass)
+	{
+		if(!TriggerEventByClass.containsKey(domainClass))
+		{
+			TriggerEventByClass.put(domainClass, new TriggerEvent());
+		}
+
+		return TriggerEventByClass.get(domainClass);
+	}
+
+	public class TriggerEvent
+	{
+		public boolean BeforeInsertEnabled {get; private set;}
+		public boolean BeforeUpdateEnabled {get; private set;}
+		public boolean BeforeDeleteEnabled {get; private set;}
+
+		public boolean AfterInsertEnabled {get; private set;}
+		public boolean AfterUpdateEnabled {get; private set;}
+		public boolean AfterDeleteEnabled {get; private set;}
+		public boolean AfterUndeleteEnabled {get; private set;}
+
+		public TriggerEvent()
+		{
+			this.enableAll();
+		}
+
+		// befores
+		public TriggerEvent enableBeforeInsert() {BeforeInsertEnabled = true; return this;}
+		public TriggerEvent enableBeforeUpdate() {BeforeUpdateEnabled = true; return this;}
+		public TriggerEvent enableBeforeDelete() {BeforeDeleteEnabled = true; return this;}
+
+		public TriggerEvent disableBeforeInsert() {BeforeInsertEnabled = false; return this;}
+		public TriggerEvent disableBeforeUpdate() {BeforeUpdateEnabled = false; return this;}
+		public TriggerEvent disableBeforeDelete() {BeforeDeleteEnabled = false; return this;}
+		
+		// afters
+		public TriggerEvent enableAfterInsert() 	{AfterInsertEnabled 	= true; return this;}
+		public TriggerEvent enableAfterUpdate() 	{AfterUpdateEnabled 	= true; return this;}
+		public TriggerEvent enableAfterDelete() 	{AfterDeleteEnabled 	= true; return this;}
+		public TriggerEvent enableAfterUndelete() {AfterUndeleteEnabled 	= true; return this;}
+
+		
+		public TriggerEvent disableAfterInsert()	{AfterInsertEnabled 	= false; return this;}
+		public TriggerEvent disableAfterUpdate()	{AfterUpdateEnabled 	= false; return this;}
+		public TriggerEvent disableAfterDelete()	{AfterDeleteEnabled 	= false; return this;}
+		public TriggerEvent disableAfterUndelete(){AfterUndeleteEnabled 	= false; return this;}
+
+		public TriggerEvent enableAll()
+		{
+			return this.enableAllBefore().enableAllAfter();
+		}
+
+		public TriggerEvent disableAll()
+		{
+			return this.disableAllBefore().disableAllAfter();
+		}
+
+		public TriggerEvent enableAllBefore()
+		{
+			return this.enableBeforeInsert().enableBeforeUpdate().enableBeforeDelete();
+		}
+
+		public TriggerEvent disableAllBefore()
+		{
+			return this.disableBeforeInsert().disableBeforeUpdate().disableBeforeDelete();
+		}
+
+		public TriggerEvent enableAllAfter()
+		{
+			return this.enableAfterInsert().enableAfterUpdate().enableAfterDelete().enableAfterUndelete();
+		}
+
+		public TriggerEvent disableAllAfter()
+		{
+			return this.disableAfterInsert().disableAfterUpdate().disableAfterDelete().disableAfterUndelete();
+		}
+	}
+
 	/**
 	 * Fluent style Configuration system for Domain class creation
 	 **/
