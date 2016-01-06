@@ -361,7 +361,8 @@ public virtual with sharing class fflib_SObjectDomain
 	        	pushTriggerInstance(domainClass, domainObject);	
 		}
 		
-		if(!isTriggerEventEnabled(domainClass))
+		// has this event been disabled?
+		if(!getTriggerEvent(domainClass).isEnabled(isBefore, isAfter, isInsert, isUpdate, isDelete, isUndelete))
 		{
 			return;
 		}
@@ -406,64 +407,7 @@ public virtual with sharing class fflib_SObjectDomain
 		return domain;
 	}
 	
-	/**
-	 * Utilise to check if the current trigger mode is turned off
-	 **/
-	private static boolean isTriggerEventEnabled(Type domainClass)
-	{
-		if(domainClass == null || TriggerEventByClass == null)
-		{
-			return true;
-		}
-
-		System.Debug(domainClass);
-		System.Debug(TriggerEventByClass.keySet());
-
-		if(!TriggerEventByClass.containsKey(domainClass))
-		{
-			TriggerEventByClass.put(domainClass, new TriggerEvent());
-		}
-
-		if(Trigger.isBefore)
-		{
-			if(Trigger.isInsert)
-			{
-				return TriggerEventByClass.get(domainClass).BeforeInsertEnabled;
-			}
-			else if(Trigger.isUpdate)
-			{
-				return TriggerEventByClass.get(domainClass).BeforeUpdateEnabled;
-			}
-			else if(Trigger.isDelete)
-			{
-				return TriggerEventByClass.get(domainClass).BeforeDeleteEnabled;
-			}
-		}
-		else if(Trigger.isAfter)
-		{
-			if(Trigger.isInsert)
-			{
-				return TriggerEventByClass.get(domainClass).AfterInsertEnabled;
-			}
-			else if(Trigger.isUpdate)
-			{
-				return TriggerEventByClass.get(domainClass).AfterUpdateEnabled;
-			}
-			else if(Trigger.isDelete)
-			{
-				return TriggerEventByClass.get(domainClass).AfterDeleteEnabled;
-			}
-			else if(Trigger.isUndelete)
-			{
-				return TriggerEventByClass.get(domainClass).AfterUndeleteEnabled;
-			}
-		}
-		
-		// will never get here unless there are some amazing updates to SFDC that allow tertiary logic :)
-		return true;
-	}
-
-	public TriggerEvent getTriggerEvent(Type domainClass)
+	public static TriggerEvent getTriggerEvent(Type domainClass)
 	{
 		if(!TriggerEventByClass.containsKey(domainClass))
 		{
@@ -538,6 +482,24 @@ public virtual with sharing class fflib_SObjectDomain
 		public TriggerEvent disableAllAfter()
 		{
 			return this.disableAfterInsert().disableAfterUpdate().disableAfterDelete().disableAfterUndelete();
+		}
+
+		public boolean isEnabled(Boolean isBefore, Boolean isAfter, Boolean isInsert, Boolean isUpdate, Boolean isDelete, Boolean isUndelete)
+		{
+			if(isBefore)
+			{
+				if(isInsert) return BeforeInsertEnabled;
+				else if(isUpdate) return BeforeUpdateEnabled;
+				else if(isDelete) return BeforeDeleteEnabled;
+			}
+			else if(isAfter)
+			{
+				if(isInsert) 		return AfterInsertEnabled;
+				else if(isUpdate) 	return AfterUpdateEnabled;
+				else if(isDelete) 	return AfterDeleteEnabled;
+				else if(isUndelete) return AfterUndeleteEnabled;
+			}
+			return true; // shouldnt ever get here!
 		}
 	}
 
