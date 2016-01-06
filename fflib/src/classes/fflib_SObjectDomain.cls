@@ -57,11 +57,6 @@ public virtual with sharing class fflib_SObjectDomain
 	public Configuration Configuration {get; private set;}    
 		
 	/**
-	 * Exposes the configuration for this domain class instance
-	 **/ 
-	public TriggerEvent TriggerEvent {get; private set;}	
-
-	/**
 	 * Useful during unit testign to assert at a more granular and robust level for errors raised during the various trigger events
 	 **/	
 	public static ErrorFactory Errors  {get; private set;}
