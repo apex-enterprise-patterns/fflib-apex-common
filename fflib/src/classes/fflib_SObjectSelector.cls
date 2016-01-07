@@ -120,6 +120,9 @@ public abstract with sharing class fflib_SObjectSelector
      * Constructs the Selector
      *
      * @param includeFieldSetFields Set to true if the Selector queries are to include Fieldset fields as well 
+     * @param enforceCRUD Enforce CRUD security
+     * @param enforeFLS Enforce Field Level Security
+     * @param sortSelectFields Set to false if selecting many columns to skip sorting select fields and improve performance
      **/
     public fflib_SObjectSelector(Boolean includeFieldSetFields, Boolean enforceCRUD, Boolean enforceFLS, Boolean sortSelectFields)
     {
