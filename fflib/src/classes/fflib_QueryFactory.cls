@@ -73,6 +73,8 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	**/
 	private Boolean enforceFLS;
 	
+	private Boolean sortSelectFields = true;
+	
 	/**
 	 * The relationship and  subselectQueryMap variables are used to support subselect queries.  Subselects can be added to 
 	 * a query, as long as it isn't a subselect query itself.  You may have many subselects inside
@@ -173,6 +175,17 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		return this;
 	}
 
+	/**
+	 * Sets a flag to indicate that this query should have ordered
+	 * query fields in the select statement (this at a small cost to performance).
+	 * If you are processing large query sets, you should switch this off.
+	 * @param whether or not select fields should be sorted in the soql statement.
+	 **/
+	public fflib_QueryFactory setSortSelectFields(Boolean doSort){
+		this.sortSelectFields = doSort;
+		return this;
+	}
+	
 	/**
 	 * Selects a single field from the SObject specified in {@link #table}.
 	 * Selecting fields is idempotent, if this field is already selected calling this method will have no additional impact.
@@ -408,6 +421,10 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		}
 		
 		fflib_QueryFactory subselectQuery = new fflib_QueryFactory(relationship);
+		
+		//The child queryFactory should be configured in the same way as the parent by default - can override after if required
+		subSelectQuery.setSortSelectFields(sortSelectFields);
+
 		if(assertIsAccessible){
 			subSelectQuery.assertIsAccessible();
 		}
@@ -537,13 +554,17 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		if (fields.size() == 0){
 			if (enforceFLS) fflib_SecurityUtils.checkFieldIsReadable(table, 'Id');
 			result += 'Id  ';
-		}else{
+		}else if(sortSelectFields){
 			List<QueryField> fieldsToQuery = new List<QueryField>(fields);
 			fieldsToQuery.sort(); //delegates to QueryFilter's comparable implementation
 			for(QueryField field:fieldsToQuery){
 				result += field + ', ';
 			}
-		}	
+		}else{
+			for (QueryField field : fields)
+				result += field + ', ';
+		}
+		
 		if(subselectQueryMap != null && !subselectQueryMap.isEmpty()){
 			for (fflib_QueryFactory childRow : subselectQueryMap.values()){
 				result += ' (' + childRow.toSOQL() + '), ';
@@ -675,14 +696,19 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		}
 		public override String toString(){
 			String result = '';
-			Iterator<Schema.sObjectField> i = fields.iterator();
-			while(i.hasNext()){
-				String fieldName = i.next().getDescribe().getName();
-				if(fieldName.endsWithIgnoreCase('Id') && i.hasNext())
-					fieldName = fieldName.removeEndIgnoreCase('Id');
-				if(fieldName.endsWithIgnoreCase('__c') && i.hasNext())
-					fieldName = fieldName.removeEndIgnoreCase('__c')+'__r';
-				result += fieldName + (i.hasNext() ? '.' :'');
+			Integer size = fields.size();
+			for (Integer i=0; i<size; i++)
+			{
+				if (i>0)
+				{
+					if (result.endsWithIgnoreCase('Id'))
+						result = result.removeEndIgnoreCase('Id');
+					else if (result.endsWithIgnoreCase('__c')) {
+						result = result.removeEndIgnoreCase('__c') + '__r';
+					}
+					result += '.';
+				}
+				result += fields[i].getDescribe().getName();
 			}
 			return result;
 		} 
@@ -690,42 +716,50 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			return String.valueOf(this.fields).hashCode();
 		}
 		public boolean equals(Object obj){
-			if(!(obj instanceof QueryField))
+			//Easy checks first
+			if(obj == null || !(obj instanceof QueryField))
 				return false;
-			if( String.valueOf(((QueryField) obj).fields) != String.valueOf(this.fields))
+
+			if (this === obj)
+				return true;
+
+			//Detailed checks
+			QueryField other = (QueryField)obj;
+			Integer size = fields.size();
+			if (size != other.fields.size())
 				return false;
-			Set<Schema.SObjectField> objFields = new Set<Schema.SObjectField>();
-			objFields.addAll( ((QueryField)obj).fields );
-			objFields.retainAll(this.fields);
-			objFields.removeAll(this.fields);
-			return objFields.size() == 0;
+
+			for (Integer i=0; i<size; i++)
+				if (fields[i] != (other.fields[i]))
+					return false;
+
+			return true;
 		}
 		/**
-		 * Allows sorting QueryField instances, which means we'll get deterministic field ordering by just sorting the parent
-		 * QueryFactory's array when toSOQL'ing.
+		 * Allows sorting QueryField instances.
 		 *
 		 * Returns:
 		 * - Objects that are not QueryField instances as -2, which functions as -1 but with more flair
-		 * - QueryField instances with less joins in their path as -1
-		 * - QueryField instances with an equal number of joins and alphabetically first as an undefined negative integer
-		 * - equals as 0
-		 * - anything else an undefined positive integer (usually, but not always 1)
+		 * - Equivalent QueryFields return 0.
+		 * - QueryFields with more joins give +1, while fewer joins give -1
+		 * - For anything else, compare the toStrings of this and the supplied object.
 		 **/
 		public Integer compareTo(Object o){
-			if(!(o instanceof QueryField))
+			if(o == null || !(o instanceof QueryField))
 				return -2; //We can't possibly do a sane comparison against an unknwon type, go athead and let it "win"
-			QueryField that = (QueryField) o;
-			if(this.fields.size() < that.fields.size()){
+			
+			if (this === o)
+				return 0;
+
+			QueryField other = (QueryField)o;
+			Integer size = fields.size();
+			Integer sizeOther = other.fields.size();
+			if (size < sizeOther)
 				return -1;
-			}else if( this.fields.size() == that.fields.size() ){
-				if(this.equals(that)){
-					return 0;
-				}else{
-					return this.toString().compareTo(that.toString());
-				}
-			}else{
+			if (size > sizeOther)
 				return 1;
-			}
+
+			return this.toString().compareTo(other.toString());
 		}
 	}
 	
