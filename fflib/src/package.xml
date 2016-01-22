@@ -3,6 +3,8 @@
     <types>
         <members>fflib_Application</members>
         <members>fflib_ApplicationTest</members>
+        <members>fflib_DomainObjectBuilder</members>
+        <members>fflib_DomainObjectBuilderTest</members>        
         <members>fflib_ISObjectDomain</members>
         <members>fflib_ISObjectSelector</members>
         <members>fflib_ISObjectUnitOfWork</members>
