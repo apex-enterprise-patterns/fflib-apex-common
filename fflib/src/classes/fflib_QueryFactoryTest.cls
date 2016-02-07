@@ -108,7 +108,7 @@ private class fflib_QueryFactoryTest {
 
 	@isTest
 	static void invalidFieldTests(){
-		List<Exception> exceptions = new List<Exception>();
+		List<fflib_QueryFactory.InvalidFieldException> exceptions = new List<fflib_QueryFactory.InvalidFieldException>();
 		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
 		try{
 			qf.selectField('Not_a_field');
