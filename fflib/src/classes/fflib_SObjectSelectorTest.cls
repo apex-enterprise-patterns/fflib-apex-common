@@ -28,15 +28,6 @@
 private with sharing class fflib_SObjectSelectorTest 
 {
 	
-	static testMethod void testGetFieldListString()
-	{
-		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
-		String fieldListString = selector.getFieldListString();
-		assertFieldListString(fieldListString, null);
-		String relatedFieldListString = selector.getRelatedFieldListString('myprefix');
-		assertFieldListString(relatedFieldListString, 'myprefix');
-	}
-	
 	static testMethod void testGetSObjectName()
 	{
 		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
@@ -174,12 +165,6 @@ private with sharing class fflib_SObjectSelectorTest
 		System.assertEquals(false, selector.isEnforcingFLS());
 		System.assertEquals(true, selector.isEnforcingCRUD());
 		System.assertEquals(false, selector.isIncludeFieldSetFields());
-		
-		String fieldListString = selector.getFieldListString();
-		assertFieldListString(fieldListString, null);
-		
-		String relatedFieldListString = selector.getRelatedFieldListString('LookupField__r');
-		assertFieldListString(relatedFieldListString, 'LookupField__r');
 		
 		System.assertEquals('Account', selector.getSObjectName());
 		System.assertEquals(Account.SObjectType, selector.getSObjectType2());

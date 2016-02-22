@@ -61,15 +61,15 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	**/
 	public Schema.SObjectType table {get; private set;}
 	@testVisible
-	private Set<QueryField> fields; 
+	private Set<String> fields; 
 	private String conditionExpression;
 	private Integer limitCount;
 	private Integer offset;
 	private List<Ordering> order;
 	/**
-	/* Integrate checking for READ Field Level Security within the selectField(s) methods
-	/* This can optionally be enforced (or not) by calling the setEnforceFLS method prior to calling 
-	/* one of the selectField or selectFieldset methods.
+	 * Integrate checking for READ Field Level Security within the selectField(s) methods
+	 * This can optionally be enforced (or not) by calling the setEnforceFLS method prior to calling 
+	 * one of the selectField or selectFieldset methods.
 	**/
 	private Boolean enforceFLS;
 	
@@ -84,39 +84,51 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	private Schema.ChildRelationship relationship;
 	private Map<Schema.ChildRelationship, fflib_QueryFactory> subselectQueryMap;
 
-	private QueryField getFieldToken(String fieldName){
-		QueryField result;
+	private String getFieldPath(String fieldName){
 		if(!fieldName.contains('.')){ //single field
 			Schema.SObjectField token = fflib_SObjectDescribe.getDescribe(table).getField(fieldName.toLowerCase());
 			if(token == null)
 				throw new InvalidFieldException(fieldName,this.table);
 			if (enforceFLS) 
 				fflib_SecurityUtils.checkFieldIsReadable(this.table, token);	
-			result = new QueryField(token);
-		}else{ //traversing FK relationship(s)
-			List<Schema.SObjectField> fieldPath = new List<Schema.SObjectField>();
-			Schema.sObjectType lastSObjectType = table;
-			Iterator<String> i = fieldName.split('\\.').iterator();
-			while(i.hasNext()){
-				String field = i.next();
-				Schema.SObjectField token = fflib_SObjectDescribe.getDescribe(lastSObjectType).getField(field.toLowerCase());
-				if (token != null && enforceFLS) 
-					fflib_SecurityUtils.checkFieldIsReadable(lastSObjectType, token);
-				if(token != null && i.hasNext() && token.getDescribe().getSOAPType() == Schema.SOAPType.ID){
-					lastSObjectType = token.getDescribe().getReferenceTo()[0]; //if it's polymorphic doesn't matter which one we get
-					fieldPath.add(token);
-				}else if(token != null && !i.hasNext()){
-					fieldPath.add(token);
-				}else{
-					if(token == null)
-						throw new InvalidFieldException(field,lastSObjectType);
-					else
-						throw new NonReferenceFieldException(lastSObjectType+'.'+field+' is not a lookup or master-detail field but is used in a cross-object query field.');
-				}
-			}
-			result = new QueryField(fieldPath);
+			return token.getDescribe().getName();
 		}
-		return result;
+
+		//traversing FK relationship(s)
+		List<String> fieldPath = new List<String>();
+		Schema.sObjectType lastSObjectType = table;
+		Iterator<String> i = fieldName.split('\\.').iterator();
+		while(i.hasNext()){
+			String field = i.next();
+			Schema.SObjectField token = fflib_SObjectDescribe.getDescribe(lastSObjectType).getField(field.toLowerCase());
+			DescribeFieldResult tokenDescribe = token != null ? token.getDescribe() : null;
+			
+			if (token != null && enforceFLS) {
+				fflib_SecurityUtils.checkFieldIsReadable(lastSObjectType, token);
+			}
+
+			if(token != null && i.hasNext() && tokenDescribe.getSOAPType() == Schema.SOAPType.ID){
+				lastSObjectType = tokenDescribe.getReferenceTo()[0]; //if it's polymorphic doesn't matter which one we get
+				fieldPath.add(tokenDescribe.getRelationshipName());
+			}else if(token != null && !i.hasNext()){
+				fieldPath.add(tokenDescribe.getName());
+			}else{
+				if(token == null)
+					throw new InvalidFieldException(field,lastSObjectType);
+				else
+					throw new NonReferenceFieldException(lastSObjectType+'.'+field+' is not a lookup or master-detail field but is used in a cross-object query field.');
+			}
+		}
+
+		return String.join(fieldPath,'.');
+	}
+
+	@TestVisible
+	private static String getFieldTokenPath(Schema.SObjectField field){
+		if(field == null){
+			throw new InvalidFieldException('Invalid field: null');		
+		}
+		return field.getDescribe().getName();
 	}
 
 	/**
@@ -138,7 +150,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	**/
 	public fflib_QueryFactory(Schema.SObjectType table){
 		this.table = table;
-		fields = new Set<QueryField>();
+		fields = new Set<String>();
 		order = new List<Ordering>();
 		enforceFLS = false;
 	}
@@ -192,7 +204,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param fieldName the API name of the field to add to the query's SELECT clause.
 	 **/
 	public fflib_QueryFactory selectField(String fieldName){ 		
-		fields.add( getFieldToken(fieldName) );
+		fields.add( getFieldPath(fieldName) );
 		return this;
 	} 
 	/**
@@ -206,7 +218,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			throw new InvalidFieldException(null,this.table);
 		if (enforceFLS) 
 			fflib_SecurityUtils.checkFieldIsReadable(table, field);
-		fields.add( new QueryField(field) );
+		fields.add( getFieldTokenPath(field) );
 		return this;
 	}
 	/**
@@ -214,12 +226,9 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param fieldNames the Set of field API names to select.
 	**/
 	public fflib_QueryFactory selectFields(Set<String> fieldNames){
-		List<String> fieldList = new List<String>();
-		Set<QueryField> toAdd = new Set<QueryField>();
 		for(String fieldName:fieldNames){
-			toAdd.add( getFieldToken(fieldName) );
+			fields.add( getFieldPath(fieldName) );
 		}	
-		fields.addAll(toAdd);
 		return this;
 	}
 	/**
@@ -227,10 +236,8 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param fieldNames the List of field API names to select.
 	**/
 	public fflib_QueryFactory selectFields(List<String> fieldNames){
-		Set<QueryField> toAdd = new Set<QueryField>();
 		for(String fieldName:fieldNames)
-			toAdd.add( getFieldToken(fieldName) );
-		fields.addAll(toAdd);
+			fields.add( getFieldPath(fieldName) );
 		return this;
 	}
 	/**
@@ -244,7 +251,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 				throw new InvalidFieldException();	
 			if (enforceFLS) 
 				fflib_SecurityUtils.checkFieldIsReadable(table, token);	
-			this.fields.add( new QueryField(token) );
+			this.fields.add( getFieldTokenPath(token) );
 		}
 		return this;
 	}
@@ -259,7 +266,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 				throw new InvalidFieldException();
 			if (enforceFLS) 
 				fflib_SecurityUtils.checkFieldIsReadable(table, token);		
-			this.fields.add( new QueryField(token) );
+			this.fields.add( getFieldTokenPath(token) );
 		}
 		return this;
 	}
@@ -281,7 +288,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		for(Schema.FieldSetMember field: fieldSet.getFields()){
 			if(!allowCrossObject && field.getFieldPath().contains('.'))
 				throw new InvalidFieldSetException('Cross-object fields not allowed and field "'+field.getFieldPath()+'"" is a cross-object field.');
-			fields.add( getFieldToken(field.getFieldPath()) );
+			fields.add( getFieldPath(field.getFieldPath()) );
 		}
 		return this;
 	}
@@ -328,7 +335,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	/**
 	 * @returns the selected fields
 	 **/
-	public Set<QueryField> getSelectedFields() { 
+	public Set<String> getSelectedFields() { 
 		return this.fields;
 	}
 
@@ -483,7 +490,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	**/  
     public fflib_QueryFactory addOrdering(String fieldName, SortOrder direction, Boolean nullsLast){
 		order.add(
-			new Ordering(getFieldToken(fieldName), direction, nullsLast)
+			new Ordering(getFieldPath(fieldName), direction, nullsLast)
 		);	
 		return this;
     }
@@ -501,7 +508,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	**/
     public fflib_QueryFactory addOrdering(SObjectField field, SortOrder direction, Boolean nullsLast){
 		order.add(
-			new Ordering(new QueryField(field), direction, nullsLast)
+			new Ordering(getFieldTokenPath(field), direction, nullsLast)
 		);	
 		return this;
     }
@@ -520,7 +527,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	**/  
     public fflib_QueryFactory addOrdering(String fieldName, SortOrder direction){
 		order.add(
-			new Ordering(getFieldToken(fieldName), direction)
+			new Ordering(getFieldPath(fieldName), direction)
 		);	
 		return this;
     }
@@ -539,7 +546,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	**/
     public fflib_QueryFactory addOrdering(SObjectField field, SortOrder direction){
 		order.add(
-			new Ordering(new QueryField(field), direction)
+			new Ordering(getFieldTokenPath(field), direction)
 		);	
 		return this;
     }
@@ -553,24 +560,23 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		//if no fields have been added, just add the Id field so that the query or subquery will not just fail
 		if (fields.size() == 0){
 			if (enforceFLS) fflib_SecurityUtils.checkFieldIsReadable(table, 'Id');
-			result += 'Id  ';
-		}else if(sortSelectFields){
-			List<QueryField> fieldsToQuery = new List<QueryField>(fields);
-			fieldsToQuery.sort(); //delegates to QueryFilter's comparable implementation
-			for(QueryField field:fieldsToQuery){
-				result += field + ', ';
-			}
-		}else{
-			for (QueryField field : fields)
-				result += field + ', ';
+			result += 'Id';
+		}else {
+			List<String> fieldsToQuery = new List<String>(fields);
+		
+			if(sortSelectFields){
+				fieldsToQuery.sort(); 
+			}	
+		
+			result += String.join(fieldsToQuery,', ');
 		}
 		
 		if(subselectQueryMap != null && !subselectQueryMap.isEmpty()){
 			for (fflib_QueryFactory childRow : subselectQueryMap.values()){
-				result += ' (' + childRow.toSOQL() + '), ';
+				result += ', (' + childRow.toSOQL() + ') ';
 			}	
 		}
-		result = result.substring(0,result.length()-2) + ' FROM ' + (relationship != null ? relationship.getRelationshipName() : table.getDescribe().getName());
+		result += ' FROM ' + (relationship != null ? relationship.getRelationshipName() : table.getDescribe().getName());
 		if(conditionExpression != null)
 			result += ' WHERE '+conditionExpression;
 
@@ -616,7 +622,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	public class Ordering{
 		private SortOrder direction;
 		private boolean nullsLast;
-		private QueryField field;
+		private String field;
 
 		public Ordering(String sobjType, String fieldName, SortOrder direction){
 			this(
@@ -629,32 +635,23 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		 * Once constructed it's properties may not be modified.
 		**/
 		public Ordering(Schema.SObjectField field, SortOrder direction){
-			this(field, direction, false); //SOQL docs state NULLS FIRST is default behavior
+			this(fflib_QueryFactory.getFieldTokenPath(field), direction, false); //SOQL docs state NULLS FIRST is default behavior
 		}
 		public Ordering(Schema.SObjectField field, SortOrder direction, Boolean nullsLast){
-			this(new QueryField(field), direction, nullsLast);
+			this(fflib_QueryFactory.getFieldTokenPath(field), direction, nullsLast);
 		}
 		@testVisible
-		private Ordering(QueryField field, SortOrder direction){
+		private Ordering(String field, SortOrder direction){
 			this(field, direction, false);
 		}
 		@testVisible
-		private Ordering(QueryField field, SortOrder direction, Boolean nullsLast){
+		private Ordering(String field, SortOrder direction, Boolean nullsLast){
 			this.direction = direction;
 			this.field = field;
 			this.nullsLast = nullsLast;
 		}
-		/**
-		 * @deprecated
-		 * Use of this method is discouraged. Only the first field of any cross-object fields is returned.
-		 * Use getFields() instead.
-		**/
-		public Schema.SObjectField getField(){
-			System.debug(LoggingLevel.WARN, 'fflib_QueryFactory.Ordering.getField is deprecated and should not be used.');
-			return field.getBaseField();
-		}
-		public List<Schema.SObjectField> getFields(){
-			return this.field.getFieldPath();
+		public String getField(){
+			return this.field;
 		}
 		public SortOrder getDirection(){
 			return direction;
@@ -665,103 +662,6 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	}
 
 
-	public class QueryField implements Comparable{
-		List<Schema.SObjectField> fields;
-
-		/**
-		 * The first field in the path to to field being queried
-		 **/
-		public SObjectField getBaseField(){
-			return fields[0];
-		}
-		 
-		/**
-		 * The full list of fields representing the path to the field being queried
-		 **/
-		public List<SObjectField> getFieldPath(){
-			return fields.clone();
-		}
-
-		@testVisible 
-		private QueryField(List<Schema.SObjectField> fields){
-			if(fields == null || fields.size() == 0)
-				throw new InvalidFieldException('Invalid field: null');
-			this.fields = fields.clone(); //don't let clients mutate after setting!
-		}
-		@testVisible 
-		private QueryField(Schema.SObjectField field){
-			if(field == null)
-				throw new InvalidFieldException('Invalid field: null');
-			fields = new List<Schema.SObjectField>{ field };
-		}
-		public override String toString(){
-			String result = '';
-			Integer size = fields.size();
-			for (Integer i=0; i<size; i++)
-			{
-				if (i>0)
-				{
-					if (result.endsWithIgnoreCase('Id'))
-						result = result.removeEndIgnoreCase('Id');
-					else if (result.endsWithIgnoreCase('__c')) {
-						result = result.removeEndIgnoreCase('__c') + '__r';
-					}
-					result += '.';
-				}
-				result += fields[i].getDescribe().getName();
-			}
-			return result;
-		} 
-		public integer hashCode(){
-			return String.valueOf(this.fields).hashCode();
-		}
-		public boolean equals(Object obj){
-			//Easy checks first
-			if(obj == null || !(obj instanceof QueryField))
-				return false;
-
-			if (this === obj)
-				return true;
-
-			//Detailed checks
-			QueryField other = (QueryField)obj;
-			Integer size = fields.size();
-			if (size != other.fields.size())
-				return false;
-
-			for (Integer i=0; i<size; i++)
-				if (fields[i] != (other.fields[i]))
-					return false;
-
-			return true;
-		}
-		/**
-		 * Allows sorting QueryField instances.
-		 *
-		 * Returns:
-		 * - Objects that are not QueryField instances as -2, which functions as -1 but with more flair
-		 * - Equivalent QueryFields return 0.
-		 * - QueryFields with more joins give +1, while fewer joins give -1
-		 * - For anything else, compare the toStrings of this and the supplied object.
-		 **/
-		public Integer compareTo(Object o){
-			if(o == null || !(o instanceof QueryField))
-				return -2; //We can't possibly do a sane comparison against an unknwon type, go athead and let it "win"
-			
-			if (this === o)
-				return 0;
-
-			QueryField other = (QueryField)o;
-			Integer size = fields.size();
-			Integer sizeOther = other.fields.size();
-			if (size < sizeOther)
-				return -1;
-			if (size > sizeOther)
-				return 1;
-
-			return this.toString().compareTo(other.toString());
-		}
-	}
 	
 	public class InvalidFieldException extends Exception{
 		private String fieldName;
