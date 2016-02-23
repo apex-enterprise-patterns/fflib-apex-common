@@ -289,6 +289,12 @@ public abstract with sharing class fflib_SObjectSelector
         return getSObjectType();
     }
     
+    public fflib_QueryFactory newLightweightQueryFactory() {
+        return configureQueryFactory(
+            new fflib_QueryFactory(getSObjectType2(), true), m_enforceCRUD, false, true
+        );
+    }
+    
     /**
      * Returns a QueryFactory configured with the Selectors object, fields, fieldsets and default order by
      **/

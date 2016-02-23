@@ -35,6 +35,18 @@ private class fflib_QueryFactoryTest {
 		qf.selectFields( new Set<String>{'acCounTId', 'account.name'} );
 		qf.selectFields( new List<String>{'homePhonE','fAX'} );
 		qf.selectFields( new List<Schema.SObjectField>{ Contact.Email, Contact.Title } );
+		// QueryField weights foreign key fields differently, so account.name will be last
+		System.assertEquals('select accountid, email, fax, firstname, homephone, lastname, title, account.name from contact', qf.toSOQL().toLowercase());
+		
+		// Test the LightweightQueryField implementation
+		qf = new fflib_QueryFactory(Contact.SObjectType, true);
+		qf.selectField('firstName');
+		qf.selectField(Schema.Contact.SObjectType.fields.lastName);
+		qf.selectFields( new Set<String>{'acCounTId', 'account.name'} );
+		qf.selectFields( new List<String>{'homePhonE','fAX'} );
+		qf.selectFields( new List<Schema.SObjectField>{ Contact.Email, Contact.Title } );
+		// LightweightQueryField converts all field paths to lowercase and sorts in alphabetical order, so account.name will be first
+		System.assertEquals('select account.name, accountid, email, fax, firstname, homephone, lastname, title from contact', qf.toSOQL().toLowercase());
 	}
 
 	@isTest
@@ -47,6 +59,15 @@ private class fflib_QueryFactoryTest {
 		qf.setLimit(100);
 		System.assertEquals(100,qf.getLimit());
 		System.assert( qf.toSOQL().endsWithIgnoreCase('LIMIT '+qf.getLimit()), 'Failed to respect limit clause:'+qf.toSOQL() );
+		
+		// Test the LightweightQueryField implementation
+		qf = new fflib_QueryFactory(Contact.SObjectType, true);
+		qf.selectField('NAMe').selectFields( new Set<String>{'naMe', 'email'});
+		query = qf.toSOQL().toLowercase();
+		System.assert( Pattern.matches('select.*email,.*name.*from.*',query), 'Expected email and name fields in query, got '+query);
+		qf.setLimit(100);
+		System.assertEquals(100,qf.getLimit());
+		System.assert(qf.toSOQL().endsWithIgnoreCase('limit '+qf.getLimit()), 'Failed to respect limit clause:'+qf.toSOQL());
 	}
 
 	@isTest
@@ -59,14 +80,33 @@ private class fflib_QueryFactoryTest {
 		System.assertEquals(whereClause,qf.getCondition()); 
 		String query = qf.toSOQL();
 		System.assert(query.endsWith('WHERE name = \'test\''),'Query should have ended with a filter on name, got: '+query);
+		
+		// Test the LightweightQueryField implementation
+		qf = new fflib_QueryFactory(Contact.SObjectType, true);
+		qf.selectField('name');
+		qf.selectField('email');
+		qf.setCondition( whereClause );
+		System.assertEquals(whereClause,qf.getCondition()); 
+		query = qf.toSOQL();
+		System.assert(query.endsWithIgnoreCase('where name = \'test\''),'Query should have ended with a filter on name, got: '+query);
 	}
 
 	@isTest
 	static void duplicateFieldSelection() {
 		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
 		qf.selectField('NAMe').selectFields( new Set<String>{'naMe', 'email'});
-		String query = qf.toSOQL();
-		System.assertEquals(1, query.countMatches('Name'), 'Expected one name field in query: '+query );
+		String query = qf.toSOQL().toLowercase();
+		// The resulting query will be de-duped so that only one "Name" field exists in the generated query 
+		System.assertEquals(1, query.countMatches('name'), 'Expected one name field in query: '+query );
+		System.assertEquals(1, query.countMatches('email'), 'Expected one email field in query: '+query );
+		
+		// Test the LightweightQueryField implementation
+		qf = new fflib_QueryFactory(Contact.SObjectType);
+		qf.selectField('NAMe').selectFields( new Set<String>{'naMe', 'email'});
+		query = qf.toSOQL().toLowercase();
+		// The resulting query will be de-duped so that only one "Name" field exists in the generated query 
+		System.assertEquals(1, query.countMatches('name'), 'Expected one name field in query: '+query );
+		System.assertEquals(1, query.countMatches('email'), 'Expected one email field in query: '+query );
 	}
 
 	@isTest
@@ -78,7 +118,20 @@ private class fflib_QueryFactoryTest {
 		System.assertNotEquals(qf1,qf2);
 		qf2.selectField('NAmE');
 		System.assertEquals(qf1,qf2);
-		qf1.selectField('name').selectFields( new Set<String>{ 'NAME', 'name' }).selectFields( new Set<Schema.SObjectField>{ Contact.Name, Contact.Name} );
+		qf1.selectFields( new Set<String>{ 'NAME' });
+		qf2.selectFields( new Set<Schema.SObjectField>{ Contact.Name} );
+		System.assertEquals(qf1,qf2);
+		
+		// Test the LightweightQueryField implementation
+		qf1 = new fflib_QueryFactory(Contact.SObjectType, true);
+		qf2 = new fflib_QueryFactory(Contact.SObjectType, true);
+		System.assertEquals(qf1,qf2);
+		qf1.selectField('name');
+		System.assertNotEquals(qf1,qf2);
+		qf2.selectField('NAmE');
+		System.assertEquals(qf1,qf2);
+		qf1.selectFields( new Set<String>{ 'NAME' });
+		qf2.selectFields( new Set<Schema.SObjectField>{ Contact.Name} );
 		System.assertEquals(qf1,qf2);
 	}
 
@@ -146,9 +199,22 @@ private class fflib_QueryFactoryTest {
 		System.assertEquals(Contact.name,qf.getOrderings()[0].getField() );
 		System.assertEquals(fflib_QueryFactory.SortOrder.DESCENDING,qf.getOrderings()[1].getDirection() );
 
-		
 		System.assert( Pattern.matches('SELECT.*Name.*FROM.*',query), 'Expected Name field in query, got '+query);
 		System.assert( Pattern.matches('SELECT.*Email.*FROM.*',query), 'Expected Name field in query, got '+query);
+		
+		// Equivalent test for LightweightQueryField implementation
+		qf = new fflib_QueryFactory(Contact.SObjectType, true);
+		qf.selectField('name');
+		qf.selectField('email');
+		qf.setCondition( 'name = \'test\'' );
+		qf.addOrdering( new fflib_QueryFactory.Ordering('Contact','name',fflib_QueryFactory.SortOrder.ASCENDING) ).addOrdering( new fflib_QueryFactory.Ordering('Contact','CreatedDATE',fflib_QueryFactory.SortOrder.DESCENDING) );
+		query = qf.toSOQL().toLowerCase();
+		
+		System.assertEquals(2,qf.getOrderings().size());
+		System.assertEquals(Contact.name,qf.getOrderings()[0].getField() );
+		System.assertEquals(fflib_QueryFactory.SortOrder.DESCENDING,qf.getOrderings()[1].getDirection() );
+		
+		System.assert( Pattern.matches('select.*email,.*name.*from.*',query), 'Expected name and email fields in query, got '+query);
 	}
 
 	@isTest
@@ -777,34 +843,7 @@ private class fflib_QueryFactoryTest {
 	}
 	
 	@isTest
-	static void testSoql_unsortedSelectFields(){
-		//Given
-		fflib_QueryFactory qf = new fflib_QueryFactory(User.SObjectType);
-		qf.selectFields(new List<String>{
-			'Id',
-			'FirstName',
-			'LastName',
-			'CreatedBy.Name',
-			'CreatedBy.Manager',
-			'LastModifiedBy.Email'
-		});
-
-		qf.setSortSelectFields(false);
-
-		String orderedQuery =
-			'SELECT '
-			+'FirstName, Id, LastName, ' //less joins come first, alphabetically
-			+'CreatedBy.ManagerId, CreatedBy.Name, LastModifiedBy.Email ' //alphabetical on the same number of joins'
-			+'FROM User';
-
-		//When
-		String actualSoql = qf.toSOQL();
-
-		//Then		
-		System.assertNotEquals(orderedQuery, actualSoql);
-	}
-
-
+	
 	public static User createTestUser_noAccess(){
 		User usr;
 		try {
