@@ -71,8 +71,9 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	/* This can optionally be enforced (or not) by calling the setEnforceFLS method prior to calling 
 	/* one of the selectField or selectFieldset methods.
 	**/
+	@TestVisible
 	private Boolean enforceFLS = false;
-	
+	@TestVisible
 	private Boolean lightweight = false;
 	
 	/**
@@ -138,6 +139,15 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	}
 	
 	/**
+	 * Construct a new fflib_QueryFactory instance with no options other than the FROM caluse. 
+	 * You *must* call selectField(s) before {@link #toSOQL} will return a valid, runnable query.
+	 * @param table	the SObject to be used in the FROM clause of the resultant query. This sets the value of {@link #table}.
+	**/
+	public fflib_QueryFactory(Schema.SObjectType table){
+		this(table, false);
+	}
+
+	/**
 	 * Construct a new fflib_QueryFactory instance, allowing you to use LightweightQueryFields
 	 * to build the query. This offers significant performance improvement in query build time
 	 * at the expense of FLS enforcement, and up-front field validation.
@@ -145,25 +155,13 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param lightweight a Boolean that specifies whether the LightweightQueryField is to be used when building the query.
 	**/
 	public fflib_QueryFactory(Schema.SObjectType table, Boolean lightweight) {
-		this(table);
+		this.table = table;
+		this.fields = new List<QueryField>();
+		this.order = new List<Ordering>();
 		this.lightweight = lightweight;
-		if (lightweight) {
-			this.enforceFLS = false;
-		}
+		this.enforceFLS = false;
 	}
 	
-	/**
-	 * Construct a new fflib_QueryFactory instance with no options other than the FROM caluse. 
-	 * You *must* call selectField(s) before {@link #toSOQL} will return a valid, runnable query.
-	 * @param table	the SObject to be used in the FROM clause of the resultant query. This sets the value of {@link #table}.
-	**/
-	public fflib_QueryFactory(Schema.SObjectType table){
-		this.table = table;
-		fields = new List<QueryField>();
-		order = new List<Ordering>();
-		enforceFLS = false;
-	}
-
 	/**
 	 * Construct a new fflib_QueryFactory instance with no options other than the FROM clause and the relationship.
 	 * This should be used when constructing a subquery query for addition to a parent query. 
@@ -172,10 +170,22 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param relationship the ChildRelationship to be used in the FROM Clause of the resultant Query (when set overrides value of table). This sets the value of {@link #relationship} and {@link #table}.
 	**/
 	private fflib_QueryFactory(Schema.ChildRelationship relationship){
-		this(relationship.getChildSObject()); 
+		this(relationship, false);
+	}
+	
+	/**
+	 * Construct a new fflib_QueryFactory instance with no options other than the FROM clause and the relationship.
+	 * This should be used when constructing a subquery query for addition to a parent query. 
+	 * Objects created with this constructor cannot be added to another object using the subselectQuery method.
+	 * You *must* call selectField(s) before {@link #toSOQL} will return a valid, runnable query.
+	 * @param relationship the ChildRelationship to be used in the FROM Clause of the resultant Query (when set overrides value of table). This sets the value of {@link #relationship} and {@link #table}.
+	 * @param lightweight a Boolean that specifies whether the LightweightQueryField is to be used when building the query.
+	**/
+	private fflib_QueryFactory(Schema.ChildRelationship relationship, Boolean lightweight){
+		this(relationship.getChildSObject(), lightweight);
 		this.relationship = relationship;
 	}
-
+	
 	/**
 	 * This method checks to see if the User has Read Access on {@link #table}. 
 	 * Asserts true if User has access.
@@ -230,12 +240,24 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			throw new InvalidFieldException(null,this.table);
 		if (enforceFLS) 
 			fflib_SecurityUtils.checkFieldIsReadable(table, field);
-		if (lightweight)
-			this.fields.add(new LightweightQueryField(field));
-		else
-			this.fields.add(new QueryField(field));
+		this.fields.add(getQueryFieldFromToken(field));
 		return this;
 	}
+	
+	/**
+	 * Returns the appropriate QueryField implementation, based on the "lightweight" flag
+	 * @param field the {@link Schema.SObjectField} for the QueryField
+	 * @returns either a QueryField, or LightweightQueryField object for the specified SObjectField
+	**/
+	private QueryField getQueryFieldFromToken(Schema.SObjectField field) {
+		QueryField qf;
+		if (this.lightweight)
+			qf = new LightweightQueryField(field);
+		else
+			qf = new QueryField(field);
+		return qf;
+	}
+	
 	/**
 	 * Selects multiple fields. This acts the same as calling {@link #selectField(String)} multiple times.
 	 * @param fieldNames the Set of field API names to select.
@@ -265,11 +287,8 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			if(token == null)
 				throw new InvalidFieldException();	
 			if (enforceFLS) 
-				fflib_SecurityUtils.checkFieldIsReadable(table, token);	
-			if (lightweight)
-				this.fields.add(new LightweightQueryField(token));
-			else
-				this.fields.add(new QueryField(token));
+				fflib_SecurityUtils.checkFieldIsReadable(table, token);
+			this.fields.add(getQueryFieldFromToken(token));
 		}
 		return this;
 	}
@@ -283,11 +302,8 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			if(token == null)
 				throw new InvalidFieldException();
 			if (enforceFLS) 
-				fflib_SecurityUtils.checkFieldIsReadable(table, token);		
-			if (lightweight)
-				this.fields.add(new LightweightQueryField(token));
-			else
-				this.fields.add(new QueryField(token));
+				fflib_SecurityUtils.checkFieldIsReadable(table, token);
+			this.fields.add(getQueryFieldFromToken(token));
 		}
 		return this;
 	}
@@ -359,13 +375,6 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 **/
 	public Set<QueryField> getSelectedFields() { 
 		return new Set<QueryField>(this.fields);
-	}
-	
-	/**
-	 * @returns the selected fields as a List<QueryField>
-	 **/
-	public List<QueryField> getSelectedFieldsAsList() {
-		return this.fields;
 	}
 	
 	/**
@@ -456,7 +465,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			return subselectQueryMap.get(relationship);
 		}
 		
-		fflib_QueryFactory subselectQuery = new fflib_QueryFactory(relationship);
+		fflib_QueryFactory subselectQuery = new fflib_QueryFactory(relationship, this.lightweight);
 		
 		if(assertIsAccessible){
 			subSelectQuery.assertIsAccessible();
@@ -534,7 +543,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	**/
     public fflib_QueryFactory addOrdering(SObjectField field, SortOrder direction, Boolean nullsLast){
 		order.add(
-			new Ordering(this.lightweight ? new LightweightQueryField(field) : new QueryField(field), direction, nullsLast)
+			new Ordering(getQueryFieldFromToken(field), direction, nullsLast)
 		);	
 		return this;
     }
@@ -572,7 +581,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	**/
     public fflib_QueryFactory addOrdering(SObjectField field, SortOrder direction){
 		order.add(
-			new Ordering(this.lightweight ? new LightweightQueryField(field) : new QueryField(field), direction)
+			new Ordering(getQueryFieldFromToken(field), direction)
 		);	
 		return this;
     }
@@ -630,7 +639,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	**/
 	public fflib_QueryFactory deepClone(){	
 
-		fflib_QueryFactory clone = new fflib_QueryFactory(this.table)
+		fflib_QueryFactory clone = new fflib_QueryFactory(this.table, this.lightweight)
 			.setLimit(this.limitCount)
 			.setCondition(this.conditionExpression)
 			.setEnforceFLS(this.enforceFLS);
@@ -726,8 +735,9 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		}
 		
 		public override Boolean equals(Object obj) {
-			// compareTo does all the heavy lifting needed to determine equality
-			return compareTo(obj) == 0;
+			return ((obj != null) 
+				&& (obj instanceof LightweightQueryField) 
+				&& (this.fieldName == ((LightweightQueryField) obj).fieldName));
 		}
 		
 		public override Integer compareTo(Object obj) {
@@ -735,7 +745,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 				return 1;
 			
 			if (this.fieldName == null) {
-				if (((LightweightQueryField) obj).toString() == null)
+				if (((LightweightQueryField) obj).fieldName == null)
 					// Both objects are non-null, but their fieldName is null
 					return 0;
 				else
@@ -744,7 +754,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			}
 			
 			// Both objects have non-null fieldNames, so just return the result of String.compareTo
-			return this.fieldName.compareTo(((LightweightQueryField) obj).toString());
+			return this.fieldName.compareTo(((LightweightQueryField) obj).fieldName);
 		}
 	}
 
