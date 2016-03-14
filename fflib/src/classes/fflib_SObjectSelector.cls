@@ -34,7 +34,6 @@ public abstract with sharing class fflib_SObjectSelector
      * This overrides the Multi Currency handling, preventing it from injecting the CurrencyIsoCode fie ld for certain System objects that don't ever support it
      **/
      private static Set<String> STANDARD_WITHOUT_CURRENCYISO = new Set<String> {'ApexClass', 'ApexTrigger', 'AsyncApexJob', 'Attachment', 'RecordType'};
-    };
      
     /**
      * Should this selector automatically include the FieldSet fields when building queries?
