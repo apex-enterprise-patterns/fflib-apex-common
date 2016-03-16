@@ -266,6 +266,68 @@ public virtual with sharing class fflib_SObjectDomain
     }
     
 	/**
+	 * Detects whether any values in a record have changed for given fields as strings
+	 * Returns true at the first detected changed field value
+	 * Returns false if no changes detected in the specified fields
+	 **/
+	public static Boolean hasChangedFields(Set<String> fieldNames, SObject newRecord, SObject oldRecord)
+	{
+		for(String fieldName : fieldNames)
+		{
+			if(oldRecord.get(fieldName) != newRecord.get(fieldName)) return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Detects whether any values in a record have changed for given fields as tokens
+	 * Returns true at the first detected changed field value
+	 * Returns false if no changes detected in the specified fields
+	 **/
+	public static Boolean hasChangedFields(Set<Schema.SObjectField> fieldTokens, SObject newRecord, SObject oldRecord)
+	{
+		for(Schema.SObjectField fieldToken : fieldTokens)
+		{
+			if(oldRecord.get(fieldToken) != newRecord.get(fieldToken)) return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Detects which values in a record have changed for given fields as strings
+	 * Returns set of strings for changed fields, empty set if none
+	 **/
+	public static Set<String> detectChangedFields(Set<String> fieldNames, SObject newRecord, SObject oldRecord)
+	{
+		Set<String> changedFields = new Set<String>();
+		for(String fieldName : fieldNames)
+		{
+			if(oldRecord.get(fieldName) != newRecord.get(fieldName))
+			{
+				changedFields.add(fieldName);
+			}
+		}
+		return changedFields;
+	}
+
+	/**
+	 * Detects which values in a record have changed for given fields as tokens
+	 * Returns set of tokens for changed fields, empty set if none
+	 **/
+	public static Set<Schema.SObjectField> detectChangedFields(Set<Schema.SObjectField> fieldTokens, SObject newRecord, SObject oldRecord)
+	{
+		Set<Schema.SObjectField> changedFields = new Set<Schema.SObjectField>();
+		for(Schema.SObjectField fieldToken : fieldTokens)
+		{
+			if(oldRecord.get(fieldName) != newRecord.get(fieldName))
+			{
+				changedFields.add(fieldName);
+			}
+		}
+		return changedFields;
+	}
+
+	/**
 	 * Interface used to aid the triggerHandler in constructing instances of Domain classes
 	 **/
 	public interface IConstructable
@@ -388,7 +450,7 @@ public virtual with sharing class fflib_SObjectDomain
 		domain.Records = records;
 		return domain;
 	}
-	
+
 	/**
 	 * Fluent style Configuration system for Domain class creation
 	 **/
