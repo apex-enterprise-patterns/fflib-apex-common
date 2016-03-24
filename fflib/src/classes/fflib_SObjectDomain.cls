@@ -973,5 +973,63 @@ public virtual with sharing class fflib_SObjectDomain
 		{
 			return new TestSObjectOnValidateBehaviour(sObjectList);
 		}				
-	}					
+	}
+	
+	/**
+	 * Test domain class (ideally this would be in the test class, however Type.newInstance does not see such classes)
+	 **/
+	public with sharing class TestSObjectDisableBehaviour 
+		extends fflib_SObjectDomain 
+	{
+		public TestSObjectDisableBehaviour(List<Opportunity> sObjectList)
+		{
+			super(sObjectList);
+		}
+
+		public override void onAfterInsert() {
+			// Throw exception to give the test somethign to assert on
+			throw new DomainException('onAfterInsert called');
+		}
+
+		public override void onBeforeInsert() {
+			// Throw exception to give the test somethign to assert on
+			throw new DomainException('onBeforeInsert called');
+		}
+
+		public override void onAfterUpdate(map<id, SObject> existing) {
+			// Throw exception to give the test somethign to assert on
+			throw new DomainException('onAfterUpdate called');
+		}
+
+		public override void onBeforeUpdate(map<id, SObject> existing) {
+			// Throw exception to give the test somethign to assert on
+			throw new DomainException('onBeforeUpdate called');
+		}
+
+		public override void onAfterDelete() {
+			// Throw exception to give the test somethign to assert on
+			throw new DomainException('onAfterDelete called');
+		}
+
+		public override void onBeforeDelete() {
+			// Throw exception to give the test somethign to assert on
+			throw new DomainException('onBeforeDelete called');
+		}
+
+		public override void onAfterUndelete() {
+			// Throw exception to give the test somethign to assert on
+			throw new DomainException('onAfterUndelete called');
+		}
+	}
+
+	/**
+	 * Typically an inner class to the domain class, supported here for test purposes
+	 **/    
+	public class TestSObjectDisableBehaviourConstructor implements fflib_SObjectDomain.IConstructable
+	{
+		public fflib_SObjectDomain construct(List<SObject> sObjectList)
+		{
+			return new TestSObjectDisableBehaviour(sObjectList);
+		}
+	}
 }
