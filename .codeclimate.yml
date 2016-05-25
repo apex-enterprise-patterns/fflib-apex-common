@@ -1,5 +1,5 @@
 engines:
-  apex:
+  apexmetrics:
     enabled: true
 ratings:
   paths:
