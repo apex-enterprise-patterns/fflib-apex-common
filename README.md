@@ -10,6 +10,10 @@ FinancialForce Apex Common
 
 See here for [MavensMate Templates](http://andyinthecloud.com/2014/05/23/mavensmate-templates-and-apex-enterprise-patterns/)
 
+<a href="https://codeclimate.com/github/Up2Go/fflib-apex-common"><img src="https://codeclimate.com/github/Up2Go/fflib-apex-common/badges/gpa.svg" /></a>
+<a href="https://codeclimate.com/github/Up2Go/fflib-apex-common"><img src="https://codeclimate.com/github/Up2Go/fflib-apex-common/badges/issue_count.svg" /></a>
+
+
 Updates
 =======
 
