@@ -23,6 +23,7 @@ This class diagram shows how the various pattern base classes updated in this br
 ![alt tag](https://andrewfawcett.files.wordpress.com/2014/06/flspocclassdiagram.png)
 
 **Current Result...**
+=====================
 
 The above allows the [existing sample application](https://github.com/financialforcedev/fflib-apex-common-samplecode) to support CRUD and FLS checking without any code changes! Which is one of the aims of this experiment, should Salesforce add **platform support** for this in the future we want to minimise changes to the framework code only.
 
