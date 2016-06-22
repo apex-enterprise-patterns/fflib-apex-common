@@ -326,9 +326,12 @@ public virtual with sharing class fflib_SObjectDomain
     private static Set<String> resolvePopulatedFields(SObject record)
     {
     	// Please upvote https://success.salesforce.com/ideaView?id=08730000000l5vbAAA)
+    	/*
 		Set<String> populatedFieldsFromRecord = ((Map<String, Object>)JSON.deserializeUntyped(JSON.serialize(record))).keySet();
 		populatedFieldsFromRecord.remove('attributes');
 		return populatedFieldsFromRecord;
+		*/
+		return record.getPopulatedFieldsAsMap().keySet();
     }
     
 	/**
