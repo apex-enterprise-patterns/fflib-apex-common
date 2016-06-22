@@ -28,6 +28,8 @@ The above allows the [existing sample application](https://github.com/financialf
 
 So far so good.... but both the Unit of Work and Domain layer **require knowledge of which fields have been populated on the SObjects** passed to them. This is not as easy or straightforward as you might think, see [fflib_SObjectDomain.resolvePopulatedFields](https://github.com/financialforcedev/fflib-apex-common/blob/fls-support-experiment/fflib/src/classes/fflib_SObjectDomain.cls#L258) method. I'll be going into the pros and cons of this experiment in a blog post coming soon!
 
+**IMPORTANT UPDATE: June 2016. New Summer'16 Feature:** I have updated the above code to reflect the latest fflib from the devleop branch and also adopt the new SObject.getPopulatedFieldsMap method as an alternative to the JSON hack originally used above. This moves the viability of this proof of concept further down the road for sure. I'll do some more work on this and consider the best way to get more input on this from the community and Salesforce themselves.
+
 This Library
 ============
 
