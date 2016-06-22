@@ -27,9 +27,9 @@ This class diagram shows how the various pattern base classes updated in this br
 
 The above allows the [existing sample application](https://github.com/financialforcedev/fflib-apex-common-samplecode) to support CRUD and FLS checking without any code changes! Which is one of the aims of this experiment, should Salesforce add **platform support** for this in the future we want to minimise changes to the framework code only.
 
-So far so good.... but both the Unit of Work and Domain layer **require knowledge of which fields have been populated on the SObjects** passed to them. This is not as easy or straightforward as you might think, see [fflib_SObjectDomain.resolvePopulatedFields](https://github.com/financialforcedev/fflib-apex-common/blob/fls-support-experiment/fflib/src/classes/fflib_SObjectDomain.cls#L258) method. I'll be going into the pros and cons of this experiment in a blog post coming soon!
+So far so good.... but both the Unit of Work and Domain layer **require knowledge of which fields have been populated on the SObjects** passed to them. This is not as easy or straightforward as you might think (prior to Summer'16), see [fflib_SObjectDomain.resolvePopulatedFields](https://github.com/financialforcedev/fflib-apex-common/blob/fls-support-experiment/fflib/src/classes/fflib_SObjectDomain.cls#L326) method.
 
-**IMPORTANT UPDATE: June 2016. New Summer'16 Feature:** I have updated the above code to reflect the latest fflib from the devleop branch and also adopt the new **SObject.getPopulatedFieldsMap** method as an alternative to the JSON hack originally used above. This moves the viability of this proof of concept further down the road for sure. I'll do some more work on this and consider the best way to get more input on this from the community and Salesforce themselves.
+**IMPORTANT UPDATE: June 2016. New Summer'16 Feature:** I have now updated the above code to reflect the latest fflib from the devleop branch and also adopt the new **SObject.getPopulatedFieldsMap** method as an alternative to the JSON hack originally used above. This moves the viability of this proof of concept further down the road for sure. I'll do some more work on this and consider the best way to get more input on this from the community and Salesforce themselves.
 
 This Library
 ============
