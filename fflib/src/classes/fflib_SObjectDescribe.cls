@@ -39,6 +39,7 @@
 public class fflib_SObjectDescribe {
 	//internal implementation details
 	private Schema.SObjectType token;
+	private Schema.SObjectField nameField;
 	private Schema.DescribeSObjectResult describe { //lazy load - keep this leightweight until we need more data
 		get{
 			if(describe == null)
@@ -72,6 +73,7 @@ public class fflib_SObjectDescribe {
 		}
 		set;
 	}
+
 	private fflib_SObjectDescribe(Schema.SObjectType token){	
 		if(token == null)
 			throw new InvalidDescribeException('Invalid SObject type: null');
@@ -82,6 +84,12 @@ public class fflib_SObjectDescribe {
 	}
 
 	//public instace methods
+	/**
+	 * Returns the Schema.SObjectType this fflib_SObjectDescribe instance is based on.
+	**/
+	public Schema.SObjectType getSObjectType(){
+		return token;
+	}
 	/**
 	 * This method is a convenient shorthand for calling getField(name, true)
 	**/
@@ -105,6 +113,23 @@ public class fflib_SObjectDescribe {
 		}
 		return result;
 	}
+	
+	/**
+	* Returns the field where isNameField() is true (if any); otherwise returns null
+	**/
+	public Schema.SObjectField getNameField()
+	{
+		if(nameField == null) {
+			for(Schema.SObjectField field : wrappedFields.values()) {
+				if(field.getDescribe().isNameField()) {
+					nameField = field;
+					break;
+				}
+			}
+		}
+		return nameField;
+	}
+	
 	/**
 	 * Returns the raw Schema.DescribeSObjectResult an fflib_SObjectDescribe instance wraps.
 	**/
@@ -157,6 +182,8 @@ public class fflib_SObjectDescribe {
 		set;
 	}
 	public static fflib_SObjectDescribe getDescribe(String sObjectName){
+		if(String.isBlank(sObjectName))
+			return null;
 		fflib_SObjectDescribe result = instanceCache.get(sObjectName.toLowerCase());
 		if(result == null){
 			Schema.SObjectType token = wrappedGlobalDescribe.get(sObjectName.toLowerCase());
@@ -168,18 +195,24 @@ public class fflib_SObjectDescribe {
 		return result;
 	}
 	public static fflib_SObjectDescribe getDescribe(Schema.SObjectType token){
+		if(token == null)
+			return null;
 		fflib_SObjectDescribe result = instanceCache.get(String.valueOf(token).toLowerCase());
 		if(result == null)
 			result = new fflib_SObjectDescribe(token);		
 		return result;
 	}
 	public static fflib_SObjectDescribe getDescribe(Schema.DescribeSObjectResult nativeDescribe){
+		if(nativeDescribe == null)
+			return null;
 		fflib_SObjectDescribe result = instanceCache.get(nativeDescribe.getName().toLowerCase());
 		if(result == null)
 			result = new fflib_SObjectDescribe(nativeDescribe.getSobjectType());		
 		return result;
 	}
 	public static fflib_SObjectDescribe getDescribe(SObject instance){
+		if(instance == null)
+			return null;
 		return getDescribe(instance.getSobjectType());
 	}
 
@@ -230,11 +263,13 @@ public class fflib_SObjectDescribe {
 		 *  
 		**/
 		protected virtual Object getObject(String name, Boolean implyNamespace){
+			if(name == null) //short-circuit lookup logic since null can't possibly be a valid field name, and it saves us null checking
+				return null;
 			String preferredValue = ((implyNamespace ? currentNamespace+'__' : '') + name).toLowerCase();
 			if(values.containsKey(preferredValue)){
 				return values.get(preferredValue);
 			}else if(implyNamespace){
-				return values.get(name);
+				return values.get(name.toLowerCase());
 			}else{
 				return null;
 			}
@@ -243,17 +278,36 @@ public class fflib_SObjectDescribe {
 			return this.containsKey(name, true);
 		}
 		public virtual Boolean containsKey(String name, Boolean implyNamespace){
+			if(name == null) //short-circuit lookup logic since null can't possibly be a valid field name, and it saves us null checking
+				return null;
 			String preferredValue = ((implyNamespace ? currentNamespace+'__' : '') + name).toLowerCase();
 			return (
 				values.containsKey(preferredValue) ||
-				implyNamespace && values.containsKey(name)
+				implyNamespace && values.containsKey(name.toLowerCase())
 			);
 		}
 		public virtual Integer size(){
 			return values.size();
 		}
+		/**
+		 * Returns the key set of the map.
+		 * Note: unlike other NamespacedAttributeMap methods keySet defaults implyNamespace to false if not specified.
+		**/
 		public virtual Set<String> keySet(){
-			return values.keySet();
+			return this.keySet(false);
+		}
+		public virtual Set<String> keySet(Boolean implyNamespace){
+			if(implyNamespace){
+				Set<String> result = new Set<String>();
+				for(String key:values.keySet()){
+					result.add(
+						key.removeStartIgnoreCase(currentNamespace+'__')
+					);
+				}
+				return result;
+			}else{
+				return values.keySet();
+			}
 		}
 	}
 

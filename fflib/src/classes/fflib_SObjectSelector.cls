@@ -28,11 +28,12 @@
  * Class providing common database query support for abstracting and encapsulating query logic
  **/
 public abstract with sharing class fflib_SObjectSelector
+	implements fflib_ISObjectSelector
 {
     /**
      * This overrides the Multi Currency handling, preventing it from injecting the CurrencyIsoCode fie ld for certain System objects that don't ever support it
      **/
-    private static Set<String> STANDARD_WITHOUT_CURRENCYISO = new Set<String> { 'AsyncApexJob' };
+     private static Set<String> STANDARD_WITHOUT_CURRENCYISO = new Set<String> {'ApexClass', 'ApexTrigger', 'AsyncApexJob', 'Attachment', 'RecordType'};
      
     /**
      * Should this selector automatically include the FieldSet fields when building queries?
@@ -48,7 +49,30 @@ public abstract with sharing class fflib_SObjectSelector
      * Enforce CRUD Security
      **/
    	private Boolean m_enforceCRUD;
-    
+   	
+   /**
+    * Order by field
+    **/
+    	private String m_orderBy;
+
+    /**
+     * Sort the query fields in the select statement (defaults to true, at the expense of performance).
+     * Switch this off if you need more performant queries.
+     **/
+    private Boolean m_sortSelectFields;
+  
+   /**
+   * Describe helper
+   **/
+   	private fflib_SObjectDescribe describeWrapper {
+   		get {
+   			if(describeWrapper == null)
+   				describeWrapper = fflib_SObjectDescribe.getDescribe(getSObjectType());
+   			return describeWrapper;
+   		}
+   		set;
+   	}
+   	 
     /**
      * Implement this method to inform the base class of the SObject (custom or standard) to be queried
      **/
@@ -84,9 +108,23 @@ public abstract with sharing class fflib_SObjectSelector
      **/
     public fflib_SObjectSelector(Boolean includeFieldSetFields, Boolean enforceCRUD, Boolean enforceFLS)
     {
+        this(includeFieldSetFields, enforceCRUD, enforceFLS, true);
+    }
+
+    /**
+     * Constructs the Selector
+     *
+     * @param includeFieldSetFields Set to true if the Selector queries are to include Fieldset fields as well 
+     * @param enforceCRUD Enforce CRUD security
+     * @param enforeFLS Enforce Field Level Security
+     * @param sortSelectFields Set to false if selecting many columns to skip sorting select fields and improve performance
+     **/
+    public fflib_SObjectSelector(Boolean includeFieldSetFields, Boolean enforceCRUD, Boolean enforceFLS, Boolean sortSelectFields)
+    {
         m_includeFieldSetFields = includeFieldSetFields;
         m_enforceCRUD = enforceCRUD;
         m_enforceFLS = enforceFLS;
+        m_sortSelectFields = sortSelectFields;
     }
 
     /**
@@ -98,11 +136,18 @@ public abstract with sharing class fflib_SObjectSelector
     }
     
     /**
-     * Override this method to control the default ordering of records returned by the base queries, defaults to Name
+     * Override this method to control the default ordering of records returned by the base queries, 
+     * defaults to the name field of the object or CreatedDate if there is none
      **/
     public virtual String getOrderBy()
     {
-        return 'Name';
+        if(m_orderBy == null) {
+   		m_orderBy = 'CreatedDate';
+   		if(describeWrapper.getNameField() != null) {
+	    		m_orderBy = describeWrapper.getNameField().getDescribe().getName();
+	    	}
+	}
+   	return m_orderBy;
     }
 
     /** 
@@ -180,7 +225,7 @@ public abstract with sharing class fflib_SObjectSelector
      **/
     public String getSObjectName()
     {
-        return getSObjectType().getDescribe().getName();
+        return describeWrapper.getDescribe().getName();
     }
     
     /**
@@ -218,7 +263,7 @@ public abstract with sharing class fflib_SObjectSelector
     {
         if(!getSObjectType().getDescribe().isAccessible())
            throw new fflib_SObjectDomain.DomainException(
-                'Permission to access an ' + getSObjectType().getDescribe().getName() + ' dennied.');       
+                'Permission to access an ' + getSObjectType().getDescribe().getName() + ' denied.');       
     }
 
     /**
@@ -226,6 +271,15 @@ public abstract with sharing class fflib_SObjectSelector
      *   (adding public to the existing method broken base class API backwards compatability)
      **/
     public SObjectType getSObjectType2()
+    {
+        return getSObjectType();
+    }
+
+    /**
+     * Public acccess for the getSObjectType during Mock registration 
+     *   (adding public to the existing method broken base class API backwards compatability)
+     **/
+    public SObjectType sObjectType()
     {
         return getSObjectType();
     }
@@ -318,7 +372,7 @@ public abstract with sharing class fflib_SObjectSelector
         	} catch (fflib_SecurityUtils.CrudException e) {
         		// Marshal exception into DomainException for backwards compatability
 				throw new fflib_SObjectDomain.DomainException(
-	                'Permission to access an ' + getSObjectType().getDescribe().getName() + ' dennied.');               		
+	                'Permission to access an ' + getSObjectType().getDescribe().getName() + ' denied.');               		
         	}
         }
         queryFactory.setEnforceFLS(enforceFLS);
@@ -327,9 +381,11 @@ public abstract with sharing class fflib_SObjectSelector
         if(includeSelectorFields)
         {
 	        // select the Selector fields and Fieldsets and set order
-	        queryFactory.selectFields(new Set<SObjectField>(getSObjectFieldList()));
-	        if(m_includeFieldSetFields)
-	            for(Schema.FieldSet fieldSet : getSObjectFieldSetList())
+            queryFactory.selectFields(getSObjectFieldList());
+
+	        List<Schema.FieldSet> fieldSetList = getSObjectFieldSetList();
+	        if(m_includeFieldSetFields && fieldSetList != null)
+	            for(Schema.FieldSet fieldSet : fieldSetList)
 	                queryFactory.selectFieldSet(fieldSet);
 	
 	        // Automatically select the CurrencyIsoCode for MC orgs (unless the object is a known exception to the rule)
@@ -354,7 +410,9 @@ public abstract with sharing class fflib_SObjectSelector
                 fieldSortOrder = fflib_QueryFactory.SortOrder.ASCENDING;
             queryFactory.addOrdering(fieldNamePart, fieldSortOrder);
         }           
-                
+        
+        queryFactory.setSortSelectFields(m_sortSelectFields);           
+
         return queryFactory;    
     }    
 }

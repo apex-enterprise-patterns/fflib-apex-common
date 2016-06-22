@@ -31,16 +31,10 @@ private with sharing class fflib_SObjectSelectorTest
 	static testMethod void testGetFieldListString()
 	{
 		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
-		List<String> fieldList = selector.getFieldListString().split(',');
-		Set<String> fieldSet = new Set<String>(fieldList);
-		system.assertEquals(4, fieldSet.size());
-		system.assert(fieldSet.contains('Name'));
-		system.assert(fieldSet.contains('Id'));
-		system.assert(fieldSet.contains('AccountNumber'));
-		system.assert(fieldSet.contains('AnnualRevenue'));
-		if(UserInfo.isMultiCurrencyOrganization())
-			system.assert(fieldSet.contains('CurrencyIsoCode'));
-		system.assertEquals('myprefix.Name,myprefix.AccountNumber,myprefix.Id,myprefix.AnnualRevenue', selector.getRelatedFieldListString('myprefix'));
+		String fieldListString = selector.getFieldListString();
+		assertFieldListString(fieldListString, null);
+		String relatedFieldListString = selector.getRelatedFieldListString('myprefix');
+		assertFieldListString(relatedFieldListString, 'myprefix');
 	}
 	
 	static testMethod void testGetSObjectName()
@@ -129,7 +123,7 @@ private with sharing class fflib_SObjectSelectorTest
 			}
 			catch(fflib_SObjectDomain.DomainException e)
 			{
-				System.assertEquals('Permission to access an Account dennied.',e.getMessage());
+				System.assertEquals('Permission to access an Account denied.',e.getMessage());
 			}
 		}
 	}
@@ -150,7 +144,7 @@ private with sharing class fflib_SObjectSelectorTest
 			return; // Abort the test if unable to create a user with low enough acess
 		System.runAs(testUser)
 		{					
-			Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector(false, false, false);
+			Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector(false, false, false, true);
 			try
 			{
 				List<Account> result = (List<Account>) selector.selectSObjectsById(idSet);
@@ -165,7 +159,13 @@ private with sharing class fflib_SObjectSelectorTest
 	static testMethod void testSOQL()
 	{
 		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
-		System.assertEquals('SELECT AccountNumber, AnnualRevenue, Id, Name FROM Account ORDER BY Name DESC, AnnualRevenue ASC', selector.newQueryFactory().toSOQL());
+		String soql = selector.newQueryFactory().toSOQL();
+		Pattern p = Pattern.compile('SELECT (.*) FROM Account ORDER BY Name DESC NULLS FIRST , AnnualRevenue ASC NULLS FIRST ');
+		Matcher m = p.matcher(soql);
+		System.assert(m.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
+		System.assertEquals(1, m.groupCount(), 'Unexpected number of groups captured.');
+		String fieldListString = m.group(1);
+		assertFieldListString(fieldListString, null);
 	}
 	
 	static testMethod void testDefaultConfig()
@@ -174,11 +174,69 @@ private with sharing class fflib_SObjectSelectorTest
 		System.assertEquals(false, selector.isEnforcingFLS());
 		System.assertEquals(true, selector.isEnforcingCRUD());
 		System.assertEquals(false, selector.isIncludeFieldSetFields());
-		System.assertEquals('Name,AccountNumber,Id,AnnualRevenue', selector.getFieldListBuilder().getStringValue());
-		System.assertEquals('Name,AccountNumber,Id,AnnualRevenue', selector.getFieldListString());
-		System.assertEquals('LookupField__r.Name,LookupField__r.AccountNumber,LookupField__r.Id,LookupField__r.AnnualRevenue', selector.getRelatedFieldListString('LookupField__r'));
+		
+		String fieldListString = selector.getFieldListString();
+		assertFieldListString(fieldListString, null);
+		
+		String relatedFieldListString = selector.getRelatedFieldListString('LookupField__r');
+		assertFieldListString(relatedFieldListString, 'LookupField__r');
+		
 		System.assertEquals('Account', selector.getSObjectName());
 		System.assertEquals(Account.SObjectType, selector.getSObjectType2());
+	}
+	
+	private static void assertFieldListString(String fieldListString, String prefix) {
+		String prefixString = (!String.isBlank(prefix)) ? prefix + '.' : '';
+		List<String> fieldList = fieldListString.split(',{1}\\s?');
+		System.assertEquals(UserInfo.isMultiCurrencyOrganization() ? 5 : 4, fieldList.size()); 
+		Set<String> fieldSet = new Set<String>();
+		fieldSet.addAll(fieldList);
+		String expected = prefixString + 'AccountNumber';
+		System.assert(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
+		expected = prefixString + 'AnnualRevenue';
+		System.assert(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
+		expected = prefixString + 'Id';
+		System.assert(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
+		expected = prefixString + 'Name';
+		System.assert(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
+		if (UserInfo.isMultiCurrencyOrganization()) {
+			expected = prefixString + 'CurrencyIsoCode';
+			System.assert(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
+		}
+	}
+	
+
+	@isTest
+	static void testWithoutSorting()
+	{
+		//Given
+		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector(false, false, false, false);
+		fflib_QueryFactory qf = selector.newQueryFactory();
+		
+		Set<String> expectedSelectFields = new Set<String>{ 'Name', 'Id', 'AccountNumber', 'AnnualRevenue' };
+		if (UserInfo.isMultiCurrencyOrganization())
+		{
+			expectedSelectFields.add('CurrencyIsoCode');
+		}
+
+		//When
+		String soql = qf.toSOQL();
+
+		//Then
+		Pattern soqlPattern = Pattern.compile('SELECT (.*) FROM Account ORDER BY Name DESC NULLS FIRST , AnnualRevenue ASC NULLS FIRST ');
+		Matcher soqlMatcher = soqlPattern.matcher(soql);
+		soqlMatcher.matches();
+
+		List<String> actualSelectFields = soqlMatcher.group(1).deleteWhiteSpace().split(',');
+		System.assertEquals(expectedSelectFields, new Set<String>(actualSelectFields));
+	}
+	
+	private static void assertEqualsSelectFields(String expectedSelectFields, String actualSelectFields)
+	{
+		Set<String> expected = new Set<String>(expectedSelectFields.deleteWhiteSpace().split(','));
+		Set<String> actual = new Set<String>(actualSelectFields.deleteWhiteSpace().split(','));
+
+		System.assertEquals(expected, actual);
 	}
 	
 	private class Testfflib_SObjectSelector extends fflib_SObjectSelector
@@ -188,9 +246,9 @@ private with sharing class fflib_SObjectSelectorTest
 			super();
 		}
 
-		public Testfflib_SObjectSelector(Boolean includeFieldSetFields, Boolean enforceCRUD, Boolean enforceFLS)
+		public Testfflib_SObjectSelector(Boolean includeFieldSetFields, Boolean enforceCRUD, Boolean enforceFLS, Boolean sortSelectFields)
 		{
-			super(includeFieldSetFields, enforceCRUD, enforceFLS);
+			super(includeFieldSetFields, enforceCRUD, enforceFLS, sortSelectFields);
 		}
 		
 		public List<Schema.SObjectField> getSObjectFieldList()

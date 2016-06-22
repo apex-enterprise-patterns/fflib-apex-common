@@ -52,6 +52,7 @@
  *
  **/
 public virtual class fflib_SObjectUnitOfWork
+	implements fflib_ISObjectUnitOfWork
 {
 	/**
 	 * True if the unit of work is executing the commitWork method
@@ -67,9 +68,9 @@ public virtual class fflib_SObjectUnitOfWork
 	
 	private Map<String, List<SObject>> m_newListByType = new Map<String, List<SObject>>();
 	
-	private Map<String, List<SObject>> m_dirtyListByType = new Map<String, List<SObject>>();
+	private Map<String, Map<Id, SObject>> m_dirtyMapByType = new Map<String, Map<Id, SObject>>();
 	
-	private Map<String, List<SObject>> m_deletedListByType = new Map<String, List<SObject>>();
+	private Map<String, Map<Id, SObject>> m_deletedMapByType = new Map<String, Map<Id, SObject>>();
 	
 	private Map<String, Relationships> m_relationships = new Map<String, Relationships>();
 
@@ -77,7 +78,9 @@ public virtual class fflib_SObjectUnitOfWork
 
 	private SendEmailWork m_emailWork = new SendEmailWork();
 	
-	private Set<SObjectType> m_disabledSecurity = new Set<SObjectType>();
+	private IDML m_dml;
+	
+	private Set<SObjectType> m_disabledSecurity = new Set<SObjectType>();	
 	
 	/**
 	 * Interface describes work to be performed during the commitWork method
@@ -87,6 +90,25 @@ public virtual class fflib_SObjectUnitOfWork
 		void doWork();
 	}
 
+	public interface IDML
+	{
+		void dmlInsert(List<SObject> objList);
+		void dmlUpdate(List<SObject> objList);
+		void dmlDelete(List<SObject> objList);
+	}
+	
+	public class SimpleDML implements IDML
+	{
+		public void dmlInsert(List<SObject> objList){
+			insert objList;
+		}
+		public void dmlUpdate(List<SObject> objList){
+			update objList;
+		}
+		public void dmlDelete(List<SObject> objList){
+			delete objList;
+		}
+	}
 	/**
 	 * Constructs a new UnitOfWork to support work against the given object list
 	 *
@@ -94,19 +116,53 @@ public virtual class fflib_SObjectUnitOfWork
 	 */
 	public fflib_SObjectUnitOfWork(List<Schema.SObjectType> sObjectTypes)
 	{
+		this(sObjectTypes,new SimpleDML());
+	}
+
+
+	public fflib_SObjectUnitOfWork(List<Schema.SObjectType> sObjectTypes, IDML dml)
+	{
 		m_sObjectTypes = sObjectTypes.clone();
 			
 		for(Schema.SObjectType sObjectType : m_sObjectTypes)
 		{
-			m_newListByType.put(sObjectType.getDescribe().getName(), new List<SObject>());
-			m_dirtyListByType.put(sObjectType.getDescribe().getName(), new List<SObject>());
-			m_deletedListByType.put(sObjectType.getDescribe().getName(), new List<SObject>());
-			m_relationships.put(sObjectType.getDescribe().getName(), new Relationships());	
+			// register the type
+			handleRegisterType(sObjectType);
 		}
 
 		m_workList.add(m_emailWork);
+		
+		m_dml = dml;
 	}
 
+	// default implementations for commitWork events
+	public virtual void onRegisterType(Schema.SObjectType sObjectType) {}
+	public virtual void onCommitWorkStarting() {}
+	public virtual void onDMLStarting() {}
+	public virtual void onDMLFinished() {}
+	public virtual void onDoWorkStarting() {}
+	public virtual void onDoWorkFinished() {}
+	public virtual void onCommitWorkFinishing() {}
+	public virtual void onCommitWorkFinished(Boolean wasSuccessful) {}
+
+	/**
+	 * Registers the type to be used for DML operations
+	 *
+	 * @param sObjectType - The type to register
+	 *
+	 */
+	private void handleRegisterType(Schema.SObjectType sObjectType)
+	{
+		// add type to dml operation tracking
+		m_newListByType.put(sObjectType.getDescribe().getName(), new List<SObject>());
+		m_dirtyMapByType.put(sObjectType.getDescribe().getName(), new Map<Id, SObject>());
+		m_deletedMapByType.put(sObjectType.getDescribe().getName(), new Map<Id, SObject>());
+		m_relationships.put(sObjectType.getDescribe().getName(), new Relationships());	
+
+		// give derived class opportunity to register the type
+		onRegisterType(sObjectType);		
+	}
+	
 	/**
 	 * Register a generic peace of work to be invoked during the commitWork phase
 	 **/
@@ -131,6 +187,19 @@ public virtual class fflib_SObjectUnitOfWork
 	public void registerNew(SObject record)
 	{
 		registerNew(record, null, null);
+	}
+
+	/**
+	 * Register a list of newly created SObject instances to be inserted when commitWork is called
+	 *
+	 * @param records A list of newly created SObject instances to be inserted during commitWork
+	 **/
+	public void registerNew(List<SObject> records)
+	{
+		for(SObject record : records)
+		{
+			registerNew(record, null, null);
+		}
 	}
 
 	/**
@@ -179,11 +248,24 @@ public virtual class fflib_SObjectUnitOfWork
 		if(record.Id == null)
 			throw new UnitOfWorkException('New records cannot be registered as dirty');
 		String sObjectType = record.getSObjectType().getDescribe().getName();			
-		if(!m_dirtyListByType.containsKey(sObjectType))
+		if(!m_dirtyMapByType.containsKey(sObjectType))
 			throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
-		m_dirtyListByType.get(sObjectType).add(record);		
+		m_dirtyMapByType.get(sObjectType).put(record.Id, record);		
 	}
-	
+
+	/**
+	 * Register a list of existing records to be updated during the commitWork method
+	 *
+	 * @param records A list of existing records
+	 **/
+	public void registerDirty(List<SObject> records)
+	{
+		for(SObject record : records)
+		{
+			this.registerDirty(record);
+		}
+	}
+
 	/**
 	 * Register an existing record to be deleted during the commitWork method
 	 *
@@ -194,11 +276,24 @@ public virtual class fflib_SObjectUnitOfWork
 		if(record.Id == null)
 			throw new UnitOfWorkException('New records cannot be registered for deletion');
 		String sObjectType = record.getSObjectType().getDescribe().getName();			
-		if(!m_deletedListByType.containsKey(sObjectType))
+		if(!m_deletedMapByType.containsKey(sObjectType))
 			throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
-		m_deletedListByType.get(sObjectType).add(record);							
+		m_deletedMapByType.get(sObjectType).put(record.Id, record);							
 	}
 	
+	/**
+	 * Register a list of existing records to be deleted during the commitWork method
+	 *
+	 * @param records A list of existing records
+	 **/
+	public void registerDeleted(List<SObject> records)
+	{
+		for(SObject record : records)
+		{
+			this.registerDeleted(record);
+		}
+	}
+
 	/**
 	 * Can disable the Field Level Security code in the fflib_SObjectDomain class (if enabled via Configuration property)
 	 *   Use this method sparginly and only when you believe the DML being executed is purely system level not user level
@@ -223,50 +318,67 @@ public virtual class fflib_SObjectUnitOfWork
 	 * Takes all the work that has been registered with the UnitOfWork and commits it to the database
 	 **/
 	public void commitWork()
-	{		
+	{
+		// notify we're starting the commit work
+		onCommitWorkStarting();
+
 		// Wrap the work in its own transaction 
-		Savepoint sp = Database.setSavePoint();		
+		Savepoint sp = Database.setSavePoint();
+		Boolean wasSuccessful = false;	
 		try
 		{		
+			// notify we're starting the DML operations
+			onDMLStarting();
 			// Insert by type
 			for(Schema.SObjectType sObjectType : m_sObjectTypes)
 			{
-				// Ensure any relatonships are set and obtain the list of SObject's to insert for this type
 				m_relationships.get(sObjectType.getDescribe().getName()).resolve();
 				List<SObject> recordsToInsert = m_newListByType.get(sObjectType.getDescribe().getName());
 				// FLS checking for this sobject?
 				if(enforcingSecurity(sObjectType))
-					fflib_SObjectDomain.checkInsertSecurity(sObjectType, recordsToInsert);
-				// Perform DML to insert records
-				insert recordsToInsert;
+					fflib_SObjectDomain.checkInsertSecurity(sObjectType, recordsToInsert);				
+				m_dml.dmlInsert(recordsToInsert);
 			}					
 			// Update by type
-			for(Schema.SObjectType sObjectType : m_sObjectTypes)
-			{
+			for(Schema.SObjectType sObjectType : m_sObjectTypes) {
 				try 
 				{
 					// Indicate to the fflib_SObjectDomain there is a unit of work commiting work at present
 					isCommitting = true;
 					CurrentCommit = new CommitScope(this); // TODO: Push (in case an trigger invoked code also utilises the unit of work)			
-					List<SObject> recordsToUpdate = m_dirtyListByType.get(sObjectType.getDescribe().getName());
+					List<SObject> recordsToUpdate = m_dirtyMapByType.get(sObjectType.getDescribe().getName()).values();
 					CurrentCommit.Records = new Map<Id, SObject>(recordsToUpdate);
 					// Perform DML to update records (FLS checking done within trigger execution via fflib_SObjectDomain.handleAfterUpdate)
-					update recordsToUpdate;
+					m_dml.dmlUpdate(recordsToUpdate);
 				}
 				finally
 				{
 					// Indicate to others the unit of work is no longer commiting			
 					CurrentCommit = null; // TODO: Pop (in case an trigger invoked code also utilises the unit of work)
 					isCommitting = CurrentCommit!=null;					
-				}
-			}		
+				}			
+						
+			}
 			// Delete by type (in reverse dependency order)
 			Integer objectIdx = m_sObjectTypes.size() - 1;
 			while(objectIdx>=0)
-				delete m_deletedListByType.get(m_sObjectTypes[objectIdx--].getDescribe().getName());
+				m_dml.dmlDelete(m_deletedMapByType.get(m_sObjectTypes[objectIdx--].getDescribe().getName()).values());
+			// notify we're done with DML
+			onDMLFinished();
+
+			// notify we're starting to process registered work
+			onDoWorkStarting();
 			// Generic work
 			for(IDoWork work : m_workList)
 				work.doWork();
+			// notify we've completed processing registered work
+			onDoWorkFinished();
+
+			// notify we've completed all steps and are in the final stage of completing
+			onCommitWorkFinishing();
+
+			// mark tracker to indicate success
+			wasSuccessful = true;
 		}
 		catch (Exception e)
 		{
@@ -274,6 +386,33 @@ public virtual class fflib_SObjectUnitOfWork
 			Database.rollback(sp);
 			// Throw exception on to caller
 			throw e;
+		}
+		finally
+		{			
+			// notify we're done with commit work
+			onCommitWorkFinished(wasSuccessful);
+		}
+	}
+	
+	private class Relationships
+	{
+		private List<Relationship> m_relationships = new List<Relationship>();
+
+		public void resolve()
+		{
+			// Resolve relationships
+			for(Relationship relationship : m_relationships)
+				relationship.Record.put(relationship.RelatedToField, relationship.RelatedTo.Id);
+		}
+		
+		public void add(SObject record, Schema.sObjectField relatedToField, SObject relatedTo)
+		{
+			// Relationship to resolve
+			Relationship relationship = new Relationship();
+			relationship.Record = record;
+			relationship.RelatedToField = relatedToField;
+			relationship.RelatedTo = relatedTo;
+			m_relationships.add(relationship);
 		}
 	}
 		
@@ -302,28 +441,6 @@ public virtual class fflib_SObjectUnitOfWork
 			return m_uow.enforcingSecurity(sObjectType);
 		}			
 	}	
-	
-	private class Relationships
-	{
-		private List<Relationship> m_relationships = new List<Relationship>();
-
-		public void resolve()
-		{
-			// Resolve relationships
-			for(Relationship relationship : m_relationships)
-				relationship.Record.put(relationship.RelatedToField, relationship.RelatedTo.Id);
-		}
-		
-		public void add(SObject record, Schema.sObjectField relatedToField, SObject relatedTo)
-		{
-			// Relationship to resolve
-			Relationship relationship = new Relationship();
-			relationship.Record = record;
-			relationship.RelatedToField = relatedToField;
-			relationship.RelatedTo = relatedTo;
-			m_relationships.add(relationship);
-		}
-	}
 	
 	private class Relationship
 	{
@@ -356,7 +473,7 @@ public virtual class fflib_SObjectUnitOfWork
 
 		public void doWork()
 		{
-			Messaging.sendEmail(emails);
+			if(emails.size() > 0) Messaging.sendEmail(emails);
 		}
 	}	
 }
