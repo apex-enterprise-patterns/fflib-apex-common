@@ -29,7 +29,7 @@ The above allows the [existing sample application](https://github.com/financialf
 
 So far so good.... but both the Unit of Work and Domain layer **require knowledge of which fields have been populated on the SObjects** passed to them. This is not as easy or straightforward as you might think (prior to Summer'16), see [fflib_SObjectDomain.resolvePopulatedFields](https://github.com/financialforcedev/fflib-apex-common/blob/fls-support-experiment/fflib/src/classes/fflib_SObjectDomain.cls#L326) method.
 
-**IMPORTANT UPDATE: June 2016. New Summer'16 Feature:** I have now updated the above code to reflect the latest fflib from the devleop branch and also adopt the new **SObject.getPopulatedFieldsMap** method as an alternative to the JSON hack originally used above. This moves the viability of this proof of concept further down the road for sure. I'll do some more work on this and consider the best way to get more input on this from the community and Salesforce themselves.
+**IMPORTANT UPDATE: June 2016. New Summer'16 Feature:** I have now updated the above code to reflect the latest fflib from the devleop branch and also adopt the new **SObject.getPopulatedFieldsMap** method as an alternative to the JSON hack originally used above. This moves the viability of this proof of concept further down the road for sure. I'll do some more work on this and consider the best way to get more input on this from the community and Salesforce themselves. More consideration needs to be given as to if this really is the correct placement of such checks. The commit scope does permit the checks to know a bit more about the context, just not sure its enough...
 
 This Library
 ============
