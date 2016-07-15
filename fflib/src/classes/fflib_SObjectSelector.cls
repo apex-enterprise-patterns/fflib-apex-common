@@ -350,6 +350,23 @@ public abstract with sharing class fflib_SObjectSelector
     		includeSelectorFields);
     }
         
+	/**
+	 * Adds a subselect QueryFactory based on this selector to the given QueryFactor, returns the parentQueryFactory
+	 **/
+	public fflib_QueryFactory addQueryFactorySubselect(fflib_QueryFactory parentQueryFactory, String relationshipName)
+	{
+		return addQueryFactorySubselect(parentQueryFactory, relationshipName, TRUE);
+	}
+
+	/**
+	 * Adds a subselect QueryFactory based on this selector to the given QueryFactor
+	 **/
+	public fflib_QueryFactory addQueryFactorySubselect(fflib_QueryFactory parentQueryFactory, String relationshipName, Boolean includeSelectorFields)
+	{
+		fflib_QueryFactory subSelectQueryFactory = parentQueryFactory.subselectQuery(relationshipName);
+		return configureQueryFactory(subSelectQueryFactory, m_enforceCRUD, m_enforceFLS, includeSelectorFields);
+	}
+
     /**
      * Constructs the default SOQL query for this selector, see selectSObjectsById and queryLocatorById
      **/    
