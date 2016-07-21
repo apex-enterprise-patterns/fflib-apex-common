@@ -34,13 +34,14 @@ public abstract with sharing class fflib_SObjectSelector
      * Indicates whether the sObject has the currency ISO code field for organisations which have multi-currency
      * enabled. 
      **/
-    private static final Boolean CURRENCY_ISO_CODE_ENABLED {
+    private Boolean CURRENCY_ISO_CODE_ENABLED {
         get {
             if(CURRENCY_ISO_CODE_ENABLED == null){
                 CURRENCY_ISO_CODE_ENABLED = describeWrapper.getFieldsMap().keySet().contains('CurrencyIsoCode');
             }
             return CURRENCY_ISO_CODE_ENABLED;
         }
+		set;
     }
      
     /**
