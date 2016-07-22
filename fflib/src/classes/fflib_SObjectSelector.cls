@@ -31,9 +31,18 @@ public abstract with sharing class fflib_SObjectSelector
 	implements fflib_ISObjectSelector
 {
     /**
-     * This overrides the Multi Currency handling, preventing it from injecting the CurrencyIsoCode fie ld for certain System objects that don't ever support it
+     * Indicates whether the sObject has the currency ISO code field for organisations which have multi-currency
+     * enabled. 
      **/
-    private static Set<String> STANDARD_WITHOUT_CURRENCYISO = new Set<String> {'ApexClass', 'ApexTrigger', 'AsyncApexJob', 'Attachment', 'RecordType', 'User'};
+    private Boolean CURRENCY_ISO_CODE_ENABLED {
+        get {
+            if(CURRENCY_ISO_CODE_ENABLED == null){
+                CURRENCY_ISO_CODE_ENABLED = describeWrapper.getFieldsMap().keySet().contains('CurrencyIsoCode');
+            }
+            return CURRENCY_ISO_CODE_ENABLED;
+        }
+		set;
+    }
      
     /**
      * Should this selector automatically include the FieldSet fields when building queries?
@@ -323,8 +332,7 @@ public abstract with sharing class fflib_SObjectSelector
 		for(SObjectField field : getSObjectFieldList())		
         	queryFactory.selectField(relationshipFieldPath + '.' + field.getDescribe().getName());
         // Automatically select the CurrencyIsoCode for MC orgs (unless the object is a known exception to the rule)
-        if(Userinfo.isMultiCurrencyOrganization() &&
-           !STANDARD_WITHOUT_CURRENCYISO.contains(getSObjectType().getDescribe().getName()))
+        if(Userinfo.isMultiCurrencyOrganization() && CURRENCY_ISO_CODE_ENABLED)
             queryFactory.selectField(relationshipFieldPath+'.CurrencyIsoCode');		
 	}
     
@@ -389,8 +397,7 @@ public abstract with sharing class fflib_SObjectSelector
 	                queryFactory.selectFieldSet(fieldSet);
 	
 	        // Automatically select the CurrencyIsoCode for MC orgs (unless the object is a known exception to the rule)
-	        if(Userinfo.isMultiCurrencyOrganization() &&
-	           !STANDARD_WITHOUT_CURRENCYISO.contains(getSObjectType().getDescribe().getName()))
+	        if(Userinfo.isMultiCurrencyOrganization() && CURRENCY_ISO_CODE_ENABLED)
 	            queryFactory.selectField('CurrencyIsoCode');
         }
         
