@@ -330,7 +330,7 @@ public abstract with sharing class fflib_SObjectSelector
 	{
 		// Add fields from selector prefixing the relationship path		
 		for(SObjectField field : getSObjectFieldList())		
-        	queryFactory.selectField(relationshipFieldPath + '.' + field.getDescribe().getName());
+        	queryFactory.selectField(relationshipFieldPath + '.' + field.getDescribe().getName(), this.getSObjectType());
         // Automatically select the CurrencyIsoCode for MC orgs (unless the object is a known exception to the rule)
         if(Userinfo.isMultiCurrencyOrganization() && CURRENCY_ISO_CODE_ENABLED)
             queryFactory.selectField(relationshipFieldPath+'.CurrencyIsoCode');		

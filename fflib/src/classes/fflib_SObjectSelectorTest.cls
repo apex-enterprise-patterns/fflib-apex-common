@@ -291,5 +291,97 @@ private with sharing class fflib_SObjectSelectorTest
 			return null;
 		}		
 		return testUser;
+	}
+	
+	@isTest
+	static void testPolyMorphicSelectWithRelatedType()
+	{
+		//Given		
+		
+		Testfflib_CampaignMemberSelector cmSelector = new Testfflib_CampaignMemberSelector();
+		fflib_QueryFactory qf = cmSelector.newQueryFactory();
+		new Testfflib_LeadSelector().configureQueryFactoryFields(qf, 'Lead');
+        new Testfflib_UserSelector().configureQueryFactoryFields(qf, 'Lead.Owner');
+
+		
+		Set<String> expectedSelectFields = new Set<String>{ 'Id', 'Status', 'Lead.Id', 'Lead.OwnerId', 'Lead.Owner.Id', 'Lead.Owner.UserRoleId' };
+		if (UserInfo.isMultiCurrencyOrganization())
+		{
+			expectedSelectFields.add('CurrencyIsoCode');
+		}
+
+		//When
+		String soql = qf.toSOQL();
+
+		//Then
+		Pattern soqlPattern = Pattern.compile('SELECT (.*) FROM CampaignMember ORDER BY CreatedDate ASC NULLS FIRST ');
+		Matcher soqlMatcher = soqlPattern.matcher(soql);
+		soqlMatcher.matches();
+		
+		List<String> actualSelectFields = soqlMatcher.group(1).deleteWhiteSpace().split(',');
+		System.assertEquals(expectedSelectFields, new Set<String>(actualSelectFields));
+	}
+	
+	private class Testfflib_CampaignMemberSelector extends fflib_SObjectSelector
+	{
+		public Testfflib_CampaignMemberSelector()
+		{
+			super();
+		}
+		
+		public List<Schema.SObjectField> getSObjectFieldList()
+		{
+			return new List<Schema.SObjectField> {
+				CampaignMember.Id,
+				CampaignMember.Status
+			};
+		}
+		
+		public Schema.SObjectType getSObjectType()
+		{
+			return CampaignMember.sObjectType;
+		}
+	}
+	
+	private class Testfflib_UserSelector extends fflib_SObjectSelector
+	{
+		public Testfflib_UserSelector()
+		{
+			super();
+		}
+		
+		public List<Schema.SObjectField> getSObjectFieldList()
+		{
+			return new List<Schema.SObjectField> {
+				User.UserRoleId,
+				User.Id
+			};
+		}
+		
+		public Schema.SObjectType getSObjectType()
+		{
+			return User.sObjectType;
+		}
+	}
+	
+	private class Testfflib_LeadSelector extends fflib_SObjectSelector
+	{
+		public Testfflib_LeadSelector()
+		{
+			super();
+		}
+		
+		public List<Schema.SObjectField> getSObjectFieldList()
+		{
+			return new List<Schema.SObjectField> {
+				Lead.OwnerId,
+				Lead.Id
+			};
+		}
+		
+		public Schema.SObjectType getSObjectType()
+		{
+			return Lead.sObjectType;
+		}
 	}	
 }

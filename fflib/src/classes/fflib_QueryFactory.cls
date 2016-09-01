@@ -84,7 +84,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	private Schema.ChildRelationship relationship;
 	private Map<Schema.ChildRelationship, fflib_QueryFactory> subselectQueryMap;
 
-	private QueryField getFieldToken(String fieldName){
+	private QueryField getFieldToken(String fieldName, Schema.sObjectType relatedSObjectType){
 		QueryField result;
 		if(!fieldName.contains('.')){ //single field
 			Schema.SObjectField token = fflib_SObjectDescribe.getDescribe(table).getField(fieldName.toLowerCase());
@@ -103,7 +103,25 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 				if (token != null && enforceFLS) 
 					fflib_SecurityUtils.checkFieldIsReadable(lastSObjectType, token);
 				if(token != null && i.hasNext() && token.getDescribe().getSOAPType() == Schema.SOAPType.ID){
-					lastSObjectType = token.getDescribe().getReferenceTo()[0]; //if it's polymorphic doesn't matter which one we get
+					if(relatedSObjectType == null) {
+						lastSObjectType = token.getDescribe().getReferenceTo()[0]; //if it's polymorphic get the first one - user did not specify the one to use.
+					}else{
+						lastSObjectType = null;
+						List<Schema.sObjectType> relatedObjs = token.getDescribe().getReferenceTo(); //if it's polymorphic, it matters which one we use - i.e. Lead.Owner is GROUP|USER and each has different fields.
+						if(relatedObjs.size() > 1) {
+							String relatedSObjectName = fflib_SObjectDescribe.getDescribe(relatedSObjectType).getDescribe().getName();
+							for(Schema.sObjectType sot : relatedObjs) {
+								if(fflib_SObjectDescribe.getDescribe(sot).getDescribe().getName() == relatedSObjectName){
+									lastSObjectType = sot;
+									break;
+								}
+							}
+							if(lastSObjectType == null)
+								throw new InvalidRelationshipException(fieldName, relatedSObjectType);
+						}else{
+							lastSObjectType = relatedOjs[0]; //only one type returned, use it.
+						}
+					}
 					fieldPath.add(token);
 				}else if(token != null && !i.hasNext()){
 					fieldPath.add(token);
@@ -117,6 +135,9 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			result = new QueryField(fieldPath);
 		}
 		return result;
+	}
+	private QueryField getFieldToken(String fieldName) {
+		return this.getFieldToken(fieldName, null);
 	}
 
 	/**
@@ -192,9 +213,19 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param fieldName the API name of the field to add to the query's SELECT clause.
 	 **/
 	public fflib_QueryFactory selectField(String fieldName){ 		
-		fields.add( getFieldToken(fieldName) );
+		fields.add( getFieldToken(fieldName, null) );
 		return this;
 	} 
+    /**
+     * Selects a single field from the SObject specified in {@link #table}.
+     * Selecting fields is idempotent, if this field is already selected calling this method will have no additional impact.
+     * @param fieldName the API name of the field to add to the query's SELECT clause.
+	 * @param relatedSObjectType the related sObjectType to resolve polymorphic object fields.
+     **/
+    public fflib_QueryFactory selectField(String fieldName, Schema.sOBjectType relatedObjectType){        
+        fields.add( getFieldToken(fieldName, relatedObjectType) );
+        return this;
+    }
 	/**
 	 * Selects a field, avoiding the possible ambiguitiy of String API names.
 	 * @see #selectField(String)
@@ -772,7 +803,16 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			this.setMessage( 'Invalid field \''+fieldName+'\' for object \''+objectType+'\'' );
 		}
 	}
+	public class InvalidRelationshipException extends Exception{
+		private String fieldName;
+        private Schema.SObjectType objectType;
+        public InvalidRelationshipException(String fieldname, Schema.SObjectType objectType) {
+			this.fieldname = fieldname;
+            this.objectType = objectType;
+            this.setMessage( 'Not able to find related sObjectType for object \''+objectType+'\' denoted by field \''+field+'\'' );
+        }
+    }
 	public class InvalidFieldSetException extends Exception{}
 	public class NonReferenceFieldException extends Exception{}
-	public class InvalidSubqueryRelationshipException extends Exception{}	
+	public class InvalidSubqueryRelationshipException extends Exception{}
 }
