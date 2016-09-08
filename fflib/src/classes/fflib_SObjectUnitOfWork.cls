@@ -97,6 +97,15 @@ public virtual class fflib_SObjectUnitOfWork
 			delete objList;
 		}
 	}
+    
+    /**
+     * Test-only!! 0 arg constructor, needed for stub API.
+     */
+    public fflib_SObjectUnitOfWork()
+    {
+        System.assert(Test.isRunningTest(), 'Must not use 0-arg constructor outside test');
+	}
+
 	/**
 	 * Constructs a new UnitOfWork to support work against the given object list
 	 *
