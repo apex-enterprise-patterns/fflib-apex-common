@@ -30,7 +30,25 @@
 **/
 @isTest
 private class fflib_SObjectDescribeTest {
-	
+
+	/**
+	 * Verify that the different ways of getting your hands on an fflib_SObjectDescribe instance all handle null inputs
+	 * (and blank/empty strings, why not?) by returning null - since there's no possible way to resolve it.
+	**/
+	@isTest
+	static void getDescribe_badInput(){
+		String nullStr = null; //having it as a string var makes for unambiguous selection of overloads
+		Schema.SObjectType nullType = null;
+		Schema.DescribeSObjectResult nullDescribe = null;
+		SObject nullSObject = null;
+		System.assertEquals(null, fflib_SObjectDescribe.getDescribe(nullStr));
+		System.assertEquals(null, fflib_SObjectDescribe.getDescribe(''));
+		System.assertEquals(null, fflib_SObjectDescribe.getDescribe(' '));
+		System.assertEquals(null, fflib_SObjectDescribe.getDescribe(nullType));
+		System.assertEquals(null, fflib_SObjectDescribe.getDescribe(nullDescribe));
+		System.assertEquals(null, fflib_SObjectDescribe.getDescribe(nullSObject));
+	}
+
 	@isTest
 	static void NamespacedAttributeMap_implementations(){
 		fflib_SObjectDescribe.GlobalDescribeMap gdm = fflib_SObjectDescribe.getGlobalDescribe();
@@ -44,24 +62,34 @@ private class fflib_SObjectDescribeTest {
 
 		System.assertEquals(fields.get('name'), Account.SObjectType.fields.name); //behavior of FieldsMap is tested in another method
 		System.assertEquals(Schema.SObjectType.Account.fields.getMap().size(), fields.size());
+
+		System.assertEquals(null, fields.get(null), 'Null input should result in null ouput.');
+		System.assertEquals(null, fields.get(''), 'Invalid fieldname input should result in null ouput.');
 	}
 
 	@isTest
 	static void FieldsMap(){
 		String fakeNamespace = 'fflib_test';
 		Map<String,Schema.SObjectField> fakeFieldData = new Map<String,Schema.SObjectField>{
-			'name__c' => Contact.SObjectType.fields.name, //re-use stndard field types since we can't mock them
+			'name__c' => Contact.SObjectType.fields.name, //re-use standard field types since we can't mock them
 			fakeNamespace+'__name__c' => Account.SObjectType.fields.name,
+			fakeNamespace+'__otherField__c' => Account.SObjectType.fields.name,
 			'createddate' => Contact.SObjectType.fields.CreatedDate
 		};
 		fflib_SObjectDescribe.FieldsMap fields = new fflib_SObjectDescribe.FieldsMap(fakeFieldData);
 		fields.currentNamespace = fakeNamespace;
 		System.assertEquals(true, fields.containsKey('name__c') );
-		System.assertEquals(true, fields.containsKey(fakeNamespace+'__name__c') );
-		System.assert(fields.get('name__c') === fields.get(fakeNamespace+'__name__c'));
+		System.assertEquals(true, fields.containsKey(fakeNamespace.toUpperCase()+'__nAMe__c') );
+		System.assert(fields.get('NAme__c') === fields.get(fakeNamespace+'__namE__c'));
+
+		System.assert(!fields.keySet(false).contains('otherField__c'));
+		System.assert(fields.keySet(false).contains(fakeNamespace+'__otherField__c'));
+
+		System.assert(fields.keySet(true).contains('otherField__c'));
+		System.assert(!fields.keySet(true).contains(fakeNamespace+'__otherField__c'));
 
 		fields.currentNamespace = 'someOtherNamespace';
-		System.assertNotEquals(fields.get('name__c'), fields.get(fakeNamespace+'__name__c'));
+		System.assertNotEquals(fields.get('name__C'), fields.get(fakeNamespace.capitalize()+'__nAme__c'));
 	}
 
 	@isTest
@@ -81,7 +109,7 @@ private class fflib_SObjectDescribeTest {
 		gdm.currentNamespace = 'someOtherNamespace';
 		System.assertNotEquals(gdm.get('name__c'), gdm.get(fakeNamespace+'__name__c'));
 	}
-	
+
 	@isTest //Tests all forms of the getDescribe static
 	static void getAccountDescribes(){
 		fflib_SObjectDescribe d = fflib_SObjectDescribe.getDescribe('Account');
@@ -98,23 +126,40 @@ private class fflib_SObjectDescribeTest {
 		for(integer i = 0; i < 10; i++){
 			fields = d.getFieldsMap();
 		}
+
+		// Describe Limits removed since Summer ’14.
+		// https://developer.salesforce.com/releases/release/Summer14/New+Apex+Enhancements
+
+		// Because describe limits are no longer enforced in any API version, this method is no longer available.
+		// In API version 30.0 and earlier, this method is available but is deprecated.
+
+		// System.assertEquals(1, Limits.getFieldsDescribes() );
+
 		System.assertEquals(false,fields.isEmpty());
+		System.assertEquals(Account.SObjectType, d.getSObjectType());
 	}
 
 	@isTest
-	static void simpleAccountFieldSetDescribe(){ 
+	static void simpleAccountFieldSetDescribe(){
 		fflib_SObjectDescribe d = fflib_SObjectDescribe.getDescribe(Account.SObjectType);
 		Map<String,Schema.FieldSet> fields;
 		for(integer i = 0; i < 10; i++){
 			fields = d.getFieldSetsMap();
 		}
-		
-		// We need to assert something here... but what?
-		//no asserts on result size to avoid a requirement on field sets existing
+
+		// Describe Limits removed since Summer ’14.
+		// https://developer.salesforce.com/releases/release/Summer14/New+Apex+Enhancements
+
+		// Because describe limits are no longer enforced in any API version, this method is no longer available.
+		// In API version 30.0 and earlier, this method is available but is deprecated.
+
+		// System.assertEquals(1, Limits.getFieldSetsDescribes() );
+
+		// no asserts on result size to avoid a requirement on field sets existing
 	}
-	
+
 	@isTest
-	static void simpleAccountGetNameField(){
+    	static void simpleAccountGetNameField(){
         	fflib_SObjectDescribe d = fflib_SObjectDescribe.getDescribe(Account.SObjectType);
         	Schema.SObjectField nameField = d.getNameField();
         	System.assertEquals('Name', nameField.getDescribe().getName());

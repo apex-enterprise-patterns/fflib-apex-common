@@ -182,6 +182,8 @@ public class fflib_SObjectDescribe {
 		set;
 	}
 	public static fflib_SObjectDescribe getDescribe(String sObjectName){
+		if(String.isBlank(sObjectName))
+			return null;
 		fflib_SObjectDescribe result = instanceCache.get(sObjectName.toLowerCase());
 		if(result == null){
 			Schema.SObjectType token = wrappedGlobalDescribe.get(sObjectName.toLowerCase());
@@ -193,18 +195,24 @@ public class fflib_SObjectDescribe {
 		return result;
 	}
 	public static fflib_SObjectDescribe getDescribe(Schema.SObjectType token){
+		if(token == null)
+			return null;
 		fflib_SObjectDescribe result = instanceCache.get(String.valueOf(token).toLowerCase());
 		if(result == null)
 			result = new fflib_SObjectDescribe(token);		
 		return result;
 	}
 	public static fflib_SObjectDescribe getDescribe(Schema.DescribeSObjectResult nativeDescribe){
+		if(nativeDescribe == null)
+			return null;
 		fflib_SObjectDescribe result = instanceCache.get(nativeDescribe.getName().toLowerCase());
 		if(result == null)
 			result = new fflib_SObjectDescribe(nativeDescribe.getSobjectType());		
 		return result;
 	}
 	public static fflib_SObjectDescribe getDescribe(SObject instance){
+		if(instance == null)
+			return null;
 		return getDescribe(instance.getSobjectType());
 	}
 
@@ -255,11 +263,13 @@ public class fflib_SObjectDescribe {
 		 *  
 		**/
 		protected virtual Object getObject(String name, Boolean implyNamespace){
+			if(name == null) //short-circuit lookup logic since null can't possibly be a valid field name, and it saves us null checking
+				return null;
 			String preferredValue = ((implyNamespace ? currentNamespace+'__' : '') + name).toLowerCase();
 			if(values.containsKey(preferredValue)){
 				return values.get(preferredValue);
 			}else if(implyNamespace){
-				return values.get(name);
+				return values.get(name.toLowerCase());
 			}else{
 				return null;
 			}
@@ -268,17 +278,36 @@ public class fflib_SObjectDescribe {
 			return this.containsKey(name, true);
 		}
 		public virtual Boolean containsKey(String name, Boolean implyNamespace){
+			if(name == null) //short-circuit lookup logic since null can't possibly be a valid field name, and it saves us null checking
+				return null;
 			String preferredValue = ((implyNamespace ? currentNamespace+'__' : '') + name).toLowerCase();
 			return (
 				values.containsKey(preferredValue) ||
-				implyNamespace && values.containsKey(name)
+				implyNamespace && values.containsKey(name.toLowerCase())
 			);
 		}
 		public virtual Integer size(){
 			return values.size();
 		}
+		/**
+		 * Returns the key set of the map.
+		 * Note: unlike other NamespacedAttributeMap methods keySet defaults implyNamespace to false if not specified.
+		**/
 		public virtual Set<String> keySet(){
-			return values.keySet();
+			return this.keySet(false);
+		}
+		public virtual Set<String> keySet(Boolean implyNamespace){
+			if(implyNamespace){
+				Set<String> result = new Set<String>();
+				for(String key:values.keySet()){
+					result.add(
+						key.removeStartIgnoreCase(currentNamespace+'__')
+					);
+				}
+				return result;
+			}else{
+				return values.keySet();
+			}
 		}
 	}
 

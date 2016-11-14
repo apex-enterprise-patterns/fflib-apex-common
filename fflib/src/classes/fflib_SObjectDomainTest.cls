@@ -35,6 +35,11 @@ private with sharing class fflib_SObjectDomainTest
 		System.assertEquals(1, fflib_SObjectDomain.Errors.getAll().size());		
 		System.assertEquals('You must provide an Account for Opportunities for existing Customers.', fflib_SObjectDomain.Errors.getAll()[0].message);
 		System.assertEquals(Opportunity.AccountId, ((fflib_SObjectDomain.FieldError)fflib_SObjectDomain.Errors.getAll()[0]).field); 		
+
+		opps = new fflib_SObjectDomain.TestSObjectDomain(new SObject[] { new Opportunity ( Name = 'Test', Type = 'Existing Account' ) }, Opportunity.SObjectType );
+		System.assertEquals(1, fflib_SObjectDomain.Errors.getAll().size());		
+		System.assertEquals('You must provide an Account for Opportunities for existing Customers.', fflib_SObjectDomain.Errors.getAll()[0].message);
+		System.assertEquals(Opportunity.AccountId, ((fflib_SObjectDomain.FieldError)fflib_SObjectDomain.Errors.getAll()[0]).field);		
 	}
 	
 	@IsTest
@@ -80,6 +85,18 @@ private with sharing class fflib_SObjectDomainTest
 		fflib_SObjectDomain.triggerHandler(fflib_SObjectDomain.TestSObjectDomainConstructor.class);		
 		System.assertEquals(1, fflib_SObjectDomain.Errors.getAll().size());		
 		System.assertEquals('You cannot delete this Opportunity.', fflib_SObjectDomain.Errors.getAll()[0].message);
+	}
+	
+	@IsTest
+	private static void testOnAfterUndeleteWithoutDML()
+	{
+		Opportunity opp = (Opportunity) Opportunity.sObjectType.newSObject('006E0000006mkRQ'); 
+		opp.Name = 'Test';
+		opp.Type = 'Existing Account';
+		System.assertEquals(false, fflib_SObjectDomain.Test.Database.hasRecords());		
+		fflib_SObjectDomain.Test.Database.onUndelete(new list<Opportunity> { opp } );		
+		System.assertEquals(true, fflib_SObjectDomain.Test.Database.hasRecords());				
+		fflib_SObjectDomain.triggerHandler(fflib_SObjectDomain.TestSObjectDomainConstructor.class);		
 	}
 	
 	@IsTest
@@ -210,5 +227,169 @@ private with sharing class fflib_SObjectDomainTest
 			return null;
 		}		
 		return testUser;
+	}
+
+	/**
+	 *	The following tests that the ability to enable/disable all trigger events works as required
+	 **/
+	@IsTest
+	private static void testDisableTriggerEventsBehaviour()
+	{
+		boolean bError = false;
+
+		String  sErrorMessage = '';
+
+		Opportunity oldOpp = (Opportunity) Opportunity.sObjectType.newSObject('006E0000006mkRQ');
+		oldOpp.Name = 'Test';
+		oldOpp.Type = 'Existing'; 
+		Opportunity newOpp = (Opportunity) Opportunity.sObjectType.newSObject('006E0000006mkRQ'); 
+		newOpp.Name = 'Test';
+		newOpp.Type = 'New'; 
+
+
+
+		// these will be called multiple times making sure the correct error message comes back out
+		// so... there are alot of tests to do here sadly and remember everything is reversed and you need to run backwards!
+		// 1 - all disabled 
+		try
+		{
+			fflib_SObjectDomain.getTriggerEvent(fflib_SObjectDomain.TestSObjectDisableBehaviourConstructor.class).disableAll();
+			fflib_SObjectDomain.Test.Database.onInsert(new Opportunity[] { newOpp } );
+			fflib_SObjectDomain.triggerHandler(fflib_SObjectDomain.TestSObjectDisableBehaviourConstructor.class);
+		}
+		catch (Exception e)
+		{
+			bError = true;
+		}
+
+		System.AssertEquals(false, bError, 'Error - Trigger events have been fired when they are disabled');
+
+		////////////////////////////
+		// Insert!
+		try
+		{
+			// now lets go after insert and then before
+			fflib_SObjectDomain.getTriggerEvent(fflib_SObjectDomain.TestSObjectDisableBehaviourConstructor.class).enableAfterInsert();
+			fflib_SObjectDomain.Test.Database.onInsert(new Opportunity[] { newOpp } );
+			fflib_SObjectDomain.triggerHandler(fflib_SObjectDomain.TestSObjectDisableBehaviourConstructor.class);
+		}
+		catch (Exception e)
+		{
+			sErrorMessage = e.getMessage();
+			System.Debug('Exception Fired :' + e.getMEssage());
+		}
+
+		System.AssertEquals('onAfterInsert called', sErrorMessage, 'Error - After Insert Event is enabled but did not run');
+
+		try
+		{
+			// now lets go after insert and then before
+			fflib_SObjectDomain.getTriggerEvent(fflib_SObjectDomain.TestSObjectDisableBehaviourConstructor.class).enableBeforeInsert();
+			fflib_SObjectDomain.Test.Database.onInsert(new Opportunity[] { newOpp } );
+			fflib_SObjectDomain.triggerHandler(fflib_SObjectDomain.TestSObjectDisableBehaviourConstructor.class);
+		}
+		catch (Exception e)
+		{
+			sErrorMessage = e.getMessage();
+		}
+
+		System.AssertEquals('onBeforeInsert called', sErrorMessage, 'Error - Before Insert Event is enabled but did not run');
+
+		////////////////////////////
+		// Update!
+		try
+		{
+			// now lets go after insert and then before
+			fflib_SObjectDomain.getTriggerEvent(fflib_SObjectDomain.TestSObjectDisableBehaviourConstructor.class).enableAfterUpdate();
+			fflib_SObjectDomain.Test.Database.onUpdate(new Opportunity[] { newOpp }, new Map<Id, SObject> { newOpp.Id => oldOpp } );
+			fflib_SObjectDomain.triggerHandler(fflib_SObjectDomain.TestSObjectDisableBehaviourConstructor.class);
+		}
+		catch (Exception e)
+		{
+			sErrorMessage = e.getMessage();
+		}
+
+		System.AssertEquals('onAfterUpdate called', sErrorMessage, 'Error - After Update Event is enabled but did not run');
+
+		try
+		{
+			// now lets go after insert and then before
+			fflib_SObjectDomain.getTriggerEvent(fflib_SObjectDomain.TestSObjectDisableBehaviourConstructor.class).enableBeforeUpdate();
+			fflib_SObjectDomain.Test.Database.onUpdate(new Opportunity[] { newOpp }, new Map<Id, SObject> { newOpp.Id => oldOpp } );
+			fflib_SObjectDomain.triggerHandler(fflib_SObjectDomain.TestSObjectDisableBehaviourConstructor.class);
+		}
+		catch (Exception e)
+		{
+			sErrorMessage = e.getMessage();	
+		}
+
+		System.AssertEquals('onBeforeUpdate called', sErrorMessage, 'Error - Before Update Event is enabled but did not run');
+
+		////////////////////////////
+		// Delete!
+		try
+		{
+			// now lets go after insert and then before
+			fflib_SObjectDomain.getTriggerEvent(fflib_SObjectDomain.TestSObjectDisableBehaviourConstructor.class).enableAfterDelete();
+			fflib_SObjectDomain.Test.Database.onDelete(new Map<Id, Opportunity> { newOpp.Id => newOpp } );
+			fflib_SObjectDomain.triggerHandler(fflib_SObjectDomain.TestSObjectDisableBehaviourConstructor.class);
+		}
+		catch (Exception e)
+		{
+			sErrorMessage = e.getMessage();
+		}
+
+		System.AssertEquals('onAfterDelete called', sErrorMessage, 'Error - After Delete Event is enabled but did not run');
+
+		try
+		{
+			// now lets go after insert and then before
+			fflib_SObjectDomain.getTriggerEvent(fflib_SObjectDomain.TestSObjectDisableBehaviourConstructor.class).enableBeforeDelete();
+			fflib_SObjectDomain.Test.Database.onDelete(new Map<Id, Opportunity> { newOpp.Id => newOpp } );
+			fflib_SObjectDomain.triggerHandler(fflib_SObjectDomain.TestSObjectDisableBehaviourConstructor.class);
+		}
+		catch (Exception e)
+		{
+			sErrorMessage = e.getMessage();	
+		}
+
+		System.AssertEquals('onBeforeDelete called', sErrorMessage, 'Error - Before Delete Event is enabled but did not run');
+
+		////////////////////////////
+		// Undelete!
+		try
+		{
+			// now lets go after insert and then before
+			fflib_SObjectDomain.getTriggerEvent(fflib_SObjectDomain.TestSObjectDisableBehaviourConstructor.class).enableAfterUndelete();
+			fflib_SObjectDomain.Test.Database.onUndelete(new Opportunity[] { newOpp });
+			fflib_SObjectDomain.triggerHandler(fflib_SObjectDomain.TestSObjectDisableBehaviourConstructor.class);
+		}
+		catch (Exception e)
+		{
+			sErrorMessage = e.getMessage();
+		}
+
+		System.AssertEquals('onAfterUndelete called', sErrorMessage, 'Error - After Undelete Event is enabled but did not run');
+
+		/*
+
+		fflib_SObjectDomain.Test.Database.onInsert(new Opportunity[] { opp } );
+
+
+
+		fflib_SObjectDomain.Test.Database.onUpdate(new Opportunity[] { newOpp }, new Map<Id, SObject> { newOpp.Id => oldOpp } );
+
+		fflib_SObjectDomain.Test.Database.onDelete(new Map<ID, Opportunity> { opp.Id => opp } );		
+
+		fflib_SObjectDomain.Test.Database.onUndelete(new list<Opportunity> { opp } );		
+
+
+		try {		
+			fflib_SObjectDomain.triggerHandler(fflib_SObjectDomain.TestSObjectOnValidateBehaviourConstructor.class);
+			System.assert(false, 'Expected exception');
+		} catch (Exception e) {
+			System.assertEquals('onValidate called', e.getMessage());
+		}
+		*/
 	}
 }

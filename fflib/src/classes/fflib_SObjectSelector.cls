@@ -31,12 +31,18 @@ public abstract with sharing class fflib_SObjectSelector
 	implements fflib_ISObjectSelector
 {
     /**
-     * This overrides the Multi Currency handling, preventing it from injecting the CurrencyIsoCode fie ld for certain System objects that don't ever support it
+     * Indicates whether the sObject has the currency ISO code field for organisations which have multi-currency
+     * enabled. 
      **/
-    private static Set<String> STANDARD_WITHOUT_CURRENCYISO = new Set<String> { AsyncApexJob.SObjectType.getDescribe().getName()
-                                                                                , ApexClass.SObjectType.getDescribe().getName()
-                                                                                , Attachment.SObjectType.getDescribe().getName()
-                                                                                , RecordType.SObjectType.getDescribe().getName() };
+    private Boolean CURRENCY_ISO_CODE_ENABLED {
+        get {
+            if(CURRENCY_ISO_CODE_ENABLED == null){
+                CURRENCY_ISO_CODE_ENABLED = describeWrapper.getFieldsMap().keySet().contains('CurrencyIsoCode');
+            }
+            return CURRENCY_ISO_CODE_ENABLED;
+        }
+		set;
+    }
      
     /**
      * Should this selector automatically include the FieldSet fields when building queries?
@@ -57,6 +63,12 @@ public abstract with sharing class fflib_SObjectSelector
     * Order by field
     **/
     	private String m_orderBy;
+
+    /**
+     * Sort the query fields in the select statement (defaults to true, at the expense of performance).
+     * Switch this off if you need more performant queries.
+     **/
+    private Boolean m_sortSelectFields;
   
    /**
    * Describe helper
@@ -105,9 +117,23 @@ public abstract with sharing class fflib_SObjectSelector
      **/
     public fflib_SObjectSelector(Boolean includeFieldSetFields, Boolean enforceCRUD, Boolean enforceFLS)
     {
+        this(includeFieldSetFields, enforceCRUD, enforceFLS, true);
+    }
+
+    /**
+     * Constructs the Selector
+     *
+     * @param includeFieldSetFields Set to true if the Selector queries are to include Fieldset fields as well 
+     * @param enforceCRUD Enforce CRUD security
+     * @param enforeFLS Enforce Field Level Security
+     * @param sortSelectFields Set to false if selecting many columns to skip sorting select fields and improve performance
+     **/
+    public fflib_SObjectSelector(Boolean includeFieldSetFields, Boolean enforceCRUD, Boolean enforceFLS, Boolean sortSelectFields)
+    {
         m_includeFieldSetFields = includeFieldSetFields;
         m_enforceCRUD = enforceCRUD;
         m_enforceFLS = enforceFLS;
+        m_sortSelectFields = sortSelectFields;
     }
 
     /**
@@ -306,8 +332,7 @@ public abstract with sharing class fflib_SObjectSelector
 		for(SObjectField field : getSObjectFieldList())		
         	queryFactory.selectField(relationshipFieldPath + '.' + field.getDescribe().getName());
         // Automatically select the CurrencyIsoCode for MC orgs (unless the object is a known exception to the rule)
-        if(Userinfo.isMultiCurrencyOrganization() &&
-           !STANDARD_WITHOUT_CURRENCYISO.contains(getSObjectType().getDescribe().getName()))
+        if(Userinfo.isMultiCurrencyOrganization() && CURRENCY_ISO_CODE_ENABLED)
             queryFactory.selectField(relationshipFieldPath+'.CurrencyIsoCode');		
 	}
     
@@ -333,6 +358,23 @@ public abstract with sharing class fflib_SObjectSelector
     		includeSelectorFields);
     }
         
+	/**
+	 * Adds a subselect QueryFactory based on this selector to the given QueryFactor, returns the parentQueryFactory
+	 **/
+	public fflib_QueryFactory addQueryFactorySubselect(fflib_QueryFactory parentQueryFactory, String relationshipName)
+	{
+		return addQueryFactorySubselect(parentQueryFactory, relationshipName, TRUE);
+	}
+
+	/**
+	 * Adds a subselect QueryFactory based on this selector to the given QueryFactor
+	 **/
+	public fflib_QueryFactory addQueryFactorySubselect(fflib_QueryFactory parentQueryFactory, String relationshipName, Boolean includeSelectorFields)
+	{
+		fflib_QueryFactory subSelectQueryFactory = parentQueryFactory.subselectQuery(relationshipName);
+		return configureQueryFactory(subSelectQueryFactory, m_enforceCRUD, m_enforceFLS, includeSelectorFields);
+	}
+
     /**
      * Constructs the default SOQL query for this selector, see selectSObjectsById and queryLocatorById
      **/    
@@ -364,14 +406,15 @@ public abstract with sharing class fflib_SObjectSelector
         if(includeSelectorFields)
         {
 	        // select the Selector fields and Fieldsets and set order
-	        queryFactory.selectFields(new Set<SObjectField>(getSObjectFieldList()));
-	        if(m_includeFieldSetFields)
-	            for(Schema.FieldSet fieldSet : getSObjectFieldSetList())
+            queryFactory.selectFields(getSObjectFieldList());
+
+	        List<Schema.FieldSet> fieldSetList = getSObjectFieldSetList();
+	        if(m_includeFieldSetFields && fieldSetList != null)
+	            for(Schema.FieldSet fieldSet : fieldSetList)
 	                queryFactory.selectFieldSet(fieldSet);
 	
 	        // Automatically select the CurrencyIsoCode for MC orgs (unless the object is a known exception to the rule)
-	        if(Userinfo.isMultiCurrencyOrganization() &&
-	           !STANDARD_WITHOUT_CURRENCYISO.contains(getSObjectType().getDescribe().getName()))
+	        if(Userinfo.isMultiCurrencyOrganization() && CURRENCY_ISO_CODE_ENABLED)
 	            queryFactory.selectField('CurrencyIsoCode');
         }
         
@@ -391,7 +434,9 @@ public abstract with sharing class fflib_SObjectSelector
                 fieldSortOrder = fflib_QueryFactory.SortOrder.ASCENDING;
             queryFactory.addOrdering(fieldNamePart, fieldSortOrder);
         }           
-                
+        
+        queryFactory.setSortSelectFields(m_sortSelectFields);           
+
         return queryFactory;    
     }    
 }
