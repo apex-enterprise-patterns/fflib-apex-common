@@ -2,22 +2,22 @@
  * Copyright (c), FinancialForce.com, inc
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification, 
+ * Redistribution and use in source and binary forms, with or without modification,
  *   are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, 
+ * - Redistributions of source code must retain the above copyright notice,
  *      this list of conditions and the following disclaimer.
- * - Redistributions in binary form must reproduce the above copyright notice, 
- *      this list of conditions and the following disclaimer in the documentation 
+ * - Redistributions in binary form must reproduce the above copyright notice,
+ *      this list of conditions and the following disclaimer in the documentation
  *      and/or other materials provided with the distribution.
- * - Neither the name of the FinancialForce.com, inc nor the names of its contributors 
- *      may be used to endorse or promote products derived from this software without 
+ * - Neither the name of the FinancialForce.com, inc nor the names of its contributors
+ *      may be used to endorse or promote products derived from this software without
  *      specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
- *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES 
- *  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
- *  THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ *  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+ *  THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
  *  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
  *  OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
@@ -28,24 +28,24 @@
  * Provides an implementation of the Enterprise Application Architecture Unit Of Work, as defined by Martin Fowler
  *   http://martinfowler.com/eaaCatalog/unitOfWork.html
  *
- * "When you're pulling data in and out of a database, it's important to keep track of what you've changed; otherwise, 
- *  that data won't be written back into the database. Similarly you have to insert new objects you create and 
+ * "When you're pulling data in and out of a database, it's important to keep track of what you've changed; otherwise,
+ *  that data won't be written back into the database. Similarly you have to insert new objects you create and
  *  remove any objects you delete."
  *
- * "You can change the database with each change to your object model, but this can lead to lots of very small database calls, 
- *  which ends up being very slow. Furthermore it requires you to have a transaction open for the whole interaction, which is 
+ * "You can change the database with each change to your object model, but this can lead to lots of very small database calls,
+ *  which ends up being very slow. Furthermore it requires you to have a transaction open for the whole interaction, which is
  *  impractical if you have a business transaction that spans multiple requests. The situation is even worse if you need to
  *  keep track of the objects you've read so you can avoid inconsistent reads."
  *
- * "A Unit of Work keeps track of everything you do during a business transaction that can affect the database. When you're done, 
+ * "A Unit of Work keeps track of everything you do during a business transaction that can affect the database. When you're done,
  *  it figures out everything that needs to be done to alter the database as a result of your work."
  *
  * In an Apex context this pattern provides the following specific benifits
  *  - Applies bulkfication to DML operations, insert, update and delete
  *  - Manages a business transaction around the work and ensures a rollback occurs (even when exceptions are later handled by the caller)
- *  - Honours dependency rules between records and updates dependent relationships automatically during the commit 
+ *  - Honours dependency rules between records and updates dependent relationships automatically during the commit
  *
- * Please refer to the testMethod's in this class for example usage 
+ * Please refer to the testMethod's in this class for example usage
  *
  * TODO: Need to complete the 100% coverage by covering parameter exceptions in tests
  * TODO: Need to add some more test methods for more complex use cases and some unexpected (e.g. registerDirty and then registerDeleted)
@@ -55,25 +55,25 @@ public virtual class fflib_SObjectUnitOfWork
 	implements fflib_ISObjectUnitOfWork
 {
 	private List<Schema.SObjectType> m_sObjectTypes = new List<Schema.SObjectType>();
-	
+
 	private Map<String, List<SObject>> m_newListByType = new Map<String, List<SObject>>();
-	
+
 	private Map<String, Map<Id, SObject>> m_dirtyMapByType = new Map<String, Map<Id, SObject>>();
-	
+
 	private Map<String, Map<Id, SObject>> m_deletedMapByType = new Map<String, Map<Id, SObject>>();
-	
+
 	private Map<String, Relationships> m_relationships = new Map<String, Relationships>();
 
 	private List<IDoWork> m_workList = new List<IDoWork>();
 
 	private SendEmailWork m_emailWork = new SendEmailWork();
-	
+
 	private IDML m_dml;
-	
+
 	/**
 	 * Interface describes work to be performed during the commitWork method
 	 **/
-	public interface IDoWork 
+	public interface IDoWork
 	{
 		void doWork();
 	}
@@ -84,7 +84,7 @@ public virtual class fflib_SObjectUnitOfWork
 		void dmlUpdate(List<SObject> objList);
 		void dmlDelete(List<SObject> objList);
 	}
-	
+
 	public class SimpleDML implements IDML
 	{
 		public void dmlInsert(List<SObject> objList){
@@ -111,17 +111,17 @@ public virtual class fflib_SObjectUnitOfWork
 	public fflib_SObjectUnitOfWork(List<Schema.SObjectType> sObjectTypes, IDML dml)
 	{
 		m_sObjectTypes = sObjectTypes.clone();
-			
+
 		for(Schema.SObjectType sObjectType : m_sObjectTypes)
 		{
 			m_newListByType.put(sObjectType.getDescribe().getName(), new List<SObject>());
 			m_dirtyMapByType.put(sObjectType.getDescribe().getName(), new Map<Id, SObject>());
 			m_deletedMapByType.put(sObjectType.getDescribe().getName(), new Map<Id, SObject>());
-			m_relationships.put(sObjectType.getDescribe().getName(), new Relationships());	
+			m_relationships.put(sObjectType.getDescribe().getName(), new Relationships());
 		}
 
 		m_workList.add(m_emailWork);
-		
+
 		m_dml = dml;
 	}
 
@@ -140,7 +140,7 @@ public virtual class fflib_SObjectUnitOfWork
 	{
 		m_emailWork.registerEmail(email);
 	}
-	
+
 	/**
 	 * Register a newly created SObject instance to be inserted when commitWork is called
 	 *
@@ -165,7 +165,7 @@ public virtual class fflib_SObjectUnitOfWork
 	}
 
 	/**
-	 * Register a newly created SObject instance to be inserted when commitWork is called, 
+	 * Register a newly created SObject instance to be inserted when commitWork is called,
 	 *   you may also provide a reference to the parent record instance (should also be registered as new separatly)
 	 *
 	 * @param record A newly created SObject instance to be inserted during commitWork
@@ -176,16 +176,16 @@ public virtual class fflib_SObjectUnitOfWork
 	{
 		if(record.Id != null)
 			throw new UnitOfWorkException('Only new records can be registered as new');
-		String sObjectType = record.getSObjectType().getDescribe().getName();			
+		String sObjectType = record.getSObjectType().getDescribe().getName();
 		if(!m_newListByType.containsKey(sObjectType))
 			throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
-		m_newListByType.get(sObjectType).add(record);				
+		m_newListByType.get(sObjectType).add(record);
 		if(relatedToParentRecord!=null && relatedToParentField!=null)
 			registerRelationship(record, relatedToParentField, relatedToParentRecord);
 	}
-	
+
 	/**
-	 * Register a relationship between two records that have yet to be inserted to the database. This information will be 
+	 * Register a relationship between two records that have yet to be inserted to the database. This information will be
 	 *  used during the commitWork phase to make the references only when related records have been inserted to the database.
 	 *
 	 * @param record An existing or newly created record
@@ -194,12 +194,12 @@ public virtual class fflib_SObjectUnitOfWork
 	 */
 	public void registerRelationship(SObject record, Schema.sObjectField relatedToField, SObject relatedTo)
 	{
-		String sObjectType = record.getSObjectType().getDescribe().getName();		
+		String sObjectType = record.getSObjectType().getDescribe().getName();
 		if(!m_newListByType.containsKey(sObjectType))
 			throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
 		m_relationships.get(sObjectType).add(record, relatedToField, relatedTo);
 	}
-	
+
 	/**
 	 * Register an existing record to be updated during the commitWork method
 	 *
@@ -209,11 +209,31 @@ public virtual class fflib_SObjectUnitOfWork
 	{
 		if(record.Id == null)
 			throw new UnitOfWorkException('New records cannot be registered as dirty');
-		String sObjectType = record.getSObjectType().getDescribe().getName();			
+		String sObjectType = record.getSObjectType().getDescribe().getName();
 		if(!m_dirtyMapByType.containsKey(sObjectType))
 			throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
-		m_dirtyMapByType.get(sObjectType).put(record.Id, record);		
+		m_dirtyMapByType.get(sObjectType).put(record.Id, record);
 	}
+
+    /**
+     * Register an existing record to be updated when commitWork is called,
+     *   you may also provide a reference to the parent record instance (should also be registered as new separatly)
+     *
+     * @param record A newly created SObject instance to be inserted during commitWork
+     * @param relatedToParentField A SObjectField reference to the child field that associates the child record with its parent
+     * @param relatedToParentRecord A SObject instance of the parent record (should also be registered as new separatly)
+     **/
+    public void registerDirty(SObject record, Schema.sObjectField relatedToParentField, SObject relatedToParentRecord)
+    {
+        if(record.Id == null)
+            throw new UnitOfWorkException('New records cannot be registered as dirty');
+        String sObjectType = record.getSObjectType().getDescribe().getName();
+        if(!m_dirtyMapByType.containsKey(sObjectType))
+            throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
+        m_dirtyMapByType.get(sObjectType).put(record.Id, record);
+        if(relatedToParentRecord!=null && relatedToParentField!=null)
+            registerRelationship(record, relatedToParentField, relatedToParentRecord);
+    }
 
 	/**
 	 * Register a list of existing records to be updated during the commitWork method
@@ -237,12 +257,12 @@ public virtual class fflib_SObjectUnitOfWork
 	{
 		if(record.Id == null)
 			throw new UnitOfWorkException('New records cannot be registered for deletion');
-		String sObjectType = record.getSObjectType().getDescribe().getName();			
+		String sObjectType = record.getSObjectType().getDescribe().getName();
 		if(!m_deletedMapByType.containsKey(sObjectType))
 			throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
-		m_deletedMapByType.get(sObjectType).put(record.Id, record);							
+		m_deletedMapByType.get(sObjectType).put(record.Id, record);
 	}
-	
+
 	/**
 	 * Register a list of existing records to be deleted during the commitWork method
 	 *
@@ -255,25 +275,25 @@ public virtual class fflib_SObjectUnitOfWork
 			this.registerDeleted(record);
 		}
 	}
-	
+
 	/**
 	 * Takes all the work that has been registered with the UnitOfWork and commits it to the database
 	 **/
 	public void commitWork()
 	{
-		// Wrap the work in its own transaction 
-		Savepoint sp = Database.setSavePoint();		
+		// Wrap the work in its own transaction
+		Savepoint sp = Database.setSavePoint();
 		try
-		{		
+		{
 			// Insert by type
 			for(Schema.SObjectType sObjectType : m_sObjectTypes)
 			{
 				m_relationships.get(sObjectType.getDescribe().getName()).resolve();
 				m_dml.dmlInsert(m_newListByType.get(sObjectType.getDescribe().getName()));
-			}					
+			}
 			// Update by type
 			for(Schema.SObjectType sObjectType : m_sObjectTypes)
-				m_dml.dmlUpdate(m_dirtyMapByType.get(sObjectType.getDescribe().getName()).values());		
+				m_dml.dmlUpdate(m_dirtyMapByType.get(sObjectType.getDescribe().getName()).values());
 			// Delete by type (in reverse dependency order)
 			Integer objectIdx = m_sObjectTypes.size() - 1;
 			while(objectIdx>=0)
@@ -290,7 +310,7 @@ public virtual class fflib_SObjectUnitOfWork
 			throw e;
 		}
 	}
-	
+
 	private class Relationships
 	{
 		private List<Relationship> m_relationships = new List<Relationship>();
@@ -301,7 +321,7 @@ public virtual class fflib_SObjectUnitOfWork
 			for(Relationship relationship : m_relationships)
 				relationship.Record.put(relationship.RelatedToField, relationship.RelatedTo.Id);
 		}
-		
+
 		public void add(SObject record, Schema.sObjectField relatedToField, SObject relatedTo)
 		{
 			// Relationship to resolve
@@ -312,20 +332,20 @@ public virtual class fflib_SObjectUnitOfWork
 			m_relationships.add(relationship);
 		}
 	}
-	
+
 	private class Relationship
 	{
 		public SObject Record;
 		public Schema.sObjectField RelatedToField;
 		public SObject RelatedTo;
 	}
-	
+
 	/**
 	 * UnitOfWork Exception
 	 **/
 	public class UnitOfWorkException extends Exception {}
 
-	/** 
+	/**
 	 * Internal implementation of Messaging.sendEmail, see outer class registerEmail method
 	 **/
 	private class SendEmailWork implements IDoWork
@@ -346,5 +366,5 @@ public virtual class fflib_SObjectUnitOfWork
 		{
 			if(emails.size() > 0) Messaging.sendEmail(emails);
 		}
-	}	
+	}
 }
