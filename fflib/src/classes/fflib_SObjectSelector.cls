@@ -37,7 +37,7 @@ public abstract with sharing class fflib_SObjectSelector
     private Boolean CURRENCY_ISO_CODE_ENABLED {
         get {
             if(CURRENCY_ISO_CODE_ENABLED == null){
-                CURRENCY_ISO_CODE_ENABLED = describeWrapper.getFieldsMap().keySet().contains('CurrencyIsoCode');
+                CURRENCY_ISO_CODE_ENABLED = describeWrapper.getFieldsMap().keySet().contains('currencyisocode');
             }
             return CURRENCY_ISO_CODE_ENABLED;
         }
