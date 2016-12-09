@@ -1,6 +1,8 @@
 FinancialForce Apex Common
 ==========================
 
+[![Build Status](https://travis-ci.org/financialforcedev/fflib-apex-commons.svg)](https://travis-ci.org/financialforcedev/fflib-apex-commons)
+
 **Dependencies:** Must deploy [ApexMocks](https://github.com/financialforcedev/fflib-apex-mocks) before deploying this library
 
 <a href="https://githubsfdeploy.herokuapp.com?owner=financialforcedev&repo=fflib-apex-common">
