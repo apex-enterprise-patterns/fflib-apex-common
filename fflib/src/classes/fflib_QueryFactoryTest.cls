@@ -503,7 +503,8 @@ private class fflib_QueryFactoryTest {
 		Schema.DescribeSObjectResult descResult = Account.SObjectType.getDescribe();
         Exception e;
 		try {
-			fflib_QueryFactory childQf = qf.subselectQuery(Contact.SObjectType);
+			SObjectType invalidType = null;
+			fflib_QueryFactory childQf = qf.subselectQuery(invalidType);
 			childQf.selectField('Id');
 		} catch (fflib_QueryFactory.InvalidSubqueryRelationshipException ex) {
 			e = ex;
