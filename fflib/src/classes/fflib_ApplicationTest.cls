@@ -78,13 +78,7 @@ private class fflib_ApplicationTest
 		System.assertEquals(testOpportunityId, domainObjectOpp.getRecords()[0].Id);		
 		System.assert(domainObjectOpp instanceof OpportuntiesDomain);
 
-		// Given
-		fflib_ApexMocks mocks = new fflib_ApexMocks();
-		mocks.startStubbing();		
-		fflib_ISObjectDomain domainMock = new fflib_SObjectMocks.SObjectDomain(mocks);
-		mocks.when(domainMock.sObjectType()).thenReturn(Account.SObjectType);
-		mocks.stopStubbing();		
-		Domain.setMock(domainMock);
+	
 
 		// When
 		domainObjectAcct = 
