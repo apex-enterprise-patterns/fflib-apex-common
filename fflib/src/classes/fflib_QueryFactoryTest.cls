@@ -26,7 +26,7 @@
 
 @isTest
 private class fflib_QueryFactoryTest {
-	
+
 	@isTest
 	static void fieldSelections(){
 		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
@@ -35,18 +35,6 @@ private class fflib_QueryFactoryTest {
 		qf.selectFields( new Set<String>{'acCounTId', 'account.name'} );
 		qf.selectFields( new List<String>{'homePhonE','fAX'} );
 		qf.selectFields( new List<Schema.SObjectField>{ Contact.Email, Contact.Title } );
-		// QueryField weights foreign key fields differently, so account.name will be last
-		System.assertEquals('select accountid, email, fax, firstname, homephone, lastname, title, account.name from contact', qf.toSOQL().toLowercase());
-		
-		// Test the LightweightQueryField implementation
-		qf = new fflib_QueryFactory(Contact.SObjectType, true);
-		qf.selectField('firstName');
-		qf.selectField(Schema.Contact.SObjectType.fields.lastName);
-		qf.selectFields( new Set<String>{'acCounTId', 'account.name'} );
-		qf.selectFields( new List<String>{'homePhonE','fAX'} );
-		qf.selectFields( new List<Schema.SObjectField>{ Contact.Email, Contact.Title } );
-		// LightweightQueryField converts all field paths to lowercase and sorts in alphabetical order, so account.name will be first
-		System.assertEquals('select account.name, accountid, email, fax, firstname, homephone, lastname, title from contact', qf.toSOQL().toLowercase());
 	}
 
 	@isTest
@@ -59,15 +47,6 @@ private class fflib_QueryFactoryTest {
 		qf.setLimit(100);
 		System.assertEquals(100,qf.getLimit());
 		System.assert( qf.toSOQL().endsWithIgnoreCase('LIMIT '+qf.getLimit()), 'Failed to respect limit clause:'+qf.toSOQL() );
-		
-		// Test the LightweightQueryField implementation
-		qf = new fflib_QueryFactory(Contact.SObjectType, true);
-		qf.selectField('NAMe').selectFields( new Set<String>{'naMe', 'email'});
-		query = qf.toSOQL().toLowercase();
-		System.assert( Pattern.matches('select.*email,.*name.*from.*',query), 'Expected email and name fields in query, got '+query);
-		qf.setLimit(100);
-		System.assertEquals(100,qf.getLimit());
-		System.assert(qf.toSOQL().endsWithIgnoreCase('limit '+qf.getLimit()), 'Failed to respect limit clause:'+qf.toSOQL());
 	}
 
 	@isTest
@@ -80,33 +59,14 @@ private class fflib_QueryFactoryTest {
 		System.assertEquals(whereClause,qf.getCondition()); 
 		String query = qf.toSOQL();
 		System.assert(query.endsWith('WHERE name = \'test\''),'Query should have ended with a filter on name, got: '+query);
-		
-		// Test the LightweightQueryField implementation
-		qf = new fflib_QueryFactory(Contact.SObjectType, true);
-		qf.selectField('name');
-		qf.selectField('email');
-		qf.setCondition( whereClause );
-		System.assertEquals(whereClause,qf.getCondition()); 
-		query = qf.toSOQL();
-		System.assert(query.endsWithIgnoreCase('where name = \'test\''),'Query should have ended with a filter on name, got: '+query);
 	}
 
 	@isTest
 	static void duplicateFieldSelection() {
 		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
 		qf.selectField('NAMe').selectFields( new Set<String>{'naMe', 'email'});
-		String query = qf.toSOQL().toLowercase();
-		// The resulting query will be de-duped so that only one "Name" field exists in the generated query 
-		System.assertEquals(1, query.countMatches('name'), 'Expected one name field in query: '+query );
-		System.assertEquals(1, query.countMatches('email'), 'Expected one email field in query: '+query );
-		
-		// Test the LightweightQueryField implementation
-		qf = new fflib_QueryFactory(Contact.SObjectType);
-		qf.selectField('NAMe').selectFields( new Set<String>{'naMe', 'email'});
-		query = qf.toSOQL().toLowercase();
-		// The resulting query will be de-duped so that only one "Name" field exists in the generated query 
-		System.assertEquals(1, query.countMatches('name'), 'Expected one name field in query: '+query );
-		System.assertEquals(1, query.countMatches('email'), 'Expected one email field in query: '+query );
+		String query = qf.toSOQL();
+		System.assertEquals(1, query.countMatches('Name'), 'Expected one name field in query: '+query );
 	}
 
 	@isTest
@@ -118,20 +78,7 @@ private class fflib_QueryFactoryTest {
 		System.assertNotEquals(qf1,qf2);
 		qf2.selectField('NAmE');
 		System.assertEquals(qf1,qf2);
-		qf1.selectFields( new Set<String>{ 'NAME' });
-		qf2.selectFields( new Set<Schema.SObjectField>{ Contact.Name} );
-		System.assertEquals(qf1,qf2);
-		
-		// Test the LightweightQueryField implementation
-		qf1 = new fflib_QueryFactory(Contact.SObjectType, true);
-		qf2 = new fflib_QueryFactory(Contact.SObjectType, true);
-		System.assertEquals(qf1,qf2);
-		qf1.selectField('name');
-		System.assertNotEquals(qf1,qf2);
-		qf2.selectField('NAmE');
-		System.assertEquals(qf1,qf2);
-		qf1.selectFields( new Set<String>{ 'NAME' });
-		qf2.selectFields( new Set<Schema.SObjectField>{ Contact.Name} );
+		qf1.selectField('name').selectFields( new Set<String>{ 'NAME', 'name' }).selectFields( new Set<Schema.SObjectField>{ Contact.Name, Contact.Name} );
 		System.assertEquals(qf1,qf2);
 	}
 
@@ -199,22 +146,9 @@ private class fflib_QueryFactoryTest {
 		System.assertEquals(Contact.name,qf.getOrderings()[0].getField() );
 		System.assertEquals(fflib_QueryFactory.SortOrder.DESCENDING,qf.getOrderings()[1].getDirection() );
 
+		
 		System.assert( Pattern.matches('SELECT.*Name.*FROM.*',query), 'Expected Name field in query, got '+query);
 		System.assert( Pattern.matches('SELECT.*Email.*FROM.*',query), 'Expected Name field in query, got '+query);
-		
-		// Equivalent test for LightweightQueryField implementation
-		qf = new fflib_QueryFactory(Contact.SObjectType, true);
-		qf.selectField('name');
-		qf.selectField('email');
-		qf.setCondition( 'name = \'test\'' );
-		qf.addOrdering( new fflib_QueryFactory.Ordering('Contact','name',fflib_QueryFactory.SortOrder.ASCENDING) ).addOrdering( new fflib_QueryFactory.Ordering('Contact','CreatedDATE',fflib_QueryFactory.SortOrder.DESCENDING) );
-		query = qf.toSOQL().toLowerCase();
-		
-		System.assertEquals(2,qf.getOrderings().size());
-		System.assertEquals(Contact.name,qf.getOrderings()[0].getField() );
-		System.assertEquals(fflib_QueryFactory.SortOrder.DESCENDING,qf.getOrderings()[1].getDirection() );
-		
-		System.assert( Pattern.matches('select.*email,.*name.*from.*',query), 'Expected name and email fields in query, got '+query);
 	}
 
 	@isTest
@@ -322,7 +256,7 @@ private class fflib_QueryFactoryTest {
 			Schema.Contact.SObjectType.fields.AccountId});
 		System.assert(!qfld.equals(new Contact()));	
 	}
-	
+
 	@isTest
 	static void addChildQueriesWithChildRelationship_success(){
 		Account acct = new Account();
@@ -341,6 +275,7 @@ private class fflib_QueryFactoryTest {
 
 		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
 		qf.selectField('name').selectField('Id').setCondition( 'name like \'%test%\'' ).addOrdering('CreatedDate',fflib_QueryFactory.SortOrder.DESCENDING, true);
+		Schema.DescribeSObjectResult descResult = Contact.SObjectType.getDescribe();
 		//explicitly assert object accessibility when creating the subselect
 		qf.subselectQuery('Tasks', true).selectField('Id').selectField('Subject').setCondition(' IsDeleted = false ');
 		List<fflib_QueryFactory> queries = qf.getSubselectQueries();
@@ -349,20 +284,8 @@ private class fflib_QueryFactoryTest {
 		System.assert(contacts != null && contacts.size() == 1);
 		System.assert(contacts[0].Tasks.size() == 1);
 		System.assert(contacts[0].Tasks[0].Subject == 'test');
-		
-		// Try the same test using the LightweightQueryField implementation
-		qf = new fflib_QueryFactory(Contact.SObjectType, true);
-		qf.selectField('name').selectField('Id').setCondition( 'name like \'%test%\'' ).addOrdering('CreatedDate',fflib_QueryFactory.SortOrder.DESCENDING, true);
-		//explicitly assert object accessibility when creating the subselect
-		qf.subselectQuery('Tasks', true).selectField('Id').selectField('Subject').setCondition(' IsDeleted = false ');
-		queries = qf.getSubselectQueries();
-		System.assert(queries != null);
-		contacts = Database.query(qf.toSOQL());
-		System.assert(contacts != null && contacts.size() == 1);
-		System.assert(contacts[0].Tasks.size() == 1);
-		System.assert(contacts[0].Tasks[0].Subject == 'test');
 	}
-	
+
 	@isTest
 	static void addChildQueriesWithChildRelationshipNoAccessibleCheck_success(){
 		Account acct = new Account();
@@ -386,18 +309,6 @@ private class fflib_QueryFactoryTest {
 		List<fflib_QueryFactory> queries = qf.getSubselectQueries();
 		System.assert(queries != null);
 		List<Contact> contacts = Database.query(qf.toSOQL());
-		System.assert(contacts != null && contacts.size() == 1);
-		System.assert(contacts[0].Tasks.size() == 1);
-		System.assert(contacts[0].Tasks[0].Subject == 'test');
-		
-		// Try the same test using the LightweightQueryField implementation
-		qf = new fflib_QueryFactory(Contact.SObjectType, true);
-		qf.selectField('name').selectField('Id').setCondition( 'name like \'%test%\'' ).addOrdering('CreatedDate',fflib_QueryFactory.SortOrder.DESCENDING, true);
-		//explicitly assert object accessibility when creating the subselect
-		qf.subselectQuery('Tasks').selectField('Id').selectField('Subject').setCondition(' IsDeleted = false ');
-		queries = qf.getSubselectQueries();
-		System.assert(queries != null);
-		contacts = Database.query(qf.toSOQL());
 		System.assert(contacts != null && contacts.size() == 1);
 		System.assert(contacts[0].Tasks.size() == 1);
 		System.assert(contacts[0].Tasks[0].Subject == 'test');
@@ -438,17 +349,6 @@ private class fflib_QueryFactoryTest {
 		System.assert(contacts != null && contacts.size() == 1);
 		System.assert(contacts[0].Tasks.size() == 1);
 		System.assert(contacts[0].Tasks[0].Subject == 'test');
-		
-		// Try the same test using the LightweightQueryField implementation
-		qf = new fflib_QueryFactory(Contact.SObjectType, true);
-		qf.selectField('name').selectField('Id').setCondition( 'name like \'%test%\'' ).addOrdering('CreatedDate',fflib_QueryFactory.SortOrder.DESCENDING, true);
-		qf.subselectQuery(relationship, true).selectField('Id').selectField('Subject').setCondition(' IsDeleted = false ');
-		queries = qf.getSubselectQueries();
-		System.assert(queries != null);
-		contacts = Database.query(qf.toSOQL());
-		System.assert(contacts != null && contacts.size() == 1);
-		System.assert(contacts[0].Tasks.size() == 1);
-		System.assert(contacts[0].Tasks[0].Subject == 'test');
 	}
 
 	@isTest
@@ -486,17 +386,6 @@ private class fflib_QueryFactoryTest {
 		System.assert(contacts != null && contacts.size() == 1);
 		System.assert(contacts[0].Tasks.size() == 1);
 		System.assert(contacts[0].Tasks[0].Subject == 'test');
-		
-		// Try the same test using the LightweightQueryField implementation
-		qf = new fflib_QueryFactory(Contact.SObjectType, true);
-		qf.selectField('name').selectField('Id').setCondition( 'name like \'%test%\'' ).addOrdering('CreatedDate',fflib_QueryFactory.SortOrder.DESCENDING, true);
-		qf.subselectQuery(relationship).selectField('Id').selectField('Subject').setCondition(' IsDeleted = false ');
-		queries = qf.getSubselectQueries();
-		System.assert(queries != null);
-		contacts = Database.query(qf.toSOQL());
-		System.assert(contacts != null && contacts.size() == 1);
-		System.assert(contacts[0].Tasks.size() == 1);
-		System.assert(contacts[0].Tasks[0].Subject == 'test');
 	}
 
 	@isTest
@@ -521,17 +410,6 @@ private class fflib_QueryFactoryTest {
 		//explicitly assert object accessibility when creating the subselect
 		//
 		Exception e;
-		try {
-			qf.subselectQuery('Tas').selectField('Id').selectField('Subject').setCondition(' IsDeleted = false ');
-		} catch (fflib_QueryFactory.InvalidSubqueryRelationshipException ex) {
-			e = ex;   
-		}	
-		System.assertNotEquals(e, null);
-		
-		// Try the same test using the LightweightQueryField implementation
-		qf = new fflib_QueryFactory(Contact.SObjectType, true);
-		qf.selectField('name').selectField('Id').setCondition( 'name like \'%test%\'' ).addOrdering('CreatedDate',fflib_QueryFactory.SortOrder.DESCENDING, true);
-		e = null;
 		try {
 			qf.subselectQuery('Tas').selectField('Id').selectField('Subject').setCondition(' IsDeleted = false ');
 		} catch (fflib_QueryFactory.InvalidSubqueryRelationshipException ex) {
@@ -564,17 +442,6 @@ private class fflib_QueryFactoryTest {
 		List<fflib_QueryFactory> queries = qf.getSubselectQueries();
 		System.assert(queries != null);
 		List<Contact> contacts = Database.query(qf.toSOQL());
-		System.assert(contacts != null && contacts.size() == 1);
-		System.assert(contacts[0].Tasks.size() == 1);
-		System.assert(contacts[0].Tasks[0].Subject == 'test');
-		
-		// Try the same test using the LightweightQueryField implementation
-		qf = new fflib_QueryFactory(Contact.SObjectType, true);
-		qf.selectField('name').selectField('Id').setCondition( 'name like \'%test%\'' ).addOrdering('CreatedDate',fflib_QueryFactory.SortOrder.DESCENDING, true);
-		qf.subselectQuery(Task.SObjectType, true).selectField('Id').selectField('Subject').setCondition(' IsDeleted = false ');
-		queries = qf.getSubselectQueries();
-		System.assert(queries != null);
-		contacts = Database.query(qf.toSOQL());
 		System.assert(contacts != null && contacts.size() == 1);
 		System.assert(contacts[0].Tasks.size() == 1);
 		System.assert(contacts[0].Tasks[0].Subject == 'test');
@@ -616,21 +483,6 @@ private class fflib_QueryFactoryTest {
 		List<fflib_QueryFactory> queries = qf.getSubselectQueries();
 		System.assert(queries != null);
 		System.assert(queries.size() == 1);
-		
-		// Try the same test using the LightweightQueryField implementation
-		qf = new fflib_QueryFactory(Contact.SObjectType, true);
-		qf.selectField('name');
-		qf.selectField('Id');
-		qf.setCondition( 'name like \'%test%\'' );
-		qf.addOrdering( new fflib_QueryFactory.Ordering('Contact','name',fflib_QueryFactory.SortOrder.ASCENDING) ).addOrdering('CreatedBy.Name',fflib_QueryFactory.SortOrder.DESCENDING);
-        System.assert(qf.getSubselectQueries() == null);
-		childQf = qf.subselectQuery(Task.SObjectType);
-		childQf.assertIsAccessible();
-		childQf.selectField('Id');
-		childQf2 = qf.subselectQuery(Task.SObjectType);
-		queries = qf.getSubselectQueries();
-		System.assert(queries != null);
-		System.assert(queries.size() == 1);
 	}
 
 	@isTest
@@ -653,21 +505,6 @@ private class fflib_QueryFactoryTest {
 		try {
 			SObjectType invalidType = null;
 			fflib_QueryFactory childQf = qf.subselectQuery(invalidType);
-			childQf.selectField('Id');
-		} catch (fflib_QueryFactory.InvalidSubqueryRelationshipException ex) {
-			e = ex;
-		}	
-		System.assertNotEquals(e, null);
-		
-		// Try the same test using the LightweightQueryField implementation
-		qf = new fflib_QueryFactory(Contact.SObjectType, true);
-		qf.selectField('name');
-		qf.selectField('email');
-		qf.setCondition( 'name like \'%test%\'' );
-		qf.addOrdering( new fflib_QueryFactory.Ordering('Contact','name',fflib_QueryFactory.SortOrder.ASCENDING) ).addOrdering( 'CreatedDATE',fflib_QueryFactory.SortOrder.DESCENDING);
-		e = null;
-		try {
-			fflib_QueryFactory childQf = qf.subselectQuery(Contact.SObjectType);
 			childQf.selectField('Id');
 		} catch (fflib_QueryFactory.InvalidSubqueryRelationshipException ex) {
 			e = ex;
@@ -702,24 +539,6 @@ private class fflib_QueryFactoryTest {
 			e = ex;   
 		}	
 		System.assertNotEquals(e, null);
-		
-		// Try the same test using the LightweightQueryField implementation
-		qf = new fflib_QueryFactory(Contact.SObjectType, true);
-		qf.selectField('name');
-		qf.selectField('email');
-		qf.setCondition( 'name like \'%test%\'' );
-		qf.addOrdering( new fflib_QueryFactory.Ordering('Contact','name',fflib_QueryFactory.SortOrder.ASCENDING) ).addOrdering('CreatedDATE',fflib_QueryFactory.SortOrder.DESCENDING);
-		
-		childQf = qf.subselectQuery(Task.SObjectType);
-		childQf.selectField('Id');
-		childQf.selectField('Subject');
-		e = null;
-		try {
-			fflib_QueryFactory subChildQf = childQf.subselectQuery(Task.SObjectType);
-		} catch (fflib_QueryFactory.InvalidSubqueryRelationshipException ex) {
-			e = ex;   
-		}	
-		System.assertNotEquals(e, null);
 	}
 
 	@isTest
@@ -748,22 +567,6 @@ private class fflib_QueryFactoryTest {
 			break;
 		}
 		System.assert(qf.toSOQL().containsIgnoreCase('NULLS LAST'));
-		
-		// Try the same test using the LightweightQueryField implementation
-		qf = new fflib_QueryFactory(Contact.SObjectType, true);
-		qf.assertIsAccessible()
-		  .selectField('createdby.name')
-		  .selectField(Contact.LastModifiedById)
-		  .selectFields(new List<SObjectField>{Contact.LastModifiedDate})
-		  .selectField(Contact.LastName)
-		  .selectFields(new List<SObjectField>{Contact.Id})
-		  .setCondition( 'name like \'%test%\'' )
-		  .selectFields(new Set<SObjectField>{Contact.FirstName})
-		  .addOrdering(new fflib_QueryFactory.Ordering('Contact','name',fflib_QueryFactory.SortOrder.ASCENDING) )
-		  .addOrdering(Contact.LastModifiedDate,fflib_QueryFactory.SortOrder.DESCENDING)
-		  .addOrdering(Contact.CreatedDate,fflib_QueryFactory.SortOrder.DESCENDING, true);
-		String soql = qf.toSOQL();
-		System.assert(soql.containsIgnoreCase('name asc nulls first , lastmodifieddate desc nulls first , createddate desc nulls last'), 'Query did not contain the expected orderings: ' + soql);
 	}
 
 	@isTest
@@ -781,18 +584,7 @@ private class fflib_QueryFactoryTest {
 					excThrown = true;
 				}	
 				System.assert(excThrown);
-				
-				// Try the same test using the LightweightQueryField implementation
-				qf = new fflib_QueryFactory(Account.SObjectType, true);
-				excThrown = false;
-				try {
-					//check to see if this record is accessible, it isn't.
-					qf.assertIsAccessible();
-				} catch (fflib_SecurityUtils.CrudException e) {
-					excThrown = true;
-				}	
-				System.assert(excThrown);
-			}
+			}	
 		}	
 	}  
 
@@ -812,8 +604,6 @@ private class fflib_QueryFactoryTest {
 					excThrown = true;
 				}	
 				System.assert(excThrown);
-				
-				// No equivalent test for Lightweight implementation because it doesn't enforce FLS
 			}	
 		}	
 	}
@@ -823,12 +613,6 @@ private class fflib_QueryFactoryTest {
 		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
 		qf.assertIsAccessible().setEnforceFLS(true).setCondition( 'name like \'%test%\'' ).addOrdering('CreatedDate',fflib_QueryFactory.SortOrder.DESCENDING);
 		String query = qf.toSOQL();
-		System.assert(query.containsIgnoreCase('Id FROM'));
-		
-		// Try the same test using the LightweightQueryField implementation
-		qf = new fflib_QueryFactory(Contact.SObjectType, true);
-		qf.assertIsAccessible().setCondition( 'name like \'%test%\'' ).addOrdering('CreatedDate',fflib_QueryFactory.SortOrder.DESCENDING);
-		query = qf.toSOQL();
 		System.assert(query.containsIgnoreCase('Id FROM'));
 	}  
 
@@ -859,30 +643,7 @@ private class fflib_QueryFactoryTest {
 		System.assert(joinQf.compareTo(otherJoinQf) > 0);
 		System.assert(otherJoinQf.compareTo(joinQf) < 0);
 	}
-	
-	@isTest
-	static void lightweightQueryField_comparison() {
-		String otherType = 'bob';
-		fflib_QueryFactory.QueryField qf = new fflib_QueryFactory.LightweightQueryField(Contact.SObjectType.fields.Name);
-		fflib_QueryFactory.QueryField equivalentQf = new fflib_QueryFactory.LightweightQueryField('name');
-		fflib_QueryFactory.QueryField lesserQf = new fflib_QueryFactory.LightweightQueryField(Contact.SObjectType.fields.AccountId);
-		fflib_QueryFactory.QueryField greaterQf = new fflib_QueryFactory.LightweightQueryField(Contact.SObjectType.fields.SystemModstamp);
-		System.assert(qf.compareTo(otherType) > 0);
-		System.assert(!qf.equals(otherType));
-		System.assert(qf.compareTo(null) > 0);
-		System.assert(!qf.equals(null));
-		System.assertEquals(0, qf.compareTo(qf));
-		System.assert(qf.equals(qf));
-		System.assertEquals(0, qf.compareTo(equivalentQf));
-		System.assertEquals(0, equivalentQf.compareTo(qf));
-		System.assert(qf.equals(equivalentQf));
-		System.assert(qf.compareTo(lesserQf) > 0);
-		System.assert(lesserQf.compareTo(qf) < 0);
-		System.assert(!qf.equals(lesserQf));
-		System.assert(qf.compareTo(greaterQf) < 0);
-		System.assert(!qf.equals(greaterQf));
-	}
-	
+
 	@isTest
 	static void deterministic_toSOQL(){
 		fflib_QueryFactory qf1 = new fflib_QueryFactory(User.SObjectType);
@@ -905,25 +666,6 @@ private class fflib_QueryFactoryTest {
 		System.assertEquals(qf1.toSOQL(), qf2.toSOQL());
 		System.assertEquals(expectedQuery, qf1.toSOQL());
 		System.assertEquals(expectedQuery, qf2.toSOQL());
-		
-		// Try the same test using the LightweightQueryField implementation
-		qf1 = new fflib_QueryFactory(User.SObjectType, true);
-		qf2 = new fflib_QueryFactory(User.SObjectType, true);
-		for(fflib_QueryFactory qf:new Set<fflib_QueryFactory>{qf1,qf2}){
-			qf.selectFields(new List<String>{
-				'Id',
-				'FirstName',
-				'LastName',
-				'CreatedBy.Name',
-				'CreatedBy.Manager',
-				'LastModifiedBy.Email'
-			});
-		}
-		// The sort order will be different. It is based solely on alphabetical order
-		expectedQuery = 'select createdby.manager, createdby.name, firstname, id, lastmodifiedby.email, lastname from user';
-		System.assertEquals(qf1.toSOQL(), qf2.toSOQL());
-		System.assertEquals(expectedQuery, qf1.toSOQL().toLowercase());
-		System.assertEquals(expectedQuery, qf2.toSOQL().toLowercase());
 	}
 
 	@isTest
@@ -944,31 +686,6 @@ private class fflib_QueryFactoryTest {
 		System.assertEquals(qf.getCondition(), qf2.getCondition());
 		System.assertEquals(qf.toSOQL(), qf2.toSOQL());
 		System.assertEquals(qf.getOrderings(), qf2.getOrderings());
-		System.assertEquals(qf.enforceFLS, qf2.enforceFLS);
-		System.assertEquals(qf.lightweight, qf2.lightweight);
-		System.assert(qf.enforceFLS);
-		System.assert(!qf.lightweight);
-		
-		// Try the same test using the LightweightQueryField implementation
-		qf = new fflib_QueryFactory(Contact.SObjectType, true)
-		.setLimit(10)
-		.setCondition('id=12345')
-		.selectField('Description')
-		.addOrdering(new fflib_QueryFactory.Ordering('Contact','name',fflib_QueryFactory.SortOrder.ASCENDING) )
-		.addOrdering( new fflib_QueryFactory.Ordering('Contact','CreatedDATE',fflib_QueryFactory.SortOrder.DESCENDING));
-		
-		qf2 = qf.deepClone();
-		
-		System.assertEquals(qf2, qf);
-		
-		System.assertEquals(qf.getLimit(), qf2.getLimit());
-		System.assertEquals(qf.getCondition(), qf2.getCondition());
-		System.assertEquals(qf.toSOQL(), qf2.toSOQL());
-		System.assertEquals(qf.getOrderings(), qf2.getOrderings());
-		System.assertEquals(qf.enforceFLS, qf2.enforceFLS);
-		System.assertEquals(qf.lightweight, qf2.lightweight);
-		System.assert(!qf.enforceFLS);
-		System.assert(qf.lightweight);
 	}
 
 	@isTest
@@ -992,30 +709,6 @@ private class fflib_QueryFactoryTest {
 		System.assertEquals(qf.toSOQL(), qf2.toSOQL());
 		System.assertEquals(qf.getOrderings(), qf2.getOrderings());
 		System.assertEquals(qf.getSubselectQueries(), qf2.getSubselectQueries());
-		System.assert(qf.enforceFLS);
-		System.assert(!qf.lightweight);
-		
-		// Try the same test using the LightweightQueryField implementation
-		qf = new fflib_QueryFactory(Account.SObjectType, true)
-		.setLimit(10)
-		.setCondition('id=12345')
-		.selectField('Description')
-		.addOrdering(new fflib_QueryFactory.Ordering('Account','Name',fflib_QueryFactory.SortOrder.ASCENDING) )
-		.addOrdering( new fflib_QueryFactory.Ordering('Account','Description',fflib_QueryFactory.SortOrder.DESCENDING));
-		
-		qf.subselectQuery('Contacts', true);
-		
-		qf2 = qf.deepClone();
-		
-		System.assertEquals(qf, qf2);
-		
-		System.assertEquals(qf.getLimit(), qf2.getLimit());
-		System.assertEquals(qf.getCondition(), qf2.getCondition());
-		System.assertEquals(qf.toSOQL(), qf2.toSOQL());
-		System.assertEquals(qf.getOrderings(), qf2.getOrderings());
-		System.assertEquals(qf.getSubselectQueries(), qf2.getSubselectQueries());
-		System.assert(!qf.enforceFLS);
-		System.assert(qf.lightweight);
 	}
 
 	@isTest
@@ -1085,7 +778,34 @@ private class fflib_QueryFactoryTest {
 	}
 	
 	@isTest
-	
+	static void testSoql_unsortedSelectFields(){
+		//Given
+		fflib_QueryFactory qf = new fflib_QueryFactory(User.SObjectType);
+		qf.selectFields(new List<String>{
+			'Id',
+			'FirstName',
+			'LastName',
+			'CreatedBy.Name',
+			'CreatedBy.Manager',
+			'LastModifiedBy.Email'
+		});
+
+		qf.setSortSelectFields(false);
+
+		String orderedQuery =
+			'SELECT '
+			+'FirstName, Id, LastName, ' //less joins come first, alphabetically
+			+'CreatedBy.ManagerId, CreatedBy.Name, LastModifiedBy.Email ' //alphabetical on the same number of joins'
+			+'FROM User';
+
+		//When
+		String actualSoql = qf.toSOQL();
+
+		//Then		
+		System.assertNotEquals(orderedQuery, actualSoql);
+	}
+
+
 	public static User createTestUser_noAccess(){
 		User usr;
 		try {
