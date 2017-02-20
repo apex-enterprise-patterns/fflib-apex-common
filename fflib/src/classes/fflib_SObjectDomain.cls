@@ -426,7 +426,7 @@ public virtual with sharing class fflib_SObjectDomain
 		domain.Records = records;
 		return domain;
 	}
-
+	
 	/**
 	 * Fluent style Configuration system for Domain class creation
 	 **/
@@ -517,7 +517,7 @@ public virtual with sharing class fflib_SObjectDomain
 	public class DomainException extends Exception
 	{
 	}
-
+	
 	/**
 	 * Ensures logging of errors in the Domain context for later assertions in tests
 	 **/
