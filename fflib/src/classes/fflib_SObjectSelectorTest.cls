@@ -239,10 +239,10 @@ private with sharing class fflib_SObjectSelectorTest
 		public List<Schema.SObjectField> getSObjectFieldList()
 		{
 			return new List<Schema.SObjectField> {
-				Account.Name,
-				Account.Id,
 				Account.AccountNumber,
-				Account.AnnualRevenue
+		                Account.AnnualRevenue,
+		                Account.Id,
+		                Account.Name
 			};
 		}
 		
