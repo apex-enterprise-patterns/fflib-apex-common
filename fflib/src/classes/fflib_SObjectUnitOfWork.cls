@@ -54,21 +54,21 @@
 public virtual class fflib_SObjectUnitOfWork
 	implements fflib_ISObjectUnitOfWork
 {
-	private List<Schema.SObjectType> m_sObjectTypes = new List<Schema.SObjectType>();
+	protected List<Schema.SObjectType> m_sObjectTypes = new List<Schema.SObjectType>();
 
-	private Map<String, List<SObject>> m_newListByType = new Map<String, List<SObject>>();
+	protected Map<String, List<SObject>> m_newListByType = new Map<String, List<SObject>>();
 
-	private Map<String, Map<Id, SObject>> m_dirtyMapByType = new Map<String, Map<Id, SObject>>();
+	protected Map<String, Map<Id, SObject>> m_dirtyMapByType = new Map<String, Map<Id, SObject>>();
 
-	private Map<String, Map<Id, SObject>> m_deletedMapByType = new Map<String, Map<Id, SObject>>();
+	protected Map<String, Map<Id, SObject>> m_deletedMapByType = new Map<String, Map<Id, SObject>>();
 
-	private Map<String, Relationships> m_relationships = new Map<String, Relationships>();
+	protected Map<String, Relationships> m_relationships = new Map<String, Relationships>();
 
-	private List<IDoWork> m_workList = new List<IDoWork>();
+	protected List<IDoWork> m_workList = new List<IDoWork>();
 
-	private SendEmailWork m_emailWork = new SendEmailWork();
+	protected SendEmailWork m_emailWork = new SendEmailWork();
 
-	private IDML m_dml;
+	protected IDML m_dml;
 
 	/**
 	 * Interface describes work to be performed during the commitWork method
@@ -145,12 +145,12 @@ public virtual class fflib_SObjectUnitOfWork
 		m_newListByType.put(sObjectType.getDescribe().getName(), new List<SObject>());
 		m_dirtyMapByType.put(sObjectType.getDescribe().getName(), new Map<Id, SObject>());
 		m_deletedMapByType.put(sObjectType.getDescribe().getName(), new Map<Id, SObject>());
-		m_relationships.put(sObjectType.getDescribe().getName(), new Relationships());	
+		m_relationships.put(sObjectType.getDescribe().getName(), new Relationships());
 
 		// give derived class opportunity to register the type
-		onRegisterType(sObjectType);		
+		onRegisterType(sObjectType);
 	}
-	
+
 	/**
 	 * Register a generic peace of work to be invoked during the commitWork phase
 	 **/
@@ -312,7 +312,7 @@ public virtual class fflib_SObjectUnitOfWork
 
 		// Wrap the work in its own transaction
 		Savepoint sp = Database.setSavePoint();
-		Boolean wasSuccessful = false;	
+		Boolean wasSuccessful = false;
 		try
 		{
 			// notify we're starting the DML operations
@@ -355,7 +355,7 @@ public virtual class fflib_SObjectUnitOfWork
 			throw e;
 		}
 		finally
-		{			
+		{
 			// notify we're done with commit work
 			onCommitWorkFinished(wasSuccessful);
 		}
