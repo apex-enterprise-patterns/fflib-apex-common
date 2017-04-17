@@ -1,8 +1,6 @@
 FinancialForce Common Apex Lib
 ==============================
 
-**NOTE:** The GitHub Deploy to Salesforce tool does not work with branches currently, to try this out clone the repo and deploy via MavensMate or by dragging into an Eclipse workspace. Then use the Deploy to Salesforce link on the sample application repo Readme as normal.
-
 <a href="https://githubsfdeploy.herokuapp.com">
   <img alt="Deploy to Salesforce"
        src="https://raw.githubusercontent.com/afawcett/githubsfdeploy/master/deploy.png">
