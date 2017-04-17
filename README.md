@@ -9,7 +9,7 @@ FinancialForce Common Apex Lib
 See here for [MavensMate Templates](http://andyinthecloud.com/2014/05/23/mavensmate-templates-and-apex-enterprise-patterns/)
 
 Expirimental CRUD and FLS Support
-=================================
+---------------------------------
 
 **WARNING:** This branch is expirimental and should not be used in production without careful consideration. 
 
