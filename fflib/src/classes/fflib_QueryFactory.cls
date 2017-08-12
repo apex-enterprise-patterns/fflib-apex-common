@@ -64,7 +64,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	private Set<String> fields; 
 	private String conditionExpression;
 	private Integer limitCount;
-	private Integer offset;
+	private Integer offsetCount;
 	private List<Ordering> order;
 	/**
 	 * Integrate checking for READ Field Level Security within the selectField(s) methods
@@ -317,6 +317,19 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	**/
 	public Integer getLimit(){
 		return this.limitCount;
+	}
+	/**
+	 * @param offsetCount if not null causes a OFFSET caluse to be added to the resulting query.
+	**/
+	public fflib_QueryFactory setOffset(Integer offsetCount){
+		this.offsetCount = offsetCount;
+		return this;
+	}
+	/**
+	 * @returns the current value of the OFFSET clause, if any.
+	**/
+	public Integer getOffset(){
+		return this.offsetCount;
 	}
 	/**
 	 * @param o an instance of {@link fflib_QueryFactory.Ordering} to be added to the query's ORDER BY clause.
@@ -589,6 +602,10 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	
 		if(limitCount != null)
 			result += ' LIMIT '+limitCount;
+
+		if(offsetCount != null)
+			result += ' OFFSET '+offsetCount;
+
 		return result;
 	}
 
@@ -600,6 +617,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 
 		fflib_QueryFactory clone = new fflib_QueryFactory(this.table)
 			.setLimit(this.limitCount)
+			.setOffset(this.offsetCount)
 			.setCondition(this.conditionExpression)
 			.setEnforceFLS(this.enforceFLS);
 
