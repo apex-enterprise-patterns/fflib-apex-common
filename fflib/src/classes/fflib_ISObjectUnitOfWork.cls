@@ -52,7 +52,7 @@ public interface fflib_ISObjectUnitOfWork
      * @param a single email message instance
      * @param relatedTo A SOBject instance (yet to be commited to the database)
      */
-    void registerRelationship( Messaging.SingleEmailMessage email, SObject relatedTo );
+    void registerRelationship(Messaging.SingleEmailMessage email, SObject relatedTo);
     /**
      * Register an existing record to be updated during the commitWork method
      *
