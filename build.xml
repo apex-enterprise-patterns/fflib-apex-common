@@ -3,8 +3,6 @@
 	<property name="sf.server" value="https://login.salesforce.com"/>
 	<import file="${basedir}/lib/exec_anon.xml"/> 
 	<import file="${basedir}/lib/undeploy.xml"/>
-	
-	<echo message="${sf.username}"/>
 
 	<!--  Downloaded from Salesforce Tools page under Setup -->
 	<typedef 
