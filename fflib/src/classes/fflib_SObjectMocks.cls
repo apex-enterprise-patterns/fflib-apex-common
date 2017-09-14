@@ -81,6 +81,15 @@ public class fflib_SObjectMocks
 			mocks.mockVoidMethod(this, 'registerDirty', new List<Type> {SObject.class}, new List<Object> {record});
 		}
 
+		public void registerDirty(SObject record, List<SObjectField> dirtyFields)
+		{
+			mocks.mockVoidMethod(this, 'registerDirty', new List<Type> {
+					SObject.class, System.Type.forName('List<SObjectField>')
+			}, new List<Object> {
+					record, dirtyFields
+			});
+		}
+
         public void registerDirty(SObject record, Schema.sObjectField relatedToParentField, SObject relatedToParentRecord)
         {
             mocks.mockVoidMethod(this, 'registerDirty', new List<Type> {SObject.class}, new List<Object> {record});
