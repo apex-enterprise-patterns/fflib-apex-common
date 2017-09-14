@@ -339,6 +339,78 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     }
 
     /**
+     * Try registering two instances of the same record as dirty.
+     *
+     *  Testing:
+     *
+     *      - Exception is thrown stopping second registration
+     */
+    @isTest
+    private static void testRegisterDirty_DoubleException() {
+        Opportunity opp = new Opportunity(Id = '00636000005loIj', Name = 'UpdateName');
+        Opportunity opp2 = new Opportunity(Id = '00636000005loIj', Amount = 250);
+        UnitOfWork uow = new UnitOfWork(MY_SOBJECTS);
+        uow.registerDirty(opp);
+        Boolean exceptionThrown = false;
+        try {
+            // Second registration would undo updates of first registration
+            uow.registerDirty(opp2);
+        } catch (UnitOfWork.UnitOfWorkException e) {
+            System.assert(e.getMessage().contains(opp.Id));
+            exceptionThrown = true;
+        }
+        System.assert(exceptionThrown);
+    }
+
+    /**
+     * Try registering a single field as dirty.
+     *
+     *  Testing:
+     *
+     *      - field is updated
+     */
+    @isTest
+    private static void testRegisterDirty_field() {
+        Opportunity opp = new Opportunity(Name = 'test name', StageName = 'Open', CloseDate = System.today());
+        insert opp;
+
+        Opportunity nameUpdate = new Opportunity(Id = opp.Id, Name = 'UpdateName');
+        Opportunity amountUpdate = new Opportunity(Id = opp.Id, Amount = 250);
+        UnitOfWork uow = new UnitOfWork(MY_SOBJECTS);
+        uow.registerDirty(nameUpdate);
+        uow.registerDirty(amountUpdate, Opportunity.Amount);
+        uow.commitWork();
+
+        opp = [SELECT Name, Amount FROM Opportunity WHERE Id = :opp.Id];
+        System.assertEquals(opp.Name, nameUpdate.Name);
+        System.assertEquals(opp.Amount, amountUpdate.Amount);
+    }
+
+    /**
+     * Try registering a single unupdateable field as dirty in secure mode
+     *
+     *  Testing:
+     *
+     *      - exception is thrown
+     */
+    @isTest
+    private static void testRegisterDirty_field_secure() {
+        Opportunity opp = new Opportunity(Name = 'test name', StageName = 'Open', CloseDate = System.today());
+        insert opp;
+
+        UnitOfWork uow = new UnitOfWork(MY_SOBJECTS, new AccessConfig());
+        uow.registerDirty(opp, Opportunity.Id); // Should throw exception because ID is not updatable
+
+        Boolean exceptionThrown = false;
+        try {
+            uow.commitWork();
+        } catch (fflib_SecurityUtils.SecurityException e) {
+            exceptionThrown = true;
+        }
+        System.assert(exceptionThrown);
+    }
+
+    /**
      * Assert that actual events exactly match expected events (size, order and name)
      * and types match expected types
      */
