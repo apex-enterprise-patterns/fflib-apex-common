@@ -189,12 +189,11 @@ public abstract with sharing class fflib_SObjectSelector
      *
      * @depricated See newQueryFactory
      **/
-    public fflib_StringBuilder.FieldListBuilder getFieldListBuilder()
+    public fflib_StringBuilder.CommaDelimitedListBuilder getFieldListBuilder()
     {
-        List<SObjectField> sObjectFields = new List<SObjectField>();
-        for(fflib_QueryFactory.QueryField queryField : newQueryFactory().getSelectedFields())
-            sObjectFields.add(queryField.getBaseField());
-        return new fflib_StringBuilder.FieldListBuilder(sObjectFields);
+        return 
+            new fflib_StringBuilder.CommaDelimitedListBuilder(
+                new List<String>(newQueryFactory().getSelectedFields()));
     }
 
     /**
