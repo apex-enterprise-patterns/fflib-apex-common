@@ -420,7 +420,6 @@ public abstract with sharing class fflib_SObjectSelector
         // Parse the getOrderBy()
         for(String orderBy : getOrderBy().split(','))
         {
-            // TODO: Handle NULLS FIRST and NULLS LAST, http://www.salesforce.com/us/developer/docs/soql_sosl/Content/sforce_api_calls_soql_select_orderby.htm
             List<String> orderByParts = orderBy.trim().split(' ');
             String fieldNamePart = orderByParts[0];
             String fieldSortOrderPart = orderByParts.size() > 1 ? orderByParts[1] : null;
@@ -431,7 +430,7 @@ public abstract with sharing class fflib_SObjectSelector
                 fieldSortOrder = fflib_QueryFactory.SortOrder.DESCENDING;
             else if(fieldSortOrderPart.equalsIgnoreCase('ASC'))
                 fieldSortOrder = fflib_QueryFactory.SortOrder.ASCENDING;
-            queryFactory.addOrdering(fieldNamePart, fieldSortOrder);
+            queryFactory.addOrdering(fieldNamePart, fieldSortOrder, orderBy.containsIgnoreCase('NULLS LAST'));
         }           
         
         queryFactory.setSortSelectFields(m_sortSelectFields);           
