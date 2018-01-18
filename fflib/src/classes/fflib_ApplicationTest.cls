@@ -188,14 +188,16 @@ private class fflib_ApplicationTest
 			Domain.newInstance(new List<Contact>{ new Contact(LastName = 'TestContactLName') });
 			System.assert(false, 'Expected exception');
 		} catch (System.TypeException e) {
-			System.assertEquals('Invalid conversion from runtime type fflib_ApplicationTest.ContactsConstructor to fflib_SObjectDomain.IConstructable', e.getMessage());
+			System.assert(Pattern.Matches('Invalid conversion from runtime type \\w*\\.?fflib_ApplicationTest\\.ContactsConstructor to \\w*\\.?fflib_SObjectDomain\\.IConstructable',
+				e.getMessage()), 'Exception message did not match the expected pattern: ' + e.getMessage());
 		}	
 
 		try {
 			Domain.newInstance(new List<SObject>{ new Contact(LastName = 'TestContactLName') }, Contact.SObjectType);
 			System.assert(false, 'Expected exception');
 		} catch (System.TypeException e) {
-			System.assertEquals('Invalid conversion from runtime type fflib_ApplicationTest.ContactsConstructor to fflib_SObjectDomain.IConstructable2', e.getMessage());
+			System.assert(Pattern.Matches('Invalid conversion from runtime type \\w*\\.?fflib_ApplicationTest\\.ContactsConstructor to \\w*\\.?fflib_SObjectDomain\\.IConstructable2',
+				e.getMessage()), 'Exception message did not match the expected pattern: ' + e.getMessage());
 		}		
 	}	
 

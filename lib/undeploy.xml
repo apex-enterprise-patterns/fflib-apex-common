@@ -1,0 +1,907 @@
+<?xml version="1.0"?>
+<!--
+ * Copyright (c) 2014, FinancialForce.com, inc
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ * - Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+ * - Neither the name of the FinancialForce.com, inc nor the names of its contributors
+ * may be used to endorse or promote products derived from this software without
+ * specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+ * THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<project name="undeploy" xmlns:sf="antlib:com.salesforce">
+
+<target name="undeploy">
+
+ <property name="stage.dir" value="stage"/>
+
+ <delete dir="${stage.dir}" /> 
+ <mkdir dir="${stage.dir}" /> 
+ <mkdir dir="${stage.dir}/deploy" /> 
+
+ <antcall target="parkUsers"/>
+ <antcall target="deleteEmailTemplates"/>
+ <antcall target="haltScheduledApex"/>
+ <antcall target="generatePackageAll"/>
+ <sf:retrieve username="${sf.username}" password="${sf.password}" serverurl="${sf.server}" retrieveTarget="${stage.dir}" unpackaged="${stage.dir}/package.xml" maxPoll="2000" pollWaitMillis="5000"/>
+
+ <antcall target="removeCustomItemsFromPageLayouts"/>
+ <antcall target="generatePrePurgeMembers"/>
+ <antcall target="generatePackagePrePurge"/>
+ <sf:deploy username="${sf.username}" password="${sf.password}" serverurl="${sf.server}" deployRoot="${stage.dir}/deploy" singlePackage="true" runAllTests="false" rollbackOnError="false" allowMissingFiles="true" maxPoll="2000" pollWaitMillis="5000"/>
+
+ <delete dir="${stage.dir}/deploy" /> 
+ <mkdir dir="${stage.dir}/deploy" /> 
+ <antcall target="generateDestructiveChanges1"/>
+ <sf:deploy purgeOnDelete="true" username="${sf.username}" password="${sf.password}" serverurl="${sf.server}" deployRoot="${stage.dir}/deploy" singlePackage="true" runAllTests="false" rollbackOnError="false" allowMissingFiles="true" maxPoll="2000" pollWaitMillis="5000"/>
+
+ <delete dir="${stage.dir}/deploy" /> 
+ <mkdir dir="${stage.dir}/deploy" /> 
+ <antcall target="generateDestructiveChanges2"/>
+ <sf:deploy purgeOnDelete="true" username="${sf.username}" password="${sf.password}" serverurl="${sf.server}" deployRoot="${stage.dir}/deploy" singlePackage="true" runAllTests="false" rollbackOnError="false" allowMissingFiles="true" maxPoll="2000" pollWaitMillis="5000"/>
+
+ <antcall target="deleteDocuments"/>
+
+ <delete dir="${stage.dir}" /> 
+ 
+</target>
+
+<target name="parkUsers">
+
+ <property name="park.users"><![CDATA[
+Profile p = [select Id FROM Profile WHERE Name = 'Standard user'];
+List<User> uL = [select Id from User where Profile.Name like '${undeploy.profilePattern}%'];
+for (User u : uL)
+{
+  u.ProfileId = p.Id;
+} 
+update uL;]]>
+</property>
+
+  <antcall target="ExecAnon"> 
+    <param name="what" value="${park.users}"/> 
+  </antcall>
+
+</target>
+
+<target name="deleteEmailTemplates">
+  <antcall target="ExecAnon"> 
+    <param name="what" value="delete [SELECT id FROM EmailTemplate WHERE TemplateType='visualforce'];"/> 
+  </antcall>
+</target>
+
+<target name="deleteDocuments">
+  <antcall target="ExecAnon"> 
+    <param name="what" value="delete [SELECT id FROM Document];"/> 
+  </antcall>
+</target>
+
+<target name="haltScheduledApex">
+  <property name="halt.scheduledapex"><![CDATA[
+List<CronTrigger> crons = [SELECT Id FROM CronTrigger WHERE State IN ('WAITING', 'ACQUIRED', 'EXECUTING', 'PAUSED', 'BLOCKED', 'PAUSED_BLOCKED')];
+for(CronTrigger cron : crons) {
+    System.abortJob(cron.Id);
+}]]>
+  </property>
+  <antcall target="ExecAnon">
+    <param name="what" value="${halt.scheduledapex}"/>
+  </antcall>
+</target>
+
+<target name="generateEmptyPackage">
+<echo file="${stage.dir}/deploy/package.xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+  <version>30.0</version>
+</Package>]]></echo>
+</target>
+
+<target name="generatePackagePrePurge">
+<echo file="${stage.dir}/deploy/package.xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+  <types>
+    <members>*</members>
+    <name>Layout</name>
+  </types>
+  <types>
+    <members>*</members>
+    <name>ApexClass</name>
+  </types>
+  <types>
+    <members>*</members>
+    <name>ApexComponent</name>
+  </types>
+  <types>
+    <members>*</members>
+    <name>ApexPage</name>
+  </types>
+  <version>30.0</version>
+</Package>]]></echo>
+</target>
+
+<target name="generatePrePurgeMembers">
+  <antcall target="generateEmptyMembers">
+    <param name="objtyp"  value="ApexClass" />
+    <param name="objext"  value="cls" />
+    <param name="objdir"  value="classes" />
+    <param name="objflt"  value="*" />
+  </antcall>
+  <antcall target="generateEmptyMembers">
+    <param name="objtyp"  value="ApexComponent" />
+    <param name="objext"  value="component" />
+    <param name="objdir"  value="components" />
+    <param name="objflt"  value="*" />
+  </antcall>
+  <antcall target="generateEmptyMembers">
+    <param name="objtyp"  value="ApexPage" />
+    <param name="objext"  value="page" />
+    <param name="objdir"  value="pages" />
+    <param name="objflt"  value="*" />
+  </antcall>
+</target>
+
+
+<target name="generatePackageAll">
+<echo file="${stage.dir}/package.xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+  <types>
+    <members>*</members>
+    <name>CustomApplication</name>
+  </types>
+  <types>
+    <members>*</members>
+    <name>ApexClass</name>
+  </types>
+  <types>
+    <members>*</members>
+    <name>ApexComponent</name>
+  </types>
+  <types>
+    <members>*</members>
+    <name>Document</name>
+  </types>
+  <types>
+    <members>*</members>
+    <name>HomePageComponent</name>
+  </types>
+  <types>
+    <members>*</members>
+    <name>HomePageLayout</name>
+  </types>
+  <types>
+    <members>*</members>
+    <name>CustomLabels</name>
+  </types>
+  <types>
+    <members>*</members>
+    <name>Layout</name>
+  </types>
+  <types>
+    <members>*</members>
+    <members>Account</members>
+    <members>Activity</members>
+    <members>Asset</members>
+    <members>Campaign</members>
+    <members>Case</members>
+    <members>Contact</members>
+    <members>Contract</members>
+    <members>Event</members>
+    <members>Lead</members>
+    <members>Opportunity</members>
+    <members>OpportunityLineItem</members>
+    <members>Product2</members>
+    <members>Solution</members>
+    <members>Task</members>
+    <members>User</members>
+    <name>CustomObject</name>
+  </types>
+  <types>
+    <members>*</members>
+    <name>ApexPage</name>
+  </types>
+  <types>
+    <members>*</members>
+    <name>Profile</name>
+  </types>
+  <types>
+    <members>*</members>
+    <name>StaticResource</name>
+  </types>
+  <types>
+    <members>*</members>
+    <name>CustomTab</name>
+  </types>
+  <types>
+    <members>*</members>
+    <name>ApexTrigger</name>
+  </types>
+  <types>
+    <members>*</members>
+    <name>CustomPageWebLink</name>
+  </types>
+  <types>
+  	<members>*</members>
+  	<name>AssignmentRules</name>
+  </types>
+  <types>
+  	<members>*</members>
+  	<name>EscalationRules</name>
+  </types>	
+  <types>
+  	<members>*</members>
+  	<name>QuickAction</name>
+  </types>
+  <version>30.0</version>
+</Package>]]></echo>
+</target>
+
+<target name="generateDestructiveChanges1">
+
+<echo file="${stage.dir}/deploy/package.xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+  <version>30.0</version>
+</Package>]]></echo>
+
+<echo file="${stage.dir}/deploy/destructiveChanges.xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+]]></echo>
+
+  <antcall target="generatePackageMembers">
+    <param name="objtyp"  value="ApexTrigger" />
+    <param name="objext"  value="trigger" />
+    <param name="objdir"  value="triggers" />
+    <param name="objflt"  value="*" />
+  </antcall>
+
+  <antcall target="generatePackageMembers">
+    <param name="objtyp"  value="AssignmentRule" />
+    <param name="objext"  value="assignmentRules" />
+    <param name="objdir"  value="assignmentRules" />
+    <param name="objflt"  value="*" />
+  </antcall>
+
+  <antcall target="generatePackageMembers">
+    <param name="objtyp"  value="EscalationRule" />
+    <param name="objext"  value="escalationRules" />
+    <param name="objdir"  value="escalationRules" />
+    <param name="objflt"  value="*" />
+  </antcall>
+
+  <antcall target="generatePackageMembers">
+    <param name="objtyp"  value="QuickAction" />
+    <param name="objext"  value="quickAction" />
+    <param name="objdir"  value="quickActions" />
+    <param name="objflt"  value="*" />
+  </antcall>
+  
+  <antcall target="GeneratePackageMembersStdObjCustomElements1"/>
+
+<echo file="${stage.dir}/deploy/destructiveChanges.xml" append="true"><![CDATA[  <version>30.0</version>
+</Package>]]></echo>
+
+</target>
+
+
+<target name="generateDestructiveChanges2">
+
+<echo file="${stage.dir}/deploy/package.xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+  <version>30.0</version>
+</Package>]]></echo>
+
+<echo file="${stage.dir}/deploy/destructiveChanges.xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+]]></echo>
+
+  <!-- ADD Document TYPE -->
+
+  <antcall target="generatePackageMembers">
+    <param name="objtyp"  value="CustomApplication" />
+    <param name="objext"  value="app" />
+    <param name="objdir"  value="applications" />
+    <param name="objflt"  value="*" />
+  </antcall>
+  <antcall target="generatePackageMembers">
+    <param name="objtyp"  value="ApexClass" />
+    <param name="objext"  value="cls" />
+    <param name="objdir"  value="classes" />
+    <param name="objflt"  value="*" />
+  </antcall>
+  <antcall target="generatePackageMembers">
+    <param name="objtyp"  value="ApexComponent" />
+    <param name="objext"  value="component" />
+    <param name="objdir"  value="components" />
+    <param name="objflt"  value="*" />
+  </antcall>
+  <antcall target="generatePackageMembers">
+    <param name="objtyp"  value="HomePageComponent" />
+    <param name="objext"  value="homePageComponent" />
+    <param name="objdir"  value="homePageComponents" />
+    <param name="objflt"  value="*" />
+  </antcall>
+  <antcall target="generatePackageMembers">
+    <param name="objtyp"  value="HomePageLayout" />
+    <param name="objext"  value="homePageLayout" />
+    <param name="objdir"  value="homePageLayouts" />
+    <param name="objflt"  value="*" />
+  </antcall>
+  <antcall target="GeneratePackageMembersLabels"/>
+  <antcall target="generatePackageMembers">
+    <param name="objtyp"  value="CustomObject" />
+    <param name="objext"  value="object" />
+    <param name="objdir"  value="objects" />
+    <param name="objflt"  value="*__c" />
+  </antcall>
+  <antcall target="generatePackageMembers">
+    <param name="objtyp"  value="ApexPage" />
+    <param name="objext"  value="page" />
+    <param name="objdir"  value="pages" />
+    <param name="objflt"  value="*" />
+  </antcall>
+  <antcall target="generatePackageMembers">
+    <param name="objtyp"  value="CustomTab" />
+    <param name="objext"  value="tab" />
+    <param name="objdir"  value="tabs" />
+    <param name="objflt"  value="*" />
+  </antcall>
+  <antcall target="generatePackageMembers">
+    <param name="objtyp"  value="Profile" />
+    <param name="objext"  value="profile" />
+    <param name="objdir"  value="profiles" />
+    <param name="objflt"  value="${undeploy.profilePattern}*" /> 
+  </antcall>
+  <antcall target="generatePackageMembers">
+    <param name="objtyp"  value="CustomPageWebLink" />
+    <param name="objext"  value="weblink" />
+    <param name="objdir"  value="weblinks" />
+    <param name="objflt"  value="*" />
+  </antcall>
+
+
+  <antcall target="GeneratePackageMembersStdObjCustomElements2"/>
+
+<echo file="${stage.dir}/deploy/destructiveChanges.xml" append="true"><![CDATA[  <version>30.0</version>
+</Package>]]></echo>
+
+</target>
+
+
+<target name="generatePackageMembers">
+
+<script language="javascript"> 
+<![CDATA[
+ var version = java.lang.System.getProperty("java.version");
+ if (version.startsWith("1.8.0")) {
+    load("nashorn:mozilla_compat.js");
+ }
+ importPackage(java.io);	
+
+ try
+ { 
+   var objtyp = project.getProperty('objtyp');
+   var objext = project.getProperty('objext');
+   var objdir = project.getProperty('objdir');
+   var objflt = project.getProperty('objflt');
+   var stage  = project.getProperty('stage.dir');
+
+   var msg = '';
+   msg+='<types>\n';
+
+   fs = project.createDataType("fileset");
+   fs.setDir( new File("./" + stage + "/" + objdir  +"/") );
+   fs.setIncludes(objflt + "." + objext);
+   fs.setExcludes(".svn");
+   var basedir  = fs.getDir(project);
+
+   ds = fs.getDirectoryScanner(project);
+   var srcFiles = ds.getIncludedFiles();
+   for (i=0; i<srcFiles.length; i++) 
+   {
+   	   var filename = srcFiles[i];
+	   if(objtyp == 'AssignmentRule' || objtyp == 'EscalationRule')
+   	   {
+        var file = new File(basedir, filename);
+        var br       = new BufferedReader(new InputStreamReader(new DataInputStream(new FileInputStream(file))));
+        while ((line = br.readLine()) != null)   
+        {        	
+            if (line.indexOf('<fullName>') > -1)
+            {
+       		  var objname = filename.substring(0,filename.indexOf("." + objext));       
+	          msg+='<members>'+ objname + '.' + line.substring(line.indexOf('<fullName>') + 10,line.indexOf('</fullName>')) + '</members>\n';
+            }
+        }
+        continue;
+   	   }
+	   if(objtyp == 'CustomApplication' && filename.startsWith('standard'))
+	   	  continue;
+	   if(objtyp == 'CustomApplication' && filename.startsWith('Force_com.app'))
+	   	  continue;
+       filename = filename.substring(0,filename.indexOf("." + objext));       
+       msg+='<members>' + filename + '</members>\n';
+   }
+   msg+='<name>' + objtyp + '</name>\n';
+   msg+='</types>\n';
+
+   var file = new File('./' + stage + '/deploy/', 'destructiveChanges.xml');
+   echo = project.createTask("echo");
+   echo.setMessage(msg);
+   echo.setAppend(true);
+   echo.setFile(file);
+   echo.perform();
+  }
+  catch(e){} //Do nothing because folder might not exist, no issue
+
+]]>
+</script>
+</target>
+
+<target name="generateEmptyMembers">
+
+<script language="javascript"> 
+<![CDATA[
+ var version = java.lang.System.getProperty("java.version");
+ if (version.startsWith("1.8.0")) {
+    load("nashorn:mozilla_compat.js");
+ }
+ importPackage(java.io);
+
+ try
+ { 
+   var objtyp = project.getProperty('objtyp');
+   var objext = project.getProperty('objext');
+   var objdir = project.getProperty('objdir');
+   var objflt = project.getProperty('objflt');
+   var stage  = project.getProperty('stage.dir');
+
+   fs = project.createDataType("fileset");
+   fs.setDir( new File("./" + stage + "/" + objdir  +"/") );
+   fs.setIncludes(objflt + "." + objext);
+   fs.setExcludes(".svn");
+   var basedir  = fs.getDir(project);
+
+   ds = fs.getDirectoryScanner(project);
+   var srcFiles = ds.getIncludedFiles();
+   for (i=0; i<srcFiles.length; i++) 
+   {
+       var filename = srcFiles[i]
+       var membername = filename.substring(0,filename.indexOf(objext)-1);       
+ 
+       var strEcho = '';
+       if (objtyp=="ApexClass")
+       {
+        strEcho='public class ' + membername;
+	if(membername.endsWith('Exception')){strEcho+=' extends Exception';}
+        strEcho+=' {}';
+       }
+       else if (objtyp=="ApexComponent")
+       {
+        strEcho='<apex:component access="global"></apex:component>';
+       }
+       else if (objtyp=="ApexPage")
+       {
+        strEcho='<apex:page></apex:page>';
+       }
+
+       var file2 = new File('./' + stage + '/deploy/' + objdir + '/', filename);
+       echo = project.createTask("echo");
+       echo.setMessage(strEcho);
+       echo.setFile(file2);
+       echo.perform();
+
+       var fileI = new File('./' + stage + '/' + objdir + '/', filename + '-meta.xml');
+       var fileO = new File('./' + stage + '/deploy/' + objdir + '/', filename + '-meta.xml');
+
+       fCopy = project.createTask("copy");
+       fCopy.setFile(fileI);
+       fCopy.setTofile(fileO);
+       fCopy.execute();
+  }
+ }
+ catch(e){} //Do nothing because folder might not exist, no issue
+
+]]>
+</script>
+</target>
+
+
+<target name="removeCustomItemsFromPageLayouts">
+   <script language="javascript"> 
+ <![CDATA[
+
+      var version = java.lang.System.getProperty("java.version");
+	  if (version.startsWith("1.8.0")) {
+	 	load("nashorn:mozilla_compat.js");
+	  }
+	  importPackage(java.io);
+      var stage  = project.getProperty('stage.dir');
+      fs = project.createDataType("fileset");
+      fs.setDir( new File("./" + stage + "/layouts/") );
+      fs.setIncludes("*.layout");
+      fs.setExcludes(".svn");
+      var basedir  = fs.getDir(project);
+
+      ds = fs.getDirectoryScanner(project);
+      var srcFiles = ds.getIncludedFiles();
+
+      for (i=0; i<srcFiles.length; i++) 
+      {
+      
+        var filename = srcFiles[i];
+        if( filename == 'SocialPost-Social Post Layout.layout' )
+    		continue;
+        if( filename == 'Global-Global Layout.layout' )
+    		continue;
+        if( filename == 'FeedItem-Feed Item Layout.layout' )
+			continue;
+
+        var file = new File(basedir, filename);
+        var br = new BufferedReader(new InputStreamReader(new DataInputStream(new FileInputStream(file))));
+	
+		var bBlock      = false;
+        var line        = '';
+        var bFilterMode = false;
+        var bSkipBlock  = false;
+        var bLine       = true;
+        var storage     = '';
+        var BlockType   = '';
+        var BlockID     = '';
+		var strEcho     = '';
+        while ((line = br.readLine()) != null)   
+        {
+    
+          if (line.indexOf('<customButtons>') > -1){bLine=false;}
+
+          if (line.indexOf('<layoutItems>') > -1) {bBlock=false;BlockType='</layoutItems>';BlockID='<field>';bSkipBlock = false;}
+	  if (line.indexOf('<summaryLayoutItems>') > -1) {bBlock=false;BlockType='</summaryLayoutItems>';BlockID='<field>';bSkipBlock = false;}
+          if (line.indexOf('<relatedLists>') > -1){bBlock=false;BlockType='</relatedLists>';BlockID='<relatedList>';bSkipBlock = false;}
+          if (line.indexOf('<multilineLayoutFields>') > -1){bBlock=false;BlockType='</multilineLayoutFields>';BlockID='<multilineLayoutFields>';bSkipBlock = false;}
+          
+          if (line.indexOf('<miniLayout>') > -1){bFilterMode=true;}
+          if (line.indexOf('</miniLayout>') > -1){bFilterMode=false;}
+
+          if (bFilterMode == true)
+          {
+            if (line.indexOf('<fields>') > -1)
+            {
+              if (line.indexOf('__c') > -1)
+                {if (line.indexOf('__') == line.indexOf('__c')){bLine=false;}} 
+            }
+          }
+	
+
+          if (bBlock == false)
+          {
+	     storage+=line+'\n';
+
+     	     if (line.indexOf('<page>'      ) > -1){bSkipBlock=true;} //remove all embedded pages
+             if (line.indexOf('<customLink>') > -1){bSkipBlock=true;} //remove all custom links
+
+
+             if (line.indexOf(BlockID) > -1)
+             {
+               if (line.indexOf('__c') > -1)
+               {
+                  if (line.indexOf('__') == line.lastIndexOf('__c') || //if not then its got a name space, dont strip it eg. namespace__field__c
+                      line.indexOf('__') == line.indexOf('__c.') )     //if not this its a related list with object__c.field__c
+                    {bSkipBlock=true;}
+               } 
+             }
+
+
+             if (line.indexOf(BlockType) > -1)
+             {
+	       if ( bSkipBlock == false ){strEcho+=storage+'\n';}
+               storage='';
+               bBlock = true;
+               bLine = false;
+             }
+          }
+
+
+          if (bBlock && bLine){strEcho+=line+'\n';}
+          bLine = true;
+
+
+        }
+        var file2 = new File('./' + stage + '/deploy/layouts/', filename);
+        echo = project.createTask("echo");
+        echo.setMessage(strEcho);
+        echo.setFile(file2);
+        echo.perform();
+        strEcho='';
+      }
+
+
+  ]]></script>
+</target>
+
+
+<target name="GeneratePackageMembersStdObjCustomElements1">
+<script language="javascript"> 
+<![CDATA[
+  try
+  {
+	  var version = java.lang.System.getProperty("java.version");
+	  if (version.startsWith("1.8.0")) {
+		 load("nashorn:mozilla_compat.js");
+	  }
+	  importPackage(java.io);
+      var stage  = project.getProperty('stage.dir');
+      fs = project.createDataType("fileset");
+      fs.setDir( new File("./" + stage + "/objects/") );
+      fs.setIncludes("*.object");
+      var basedir  = fs.getDir(project);
+
+      ds = fs.getDirectoryScanner(project);
+      var srcFiles = ds.getIncludedFiles();
+
+      var strEchoNmFlt   = '';
+      var strEchoFldSet = '';
+
+      strEchoNmFlt+='<types>\n';
+      strEchoFldSet+='<types>\n';
+
+
+      for (i=0; i<srcFiles.length; i++) 
+      {
+        var filename = srcFiles[i];
+        var file = new File(basedir, filename);
+	  var bNmFlt   = false;
+        var bFldSet  = false;
+
+        var br       = new BufferedReader(new InputStreamReader(new DataInputStream(new FileInputStream(file))));
+        while ((line = br.readLine()) != null)   
+        {
+
+          if (line.indexOf('<namedFilters>' ) > -1){bNmFlt=true ;}
+          if (line.indexOf('</namedFilters>') > -1){bNmFlt=false;}
+          if (bNmFlt==true)
+          {
+            if (line.indexOf('<fullName>') > -1)
+            {
+             value = line.substring(line.indexOf('<fullName>') + 10,line.indexOf('</fullName>'));
+             if (value.indexOf('__') == value.lastIndexOf('__c'))
+	        {strEchoNmFlt+= '<members>' + filename.substring(0,filename.length()-7) + '.' + value + '</members>\n';}
+             bNmFlt=false;
+            }
+          }
+
+    
+          if (line.indexOf('<fieldSets>' ) > -1){bFldSet=true ;}
+          if (line.indexOf('</fieldSets>') > -1){bFldSet=false;}
+          if (bFldSet==true)
+          {
+            if (line.indexOf('<fullName>') > -1)
+            {
+             value = line.substring(line.indexOf('<fullName>') + 10,line.indexOf('</fullName>'));
+             if (value.indexOf('__') == value.lastIndexOf('__c'))
+                {strEchoFldSet+= '<members>' + filename.substring(0,filename.length()-7) + '.' + value + '</members>\n';}
+             bFldSet=false;
+            }
+          }
+
+
+        }
+
+       }
+  
+       strEchoNmFlt+='<name>NamedFilter</name>\n';
+       strEchoNmFlt+='</types>\n';
+       strEchoFldSet+='<name>FieldSet</name>\n';
+       strEchoFldSet+='</types>\n';
+
+       var file2 = new File('./' + stage + '/deploy/', 'destructiveChanges.xml');
+       echo = project.createTask("echo");
+       echo.setMessage(strEchoNmFlt+strEchoFldSet);
+       echo.setFile(file2);
+       echo.setAppend(true);
+       echo.perform();
+       strEcho='';
+   } 
+   catch(e){} //Do nothing, in case folder does not exist
+
+]]>
+</script>
+</target>
+
+
+
+<target name="GeneratePackageMembersStdObjCustomElements2">
+<script language="javascript"> 
+<![CDATA[
+  try
+  {
+	  var version = java.lang.System.getProperty("java.version");
+	  if (version.startsWith("1.8.0")) {
+		 load("nashorn:mozilla_compat.js");
+	  }
+	  importPackage(java.io);
+      var stage  = project.getProperty('stage.dir');
+      fs = project.createDataType("fileset");
+      fs.setDir( new File("./" + stage + "/objects/") );
+      fs.setIncludes("*.object");
+      fs.setExcludes("*__c.object");
+      var basedir  = fs.getDir(project);
+
+      ds = fs.getDirectoryScanner(project);
+      var srcFiles = ds.getIncludedFiles();
+
+      var strEchoFld     = '';
+      var strEchoWeblink = '';
+      var strEchoListView = '';
+      var strEchoRecType = '';
+
+      strEchoFld+='<types>\n';
+      strEchoWeblink+='<types>\n';
+      strEchoListView+='<types>\n';
+      strEchoRecType+='<types>\n';
+
+      for (i=0; i<srcFiles.length; i++) 
+      {
+        var filename = srcFiles[i];
+        var file = new File(basedir, filename);
+        var bFld     = false;
+        var bWeblink = false;
+        var bListView = false;
+        var bRecType = false;
+
+        var br       = new BufferedReader(new InputStreamReader(new DataInputStream(new FileInputStream(file))));
+        while ((line = br.readLine()) != null)   
+        {
+
+          if (line.indexOf('<fields>' ) > -1){bFld=true ;}
+          if (line.indexOf('</fields>') > -1){bFld=false;}
+          if (bFld==true)
+          {
+            if (line.indexOf('<fullName>') > -1)
+            {
+             value = line.substring(line.indexOf('<fullName>') + 10,line.indexOf('</fullName>'));
+             if (value.indexOf('__c') > -1)
+             {
+                 if (value.indexOf('__') == value.lastIndexOf('__c'))
+                   {strEchoFld+= '<members>' + filename.substring(0,filename.length()-7) + '.' + value + '</members>\n';}
+             }
+             bFld=false;
+            }
+          }
+
+          if (line.indexOf('<webLinks>' ) > -1){bWeblink=true ;}
+          if (line.indexOf('</webLinks>') > -1){bWeblink=false;}
+          if (bWeblink==true)
+          {
+            if (line.indexOf('<fullName>') > -1)
+            {
+             value = line.substring(line.indexOf('<fullName>') + 10,line.indexOf('</fullName>'));
+             if (value.indexOf('__') == value.lastIndexOf('__c'))
+		{strEchoWeblink+= '<members>' + filename.substring(0,filename.length()-7) + '.' + value + '</members>\n';}
+             bWeblink=false;
+            }
+          }
+
+          if (line.indexOf('<listView>' ) > -1){bListView=true ;}
+          if (line.indexOf('</listView>') > -1){bListview=false;}
+          if (bListView==true)
+          {
+            if (line.indexOf('<fullName>') > -1)
+            {
+             value = line.substring(line.indexOf('<fullName>') + 10,line.indexOf('</fullName>'));
+             if (value.indexOf('__') == value.lastIndexOf('__c'))
+                {strEchoListView+= '<members>' + filename.substring(0,filename.length()-7) + '.' + value + '</members>\n';}
+             bListView=false;
+            }
+          }
+
+          if (line.indexOf('<recordTypes>' ) > -1){bRecType=true ;}
+          if (line.indexOf('</recordTypes>') > -1){bRecType=false;}
+          if (bRecType==true)
+          {
+            if (line.indexOf('<fullName>') > -1)
+            {
+             value = line.substring(line.indexOf('<fullName>') + 10,line.indexOf('</fullName>'));
+             if (value.indexOf('__') == value.lastIndexOf('__c'))
+		{strEchoRecType+= '<members>' + filename.substring(0,filename.length()-7) + '.' + value + '</members>\n';}
+             bRecType=false;
+            }
+          }
+        }
+       }  
+
+       strEchoFld+='<name>CustomField</name>\n';
+       strEchoFld+='</types>\n';
+       strEchoWeblink+='<name>WebLink</name>\n';
+       strEchoWeblink+='</types>\n';
+       strEchoListView+='<name>ListView</name>\n';
+       strEchoListView+='</types>\n';
+       strEchoRecType+='<name>RecordType</name>\n';
+       strEchoRecType+='</types>\n';
+
+
+       var file2 = new File('./' + stage + '/deploy/', 'destructiveChanges.xml');
+       echo = project.createTask("echo");
+       echo.setMessage(strEchoFld+strEchoWeblink+strEchoListView+strEchoRecType);
+       echo.setFile(file2);
+       echo.setAppend(true);
+       echo.perform();
+       strEcho='';
+   } 
+   catch(e){} //Do nothing, in case folder does not exist
+
+]]>
+</script>
+</target>
+
+
+<target name="GeneratePackageMembersLabels">
+<script language="javascript"> 
+<![CDATA[
+  try
+  {
+
+      var version = java.lang.System.getProperty("java.version");
+	  if (version.startsWith("1.8.0")) {
+		 load("nashorn:mozilla_compat.js");
+	  }
+	  importPackage(java.io);
+      var stage  = project.getProperty('stage.dir');
+      fs = project.createDataType("fileset");
+      fs.setDir( new File("./" + stage + "/labels/") );
+      fs.setIncludes("CustomLabels.labels");
+      fs.setExcludes(".svn");
+      var basedir  = fs.getDir(project);
+      ds = fs.getDirectoryScanner(project);
+      var srcFiles = ds.getIncludedFiles();
+
+      var strEcho  = '';
+      strEcho+='<types>\n';
+      for (i=0; i<srcFiles.length; i++) 
+      {
+        var filename = srcFiles[i];
+        var file = new File(basedir, filename);
+        var b        = false;
+        var br       = new BufferedReader(new InputStreamReader(new DataInputStream(new FileInputStream(file))));
+        while ((line = br.readLine()) != null)   
+        {
+          if (line.indexOf('<labels>' ) > -1){b=true ;}
+          if (line.indexOf('</labels>') > -1){b=false;}
+          if (b==true)
+          {
+            if (line.indexOf('<fullName>') > -1)
+            {
+              strEcho+='<members>'+ line.substring(line.indexOf('<fullName>') + 10,line.indexOf('</fullName>')) + '</members>\n';
+              b=false;
+            }
+          }
+        }
+       }  
+
+       strEcho+='<name>CustomLabel</name>\n';
+       strEcho+='</types>\n';
+       var file2 = new File('./' + stage + '/deploy/', 'destructiveChanges.xml');
+       echo = project.createTask("echo");
+       echo.setMessage(strEcho);
+       echo.setFile(file2);
+       echo.setAppend(true);
+       echo.perform();
+       strEcho='';
+   } 
+   catch(e){}
+
+]]>
+</script>
+</target>
+
+</project>
