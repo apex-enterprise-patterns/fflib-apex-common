@@ -101,20 +101,39 @@ public class fflib_SObjectMocks
 			mocks.mockVoidMethod(this, 'registerDeleted', new List<Type> {List<SObject>.class}, new List<Object> {records});
 		}
 
-		public void commitWork()
+		public void registerPublishBeforeTransaction(SObject record)
 		{
-			mocks.mockVoidMethod(this, 'commitWork', new List<Type> {}, new List<Object> {});
+			mocks.mockVoidMethod(this, 'registerPublishBeforeTransaction', new List<Type> {SObject.class}, new List<Object> {record});
 		}
 
-		public void registerWork(fflib_SObjectUnitOfWork.IDoWork work)
+		public void registerPublishBeforeTransaction(List<SObject> records)
 		{
-			mocks.mockVoidMethod(this, 'registerWork', new List<Type> {fflib_SObjectUnitOfWork.IDoWork.class}, new List<Object> {work});
+			mocks.mockVoidMethod(this, 'registerPublishBeforeTransaction', new List<Type> {List<SObject>.class}, new List<Object> {records});
 		}
 
-		public void registerEmail(Messaging.Email email)
+		public void registerPublishAfterTransaction(SObject record)
 		{
-			mocks.mockVoidMethod(this, 'registerEmail', new List<Type> {Messaging.Email.class}, new List<Object> {email});
+			mocks.mockVoidMethod(this, 'registerPublishAfterTransaction', new List<Type> {SObject.class}, new List<Object> {record});
 		}
+		public void registerPublishAfterTransaction(List<SObject> records)
+		{
+			mocks.mockVoidMethod(this, 'registerPublishAfterTransaction', new List<Type> {List<SObject>.class}, new List<Object> {records});
+		}
+
+	public void commitWork()
+	{
+		mocks.mockVoidMethod(this, 'commitWork', new List<Type> {}, new List<Object> {});
 	}
+
+	public void registerWork(fflib_SObjectUnitOfWork.IDoWork work)
+	{
+		mocks.mockVoidMethod(this, 'registerWork', new List<Type> {fflib_SObjectUnitOfWork.IDoWork.class}, new List<Object> {work});
+	}
+
+	public void registerEmail(Messaging.Email email)
+	{
+		mocks.mockVoidMethod(this, 'registerEmail', new List<Type> {Messaging.Email.class}, new List<Object> {email});
+	}
+}
 
 }
