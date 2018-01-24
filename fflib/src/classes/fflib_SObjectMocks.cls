@@ -111,14 +111,23 @@ public class fflib_SObjectMocks
 			mocks.mockVoidMethod(this, 'registerPublishBeforeTransaction', new List<Type> {List<SObject>.class}, new List<Object> {records});
 		}
 
-		public void registerPublishAfterTransaction(SObject record)
+		public void registerPublishAfterSuccessTransaction(SObject record)
 		{
-			mocks.mockVoidMethod(this, 'registerPublishAfterTransaction', new List<Type> {SObject.class}, new List<Object> {record});
+			mocks.mockVoidMethod(this, 'registerPublishAfterSuccessTransaction', new List<Type> {SObject.class}, new List<Object> {record});
 		}
-		public void registerPublishAfterTransaction(List<SObject> records)
+		public void registerPublishAfterSuccessTransaction(List<SObject> records)
 		{
-			mocks.mockVoidMethod(this, 'registerPublishAfterTransaction', new List<Type> {List<SObject>.class}, new List<Object> {records});
+			mocks.mockVoidMethod(this, 'registerPublishAfterSuccessTransaction', new List<Type> {List<SObject>.class}, new List<Object> {records});
 		}
+		public void registerPublishAfterFailureTransaction(SObject record)
+		{
+			mocks.mockVoidMethod(this, 'registerPublishAfterFailureTransaction', new List<Type> {SObject.class}, new List<Object> {record});
+		}
+		public void registerPublishAfterFailureTransaction(List<SObject> records)
+		{
+			mocks.mockVoidMethod(this, 'registerPublishAfterFailureTransaction', new List<Type> {List<SObject>.class}, new List<Object> {records});
+		}
+
 
 	public void commitWork()
 	{
