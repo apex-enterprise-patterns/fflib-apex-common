@@ -69,7 +69,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     @isTest
     private static void testUnitOfWorkNewDirtyDelete()
     {
-        // Insert Opporunities with UnitOfWork
+        // Insert Opportunities with UnitOfWork
         {
             fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
             for(Integer o=0; o<10; o++)
@@ -242,11 +242,15 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 
         assertEvents(new List<String> {
                 'onCommitWorkStarting'
+                , 'onPublishBeforeEventsStarting'
+                , 'onPublishBeforeEventsFinished'
                 , 'onDMLStarting'
                 , 'onDMLFinished'
                 , 'onDoWorkStarting'
                 , 'onDoWorkFinished'
                 , 'onCommitWorkFinishing'
+                , 'onPublishAfterSuccessEventsStarting'
+                , 'onPublishAfterSuccessEventsFinished'
                 , 'onCommitWorkFinished - true'
             }
             , uow.getCommitWorkEventsFired(), new Set<Schema.SObjectType>(MY_SOBJECTS), uow.getRegisteredTypes());
@@ -284,7 +288,11 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 
         assertEvents(new List<String> {
                 'onCommitWorkStarting'
+                , 'onPublishBeforeEventsStarting'
+                , 'onPublishBeforeEventsFinished'
                 , 'onDMLStarting'
+                , 'onPublishAfterFailureEventsStarting'
+                , 'onPublishAfterFailureEventsFinished'
                 , 'onCommitWorkFinished - false'
             }
             , uow.getCommitWorkEventsFired(), new Set<Schema.SObjectType>(MY_SOBJECTS), uow.getRegisteredTypes());
@@ -330,9 +338,13 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 
         assertEvents(new List<String> {
                 'onCommitWorkStarting'
+                , 'onPublishBeforeEventsStarting'
+                , 'onPublishBeforeEventsFinished'
                 , 'onDMLStarting'
                 , 'onDMLFinished'
                 , 'onDoWorkStarting'
+                , 'onPublishAfterFailureEventsStarting'
+                , 'onPublishAfterFailureEventsFinished'
                 , 'onCommitWorkFinished - false'
             }
             , uow.getCommitWorkEventsFired(), new Set<Schema.SObjectType>(MY_SOBJECTS), uow.getRegisteredTypes());
@@ -426,6 +438,16 @@ private with sharing class fflib_SObjectUnitOfWorkTest
             addEvent('onCommitWorkStarting');
         }
 
+        public override void onPublishBeforeEventsStarting()
+        {
+            addEvent('onPublishBeforeEventsStarting');
+        }
+
+        public override void onPublishBeforeEventsFinished()
+        {
+            addEvent('onPublishBeforeEventsFinished');
+        }
+
         public override void onDMLStarting()
         {
             addEvent('onDMLStarting');
@@ -449,6 +471,26 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         public override void onCommitWorkFinishing()
         {
             addEvent('onCommitWorkFinishing');
+        }
+
+        public override void onPublishAfterSuccessEventsStarting()
+        {
+            addEvent('onPublishAfterSuccessEventsStarting');
+        }
+
+        public override void onPublishAfterSuccessEventsFinished()
+        {
+            addEvent('onPublishAfterSuccessEventsFinished');
+        }
+
+        public override void onPublishAfterFailureEventsStarting()
+        {
+            addEvent('onPublishAfterFailureEventsStarting');
+        }
+
+        public override void onPublishAfterFailureEventsFinished()
+        {
+            addEvent('onPublishAfterFailureEventsFinished');
         }
 
         public override void onCommitWorkFinished(Boolean wasSuccessful)

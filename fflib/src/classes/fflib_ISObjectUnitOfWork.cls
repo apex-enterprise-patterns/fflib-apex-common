@@ -99,17 +99,32 @@ public interface fflib_ISObjectUnitOfWork
      **/
     void registerPublishBeforeTransaction(List<SObject> records);
     /**
-     * Register a newly created SObject (Platform Event) instance to be published when commitWork is called
+     * Register a newly created SObject (Platform Event) instance to be published when commitWork has successfully
+     * completed
      *
      * @param record A newly created SObject (Platform Event) instance to be inserted during commitWork
      **/
-    void registerPublishAfterTransaction(SObject record);
+    void registerPublishAfterSuccessTransaction(SObject record);
     /**
-     * Register a list of newly created SObject (Platform Event) instance to be published when commitWork is called
+     * Register a list of newly created SObject (Platform Event) instance to be published when commitWork has successfully
+     * completed
      *
      * @param records A list of existing records
      **/
-    void registerPublishAfterTransaction(List<SObject> records);
+    void registerPublishAfterSuccessTransaction(List<SObject> records);
+    /**
+     * Register a newly created SObject (Platform Event) instance to be published when commitWork has caused an error
+     *
+     * @param record A newly created SObject (Platform Event) instance to be inserted during commitWork
+     **/
+    void registerPublishAfterFailureTransaction(SObject record);
+    /**
+     * Register a list of newly created SObject (Platform Event) instance to be published when commitWork has caused an
+     * error
+     *
+     * @param records A list of existing records
+     **/
+    void registerPublishAfterFailureTransaction(List<SObject> records);
     /**
      * Takes all the work that has been registered with the UnitOfWork and commits it to the database
      **/

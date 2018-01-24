@@ -134,6 +134,6 @@ public class fflib_SObjectMocks
 	{
 		mocks.mockVoidMethod(this, 'registerEmail', new List<Type> {Messaging.Email.class}, new List<Object> {email});
 	}
-}
+	}
 
 }

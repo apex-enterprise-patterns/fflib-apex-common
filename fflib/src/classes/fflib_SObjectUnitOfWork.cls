@@ -65,7 +65,8 @@ public virtual class fflib_SObjectUnitOfWork
     protected Map<String, Relationships> m_relationships = new Map<String, Relationships>();
 
     protected Map<String, List<SObject>> m_publishBeforeListByType = new Map<String, List<SObject>>();
-    protected Map<String, List<SObject>> m_publishAfterListByType = new Map<String, List<SObject>>();
+    protected Map<String, List<SObject>> m_publishAfterSuccessListByType = new Map<String, List<SObject>>();
+    protected Map<String, List<SObject>> m_publishAfterFailureListByType = new Map<String, List<SObject>>();
 
     protected List<IDoWork> m_workList = new List<IDoWork>();
 
@@ -145,8 +146,11 @@ public virtual class fflib_SObjectUnitOfWork
     public virtual void onDoWorkStarting() {}
     public virtual void onDoWorkFinished() {}
 
-    public virtual void onPublishAfterEventsStarting() {}
-    public virtual void onPublishAfterEventsFinished() {}
+    public virtual void onPublishAfterSuccessEventsStarting() {}
+    public virtual void onPublishAfterSuccessEventsFinished() {}
+
+    public virtual void onPublishAfterFailureEventsStarting() {}
+    public virtual void onPublishAfterFailureEventsFinished() {}
 
     public virtual void onCommitWorkFinishing() {}
     public virtual void onCommitWorkFinished(Boolean wasSuccessful) {}
@@ -168,7 +172,8 @@ public virtual class fflib_SObjectUnitOfWork
         m_relationships.put(sObjectName, new Relationships());
 
         m_publishBeforeListByType.put(sObjectName, new List<SObject>());
-        m_publishAfterListByType.put(sObjectName, new List<SObject>());
+        m_publishAfterSuccessListByType.put(sObjectName, new List<SObject>());
+        m_publishAfterFailureListByType.put(sObjectName, new List<SObject>());
 
         // give derived class opportunity to register the type
         onRegisterType(sObjectType);
@@ -412,7 +417,7 @@ public virtual class fflib_SObjectUnitOfWork
      *
      * @param record A newly created SObject (Platform Event) instance to be inserted during commitWork
      **/
-    public void registerPublishAfterTransaction(SObject record)
+    public void registerPublishAfterSuccessTransaction(SObject record)
     {
         String sObjectType = record.getSObjectType().getDescribe().getName();
 
@@ -421,11 +426,11 @@ public virtual class fflib_SObjectUnitOfWork
             throw new UnitOfWorkException(String.format('SObject type {0} is invalid for publishing within this unit of work', new String[] { sObjectType }));
         }
 
-        if(!m_publishBeforeListByType.containsKey(sObjectType)) {
+        if(!m_publishAfterSuccessListByType.containsKey(sObjectType)) {
             throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
         }
 
-        m_publishAfterListByType.get(sObjectType).add(record);
+        m_publishAfterSuccessListByType.get(sObjectType).add(record);
     }
 
     /**
@@ -433,11 +438,44 @@ public virtual class fflib_SObjectUnitOfWork
      *
      * @param records A list of existing records
      **/
-    public void registerPublishAfterTransaction(List<SObject> records)
+    public void registerPublishAfterSuccessTransaction(List<SObject> records)
     {
         for(SObject record : records)
         {
-            this.registerPublishAfterTransaction(record);
+            this.registerPublishAfterSuccessTransaction(record);
+        }
+    }
+    /**
+     * Register a newly created SObject (Platform Event) instance to be published when commitWork is called
+     *
+     * @param record A newly created SObject (Platform Event) instance to be inserted during commitWork
+     **/
+    public void registerPublishAfterFailureTransaction(SObject record)
+    {
+        String sObjectType = record.getSObjectType().getDescribe().getName();
+
+        if(sObjectType.length() > 3 && sObjectType.right(3)  != '__e')
+        {
+            throw new UnitOfWorkException(String.format('SObject type {0} is invalid for publishing within this unit of work', new String[] { sObjectType }));
+        }
+
+        if(!m_publishAfterFailureListByType.containsKey(sObjectType)) {
+            throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
+        }
+
+        m_publishAfterFailureListByType.get(sObjectType).add(record);
+    }
+
+    /**
+     * Register a list of newly created SObject (Platform Event) instance to be published when commitWork is called
+     *
+     * @param records A list of existing records
+     **/
+    public void registerPublishAfterFailureTransaction(List<SObject> records)
+    {
+        for(SObject record : records)
+        {
+            this.registerPublishAfterFailureTransaction(record);
         }
     }
 
@@ -497,16 +535,6 @@ public virtual class fflib_SObjectUnitOfWork
             // notify we've completed all steps and are in the final stage of completing
             onCommitWorkFinishing();
 
-            // notify anyone that we are starting the before transaction events and publishing them to the bus
-            onPublishAfterEventsStarting();
-
-            for(Schema.SObjectType sObjectType : m_sObjectTypes)
-            {
-                m_dml.eventPublish(m_publishAfterListByType.get(sObjectType.getDescribe().getName()));
-            }
-
-            onPublishAfterEventsFinished();
-
             // mark tracker to indicate success
             wasSuccessful = true;
         }
@@ -514,11 +542,38 @@ public virtual class fflib_SObjectUnitOfWork
         {
             // Rollback
             Database.rollback(sp);
+
             // Throw exception on to caller
             throw e;
         }
         finally
         {
+
+            if(wasSuccessful)
+            {
+                // notify anyone that we are starting the before transaction events and publishing them to the bus
+                onPublishAfterSuccessEventsStarting();
+
+                for(Schema.SObjectType sObjectType : m_sObjectTypes)
+                {
+                    m_dml.eventPublish(m_publishAfterSuccessListByType.get(sObjectType.getDescribe().getName()));
+                }
+
+                onPublishAfterSuccessEventsFinished();
+            }
+            else 
+            {
+                onPublishAfterFailureEventsStarting();
+
+                // before we bubble the error up lets send out the failure platform events
+                for(Schema.SObjectType sObjectType : m_sObjectTypes)
+                {
+                    m_dml.eventPublish(m_publishAfterFailureListByType.get(sObjectType.getDescribe().getName()));
+                }
+
+                onPublishAfterFailureEventsFinished();
+            }
+            
             // notify we're done with commit work
             onCommitWorkFinished(wasSuccessful);
         }
