@@ -162,6 +162,45 @@ private class fflib_QueryFactoryTest {
 	}
 
 	@isTest
+	static void orderingSet(){
+		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
+		qf.selectField('name');
+		qf.selectField('email');
+		qf.setCondition( 'name = \'test\'' );
+		qf.setOrdering( new fflib_QueryFactory.Ordering('Contact','LastModifiedDate',fflib_QueryFactory.SortOrder.DESCENDING) );
+		
+		System.assertEquals(1,qf.getOrderings().size());
+		System.assertEquals(Contact.LastModifiedDate,qf.getOrderings()[0].getField() );
+		System.assertEquals(fflib_QueryFactory.SortOrder.DESCENDING,qf.getOrderings()[0].getDirection() );
+
+		qf.setOrdering('LastModifiedDate', fflib_QueryFactory.SortOrder.DESCENDING, true);
+		
+		System.assertEquals(1,qf.getOrderings().size());
+		System.assertEquals(Contact.LastModifiedDate,qf.getOrderings()[0].getField() );
+		System.assertEquals(fflib_QueryFactory.SortOrder.DESCENDING,qf.getOrderings()[0].getDirection() );
+
+		qf.setOrdering(Contact.LastModifiedDate, fflib_QueryFactory.SortOrder.DESCENDING, true);
+
+		System.assertEquals(1,qf.getOrderings().size());
+		System.assertEquals(Contact.LastModifiedDate,qf.getOrderings()[0].getField() );
+		System.assertEquals(fflib_QueryFactory.SortOrder.DESCENDING,qf.getOrderings()[0].getDirection() );
+
+		qf.setOrdering('LastModifiedDate', fflib_QueryFactory.SortOrder.DESCENDING);
+
+		System.assertEquals(1,qf.getOrderings().size());
+		System.assertEquals(Contact.LastModifiedDate,qf.getOrderings()[0].getField() );
+		System.assertEquals(fflib_QueryFactory.SortOrder.DESCENDING,qf.getOrderings()[0].getDirection() );
+
+		qf.setOrdering(Contact.LastModifiedDate, fflib_QueryFactory.SortOrder.DESCENDING);
+
+		System.assertEquals(1,qf.getOrderings().size());
+		System.assertEquals(Contact.LastModifiedDate,qf.getOrderings()[0].getField() );
+		System.assertEquals(fflib_QueryFactory.SortOrder.DESCENDING,qf.getOrderings()[0].getDirection() );
+
+		String query = qf.toSOQL();
+	}
+
+	@isTest
 	static void invalidField_string(){
 		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
 		qf.selectField('name');
