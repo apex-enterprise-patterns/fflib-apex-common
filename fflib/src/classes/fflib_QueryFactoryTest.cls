@@ -162,40 +162,46 @@ private class fflib_QueryFactoryTest {
 	}
 
 	@isTest
-	static void orderingSet(){
+	static void setOrdering_ReplacesPreviousOrderingsWithExpectedOrdering(){
 		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
 		qf.selectField('name');
 		qf.selectField('email');
 		qf.setCondition( 'name = \'test\'' );
-		qf.setOrdering( new fflib_QueryFactory.Ordering('Contact','LastModifiedDate',fflib_QueryFactory.SortOrder.DESCENDING) );
 		
-		System.assertEquals(1,qf.getOrderings().size());
-		System.assertEquals(Contact.LastModifiedDate,qf.getOrderings()[0].getField() );
-		System.assertEquals(fflib_QueryFactory.SortOrder.DESCENDING,qf.getOrderings()[0].getDirection() );
-
-		qf.setOrdering('LastModifiedDate', fflib_QueryFactory.SortOrder.DESCENDING, true);
+		//test base method with ordeting by OwnerId Descending
+		qf.setOrdering( new fflib_QueryFactory.Ordering('Contact','OwnerId',fflib_QueryFactory.SortOrder.DESCENDING) );
 		
-		System.assertEquals(1,qf.getOrderings().size());
-		System.assertEquals(Contact.LastModifiedDate,qf.getOrderings()[0].getField() );
-		System.assertEquals(fflib_QueryFactory.SortOrder.DESCENDING,qf.getOrderings()[0].getDirection() );
+		System.assertEquals(1, qf.getOrderings().size(), 'Unexpected order size - setOrder should replace default Orderings');
+		System.assertEquals(Contact.OwnerId, qf.getOrderings()[0].getField(), 'Unexpected order field - should have been resolved from the field OwnerId');
+		System.assertEquals(fflib_QueryFactory.SortOrder.DESCENDING, qf.getOrderings()[0].getDirection(), 'Unexpected order direction.');
 
-		qf.setOrdering(Contact.LastModifiedDate, fflib_QueryFactory.SortOrder.DESCENDING, true);
+		//test method overload with ordering by LastModifiedDate Ascending
+		qf.setOrdering('LastModifiedDate', fflib_QueryFactory.SortOrder.ASCENDING, true);
+		
+		System.assertEquals(1, qf.getOrderings().size(), 'Unexpected order size - setOrder should replace previous Orderings');
+		System.assertEquals(Contact.LastModifiedDate, qf.getOrderings()[0].getField(), 'Unexpected order field - should have been resolved from the field LastModifiedDate');
+		System.assertEquals(fflib_QueryFactory.SortOrder.ASCENDING, qf.getOrderings()[0].getDirection(), 'Unexpected order direction.');
 
-		System.assertEquals(1,qf.getOrderings().size());
-		System.assertEquals(Contact.LastModifiedDate,qf.getOrderings()[0].getField() );
-		System.assertEquals(fflib_QueryFactory.SortOrder.DESCENDING,qf.getOrderings()[0].getDirection() );
+		//test method overload with ordering by CreatedDate Descending
+		qf.setOrdering(Contact.CreatedDate, fflib_QueryFactory.SortOrder.DESCENDING, true);
 
-		qf.setOrdering('LastModifiedDate', fflib_QueryFactory.SortOrder.DESCENDING);
+		System.assertEquals(1, qf.getOrderings().size(), 'Unexpected order size - setOrder should replace previous Orderings');
+		System.assertEquals(Contact.CreatedDate, qf.getOrderings()[0].getField(), 'Unexpected order field - should have been resolved from the field CreatedDate');
+		System.assertEquals(fflib_QueryFactory.SortOrder.DESCENDING, qf.getOrderings()[0].getDirection(), 'Unexpected order direction.');
 
-		System.assertEquals(1,qf.getOrderings().size());
-		System.assertEquals(Contact.LastModifiedDate,qf.getOrderings()[0].getField() );
-		System.assertEquals(fflib_QueryFactory.SortOrder.DESCENDING,qf.getOrderings()[0].getDirection() );
+		//test method overload with ordering by CreatedBy.Name Descending
+		qf.setOrdering('CreatedBy.Name', fflib_QueryFactory.SortOrder.DESCENDING);
 
-		qf.setOrdering(Contact.LastModifiedDate, fflib_QueryFactory.SortOrder.DESCENDING);
+		System.assertEquals(1, qf.getOrderings().size(), 'Unexpected order size - setOrder should replace previous Orderings');
+		System.assertEquals(Contact.CreatedById, qf.getOrderings()[0].getField(), 'Unexpected order field - should have been resolved from the field CreatedBy.Name');
+		System.assertEquals(fflib_QueryFactory.SortOrder.DESCENDING, qf.getOrderings()[0].getDirection(), 'Unexpected order direction.');
 
-		System.assertEquals(1,qf.getOrderings().size());
-		System.assertEquals(Contact.LastModifiedDate,qf.getOrderings()[0].getField() );
-		System.assertEquals(fflib_QueryFactory.SortOrder.DESCENDING,qf.getOrderings()[0].getDirection() );
+		//test method overload with ordering by Birthdate Ascending
+		qf.setOrdering(Contact.Birthdate, fflib_QueryFactory.SortOrder.ASCENDING);
+
+		System.assertEquals(1, qf.getOrderings().size(), 'Unexpected order size - setOrder should replace previous Orderings');
+		System.assertEquals(Contact.Birthdate, qf.getOrderings()[0].getField(), 'Unexpected order field - should have been resolved from the field Birthdate');
+		System.assertEquals(fflib_QueryFactory.SortOrder.ASCENDING, qf.getOrderings()[0].getDirection(), 'Unexpected order direction.');
 
 		String query = qf.toSOQL();
 	}
