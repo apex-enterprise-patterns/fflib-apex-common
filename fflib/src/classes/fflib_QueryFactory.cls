@@ -582,10 +582,8 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param nullsLast whether to sort null values last (NULLS LAST keyword included).
 	**/  
     public fflib_QueryFactory setOrdering(String fieldName, SortOrder direction, Boolean nullsLast){
-		setOrdering(
-			new Ordering(getFieldToken(fieldName), direction, nullsLast)
-		);
-		return this;
+		Ordering ordr = new Ordering(getFieldPath(fieldName), direction, nullsLast);
+		return setOrdering(ordr);
     }
 
      /**
@@ -599,11 +597,17 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param SortOrder the direction to be sorted on (ASCENDING or DESCENDING)
 	 * @param nullsLast whether to sort null values last (NULLS LAST keyword included).
 	**/
+<<<<<<< HEAD
     public fflib_QueryFactory addOrdering(SObjectField field, SortOrder direction){
 		order.add(
 			new Ordering(getFieldTokenPath(field), direction)
 		);	
 		return this;
+=======
+    public fflib_QueryFactory setOrdering(SObjectField field, SortOrder direction, Boolean nullsLast){
+		Ordering ordr = new Ordering(field, direction, nullsLast);
+		return setOrdering(ordr);
+>>>>>>> #162: updated setOrderings for methods with string field name parameter
     }
 
     /**
@@ -619,10 +623,8 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param SortOrder the direction to be sorted on (ASCENDING or DESCENDING)
 	**/  
     public fflib_QueryFactory setOrdering(String fieldName, SortOrder direction){
-		setOrdering(
-			new Ordering(getFieldToken(fieldName), direction)
-		);
-		return this;
+		Ordering ordr = new Ordering(getFieldPath(fieldName), direction);
+		return setOrdering(ordr);
     }
 
      /**
@@ -638,10 +640,8 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param SortOrder the direction to be sorted on (ASCENDING or DESCENDING)
 	**/
     public fflib_QueryFactory setOrdering(SObjectField field, SortOrder direction){
-		setOrdering(
-			new Ordering(field, direction)
-		);	
-		return this;
+		Ordering ordr = new Ordering(field, direction);	
+		return setOrdering(ordr);
     }
 
 	/**
