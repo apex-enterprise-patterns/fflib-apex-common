@@ -5,10 +5,6 @@ sudo: false
 branches:
   only:
     - master
-env:
-  global:
-    - secure: "EG37gA3LxAJR9FzUSzDc4iXLmOZ0o5Qbel7mzVfxnkrbiBH59wconB6mq+/gpc5AihFLoehjjskQKEcRYl7xc256iChwzZE9bf7PTYnGtscLIQwNenPEpxPBJTw9oLJK3wgShcjMF/1ZfqHoGmzkwxnmzJKzuaZ9OW1l8uqn+Lw="
-    - secure: "ctp6SfgSVW3HqfpdRykfIq5lPOZk900wag0RC33NfYjxoXUTu797F6KhOGojqfh1E0/Ivng1IngvFScAFyDscpIJzTu+2/FMP9qsC2bn/e4iXg8sjhmgKhjqg/rFHiAJQz/XuW0b1xom2dxQ12ipiouniooveHe1f7541LrQq6c="
 script: 
   - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && ant -lib lib/ant-salesforce.jar -Dsf.username=${SFUSER} -Dsf.password=${SFPWD} deploy || [ "${TRAVIS_PULL_REQUEST}" != "false" ]'
   - '[ "${TRAVIS_PULL_REQUEST}" != "false" ] && ant -lib lib/ant-salesforce.jar -Dsf.username=${SFUSER} -Dsf.password=${SFPWD} deploy || [ "${TRAVIS_PULL_REQUEST}" = "false" ]'
