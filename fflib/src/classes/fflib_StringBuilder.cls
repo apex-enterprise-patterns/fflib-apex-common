@@ -32,12 +32,12 @@
 public virtual class fflib_StringBuilder
 {
 	protected List<String> buffer = new List<String>();
-	
+
 	/**
 	 * Construct an empty StringBuilder
 	 **/
 	public fflib_StringBuilder() {}
-	
+
 	/**
 	 * Construct a StringBuilder with the given values
 	 **/
@@ -45,7 +45,7 @@ public virtual class fflib_StringBuilder
 	{
 		add(values);
 	}
-	
+
 	/**
 	 * Add the given values to the StringBuilder
 	 **/
@@ -61,7 +61,7 @@ public virtual class fflib_StringBuilder
 	{
 		buffer.add(value);
 	}
-	
+
 	public virtual override String toString()
 	{
 		return String.join(buffer, '');
@@ -76,7 +76,7 @@ public virtual class fflib_StringBuilder
 	}
 
 	/**
-	 * Subclasses the StringBuilder to produce a comma delimited contactination of strings
+	 * Subclasses the StringBuilder to produce a comma delimited concatenation of strings
 	 **/
 	public virtual with sharing class CommaDelimitedListBuilder extends fflib_StringBuilder
 	{
@@ -89,23 +89,23 @@ public virtual class fflib_StringBuilder
 		{
 			super(values);
 		}
-		
+
 		public void setItemPrefix(String itemPrefix)
 		{
 			this.itemPrefix = itemPrefix;
 		}
-		
+
 		public void setDelimiter(String delimiter)
 		{
 			this.delimiter = delimiter;
 		}
-		
+
 		public String getStringValue(String itemPrefix)
 		{
 			setItemPrefix(itemPrefix);
 			return toString();
 		}
-		
+
 		public override String toString()
 		{
 			return itemPrefix + String.join(buffer, delimiter + itemPrefix);
@@ -113,7 +113,7 @@ public virtual class fflib_StringBuilder
 	}
 
 	/** 
-	 * Subclasses the StringCommaDelimitedBuilder to accept native SObjectField tokens and optional FieldSet definitions to concatinate when building queries
+	 * Subclasses the StringCommaDelimitedBuilder to accept native SObjectField tokens and optional FieldSet definitions to concatenate when building queries
 	 **/
 	public virtual with sharing class FieldListBuilder extends CommaDelimitedListBuilder
 	{
@@ -121,20 +121,28 @@ public virtual class fflib_StringBuilder
 		{
 			this(values, null);
 		}
-		
+
 		public FieldListBuilder(List<Schema.SObjectField> values, List<Schema.Fieldset> fieldSets)
 		{
 			// Create a distinct set of fields (or field paths) to select
-			for(Schema.SObjectField value : values)
-				add(String.valueOf(value)); // Alternative to value.getDescribe().getName()
-			
-			if(fieldSets!=null)
-				for(Schema.Fieldset fieldSet : fieldSets)
-					for(Schema.FieldSetMember fieldSetMember : fieldSet.getFields())
+			for (Schema.SObjectField value : values)
+			{
+				add(String.valueOf(value));
+			} // Alternative to value.getDescribe().getName()
+
+			if (fieldSets != null)
+			{
+				for (Schema.Fieldset fieldSet : fieldSets)
+				{
+					for (Schema.FieldSetMember fieldSetMember : fieldSet.getFields())
+					{
 						add(fieldSetMember.getFieldPath());
+					}
+				}
+			}
 		}
 	}
-	
+
 	/**
 	 * Subclasses the FieldListBuilder to auto sense and include when needed the CurrencyIsoCode field in the field list
 	 **/
@@ -144,14 +152,16 @@ public virtual class fflib_StringBuilder
 		{
 			this(values, null);
 		}
-		
+
 		public MultiCurrencyFieldListBuilder(List<Schema.SObjectField> values, List<Schema.FieldSet> fieldSets)
 		{
 			super(values, fieldSets);
-			
-			// Dynamically add CurrencyIsoCode field for mult-currency organisations						
-			if(Userinfo.isMultiCurrencyOrganization())
+
+			// Dynamically add CurrencyIsoCode field for multi-currency organisations
+			if (Userinfo.isMultiCurrencyOrganization())
+			{
 				add('CurrencyIsoCode');
+			}
 		}
-	}	
+	}
 }

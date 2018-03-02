@@ -9,15 +9,15 @@
 * Copyright (c) 2013 FinancialForce.com, inc. All rights reserved.
 */
 
-public interface fflib_ISObjectDomain 
+public interface fflib_ISObjectDomain
 {
-    /**
-     * Returns the SObjectType this Domain class represents
-     **/	
+	/**
+	 * Returns the SObjectType this Domain class represents
+	 **/
 	Schema.SObjectType sObjectType();
 
-    /**
-     * Alternative to the Records property, provided to support mocking of Domain classes
-     **/	
+	/**
+	 * Alternative to the Records property, provided to support mocking of Domain classes
+	 **/
 	List<SObject> getRecords();
 }
