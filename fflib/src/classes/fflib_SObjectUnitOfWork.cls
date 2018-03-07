@@ -270,13 +270,6 @@ public virtual class fflib_SObjectUnitOfWork
             // Update the registered record's fields
             SObject registeredRecord = m_dirtyMapByType.get(sObjectType).get(record.Id);
 
-            // If the caller has supplied a different instance of the same record with no list of updated fields
-            if (dirtyFields.isEmpty() && registeredRecord !== record)
-            {
-                // Cannot determine what updates to make to the record (assuming updating nothing is incorrect)
-                throw new UnitOfWorkException('Cannot determine what fields to update on record ' + record);
-            }
-
             for (SObjectField dirtyField : dirtyFields) {
                 registeredRecord.put(dirtyField, record.get(dirtyField));
             }
