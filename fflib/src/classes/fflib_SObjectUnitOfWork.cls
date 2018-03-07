@@ -280,9 +280,9 @@ public virtual class fflib_SObjectUnitOfWork
             for (SObjectField dirtyField : dirtyFields) {
                 registeredRecord.put(dirtyField, record.get(dirtyField));
             }
-        }
 
-        m_dirtyMapByType.get(sObjectType).put(record.Id, record);
+            m_dirtyMapByType.get(sObjectType).put(record.Id, registeredRecord);
+        }
     }
 
     /**
