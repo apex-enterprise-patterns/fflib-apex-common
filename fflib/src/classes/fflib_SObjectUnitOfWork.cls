@@ -260,7 +260,7 @@ public virtual class fflib_SObjectUnitOfWork
             throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
 
         // If record isn't registered as dirty
-        if (!m_dirtyMapByType.get(sObjectType).containsKey(record.Id))
+        if (!m_dirtyMapByType.get(sObjectType).containsKey(record.Id) || dirtyFields.isEmpty())
         {
             // Register the record as dirty
             m_dirtyMapByType.get(sObjectType).put(record.Id, record);
