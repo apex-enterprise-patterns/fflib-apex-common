@@ -339,6 +339,54 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     }
 
     /**
+     * Try registering two instances of the same record as dirty.
+     *
+     *  Testing:
+     *
+     *      - Exception is thrown stopping second registration
+     */
+    @isTest
+    private static void testRegisterDirty_DoubleException() {
+        Opportunity opp = new Opportunity(Id = '00636000005loIj', Name = 'UpdateName');
+        Opportunity opp2 = new Opportunity(Id = '00636000005loIj', Amount = 250);
+        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
+        uow.registerDirty(opp);
+        Boolean exceptionThrown = false;
+        try {
+            // Second registration would undo updates of first registration
+            uow.registerDirty(opp2);
+        } catch (fflib_SObjectUnitOfWork.UnitOfWorkException e) {
+            System.assert(e.getMessage().contains(opp.Id));
+            exceptionThrown = true;
+        }
+        System.assert(exceptionThrown);
+    }
+
+    /**
+     * Try registering a single field as dirty.
+     *
+     *  Testing:
+     *
+     *      - field is updated
+     */
+    @isTest
+    private static void testRegisterDirty_field() {
+        Opportunity opp = new Opportunity(Name = 'test name', StageName = 'Open', CloseDate = System.today());
+        insert opp;
+
+        Opportunity nameUpdate = new Opportunity(Id = opp.Id, Name = 'UpdateName');
+        Opportunity amountUpdate = new Opportunity(Id = opp.Id, Amount = 250);
+        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
+        uow.registerDirty(nameUpdate);
+        uow.registerDirty(amountUpdate, new List<SObjectField> { Opportunity.Amount } );
+        uow.commitWork();
+
+        opp = [SELECT Name, Amount FROM Opportunity WHERE Id = :opp.Id];
+        System.assertEquals(opp.Name, nameUpdate.Name);
+        System.assertEquals(opp.Amount, amountUpdate.Amount);
+    }
+
+    /**
      * Assert that actual events exactly match expected events (size, order and name)
      * and types match expected types
      */
