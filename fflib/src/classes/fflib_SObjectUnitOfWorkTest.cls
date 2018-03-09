@@ -339,27 +339,27 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     }
 
     /**
-     * Try registering two instances of the same record as dirty.
+     * Try registering two instances of the same record as dirty. Second register should overwrite first.
      *
      *  Testing:
      *
      *      - Exception is thrown stopping second registration
      */
     @isTest
-    private static void testRegisterDirty_DoubleException() {
-        Opportunity opp = new Opportunity(Id = '00636000005loIj', Name = 'UpdateName');
-        Opportunity opp2 = new Opportunity(Id = '00636000005loIj', Amount = 250);
+    private static void testRegisterDirty_ExpectReplacement() {
+        final Opportunity insertedOpp = new Opportunity(Name = 'Original', StageName = 'Open', CloseDate = System.today());
+        insert insertedOpp;
+
+        Opportunity opp = new Opportunity(Id = insertedOpp.Id, Name = 'Never');
+        Opportunity opp2 = new Opportunity(Id = insertedOpp.Id, Name = 'Expected');
+
         fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
         uow.registerDirty(opp);
-        Boolean exceptionThrown = false;
-        try {
-            // Second registration would undo updates of first registration
-            uow.registerDirty(opp2);
-        } catch (fflib_SObjectUnitOfWork.UnitOfWorkException e) {
-            System.assert(e.getMessage().contains(opp.Id));
-            exceptionThrown = true;
-        }
-        System.assert(exceptionThrown);
+        uow.registerDirty(opp2);
+        uow.commitWork();
+
+        Opportunity updated = [select Id, Name from Opportunity where Id = :insertedOpp.Id];
+        System.assertEquals('Expected', updated.Name);
     }
 
     /**
@@ -381,7 +381,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         uow.registerDirty(amountUpdate, new List<SObjectField> { Opportunity.Amount } );
         uow.commitWork();
 
-        opp = [SELECT Name, Amount FROM Opportunity WHERE Id = :opp.Id];
+        opp = [select Name, Amount from Opportunity where Id = :opp.Id];
         System.assertEquals(opp.Name, nameUpdate.Name);
         System.assertEquals(opp.Amount, amountUpdate.Amount);
     }
