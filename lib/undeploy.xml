@@ -240,10 +240,6 @@ for(CronTrigger cron : crons) {
   <types>
   	<members>*</members>
   	<name>EscalationRules</name>
-  </types>	
-  <types>
-  	<members>*</members>
-  	<name>QuickAction</name>
   </types>
   <version>30.0</version>
 </Package>]]></echo>
