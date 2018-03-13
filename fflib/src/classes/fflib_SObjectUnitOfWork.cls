@@ -248,12 +248,34 @@ public virtual class fflib_SObjectUnitOfWork
      **/
     public void registerDirty(SObject record)
     {
+        registerDirty(record, new List<SObjectField>());
+    }
+
+    public void registerDirty(SObject record, List<SObjectField> dirtyFields)
+    {
         if(record.Id == null)
             throw new UnitOfWorkException('New records cannot be registered as dirty');
         String sObjectType = record.getSObjectType().getDescribe().getName();
         if(!m_dirtyMapByType.containsKey(sObjectType))
             throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
-        m_dirtyMapByType.get(sObjectType).put(record.Id, record);
+
+        // If record isn't registered as dirty, or no dirty fields to drive a merge
+        if (!m_dirtyMapByType.get(sObjectType).containsKey(record.Id) || dirtyFields.isEmpty())
+        {
+            // Register the record as dirty
+            m_dirtyMapByType.get(sObjectType).put(record.Id, record);
+        }
+        else
+        {
+            // Update the registered record's fields
+            SObject registeredRecord = m_dirtyMapByType.get(sObjectType).get(record.Id);
+
+            for (SObjectField dirtyField : dirtyFields) {
+                registeredRecord.put(dirtyField, record.get(dirtyField));
+            }
+
+            m_dirtyMapByType.get(sObjectType).put(record.Id, registeredRecord);
+        }
     }
 
     /**

@@ -339,6 +339,54 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     }
 
     /**
+     * Try registering two instances of the same record as dirty. Second register should overwrite first.
+     *
+     *  Testing:
+     *
+     *      - Exception is thrown stopping second registration
+     */
+    @isTest
+    private static void testRegisterDirty_ExpectReplacement() {
+        final Opportunity insertedOpp = new Opportunity(Name = 'Original', StageName = 'Open', CloseDate = System.today());
+        insert insertedOpp;
+
+        Opportunity opp = new Opportunity(Id = insertedOpp.Id, Name = 'Never');
+        Opportunity opp2 = new Opportunity(Id = insertedOpp.Id, Name = 'Expected');
+
+        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
+        uow.registerDirty(opp);
+        uow.registerDirty(opp2);
+        uow.commitWork();
+
+        Opportunity updated = [select Id, Name from Opportunity where Id = :insertedOpp.Id];
+        System.assertEquals('Expected', updated.Name);
+    }
+
+    /**
+     * Try registering a single field as dirty.
+     *
+     *  Testing:
+     *
+     *      - field is updated
+     */
+    @isTest
+    private static void testRegisterDirty_field() {
+        Opportunity opp = new Opportunity(Name = 'test name', StageName = 'Open', CloseDate = System.today());
+        insert opp;
+
+        Opportunity nameUpdate = new Opportunity(Id = opp.Id, Name = 'UpdateName');
+        Opportunity amountUpdate = new Opportunity(Id = opp.Id, Amount = 250);
+        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
+        uow.registerDirty(nameUpdate);
+        uow.registerDirty(amountUpdate, new List<SObjectField> { Opportunity.Amount } );
+        uow.commitWork();
+
+        opp = [select Name, Amount from Opportunity where Id = :opp.Id];
+        System.assertEquals(opp.Name, nameUpdate.Name);
+        System.assertEquals(opp.Amount, amountUpdate.Amount);
+    }
+
+    /**
      * Assert that actual events exactly match expected events (size, order and name)
      * and types match expected types
      */
