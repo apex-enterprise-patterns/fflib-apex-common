@@ -338,9 +338,10 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		this.order.add(o);
 		return this;
 	}
+
 	/**
 	 * @param o an instance of {@link fflib_QueryFactory.Ordering} to remove all existing (for instance defaults) and be added to the query's ORDER BY clause.
-	**/
+	 **/
 	public fflib_QueryFactory setOrdering(Ordering o){
 		this.order = new List<Ordering>{ o };
 		return this;
@@ -547,7 +548,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	**/  
     public fflib_QueryFactory addOrdering(String fieldName, SortOrder direction){
 		order.add(
-			new Ordering(getFieldToken(fieldName), direction)
+			new Ordering(getFieldPath(fieldName), direction)
 		);	
 		return this;
     }
@@ -566,83 +567,72 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	**/
     public fflib_QueryFactory addOrdering(SObjectField field, SortOrder direction){
 		order.add(
-			new Ordering(getFieldPath(fieldName), direction)
-		);	
-		return this;
-    }
-	/**
-	 * Remove existing ordering and set a field to be sorted on.  This may be a direct field or a field 
-	 * related through an object lookup or master-detail relationship.
-	 * Use the set to store unique field names, since we only want to sort
-	 * by the same field one time.  The sort expressions are stored in a list
-	 * so that they are applied to the SOQL in the same order that they
-	 * were added in. 
-	 * @param fieldName The string value of the field to be sorted on
-	 * @param SortOrder the direction to be sorted on (ASCENDING or DESCENDING)
-	 * @param nullsLast whether to sort null values last (NULLS LAST keyword included).
-	**/  
-    public fflib_QueryFactory setOrdering(String fieldName, SortOrder direction, Boolean nullsLast){
-		Ordering ordr = new Ordering(getFieldPath(fieldName), direction, nullsLast);
-		return setOrdering(ordr);
-    }
-
-     /**
-	 * Remove existing ordering and set a field to be sorted on.  This may be a direct field or a field 
-	 * related through an object lookup or master-detail relationship.
-	 * Use the set to store unique field names, since we only want to sort
-	 * by the same field one time.  The sort expressions are stored in a list
-	 * so that they are applied to the SOQL in the same order that they
-	 * were added in. 
-	 * @param field The SObjectfield to sort.  This can only be a direct reference.
-	 * @param SortOrder the direction to be sorted on (ASCENDING or DESCENDING)
-	 * @param nullsLast whether to sort null values last (NULLS LAST keyword included).
-	**/
-<<<<<<< HEAD
-    public fflib_QueryFactory addOrdering(SObjectField field, SortOrder direction){
-		order.add(
 			new Ordering(getFieldTokenPath(field), direction)
 		);	
 		return this;
-=======
-    public fflib_QueryFactory setOrdering(SObjectField field, SortOrder direction, Boolean nullsLast){
-		Ordering ordr = new Ordering(field, direction, nullsLast);
-		return setOrdering(ordr);
->>>>>>> #162: updated setOrderings for methods with string field name parameter
     }
 
-    /**
-	 * Remove existing ordering and set a field to be sorted on.  This may be a direct field or a field 
+	/**
+	 * Remove existing ordering and set a field to be sorted on.  This may be a direct field or a field
 	 * related through an object lookup or master-detail relationship.
 	 * Use the set to store unique field names, since we only want to sort
 	 * by the same field one time.  The sort expressions are stored in a list
 	 * so that they are applied to the SOQL in the same order that they
-	 * were added in. 
-	 * The "NULLS FIRST" keywords will be included by default.  If "NULLS LAST" 
-	 * is required, use one of the overloaded addOrdering methods which include this parameter.
+	 * were added in.
 	 * @param fieldName The string value of the field to be sorted on
 	 * @param SortOrder the direction to be sorted on (ASCENDING or DESCENDING)
-	**/  
-    public fflib_QueryFactory setOrdering(String fieldName, SortOrder direction){
-		Ordering ordr = new Ordering(getFieldPath(fieldName), direction);
+	 * @param nullsLast whether to sort null values last (NULLS LAST keyword included).
+	**/
+	public fflib_QueryFactory setOrdering(String fieldName, SortOrder direction, Boolean nullsLast){
+		Ordering ordr = new Ordering(getFieldPath(fieldName), direction, nullsLast);
 		return setOrdering(ordr);
-    }
+	}
 
-     /**
-	 * Remove existing ordering and set a field to be sorted on.  This may be a direct field or a field 
+	/**
+	 * Remove existing ordering and set a field to be sorted on.  This may be a direct field or a field
+	 * related through an object lookup or masterdetail relationship.
+	 * Use the set to store unique field names, since we only want to sort
+	 * by the same field one time.  The sort expressions are stored in a list
+	 * so that they are applied to the SOQL in the same order that they
+	 * were added in.
+	 * @param field The SObjectfield to sort.  This can only be a direct reference.
+	 * @param SortOrder the direction to be sorted on (ASCENDING or DESCENDING)
+	 * @param nullsLast whether to sort null values last (NULLS LAST keyword included).
+	**/
+	public fflib_QueryFactory setOrdering(SObjectField field, SortOrder direction, Boolean nullsLast){
+		Ordering ordr = new Ordering(getFieldTokenPath(field), direction, nullsLast);
+		return setOrdering(ordr);
+	}
+
+	/**
+	 * Remove existing ordering and set a field to be sorted on.  This may be a direct field or a field
 	 * related through an object lookup or master-detail relationship.
 	 * Use the set to store unique field names, since we only want to sort
 	 * by the same field one time.  The sort expressions are stored in a list
 	 * so that they are applied to the SOQL in the same order that they
-	 * were added in. 
-	 * The "NULLS FIRST" keywords will be included by default.  If "NULLS LAST" 
-	 * is required, use one of the overloaded addOrdering methods which include this parameter.
+	 * were added in.
+	 * @param fieldName The string value of the field to be sorted on
+	 * @param SortOrder the direction to be sorted on (ASCENDING or DESCENDING)
+	**/
+	public fflib_QueryFactory setOrdering(String fieldName, SortOrder direction){
+		Ordering ordr = new Ordering(getFieldPath(fieldName), direction);
+		return setOrdering(ordr);
+	}
+
+	/**
+	 * Remove existing ordering and set a field to be sorted on.  This may be a direct field or a field
+	 * related through an object lookup or masterdetail relationship.
+	 * Use the set to store unique field names, since we only want to sort
+	 * by the same field one time.  The sort expressions are stored in a list
+	 * so that they are applied to the SOQL in the same order that they
+	 * were added in.
 	 * @param field The SObjectfield to sort.  This can only be a direct reference.
 	 * @param SortOrder the direction to be sorted on (ASCENDING or DESCENDING)
 	**/
-    public fflib_QueryFactory setOrdering(SObjectField field, SortOrder direction){
-		Ordering ordr = new Ordering(field, direction);	
+	public fflib_QueryFactory setOrdering(SObjectField field, SortOrder direction){
+		Ordering ordr = new Ordering(getFieldTokenPath(field), direction);
 		return setOrdering(ordr);
-    }
+	}
 
 	/**
 	 * Convert the values provided to this instance into a full SOQL string for use with Database.query
