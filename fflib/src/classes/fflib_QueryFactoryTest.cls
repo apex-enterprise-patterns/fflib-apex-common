@@ -161,7 +161,7 @@ private class fflib_QueryFactoryTest {
 		System.assert( Pattern.matches('SELECT.*Email.*FROM.*',query), 'Expected Name field in query, got '+query);
 	}
 
-	@isTest(isParallel=true)
+	@isTest
 	static void setOrdering_ReplacesPreviousOrderingsWithExpectedOrdering(){
 		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
 		qf.selectField('name');
