@@ -151,7 +151,7 @@ private with sharing class fflib_SObjectSelectorTest
 	{
 		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
 		String soql = selector.newQueryFactory().toSOQL();
-		Pattern p = Pattern.compile('SELECT (.*) FROM Account ORDER BY Name DESC NULLS FIRST , AnnualRevenue ASC NULLS FIRST ');
+		Pattern p = Pattern.compile('SELECT (.*) FROM Account ORDER BY Name DESC NULLS FIRST , AnnualRevenue ASC NULLS LAST ');
 		Matcher m = p.matcher(soql);
 		System.assert(m.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
 		System.assertEquals(1, m.groupCount(), 'Unexpected number of groups captured.');
@@ -208,12 +208,36 @@ private with sharing class fflib_SObjectSelectorTest
 		String soql = qf.toSOQL();
 
 		//Then
-		Pattern soqlPattern = Pattern.compile('SELECT (.*) FROM Account ORDER BY Name DESC NULLS FIRST , AnnualRevenue ASC NULLS FIRST ');
+		Pattern soqlPattern = Pattern.compile('SELECT (.*) FROM Account ORDER BY Name DESC NULLS FIRST , AnnualRevenue ASC NULLS LAST ');
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
 		soqlMatcher.matches();
 
 		List<String> actualSelectFields = soqlMatcher.group(1).deleteWhiteSpace().split(',');
 		System.assertEquals(expectedSelectFields, new Set<String>(actualSelectFields));
+	}
+
+	// Test case of ordering with NULLS LAST option passed into the ordering method
+	@isTest
+	static void testWithOrderingNullsLast()
+	{
+		// Build the selector to test with
+		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector(false, false, false, false);
+		fflib_QueryFactory qf = selector.newQueryFactory();
+		
+		// Add in the expected fields
+		Set<String> expectedSelectFields = new Set<String>{ 'Name', 'Id', 'AccountNumber', 'AnnualRevenue' };
+		if (UserInfo.isMultiCurrencyOrganization())
+		{
+			expectedSelectFields.add('CurrencyIsoCode');
+		}
+
+		// Generate the SOQL string
+		String soql = qf.toSOQL();
+
+		// Assert that the
+		Pattern soqlPattern = Pattern.compile('SELECT (.*) FROM Account ORDER BY Name DESC NULLS FIRST , AnnualRevenue ASC NULLS LAST ');
+		Matcher soqlMatcher = soqlPattern.matcher(soql);
+		system.assert(soqlMatcher.matches(), 'The SOQL should have that expected.');
 	}
 	
 	private static void assertEqualsSelectFields(String expectedSelectFields, String actualSelectFields)
@@ -253,7 +277,7 @@ private with sharing class fflib_SObjectSelectorTest
 		
 		public override String getOrderBy()
 		{
-			return 'Name DESC, AnnualRevenue ASC';
+			return 'Name DESC, AnnualRevenue ASC NULLS LAST';
 		}
 	}
 	
