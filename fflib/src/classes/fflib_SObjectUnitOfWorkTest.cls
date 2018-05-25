@@ -35,6 +35,125 @@ private with sharing class fflib_SObjectUnitOfWorkTest
             Opportunity.SObjectType,
             OpportunityLineItem.SObjectType };
 
+	@IsTest
+	private static void itShouldRetrieveACleanRecord()
+	{
+		// GIVEN a clean account
+		Account myAccount = new Account(Name = 'Test', Id = fflib_IDGenerator.generate(Account.SObjectType));
+		fflib_SObjectUnitOfWork unitOfWork = new fflib_SObjectUnitOfWork(new List<SObjectType> {Account.SObjectType});
+
+		// WHEN the clean account is registered to the unit of work and it becomes dirty due to a changed
+		unitOfWork.registerClean(myAccount);
+		myAccount.Name = 'Test A';
+		Map<Id, SObject> cleanRecords = unitOfWork.getClean(Account.SObjectType, new Set<Id> {myAccount.Id});
+
+		// THEN then the clean account in the unit of work should exist and be as it was, clean
+		System.assert(!cleanRecords.isEmpty(), 'Clean records were not stored or retrieved correctly from unit of work');
+		System.assert(cleanRecords.containsKey(myAccount.Id), 'Account record not found in unit of work as clean');
+		System.assertNotEquals(myAccount.Name, cleanRecords.get(myAccount.Id).get(Account.Name), 'Clean record seem to be dirty');
+	}
+
+	@IsTest
+	private static void itShouldRetrieveAMergedCleanRecord()
+	{
+		// GIVEN two the same clean accounts with different fields populated
+		Id accountId = fflib_IDGenerator.generate(Account.SObjectType);
+		Account accountA = new Account(Id = accountId, Name = 'Test', AccountNumber='12345');
+		Account accountB = new Account(Id = accountId, Name = 'Test', BillingCountry='Holland');
+		fflib_SObjectUnitOfWork unitOfWork = new fflib_SObjectUnitOfWork(new List<SObjectType> {Account.SObjectType});
+
+		// WHEN both accounts are registered as clean
+		unitOfWork.registerClean(new List<SObject> { accountA, accountB });
+		Map<Id, SObject> cleanRecords = unitOfWork.getClean(Account.SObjectType, new Set<Id> { accountId });
+
+		// THEN one record should be returned with all fields merged into the account
+		System.assert(!cleanRecords.isEmpty(), 'Clean records were not stored or retrieved correctly from unit of work');
+		System.assert(cleanRecords.containsKey(accountId), 'Account record not found in unit of work as clean');
+		System.assertEquals(4, cleanRecords.get(accountId).getPopulatedFieldsAsMap().size(), 'Incorrect number of field');
+	}
+
+	@IsTest
+	private static void itShouldRetrieveADirtyRecord()
+	{
+		// GIVEN a list of dirty accounts registered in the unit of work
+		fflib_SObjectUnitOfWork unitOfWork = new fflib_SObjectUnitOfWork(new List<SObjectType> {Account.SObjectType});
+		Account myAccountA = new Account(Name = 'Test A', Id = fflib_IDGenerator.generate(Account.SObjectType));
+		unitOfWork.registerDirty(
+				new List<Account>
+				{
+						myAccountA,
+						new Account(Name = 'Test B', Id = fflib_IDGenerator.generate(Account.SObjectType))
+				}
+		);
+
+		// WHEN a single dirty account is requested
+		Map<Id, SObject> dirtyRecords = unitOfWork.getDirty(Account.SObjectType, new Set<Id> {myAccountA.Id});
+
+		// THEN the dirty account record should be returned
+		System.assert(!dirtyRecords.isEmpty(), 'Should have had one record returned by the unit of work');
+		System.assert(dirtyRecords.containsKey(myAccountA.Id), 'Incorrect returned account');
+	}
+
+	@IsTest
+	private static void itShouldRetrieveADeletedRecord()
+	{
+		// GIVEN a list of deleted accounts registered in the unit of work
+		fflib_SObjectUnitOfWork unitOfWork = new fflib_SObjectUnitOfWork(new List<SObjectType> {Account.SObjectType});
+		Account myAccountA = new Account(Name = 'Test A', Id = fflib_IDGenerator.generate(Account.SObjectType));
+		unitOfWork.registerDeleted(
+				new List<Account>
+				{
+						myAccountA,
+						new Account(Name = 'Test B', Id = fflib_IDGenerator.generate(Account.SObjectType))
+				}
+		);
+
+		// WHEN a list of possible deleted account id's is requested
+		Set<Id> accountIds = new Set<Id>
+		{
+				myAccountA.Id,
+				fflib_IDGenerator.generate(Account.SObjectType)
+		};
+		Map<Id, SObject> deletedRecords = unitOfWork.getDeleted(Account.SObjectType, accountIds);
+		Set<Id> deletedRecordIds = unitOfWork.getDeletedIds(Account.SObjectType, accountIds);
+
+		// THEN only the registered account for deletion should be returned
+		System.assert(!deletedRecords.isEmpty(), 'Should have one deleted record');
+		System.assert(!deletedRecordIds.isEmpty(), 'Should have one deleted record');
+		System.assert(deletedRecords.containsKey(myAccountA.Id), 'Deleted account not returned');
+	}
+
+	@IsTest
+	private static void itShouldOnlyRegisterDirtyFieldsBasedOnCleanRecord()
+	{
+		// GIVEN a clean and dirty registered version of the same record in the unit of work
+		fflib_SObjectUnitOfWork unitOfWork = new fflib_SObjectUnitOfWork(new List<SObjectType> {Account.SObjectType});
+		Id accountId = fflib_IDGenerator.generate(Account.SObjectType);
+		Account accountA = new Account(Id = accountId, Name = 'Test', AccountNumber='12345', BillingCountry='Holland');
+		Account accountB = new Account(Id = accountId, Name = 'Test', AccountNumber='12345');
+		unitOfWork.registerClean(accountA);
+		accountA.Name = 'Test A';
+		unitOfWork.registerDirty(accountA);
+
+		// WHEN the another dirty version is registered
+		accountB.AccountNumber = '54321';
+		unitOfWork.registerDirty(
+				new List<SObject>
+				{
+						accountB,
+						new Account(Id = fflib_IDGenerator.generate(Account.SObjectType), Name = 'Just another account')
+				});
+
+		// THEN it should only register the changed field, and not overwrite the first dirty registered fields
+		Map<Id, SObject> dirtyRecords = unitOfWork.getDirty(Account.SObjectType, new Set<Id> {accountId});
+		System.assert(!dirtyRecords.isEmpty(), 'Should have one dirty record');
+		System.assert(dirtyRecords.containsKey(accountId), 'Dirty account not returned');
+		System.assertEquals(
+				new Account(Id = accountId, Name = 'Test A', AccountNumber='54321', BillingCountry='Holland'),
+				dirtyRecords.get(accountId),
+				'Merge failed of dirty accounts');
+	}
+
     @isTest
     private static void testUnitOfWorkEmail()
     {

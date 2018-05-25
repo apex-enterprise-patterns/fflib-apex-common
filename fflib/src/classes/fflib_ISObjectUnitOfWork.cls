@@ -14,6 +14,50 @@
  **/
 public interface fflib_ISObjectUnitOfWork
 {
+     /**
+     * Register a just queried SObject that has not been changed yet
+     *
+     * @param record A queried SObject instance
+     **/
+	void registerClean(SObject record);
+	/**
+     * Register a list of just queried SObject that has not been changed yet
+     *
+     * @param records A list of queried SObject instances
+     **/
+	void registerClean(List<SObject> records);
+	/**
+	 * Get clean registered records
+	 *
+	 * @param sObjectType
+	 * @param idSet A set of Id's to search for
+	 */
+	Map<Id, SObject> getClean(String sObjectType, Set<Id> idSet);
+    Map<Id, SObject> getClean(Schema.SObjectType sObjectType, Set<Id> idSet);
+	/**
+	 * Get dirty registered records
+	 *
+	 * @param sObjectType
+	 * @param idSet A set of Id's to search for
+	 */
+	Map<Id, SObject> getDirty(String sObjectType, Set<Id> idSet);
+	Map<Id, SObject> getDirty(Schema.SObjectType sObjectType, Set<Id> idSet);
+	/**
+	 * Get deleted registered records
+	 *
+	 * @param sObjectType
+	 * @param idSet A set of Id's to search for
+	 */
+	Map<Id, SObject> getDeleted(String sObjectType, Set<Id> idSet);
+	Map<Id, SObject> getDeleted(Schema.SObjectType sObjectType, Set<Id> idSet);
+	/**
+     * Get Ids of deleted registered records
+     *
+     * @param sObjectType
+     * @param idSet A set of Id's to search for
+     */
+	Set<Id> getDeletedIds(String sObjectType, Set<Id> idSet);
+	Set<Id> getDeletedIds(Schema.SObjectType sObjectType, Set<Id> idSet);
     /**
      * Register a newly created SObject instance to be inserted when commitWork is called
      *
