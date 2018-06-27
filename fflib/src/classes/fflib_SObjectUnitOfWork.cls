@@ -58,7 +58,7 @@ public virtual class fflib_SObjectUnitOfWork
 
     protected Map<String, List<SObject>> m_newListByType = new Map<String, List<SObject>>();
 
-	protected Map<String, Map<Id, SObject>> m_cleanMapByType = new Map<String, Map<Id, SObject>>();
+	private static Map<String, Map<Id, SObject>> m_cleanMapByType = new Map<String, Map<Id, SObject>>();
 
     protected Map<String, Map<Id, SObject>> m_dirtyMapByType = new Map<String, Map<Id, SObject>>();
 
