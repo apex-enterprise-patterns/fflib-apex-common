@@ -70,6 +70,8 @@ public virtual class fflib_SObjectUnitOfWork
 
     protected IDML m_dml;
 
+    protected Boolean m_attemptToResolveOutOfOrderRelationships = false;
+
     /**
      * Interface describes work to be performed during the commitWork method
      **/
@@ -136,6 +138,22 @@ public virtual class fflib_SObjectUnitOfWork
     public virtual void onCommitWorkFinished(Boolean wasSuccessful) {}
 
     /**
+     * Calling this allows relationships class to track relationships that weren't resolved on insert and attempt
+     * to set the relationship in a subsequent update. This is slightly less efficient than the default behaviour
+     * of silently failing to set the lookup in this scenario.
+     *
+     * @return this unit of work
+     */
+    public fflib_SObjectUnitOfWork attemptToResolveOutOfOrderRelationships()
+    {
+        m_attemptToResolveOutOfOrderRelationships = true;
+        for (Relationships relationships : m_relationships.values()) {
+            relationships.attemptToResolveOutOfOrderRelationships(true);
+        }
+        return this;
+    }
+
+    /**
      * Registers the type to be used for DML operations
      *
      * @param sObjectType - The type to register
@@ -147,7 +165,8 @@ public virtual class fflib_SObjectUnitOfWork
         m_newListByType.put(sObjectType.getDescribe().getName(), new List<SObject>());
         m_dirtyMapByType.put(sObjectType.getDescribe().getName(), new Map<Id, SObject>());
         m_deletedMapByType.put(sObjectType.getDescribe().getName(), new Map<Id, SObject>());
-        m_relationships.put(sObjectType.getDescribe().getName(), new Relationships());
+        m_relationships.put(sObjectType.getDescribe().getName(),
+                new Relationships().attemptToResolveOutOfOrderRelationships(m_attemptToResolveOutOfOrderRelationships));
 
         // give derived class opportunity to register the type
         onRegisterType(sObjectType);
@@ -360,6 +379,21 @@ public virtual class fflib_SObjectUnitOfWork
                 m_relationships.get(sObjectType.getDescribe().getName()).resolve();
                 m_dml.dmlInsert(m_newListByType.get(sObjectType.getDescribe().getName()));
             }
+
+            // Resolve any unresolved relationships where parent was inserted after child, and so child lookup was not set
+            if (m_attemptToResolveOutOfOrderRelationships)
+            {
+                for(Schema.SObjectType sObjectType : m_sObjectTypes)
+                {
+                    Relationships relationships = m_relationships.get(sObjectType.getDescribe().getName());
+                    if (relationships.hasParentInsertedAfterChild())
+                    {
+                        List<SObject> childrenToUpdate = relationships.resolveParentInsertedAfterChild();
+                        m_dml.dmlUpdate(childrenToUpdate);
+                    }
+                }
+            }
+
             // Update by type
             for(Schema.SObjectType sObjectType : m_sObjectTypes)
                 m_dml.dmlUpdate(m_dirtyMapByType.get(sObjectType.getDescribe().getName()).values());
@@ -405,6 +439,24 @@ public virtual class fflib_SObjectUnitOfWork
     private class Relationships
     {
         private List<IRelationship> m_relationships = new List<IRelationship>();
+        private Boolean m_attemptToResolveOutOfOrderRelationships = false;
+        private List<RelationshipPermittingOutOfOrderInsert> m_parentInsertedAfterChildRelationships =
+                new List<RelationshipPermittingOutOfOrderInsert>();
+
+        /**
+         * Calling this allows relationships class to track relationships that weren't resolved on insert and attempt
+         * to set the relationship in a subsequent update. This is slightly less efficient than the default behaviour
+         * of silently failing to set the lookup in this scenario.
+         *
+         * @param attemptToResolve If true then will track relationships that weren't resolved on insert
+         *
+         * @return this object
+         */
+        public Relationships attemptToResolveOutOfOrderRelationships(Boolean attemptToResolve)
+        {
+            m_attemptToResolveOutOfOrderRelationships = attemptToResolve;
+            return this;
+        }
 
         public void resolve()
         {
@@ -413,18 +465,85 @@ public virtual class fflib_SObjectUnitOfWork
             {
                 //relationship.Record.put(relationship.RelatedToField, relationship.RelatedTo.Id);
                 relationship.resolve();
-            }
 
+                // Check if parent is inserted after the child
+                if (m_attemptToResolveOutOfOrderRelationships &&
+                        relationship instanceof RelationshipPermittingOutOfOrderInsert &&
+                        !((RelationshipPermittingOutOfOrderInsert) relationship).Resolved)
+                {
+                    m_parentInsertedAfterChildRelationships.add((RelationshipPermittingOutOfOrderInsert) relationship);
+                }
+            }
+        }
+
+        /**
+         * @return true if there are unresolved relationships
+         */
+        public Boolean hasParentInsertedAfterChild()
+        {
+            return !m_parentInsertedAfterChildRelationships.isEmpty();
+        }
+
+        /**
+         * Call this after all records in the UOW have been inserted to set the lookups on the children that were
+         * inserted before the parent was inserted
+         *
+         * @throws UnitOfWorkException if the parent still does not have an ID - can occur if parent is not registered
+         * @return The child records to update in order to set the lookups
+         */
+        public List<SObject> resolveParentInsertedAfterChild() {
+            for (RelationshipPermittingOutOfOrderInsert relationship : m_parentInsertedAfterChildRelationships)
+            {
+                relationship.resolve();
+                if (!relationship.Resolved)
+                {
+                    throw new UnitOfWorkException('Error resolving relationship where parent is inserted after child.' +
+                            ' The parent has not been inserted. Is it registered with a unit of work?');
+                }
+            }
+            return getChildRecordsWithParentInsertedAfter();
+        }
+
+        /**
+         * Call after calling resolveParentInsertedAfterChild()
+         *
+         * @return The child records to update in order to set the lookups
+         */
+        private List<SObject> getChildRecordsWithParentInsertedAfter()
+        {
+            // Get rid of dupes
+            Map<Id, SObject> recordsToUpdate = new Map<Id, SObject>();
+            for (RelationshipPermittingOutOfOrderInsert relationship : m_parentInsertedAfterChildRelationships)
+            {
+                SObject childRecord = relationship.Record;
+                SObject recordToUpdate = recordsToUpdate.get(childRecord.Id);
+                if (recordToUpdate == null)
+                    recordToUpdate = childRecord.getSObjectType().newSObject(childRecord.Id);
+                recordToUpdate.put(relationship.RelatedToField, childRecord.get(relationship.RelatedToField));
+                recordsToUpdate.put(recordToUpdate.Id, recordToUpdate);
+            }
+            return recordsToUpdate.values();
         }
 
         public void add(SObject record, Schema.sObjectField relatedToField, SObject relatedTo)
         {
             // Relationship to resolve
-            Relationship relationship = new Relationship();
-            relationship.Record = record;
-            relationship.RelatedToField = relatedToField;
-            relationship.RelatedTo = relatedTo;
-            m_relationships.add(relationship);
+            if (!m_attemptToResolveOutOfOrderRelationships)
+            {
+                Relationship relationship = new Relationship();
+                relationship.Record = record;
+                relationship.RelatedToField = relatedToField;
+                relationship.RelatedTo = relatedTo;
+                m_relationships.add(relationship);
+            }
+            else
+            {
+                RelationshipPermittingOutOfOrderInsert relationship = new RelationshipPermittingOutOfOrderInsert();
+                relationship.Record = record;
+                relationship.RelatedToField = relatedToField;
+                relationship.RelatedTo = relatedTo;
+                m_relationships.add(relationship);
+            }
         }
 
         public void add(Messaging.SingleEmailMessage email, SObject relatedTo)
@@ -450,6 +569,34 @@ public virtual class fflib_SObjectUnitOfWork
         public void resolve()
         {
             this.Record.put( this.RelatedToField, this.RelatedTo.Id);
+        }
+    }
+
+    private class RelationshipPermittingOutOfOrderInsert implements IRelationship {
+        public SObject Record;
+        public Schema.sObjectField RelatedToField;
+        public SObject RelatedTo;
+        public Boolean Resolved = false;
+
+        public void resolve()
+        {
+            if (RelatedTo.Id == null) {
+                /*
+                If relationship is between two records in same table then update is always required to set the lookup,
+                so no warning is needed. Otherwise the caller may be able to be more efficient by reordering the order
+                that the records are inserted, so alert the caller of this.
+                */
+                if (RelatedTo.getSObjectType() != Record.getSObjectType()) {
+                    System.debug(System.LoggingLevel.WARN, 'Inefficient use of register relationship, related to ' +
+                            'record should be first in dependency list to save an update; parent should be inserted ' +
+                            'before child so child does not need an update. In unit of work initialization put ' +
+                            '' + RelatedTo.getSObjectType() + ' before ' + Record.getSObjectType());
+                }
+                resolved = false;
+            } else {
+                Record.put(RelatedToField, RelatedTo.Id);
+                resolved = true;
+            }
         }
     }
 
