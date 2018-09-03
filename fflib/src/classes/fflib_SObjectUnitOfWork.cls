@@ -312,7 +312,7 @@ public virtual class fflib_SObjectUnitOfWork
     }
 
     /**
-     * Register an new or existing record to be inserted/updated during the commitWork method
+     * Register a new or existing record to be inserted/updated during the commitWork method
      *
      * @param record A new or existing record
      **/
