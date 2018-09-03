@@ -312,6 +312,34 @@ public virtual class fflib_SObjectUnitOfWork
     }
 
     /**
+     * Register an new or existing record to be inserted/updated during the commitWork method
+     *
+     * @param record A new or existing record
+     **/
+    public void registerUpsert(SObject record)
+    {
+        if (record.Id == null) 
+        {
+            registerNew(record, null, null);
+        } else {
+            registerDirty(record, new List<SObjectField>());
+        }
+    }
+
+    /**
+     * Register a list of mix of new and existing records to be inserted updated during the commitWork method
+     *
+     * @param records A list of mix of new and existing records
+     **/
+    public void registerUpsert(List<SObject> records)
+    {
+        for(SObject record : records)
+        {
+            this.registerUpsert(record);
+        }
+    }
+
+    /**
      * Register an existing record to be deleted during the commitWork method
      *
      * @param record An existing record
