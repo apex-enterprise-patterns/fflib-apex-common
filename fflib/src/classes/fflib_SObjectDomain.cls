@@ -274,8 +274,9 @@ public virtual with sharing class fflib_SObjectDomain
 		List<SObject> changedRecords = new List<SObject>();
 		for(SObject newRecord : Records)
 		{
-			if(Trigger.oldMap == null || !Trigger.oldMap.containsKey(Record.get('Id'))) continue;
-			SObject oldRecord = Trigger.oldMap.get('Id');
+			Id recordId = (Id)newRecord.get('Id');
+			if(Trigger.oldMap == null || !Trigger.oldMap.containsKey(recordId)) continue;
+			SObject oldRecord = Trigger.oldMap.get(recordId);
 			for(String fieldName : fieldNames)
 			{
 				if(oldRecord.get(fieldName) != newRecord.get(fieldName)) changedRecords.add(newRecord);
@@ -293,11 +294,12 @@ public virtual with sharing class fflib_SObjectDomain
 		List<SObject> changedRecords = new List<SObject>();
 		for(SObject newRecord : Records)
 		{
-			if(Trigger.oldMap == null || !Trigger.oldMap.containsKey(newRecord.get('Id'))) continue;
-			SObject oldRecord = Trigger.oldMap.get(newRecord.get('Id'));
-			for(String fieldName : fieldNames)
+			Id recordId = (Id)newRecord.get('Id');
+			if(Trigger.oldMap == null || !Trigger.oldMap.containsKey(recordId)) continue;
+			SObject oldRecord = Trigger.oldMap.get(recordId);
+			for(Schema.SObjectField fieldToken : fieldTokens)
 			{
-				if(oldRecord.get(fieldName) != newRecord.get(fieldName)) changedRecords.add(newRecord);
+				if(oldRecord.get(fieldToken) != newRecord.get(fieldToken)) changedRecords.add(newRecord);
 			}
 		}
 		return changedRecords;
@@ -901,6 +903,29 @@ public virtual with sharing class fflib_SObjectDomain
 		public fflib_SObjectDomain construct(List<SObject> sObjectList)
 		{
 			return new TestSObjectOnValidateBehaviour(sObjectList);
+		}				
+	}
+
+	/**
+	 * Test domain class (ideally this would be in the test class, however Type.newInstance does not see such classes)
+	 **/
+	public with sharing class TestSObjectChangedRecords 
+		extends fflib_SObjectDomain 
+	{
+		public TestSObjectChangedRecords(List<Opportunity> sObjectList)
+		{
+			super(sObjectList);
+		}
+	}	
+	
+	/**
+	 * Typically an inner class to the domain class, supported here for test purposes
+	 **/	
+	public class TestSObjectChangedRecordsConstructor implements fflib_SObjectDomain.IConstructable
+	{
+		public fflib_SObjectDomain construct(List<SObject> sObjectList)
+		{
+			return new TestSObjectChangedRecords(sObjectList);
 		}				
 	}					
 }
