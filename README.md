@@ -1,6 +1,8 @@
 FinancialForce Apex Common
 ==========================
 
+[![Build Status](https://travis-ci.org/financialforcedev/fflib-apex-common.svg)](https://travis-ci.org/financialforcedev/fflib-apex-common) 
+
 **Dependencies:** Must deploy [ApexMocks](https://github.com/financialforcedev/fflib-apex-mocks) before deploying this library
 
 <a href="https://githubsfdeploy.herokuapp.com?owner=financialforcedev&repo=fflib-apex-common">
@@ -41,8 +43,8 @@ Dreamforce Session and Slides
 Documentation
 -------------
 
-I'm proud to have been given the opportunity to run a more detailed look at these patterns on developer.force.com. 
-
+- [Apex Sharing and applying to Apex Enterprise Patterns](http://andyinthecloud.com/2016/01/10/apex-sharing-and-applying-to-apex-enterprise-patterns/)
+- [Tips for Migrating to Apex Enterprise Patterns](http://andyinthecloud.com/2015/09/30/tips-for-migrating-to-apex-enterprise-patterns/)
 - [Great Contributions to Apex Enterprise Patterns](http://andyinthecloud.com/2015/07/25/great-contributions-to-apex-enterprise-patterns/)
 - [Unit Testing, Apex Enterprise Patterns and ApexMocks – Part 1](http://andyinthecloud.com/2015/03/22/unit-testing-with-apex-enterprise-patterns-and-apexmocks-part-1/)
 - [Unit Testing, Apex Enterprise Patterns and ApexMocks – Part 2](http://andyinthecloud.com/2015/03/29/unit-testing-apex-enterprise-patterns-and-apexmocks-part-2/)

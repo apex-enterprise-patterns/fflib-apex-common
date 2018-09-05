@@ -71,6 +71,11 @@ public virtual with sharing class fflib_SObjectDomain
 	 **/
 	private static Map<Type, List<fflib_SObjectDomain>> TriggerStateByClass; 
 	
+	/**
+	 * Retains the trigger tracking configuraiton used for each domain
+	 **/
+	private static Map<Type, TriggerEvent> TriggerEventByClass;
+
 	static
 	{
 		Errors = new ErrorFactory();
@@ -78,6 +83,8 @@ public virtual with sharing class fflib_SObjectDomain
 		Test = new TestFactory();
 		
 		TriggerStateByClass = new Map<Type, List<fflib_SObjectDomain>>();
+
+		TriggerEventByClass = new Map<Type, TriggerEvent>();
 	}
 	
 	/**
@@ -389,6 +396,12 @@ public virtual with sharing class fflib_SObjectDomain
 	        	pushTriggerInstance(domainClass, domainObject);	
 		}
 		
+		// has this event been disabled?
+		if(!getTriggerEvent(domainClass).isEnabled(isBefore, isAfter, isInsert, isUpdate, isDelete, isUndelete))
+		{
+			return;
+		}
+
 		// Invoke the applicable handler
 		if(isBefore)
 	    {
@@ -429,6 +442,102 @@ public virtual with sharing class fflib_SObjectDomain
 		return domain;
 	}
 	
+	public static TriggerEvent getTriggerEvent(Type domainClass)
+	{
+		if(!TriggerEventByClass.containsKey(domainClass))
+		{
+			TriggerEventByClass.put(domainClass, new TriggerEvent());
+		}
+
+		return TriggerEventByClass.get(domainClass);
+	}
+
+	public class TriggerEvent
+	{
+		public boolean BeforeInsertEnabled {get; private set;}
+		public boolean BeforeUpdateEnabled {get; private set;}
+		public boolean BeforeDeleteEnabled {get; private set;}
+
+		public boolean AfterInsertEnabled {get; private set;}
+		public boolean AfterUpdateEnabled {get; private set;}
+		public boolean AfterDeleteEnabled {get; private set;}
+		public boolean AfterUndeleteEnabled {get; private set;}
+
+		public TriggerEvent()
+		{
+			this.enableAll();
+		}
+
+		// befores
+		public TriggerEvent enableBeforeInsert() {BeforeInsertEnabled = true; return this;}
+		public TriggerEvent enableBeforeUpdate() {BeforeUpdateEnabled = true; return this;}
+		public TriggerEvent enableBeforeDelete() {BeforeDeleteEnabled = true; return this;}
+
+		public TriggerEvent disableBeforeInsert() {BeforeInsertEnabled = false; return this;}
+		public TriggerEvent disableBeforeUpdate() {BeforeUpdateEnabled = false; return this;}
+		public TriggerEvent disableBeforeDelete() {BeforeDeleteEnabled = false; return this;}
+		
+		// afters
+		public TriggerEvent enableAfterInsert() 	{AfterInsertEnabled 	= true; return this;}
+		public TriggerEvent enableAfterUpdate() 	{AfterUpdateEnabled 	= true; return this;}
+		public TriggerEvent enableAfterDelete() 	{AfterDeleteEnabled 	= true; return this;}
+		public TriggerEvent enableAfterUndelete() {AfterUndeleteEnabled 	= true; return this;}
+
+		
+		public TriggerEvent disableAfterInsert()	{AfterInsertEnabled 	= false; return this;}
+		public TriggerEvent disableAfterUpdate()	{AfterUpdateEnabled 	= false; return this;}
+		public TriggerEvent disableAfterDelete()	{AfterDeleteEnabled 	= false; return this;}
+		public TriggerEvent disableAfterUndelete(){AfterUndeleteEnabled 	= false; return this;}
+
+		public TriggerEvent enableAll()
+		{
+			return this.enableAllBefore().enableAllAfter();
+		}
+
+		public TriggerEvent disableAll()
+		{
+			return this.disableAllBefore().disableAllAfter();
+		}
+
+		public TriggerEvent enableAllBefore()
+		{
+			return this.enableBeforeInsert().enableBeforeUpdate().enableBeforeDelete();
+		}
+
+		public TriggerEvent disableAllBefore()
+		{
+			return this.disableBeforeInsert().disableBeforeUpdate().disableBeforeDelete();
+		}
+
+		public TriggerEvent enableAllAfter()
+		{
+			return this.enableAfterInsert().enableAfterUpdate().enableAfterDelete().enableAfterUndelete();
+		}
+
+		public TriggerEvent disableAllAfter()
+		{
+			return this.disableAfterInsert().disableAfterUpdate().disableAfterDelete().disableAfterUndelete();
+		}
+
+		public boolean isEnabled(Boolean isBefore, Boolean isAfter, Boolean isInsert, Boolean isUpdate, Boolean isDelete, Boolean isUndelete)
+		{
+			if(isBefore)
+			{
+				if(isInsert) return BeforeInsertEnabled;
+				else if(isUpdate) return BeforeUpdateEnabled;
+				else if(isDelete) return BeforeDeleteEnabled;
+			}
+			else if(isAfter)
+			{
+				if(isInsert) 		return AfterInsertEnabled;
+				else if(isUpdate) 	return AfterUpdateEnabled;
+				else if(isDelete) 	return AfterDeleteEnabled;
+				else if(isUndelete) return AfterUndeleteEnabled;
+			}
+			return true; // shouldnt ever get here!
+		}
+	}
+
 	/**
 	 * Fluent style Configuration system for Domain class creation
 	 **/
@@ -928,4 +1037,62 @@ public virtual with sharing class fflib_SObjectDomain
 			return new TestSObjectChangedRecords(sObjectList);
 		}				
 	}					
+	
+	/**
+	 * Test domain class (ideally this would be in the test class, however Type.newInstance does not see such classes)
+	 **/
+	public with sharing class TestSObjectDisableBehaviour 
+		extends fflib_SObjectDomain 
+	{
+		public TestSObjectDisableBehaviour(List<Opportunity> sObjectList)
+		{
+			super(sObjectList);
+		}
+
+		public override void onAfterInsert() {
+			// Throw exception to give the test somethign to assert on
+			throw new DomainException('onAfterInsert called');
+		}
+
+		public override void onBeforeInsert() {
+			// Throw exception to give the test somethign to assert on
+			throw new DomainException('onBeforeInsert called');
+		}
+
+		public override void onAfterUpdate(map<id, SObject> existing) {
+			// Throw exception to give the test somethign to assert on
+			throw new DomainException('onAfterUpdate called');
+		}
+
+		public override void onBeforeUpdate(map<id, SObject> existing) {
+			// Throw exception to give the test somethign to assert on
+			throw new DomainException('onBeforeUpdate called');
+		}
+
+		public override void onAfterDelete() {
+			// Throw exception to give the test somethign to assert on
+			throw new DomainException('onAfterDelete called');
+		}
+
+		public override void onBeforeDelete() {
+			// Throw exception to give the test somethign to assert on
+			throw new DomainException('onBeforeDelete called');
+		}
+
+		public override void onAfterUndelete() {
+			// Throw exception to give the test somethign to assert on
+			throw new DomainException('onAfterUndelete called');
+		}
+	}
+
+	/**
+	 * Typically an inner class to the domain class, supported here for test purposes
+	 **/    
+	public class TestSObjectDisableBehaviourConstructor implements fflib_SObjectDomain.IConstructable
+	{
+		public fflib_SObjectDomain construct(List<SObject> sObjectList)
+		{
+			return new TestSObjectDisableBehaviour(sObjectList);
+		}
+	}
 }

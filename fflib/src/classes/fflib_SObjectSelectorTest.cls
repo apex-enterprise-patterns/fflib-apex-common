@@ -28,15 +28,6 @@
 private with sharing class fflib_SObjectSelectorTest 
 {
 	
-	static testMethod void testGetFieldListString()
-	{
-		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
-		String fieldListString = selector.getFieldListString();
-		assertFieldListString(fieldListString, null);
-		String relatedFieldListString = selector.getRelatedFieldListString('myprefix');
-		assertFieldListString(relatedFieldListString, 'myprefix');
-	}
-	
 	static testMethod void testGetSObjectName()
 	{
 		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
@@ -144,7 +135,7 @@ private with sharing class fflib_SObjectSelectorTest
 			return; // Abort the test if unable to create a user with low enough acess
 		System.runAs(testUser)
 		{					
-			Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector(false, false, false);
+			Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector(false, false, false, true);
 			try
 			{
 				List<Account> result = (List<Account>) selector.selectSObjectsById(idSet);
@@ -160,7 +151,7 @@ private with sharing class fflib_SObjectSelectorTest
 	{
 		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
 		String soql = selector.newQueryFactory().toSOQL();
-		Pattern p = Pattern.compile('SELECT (.*) FROM Account ORDER BY Name DESC NULLS FIRST , AnnualRevenue ASC NULLS FIRST ');
+		Pattern p = Pattern.compile('SELECT (.*) FROM Account ORDER BY Name DESC NULLS FIRST , AnnualRevenue ASC NULLS LAST ');
 		Matcher m = p.matcher(soql);
 		System.assert(m.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
 		System.assertEquals(1, m.groupCount(), 'Unexpected number of groups captured.');
@@ -174,12 +165,6 @@ private with sharing class fflib_SObjectSelectorTest
 		System.assertEquals(false, selector.isEnforcingFLS());
 		System.assertEquals(true, selector.isEnforcingCRUD());
 		System.assertEquals(false, selector.isIncludeFieldSetFields());
-		
-		String fieldListString = selector.getFieldListString();
-		assertFieldListString(fieldListString, null);
-		
-		String relatedFieldListString = selector.getRelatedFieldListString('LookupField__r');
-		assertFieldListString(relatedFieldListString, 'LookupField__r');
 		
 		System.assertEquals('Account', selector.getSObjectName());
 		System.assertEquals(Account.SObjectType, selector.getSObjectType2());
@@ -205,6 +190,64 @@ private with sharing class fflib_SObjectSelectorTest
 		}
 	}
 	
+
+	@isTest
+	static void testWithoutSorting()
+	{
+		//Given
+		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector(false, false, false, false);
+		fflib_QueryFactory qf = selector.newQueryFactory();
+		
+		Set<String> expectedSelectFields = new Set<String>{ 'Name', 'Id', 'AccountNumber', 'AnnualRevenue' };
+		if (UserInfo.isMultiCurrencyOrganization())
+		{
+			expectedSelectFields.add('CurrencyIsoCode');
+		}
+
+		//When
+		String soql = qf.toSOQL();
+
+		//Then
+		Pattern soqlPattern = Pattern.compile('SELECT (.*) FROM Account ORDER BY Name DESC NULLS FIRST , AnnualRevenue ASC NULLS LAST ');
+		Matcher soqlMatcher = soqlPattern.matcher(soql);
+		soqlMatcher.matches();
+
+		List<String> actualSelectFields = soqlMatcher.group(1).deleteWhiteSpace().split(',');
+		System.assertEquals(expectedSelectFields, new Set<String>(actualSelectFields));
+	}
+
+	// Test case of ordering with NULLS LAST option passed into the ordering method
+	@isTest
+	static void testWithOrderingNullsLast()
+	{
+		// Build the selector to test with
+		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector(false, false, false, false);
+		fflib_QueryFactory qf = selector.newQueryFactory();
+		
+		// Add in the expected fields
+		Set<String> expectedSelectFields = new Set<String>{ 'Name', 'Id', 'AccountNumber', 'AnnualRevenue' };
+		if (UserInfo.isMultiCurrencyOrganization())
+		{
+			expectedSelectFields.add('CurrencyIsoCode');
+		}
+
+		// Generate the SOQL string
+		String soql = qf.toSOQL();
+
+		// Assert that the
+		Pattern soqlPattern = Pattern.compile('SELECT (.*) FROM Account ORDER BY Name DESC NULLS FIRST , AnnualRevenue ASC NULLS LAST ');
+		Matcher soqlMatcher = soqlPattern.matcher(soql);
+		system.assert(soqlMatcher.matches(), 'The SOQL should have that expected.');
+	}
+	
+	private static void assertEqualsSelectFields(String expectedSelectFields, String actualSelectFields)
+	{
+		Set<String> expected = new Set<String>(expectedSelectFields.deleteWhiteSpace().split(','));
+		Set<String> actual = new Set<String>(actualSelectFields.deleteWhiteSpace().split(','));
+
+		System.assertEquals(expected, actual);
+	}
+	
 	private class Testfflib_SObjectSelector extends fflib_SObjectSelector
 	{
 		public Testfflib_SObjectSelector()
@@ -212,9 +255,9 @@ private with sharing class fflib_SObjectSelectorTest
 			super();
 		}
 
-		public Testfflib_SObjectSelector(Boolean includeFieldSetFields, Boolean enforceCRUD, Boolean enforceFLS)
+		public Testfflib_SObjectSelector(Boolean includeFieldSetFields, Boolean enforceCRUD, Boolean enforceFLS, Boolean sortSelectFields)
 		{
-			super(includeFieldSetFields, enforceCRUD, enforceFLS);
+			super(includeFieldSetFields, enforceCRUD, enforceFLS, sortSelectFields);
 		}
 		
 		public List<Schema.SObjectField> getSObjectFieldList()
@@ -234,7 +277,7 @@ private with sharing class fflib_SObjectSelectorTest
 		
 		public override String getOrderBy()
 		{
-			return 'Name DESC, AnnualRevenue ASC';
+			return 'Name DESC, AnnualRevenue ASC NULLS LAST';
 		}
 	}
 	

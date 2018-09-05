@@ -1,0 +1,50 @@
+<project xmlns:sf="antlib:com.salesforce">
+		
+	<!--  Downloaded from http://sourceforge.net/projects/ant-contrib/files/ant-contrib/1.0b3/ -->
+	<taskdef 
+		resource="net/sf/antcontrib/antlib.xml" 
+		classpath="${basedir}/lib/ant-contrib-1.0b3.jar"/>	
+
+	<macrodef name="installPackage" description="Installs the given managed package">
+		<attribute name="namespace" description="Namespace of managed package to install."/>
+		<attribute name="version" description="Version of managed package to install."/>
+		<attribute name="packagePassword" description="Password used to install the pacakge. Optional." default=""/>
+		<attribute name="username" description="Salesforce user name."/>
+		<attribute name="password" description="Salesforce password."/>
+		<sequential>
+			<!-- Generate optional <password> element? -->
+			<if><equals arg1="@{packagePassword}" arg2=""/>
+				<then><property name="passwordElement" value=""/></then>
+				<else><property name="passwordElement" value="&lt;password&gt;@{packagePassword}&lt;/password&gt;"/></else>
+			</if>
+			<!-- Generate working folder and metadata files representing the package to install -->
+			<delete dir="${basedir}/installdeploy"/>
+			<mkdir dir="${basedir}/installdeploy"/>
+			<mkdir dir="${basedir}/installdeploy"/>			
+			<mkdir dir="${basedir}/installdeploy/installedPackages"/>
+			<echo file="${basedir}/installdeploy/package.xml"><![CDATA[<Package xmlns="http://soap.sforce.com/2006/04/metadata"><types><members>@{namespace}</members><name>InstalledPackage</name></types><version>28.0</version></Package>]]></echo>
+			<echo file="${basedir}/installdeploy/installedPackages/@{namespace}.installedPackage"><![CDATA[<InstalledPackage xmlns="http://soap.sforce.com/2006/04/metadata"><versionNumber>@{version}</versionNumber>${passwordElement}</InstalledPackage>]]></echo>
+			<sf:deploy deployRoot="${basedir}/installdeploy" username="@{username}" password="@{password}"/>
+			<delete dir="${basedir}/installdeploy"/>
+		</sequential>
+	</macrodef>
+
+	<macrodef name="uninstallPackage" description="Uninstalls the given managed package">
+		<attribute name="namespace" description="Namespace of managed package to install."/>
+		<attribute name="username" description="Salesforce user name."/>
+		<attribute name="password" description="Salesforce password."/>
+		<sequential>
+			<!-- Generate working folder and metadata files representing the package to uninstall -->		
+			<delete dir="${basedir}/installdeploy"/>
+			<mkdir dir="${basedir}/installdeploy"/>
+			<mkdir dir="${basedir}/installdeploy"/>			
+			<mkdir dir="${basedir}/installdeploy/installedPackages"/>
+			<echo file="${basedir}/installdeploy/package.xml"><![CDATA[<Package xmlns="http://soap.sforce.com/2006/04/metadata"><version>28.0</version></Package>]]></echo>
+			<echo file="${basedir}/installdeploy/destructiveChanges.xml"><![CDATA[<Package xmlns="http://soap.sforce.com/2006/04/metadata"><types><members>@{namespace}</members><name>InstalledPackage</name></types><version>28.0</version></Package>]]></echo>
+			<echo file="${basedir}/installdeploy/installedPackages/@{namespace}.installedPackage"><![CDATA[<InstalledPackage xmlns="http://soap.sforce.com/2006/04/metadata"><versionNumber>@{version}</versionNumber></InstalledPackage>]]></echo>
+			<sf:deploy deployRoot="${basedir}/installdeploy" username="@{username}" password="@{password}"/>
+			<delete dir="${basedir}/installdeploy"/>
+		</sequential>
+	</macrodef>
+	
+</project>
