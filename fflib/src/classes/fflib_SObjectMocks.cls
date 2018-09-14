@@ -100,6 +100,17 @@ public class fflib_SObjectMocks
 			mocks.mockVoidMethod(this, 'registerDirty', new List<Type> {List<SObject>.class}, new List<Object> {records});
 		}
 
+		public void registerUpsert(SObject record)
+		{
+			mocks.mockVoidMethod(this, 'registerUpsert', new List<Type> {List<SObject>.class}, new List<Object> {record});
+		}
+
+
+		public void registerUpsert(List<SObject> records)
+		{
+			mocks.mockVoidMethod(this, 'registerUpsert', new List<Type> {List<SObject>.class}, new List<Object> {records});
+		}
+
 		public void registerDeleted(SObject record)
 		{
 			mocks.mockVoidMethod(this, 'registerDeleted', new List<Type> {SObject.class}, new List<Object> {record});

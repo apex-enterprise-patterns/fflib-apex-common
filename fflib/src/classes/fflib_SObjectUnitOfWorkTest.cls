@@ -386,6 +386,28 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         System.assertEquals(opp.Amount, amountUpdate.Amount);
     }
 
+    @isTest
+    private static void testRegisterUpsert() {
+        Opportunity existingOpp = new Opportunity(Name = 'Existing Opportunity', StageName = 'Open', CloseDate = System.today());
+        insert existingOpp;
+
+        existingOpp.StageName = 'Closed';
+
+        Opportunity newOpportunity = new Opportunity(Name = 'New Opportunity', StageName = 'Closed', CloseDate = System.today());
+
+        System.assertEquals(1, [SELECT COUNT() FROM Opportunity]);
+        System.assertEquals(0, [SELECT COUNT() FROM Opportunity WHERE StageName = 'Closed']);
+        
+        Test.startTest();
+            fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
+            uow.registerUpsert(new List<Opportunity>{existingOpp, newOpportunity});
+            uow.commitWork();
+        Test.stopTest();
+
+        System.assertEquals(2, [SELECT COUNT() FROM Opportunity]);
+        System.assertEquals(2, [SELECT COUNT() FROM Opportunity WHERE StageName = 'Closed']);
+    }
+
     /**
      * Assert that actual events exactly match expected events (size, order and name)
      * and types match expected types
