@@ -112,7 +112,7 @@ private with sharing class fflib_SObjectSelectorTest
 				List<Account> result = (List<Account>) selector.selectSObjectsById(idSet);
 				System.assert(false,'Expected exception was not thrown');
 			}
-			catch(fflib_SObjectDomainBase.DomainException e)
+			catch(fflib_SObjectDomain.DomainException e)
 			{
 				System.assertEquals('Permission to access an Account denied.',e.getMessage());
 			}
@@ -140,7 +140,7 @@ private with sharing class fflib_SObjectSelectorTest
 			{
 				List<Account> result = (List<Account>) selector.selectSObjectsById(idSet);
 			}
-			catch(fflib_SObjectDomainBase.DomainException e)
+			catch(fflib_SObjectDomain.DomainException e)
 			{
 				System.assert(false,'Did not expect an exception to be thrown');
 			}

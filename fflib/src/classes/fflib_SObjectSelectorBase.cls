@@ -270,7 +270,7 @@ public abstract inherited sharing class fflib_SObjectSelectorBase
     public void assertIsAccessible()
     {
         if(!getSObjectType().getDescribe().isAccessible())
-           throw new fflib_SObjectDomainBase.DomainException(
+           throw new fflib_SObjectDomain.DomainException(
                 'Permission to access an ' + getSObjectType().getDescribe().getName() + ' denied.');
     }
 
@@ -395,7 +395,7 @@ public abstract inherited sharing class fflib_SObjectSelectorBase
         		queryFactory.assertIsAccessible();
         	} catch (fflib_SecurityUtils.CrudException e) {
         		// Marshal exception into DomainException for backwards compatability
-				throw new fflib_SObjectDomainBase.DomainException(
+				throw new fflib_SObjectDomain.DomainException(
 	                'Permission to access an ' + getSObjectType().getDescribe().getName() + ' denied.');
         	}
         }
