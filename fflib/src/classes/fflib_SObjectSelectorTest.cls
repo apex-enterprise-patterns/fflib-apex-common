@@ -2,22 +2,22 @@
  * Copyright (c), FinancialForce.com, inc
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification, 
+ * Redistribution and use in source and binary forms, with or without modification,
  *   are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, 
+ * - Redistributions of source code must retain the above copyright notice,
  *      this list of conditions and the following disclaimer.
- * - Redistributions in binary form must reproduce the above copyright notice, 
- *      this list of conditions and the following disclaimer in the documentation 
+ * - Redistributions in binary form must reproduce the above copyright notice,
+ *      this list of conditions and the following disclaimer in the documentation
  *      and/or other materials provided with the distribution.
- * - Neither the name of the FinancialForce.com, inc nor the names of its contributors 
- *      may be used to endorse or promote products derived from this software without 
+ * - Neither the name of the FinancialForce.com, inc nor the names of its contributors
+ *      may be used to endorse or promote products derived from this software without
  *      specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
- *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES 
- *  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
- *  THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ *  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+ *  THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
  *  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
  *  OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
@@ -25,32 +25,32 @@
 **/
 
 @IsTest
-private with sharing class fflib_SObjectSelectorTest 
+private with sharing class fflib_SObjectSelectorTest
 {
-	
+
 	static testMethod void testGetSObjectName()
 	{
 		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
 		system.assertEquals(null, selector.getSObjectFieldSetList());
 		system.assertEquals('Account',selector.getSObjectName());
 	}
-	
+
 	static testMethod void testSelectSObjectsById()
 	{
-		// Inserting in reverse order so that we can test the order by of select 
+		// Inserting in reverse order so that we can test the order by of select
 		List<Account> accountList = new List<Account> {
 			new Account(Name='TestAccount2',AccountNumber='A2',AnnualRevenue=12345.67),
-			new Account(Name='TestAccount1',AccountNumber='A1',AnnualRevenue=76543.21) };		
-		insert accountList;		
+			new Account(Name='TestAccount1',AccountNumber='A1',AnnualRevenue=76543.21) };
+		insert accountList;
 		Set<Id> idSet = new Set<Id>();
 		for(Account item : accountList)
 			idSet.add(item.Id);
-			
-		Test.startTest();		
+
+		Test.startTest();
 		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
-		List<Account> result = (List<Account>) selector.selectSObjectsById(idSet);		
+		List<Account> result = (List<Account>) selector.selectSObjectsById(idSet);
 		Test.stopTest();
-		
+
 		system.assertEquals(2,result.size());
 		system.assertEquals('TestAccount2',result[0].Name);
 		system.assertEquals('A2',result[0].AccountNumber);
@@ -62,57 +62,57 @@ private with sharing class fflib_SObjectSelectorTest
 
 	static testMethod void testQueryLocatorById()
 	{
-		// Inserting in reverse order so that we can test the order by of select 
+		// Inserting in reverse order so that we can test the order by of select
 		List<Account> accountList = new List<Account> {
 			new Account(Name='TestAccount2',AccountNumber='A2',AnnualRevenue=12345.67),
-			new Account(Name='TestAccount1',AccountNumber='A1',AnnualRevenue=76543.21) };		
-		insert accountList;		
+			new Account(Name='TestAccount1',AccountNumber='A1',AnnualRevenue=76543.21) };
+		insert accountList;
 		Set<Id> idSet = new Set<Id>();
 		for(Account item : accountList)
 			idSet.add(item.Id);
-			
-		Test.startTest();		
+
+		Test.startTest();
 		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
-		Database.QueryLocator result = selector.queryLocatorById(idSet);		
+		Database.QueryLocator result = selector.queryLocatorById(idSet);
 		System.Iterator<SObject> iteratorResult = result.iterator();
-		Test.stopTest();		
+		Test.stopTest();
 
 		System.assert(true, iteratorResult.hasNext());
 		Account account = (Account) iteratorResult.next();
 		system.assertEquals('TestAccount2',account.Name);
 		system.assertEquals('A2',account.AccountNumber);
-		system.assertEquals(12345.67,account.AnnualRevenue);				
+		system.assertEquals(12345.67,account.AnnualRevenue);
 		System.assert(true, iteratorResult.hasNext());
 		account = (Account) iteratorResult.next();
 		system.assertEquals('TestAccount1',account.Name);
 		system.assertEquals('A1',account.AccountNumber);
-		system.assertEquals(76543.21,account.AnnualRevenue);				
+		system.assertEquals(76543.21,account.AnnualRevenue);
 		System.assertEquals(false, iteratorResult.hasNext());
 	}
-	
+
 	static testMethod void testAssertIsAccessible()
 	{
 		List<Account> accountList = new List<Account> {
 			new Account(Name='TestAccount2',AccountNumber='A2',AnnualRevenue=12345.67),
-			new Account(Name='TestAccount1',AccountNumber='A1',AnnualRevenue=76543.21) };		
-		insert accountList;		
+			new Account(Name='TestAccount1',AccountNumber='A1',AnnualRevenue=76543.21) };
+		insert accountList;
 		Set<Id> idSet = new Set<Id>();
 		for(Account item : accountList)
 			idSet.add(item.Id);
-		
+
 		// Create a user which will not have access to the test object type
 		User testUser = createChatterExternalUser();
 		if(testUser==null)
 			return; // Abort the test if unable to create a user with low enough acess
 		System.runAs(testUser)
-		{					
+		{
 			Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
 			try
 			{
 				List<Account> result = (List<Account>) selector.selectSObjectsById(idSet);
 				System.assert(false,'Expected exception was not thrown');
 			}
-			catch(fflib_SObjectDomain.DomainException e)
+			catch(fflib_SObjectDomainBase.DomainException e)
 			{
 				System.assertEquals('Permission to access an Account denied.',e.getMessage());
 			}
@@ -123,30 +123,30 @@ private with sharing class fflib_SObjectSelectorTest
 	{
 		List<Account> accountList = new List<Account> {
 			new Account(Name='TestAccount2',AccountNumber='A2',AnnualRevenue=12345.67),
-			new Account(Name='TestAccount1',AccountNumber='A1',AnnualRevenue=76543.21) };		
-		insert accountList;		
+			new Account(Name='TestAccount1',AccountNumber='A1',AnnualRevenue=76543.21) };
+		insert accountList;
 		Set<Id> idSet = new Set<Id>();
 		for(Account item : accountList)
 			idSet.add(item.Id);
-		
+
 		// Create a user which will not have access to the test object type
 		User testUser = createChatterExternalUser();
 		if(testUser==null)
 			return; // Abort the test if unable to create a user with low enough acess
 		System.runAs(testUser)
-		{					
+		{
 			Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector(false, false, false, true);
 			try
 			{
 				List<Account> result = (List<Account>) selector.selectSObjectsById(idSet);
 			}
-			catch(fflib_SObjectDomain.DomainException e)
+			catch(fflib_SObjectDomainBase.DomainException e)
 			{
 				System.assert(false,'Did not expect an exception to be thrown');
 			}
 		}
 	}
-	
+
 	static testMethod void testSOQL()
 	{
 		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
@@ -158,22 +158,22 @@ private with sharing class fflib_SObjectSelectorTest
 		String fieldListString = m.group(1);
 		assertFieldListString(fieldListString, null);
 	}
-	
+
 	static testMethod void testDefaultConfig()
 	{
 		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
 		System.assertEquals(false, selector.isEnforcingFLS());
 		System.assertEquals(true, selector.isEnforcingCRUD());
 		System.assertEquals(false, selector.isIncludeFieldSetFields());
-		
+
 		System.assertEquals('Account', selector.getSObjectName());
 		System.assertEquals(Account.SObjectType, selector.getSObjectType2());
 	}
-	
+
 	private static void assertFieldListString(String fieldListString, String prefix) {
 		String prefixString = (!String.isBlank(prefix)) ? prefix + '.' : '';
 		List<String> fieldList = fieldListString.split(',{1}\\s?');
-		System.assertEquals(UserInfo.isMultiCurrencyOrganization() ? 5 : 4, fieldList.size()); 
+		System.assertEquals(UserInfo.isMultiCurrencyOrganization() ? 5 : 4, fieldList.size());
 		Set<String> fieldSet = new Set<String>();
 		fieldSet.addAll(fieldList);
 		String expected = prefixString + 'AccountNumber';
@@ -189,7 +189,7 @@ private with sharing class fflib_SObjectSelectorTest
 			System.assert(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
 		}
 	}
-	
+
 
 	@isTest
 	static void testWithoutSorting()
@@ -197,7 +197,7 @@ private with sharing class fflib_SObjectSelectorTest
 		//Given
 		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector(false, false, false, false);
 		fflib_QueryFactory qf = selector.newQueryFactory();
-		
+
 		Set<String> expectedSelectFields = new Set<String>{ 'Name', 'Id', 'AccountNumber', 'AnnualRevenue' };
 		if (UserInfo.isMultiCurrencyOrganization())
 		{
@@ -223,7 +223,7 @@ private with sharing class fflib_SObjectSelectorTest
 		// Build the selector to test with
 		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector(false, false, false, false);
 		fflib_QueryFactory qf = selector.newQueryFactory();
-		
+
 		// Add in the expected fields
 		Set<String> expectedSelectFields = new Set<String>{ 'Name', 'Id', 'AccountNumber', 'AnnualRevenue' };
 		if (UserInfo.isMultiCurrencyOrganization())
@@ -239,7 +239,7 @@ private with sharing class fflib_SObjectSelectorTest
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
 		system.assert(soqlMatcher.matches(), 'The SOQL should have that expected.');
 	}
-	
+
 	private static void assertEqualsSelectFields(String expectedSelectFields, String actualSelectFields)
 	{
 		Set<String> expected = new Set<String>(expectedSelectFields.deleteWhiteSpace().split(','));
@@ -247,7 +247,7 @@ private with sharing class fflib_SObjectSelectorTest
 
 		System.assertEquals(expected, actual);
 	}
-	
+
 	private class Testfflib_SObjectSelector extends fflib_SObjectSelector
 	{
 		public Testfflib_SObjectSelector()
@@ -259,7 +259,7 @@ private with sharing class fflib_SObjectSelectorTest
 		{
 			super(includeFieldSetFields, enforceCRUD, enforceFLS, sortSelectFields);
 		}
-		
+
 		public List<Schema.SObjectField> getSObjectFieldList()
 		{
 			return new List<Schema.SObjectField> {
@@ -269,18 +269,18 @@ private with sharing class fflib_SObjectSelectorTest
 				Account.AnnualRevenue
 			};
 		}
-		
+
 		public Schema.SObjectType getSObjectType()
 		{
 			return Account.sObjectType;
 		}
-		
+
 		public override String getOrderBy()
 		{
 			return 'Name DESC, AnnualRevenue ASC NULLS LAST';
 		}
 	}
-	
+
 	/**
 	 * Create test user
 	 **/
@@ -289,16 +289,16 @@ private with sharing class fflib_SObjectSelectorTest
 		// Can only proceed with test if we have a suitable profile - Chatter External license has no access to Opportunity
 		List<Profile> testProfiles = [Select Id From Profile where UserLicense.Name='Chatter External' limit 1];
 		if(testProfiles.size()!=1)
-			return null; 		
+			return null;
 
-		// Can only proceed with test if we can successfully insert a test user 
+		// Can only proceed with test if we can successfully insert a test user
 		String testUsername = System.now().format('yyyyMMddhhmmss') + '@testorg.com';
 		User testUser = new User(Alias = 'test1', Email='testuser1@testorg.com', EmailEncodingKey='UTF-8', LastName='Testing', LanguageLocaleKey='en_US', LocaleSidKey='en_US', ProfileId = testProfiles[0].Id, TimeZoneSidKey='America/Los_Angeles', UserName=testUsername);
 		try {
 			insert testUser;
 		} catch (Exception e) {
 			return null;
-		}		
+		}
 		return testUser;
-	}	
+	}
 }
