@@ -66,7 +66,8 @@ public virtual class fflib_SObjectUnitOfWork
 
     protected List<IDoWork> m_workList = new List<IDoWork>();
 
-    protected SendEmailWork m_emailWork = new SendEmailWork();
+    @TestVisible
+    protected IEmailWork m_emailWork = new SendEmailWork();
 
     protected IDML m_dml;
 
@@ -107,7 +108,6 @@ public virtual class fflib_SObjectUnitOfWork
         this(sObjectTypes,new SimpleDML());
     }
 
-
     public fflib_SObjectUnitOfWork(List<Schema.SObjectType> sObjectTypes, IDML dml)
     {
         m_sObjectTypes = sObjectTypes.clone();
@@ -119,8 +119,6 @@ public virtual class fflib_SObjectUnitOfWork
         }
 
         m_relationships.put( Messaging.SingleEmailMessage.class.getName(), new Relationships());
-
-        m_workList.add(m_emailWork);
 
         m_dml = dml;
     }
@@ -377,6 +375,7 @@ public virtual class fflib_SObjectUnitOfWork
             // notify we're starting to process registered work
             onDoWorkStarting();
             // Generic work
+            m_workList.add(m_emailWork);
             for(IDoWork work : m_workList)
                 work.doWork();
             // notify we've completed processing registered work
@@ -472,7 +471,12 @@ public virtual class fflib_SObjectUnitOfWork
     /**
      * Internal implementation of Messaging.sendEmail, see outer class registerEmail method
      **/
-    private class SendEmailWork implements IDoWork
+    public interface IEmailWork extends IDoWork
+    {
+        void registerEmail(Messaging.Email email);
+    }
+
+    private class SendEmailWork implements IEmailWork
     {
         private List<Messaging.Email> emails;
 
