@@ -25,7 +25,7 @@
 **/
 
 /**
- * Base class aiding in the implemetnation of a Domain Model around SObject collections
+ * Base class aiding in the implementation of a Domain Model around SObject collections
  * 
  * Domain (software engineering). “a set of common requirements, terminology, and functionality 
  * for any software program constructed to solve a problem in that field”,
