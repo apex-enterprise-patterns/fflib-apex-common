@@ -141,7 +141,7 @@ public virtual class fflib_SObjectUnitOfWork
      * @param sObjectType - The type to register
      *
      */
-    private void handleRegisterType(Schema.SObjectType sObjectType)
+    private virtual void handleRegisterType(Schema.SObjectType sObjectType)
     {
         // add type to dml operation tracking
         m_newListByType.put(sObjectType.getDescribe().getName(), new List<SObject>());
@@ -156,7 +156,7 @@ public virtual class fflib_SObjectUnitOfWork
     /**
      * Register a generic peace of work to be invoked during the commitWork phase
      **/
-    public void registerWork(IDoWork work)
+    public virtual void registerWork(IDoWork work)
     {
         m_workList.add(work);
     }
@@ -164,7 +164,7 @@ public virtual class fflib_SObjectUnitOfWork
     /**
      * Registers the given email to be sent during the commitWork
      **/
-    public void registerEmail(Messaging.Email email)
+    public virtual void registerEmail(Messaging.Email email)
     {
         m_emailWork.registerEmail(email);
     }
@@ -174,7 +174,7 @@ public virtual class fflib_SObjectUnitOfWork
      *
      * @param record A newly created SObject instance to be inserted during commitWork
      **/
-    public void registerNew(SObject record)
+    public virtual void registerNew(SObject record)
     {
         registerNew(record, null, null);
     }
@@ -184,7 +184,7 @@ public virtual class fflib_SObjectUnitOfWork
      *
      * @param records A list of newly created SObject instances to be inserted during commitWork
      **/
-    public void registerNew(List<SObject> records)
+    public virtual void registerNew(List<SObject> records)
     {
         for(SObject record : records)
         {
@@ -200,7 +200,7 @@ public virtual class fflib_SObjectUnitOfWork
      * @param relatedToParentField A SObjectField reference to the child field that associates the child record with its parent
      * @param relatedToParentRecord A SObject instance of the parent record (should also be registered as new separatly)
      **/
-    public void registerNew(SObject record, Schema.sObjectField relatedToParentField, SObject relatedToParentRecord)
+    public virtual void registerNew(SObject record, Schema.sObjectField relatedToParentField, SObject relatedToParentRecord)
     {
         if(record.Id != null)
             throw new UnitOfWorkException('Only new records can be registered as new');
@@ -220,7 +220,7 @@ public virtual class fflib_SObjectUnitOfWork
      * @param relatedToField A SObjectField referene to the lookup field that relates the two records together
      * @param relatedTo A SOBject instance (yet to be commited to the database)
      */
-    public void registerRelationship(SObject record, Schema.sObjectField relatedToField, SObject relatedTo)
+    public virtual void registerRelationship(SObject record, Schema.sObjectField relatedToField, SObject relatedTo)
     {
         String sObjectType = record.getSObjectType().getDescribe().getName();
         if(!m_newListByType.containsKey(sObjectType))
@@ -236,7 +236,7 @@ public virtual class fflib_SObjectUnitOfWork
      * @param a single email message instance
      * @param relatedTo A SOBject instance (yet to be commited to the database)
      */
-    public void registerRelationship( Messaging.SingleEmailMessage email, SObject relatedTo )
+    public virtual void registerRelationship( Messaging.SingleEmailMessage email, SObject relatedTo )
     {
         m_relationships.get( Messaging.SingleEmailMessage.class.getName() ).add(email, relatedTo);
     }
@@ -246,12 +246,12 @@ public virtual class fflib_SObjectUnitOfWork
      *
      * @param record An existing record
      **/
-    public void registerDirty(SObject record)
+    public virtual void registerDirty(SObject record)
     {
         registerDirty(record, new List<SObjectField>());
     }
 
-    public void registerDirty(SObject record, List<SObjectField> dirtyFields)
+    public virtual void registerDirty(SObject record, List<SObjectField> dirtyFields)
     {
         if(record.Id == null)
             throw new UnitOfWorkException('New records cannot be registered as dirty');
@@ -286,7 +286,7 @@ public virtual class fflib_SObjectUnitOfWork
      * @param relatedToParentField A SObjectField reference to the child field that associates the child record with its parent
      * @param relatedToParentRecord A SObject instance of the parent record (should also be registered as new separatly)
      **/
-    public void registerDirty(SObject record, Schema.sObjectField relatedToParentField, SObject relatedToParentRecord)
+    public virtual void registerDirty(SObject record, Schema.sObjectField relatedToParentField, SObject relatedToParentRecord)
     {
         if(record.Id == null)
             throw new UnitOfWorkException('New records cannot be registered as dirty');
@@ -303,7 +303,7 @@ public virtual class fflib_SObjectUnitOfWork
      *
      * @param records A list of existing records
      **/
-    public void registerDirty(List<SObject> records)
+    public virtual void registerDirty(List<SObject> records)
     {
         for(SObject record : records)
         {
@@ -316,7 +316,7 @@ public virtual class fflib_SObjectUnitOfWork
      *
      * @param record An existing record
      **/
-    public void registerDeleted(SObject record)
+    public virtual void registerDeleted(SObject record)
     {
         if(record.Id == null)
             throw new UnitOfWorkException('New records cannot be registered for deletion');
@@ -331,7 +331,7 @@ public virtual class fflib_SObjectUnitOfWork
      *
      * @param records A list of existing records
      **/
-    public void registerDeleted(List<SObject> records)
+    public virtual void registerDeleted(List<SObject> records)
     {
         for(SObject record : records)
         {
@@ -342,7 +342,7 @@ public virtual class fflib_SObjectUnitOfWork
     /**
      * Takes all the work that has been registered with the UnitOfWork and commits it to the database
      **/
-    public void commitWork()
+    public virtual void commitWork()
     {
         // notify we're starting the commit work
         onCommitWorkStarting();
