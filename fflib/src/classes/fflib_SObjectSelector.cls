@@ -81,6 +81,8 @@ public abstract with sharing class fflib_SObjectSelector
    		}
    		set;
    	}
+
+	private fflib_ISObjectUnitOfWork unitOfWork;
    	 
     /**
      * Implement this method to inform the base class of the SObject (custom or standard) to be queried
@@ -135,6 +137,18 @@ public abstract with sharing class fflib_SObjectSelector
         m_enforceFLS = enforceFLS;
         m_sortSelectFields = sortSelectFields;
     }
+
+
+	public void addUnitOfWork(fflib_ISObjectUnitOfWork unitOfWork)
+	{
+		this.unitOfWork = unitOfWork;
+	}
+
+
+	public Boolean hasUnitOfWork()
+	{
+		return (null != this.unitOfWork);
+	}
 
     /**
      * Override this method to provide a list of Fieldsets that can optionally drive inclusion of additional fields in the base queries
@@ -246,8 +260,69 @@ public abstract with sharing class fflib_SObjectSelector
      **/
     public List<SObject> selectSObjectsById(Set<Id> idSet)
     {
-        return Database.query(buildQuerySObjectById());
+        if (hasUnitOfWork())
+        {
+	        return selectSObjectsByIdWithIdentityMap(idSet);
+        }
+	    else
+	    {
+	        return selectSObjectByIdWithQuery(idSet);
+	    }
     }
+
+	/**
+	 * selectSObjectByIdWithQuery
+	 *
+	 * @description Fetch the records for the given idSet from the Database
+	 *
+	 * @param idSet The record ids to query from the database
+	 *
+	 * @return A list of queried records
+	 */
+	private List<SObject> selectSObjectByIdWithQuery(Set<Id> idSet)
+	{
+		return Database.query(buildQuerySObjectById());
+	}
+
+	/**
+	 * selectSObjectsByIdWithIdentityMap
+	 *
+	 * @description Fetch the records from the clean registered records and query any record that's not registered
+	 *
+	 * @param idSet A set of ids for records to either fetch from the clean registered or the database
+	 *
+	 * @returns A list of SObject's
+	 */
+	private List<SObject> selectSObjectsByIdWithIdentityMap(Set<Id> idSet)
+	{
+		Set<Id> nonRegisteredIds = new Set<Id>(idSet);
+		Set<Id> cleanIds = this.unitOfWork.extractCleanIds(getSObjectType(), nonRegisteredIds);
+
+		List<SObject> result = new List<SObject>();
+		if (!nonRegisteredIds.isEmpty())
+		{
+			result.addAll(selectSObjectByIdWithQuery(nonRegisteredIds));
+		}
+		if (!cleanIds.isEmpty())
+		{
+			result.addAll(this.unitOfWork.getClean(getSObjectType(), cleanIds));
+		}
+		return result;
+	}
+
+	/*public List<SObject> selectSObjectByField(SObjectField sObjectField, Set<Id> idSet)
+	{
+		if (hasUnitOfWork())
+		{
+			return selectSObjectsByIdWithIdentityMap(idSet);
+		}
+		else
+		{
+			return Database.query(
+
+			);
+		}
+	}*/
         
     /**
      * Performs a SOQL query, 

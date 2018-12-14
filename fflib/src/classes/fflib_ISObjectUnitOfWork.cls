@@ -14,6 +14,130 @@
  **/
 public interface fflib_ISObjectUnitOfWork
 {
+	/**
+	 * extractCleanIds
+	 *
+	 * @description Remove the registered clean record ids from the given set and returns them
+	 *
+	 * @param sObjectType A SObjectType reference for the clean registered records
+	 * @param idSet The set of Ids where the clean record ids will be extracted from and returns the set without them
+	 *
+	 * @return A set of Ids which are stored as clean and member of the given idSet
+	 */
+	Set<Id> extractCleanIds(Schema.SObjectType sObjectType, Set<Id> idSet);
+	/**
+	 * extractCleanIds
+	 *
+	 * @description Remove the registered clean record ids from the given set and returns them
+	 *
+	 * @param sObjectType The name of the registered clean SObjectType
+	 * @param idSet The set of Ids where the clean record ids will be extracted from and returns the set without them
+	 *
+	 * @return A set of Ids which are stored as clean and member of the given idSet
+	 */
+	Set<Id> extractCleanIds(String sObjectType, Set<Id> idSet);
+	/**
+	 * extractDeletedIds
+	 *
+	 * @description Remove the registered deleted record ids from the given set and returns them
+	 *
+	 * @param sObjectType A SObjectType reference for the deleted registered records
+	 * @param idSet The set of Ids where the deleted record ids will be extracted from and returns the set without them
+	 *
+	 * @return A set of Ids which are stored as deleted and member of the given idSet
+	 */
+	Set<Id> extractDeletedIds(Schema.SObjectType sObjectType, Set<Id> idSet);
+	/**
+	 * extractDeletedIds
+	 *
+	 * @description Remove the registered deleted record ids from the given set and returns them
+	 *
+	 * @param sObjectType The name of the registered deleted SObjectType
+	 * @param idSet The set of Ids where the deleted record ids will be extracted from and returns the set without them
+	 *
+	 * @return A set of Ids which are stored as deleted and member of the given idSet
+	 */
+	Set<Id> extractDeletedIds(String sObjectType, Set<Id> idSet);
+	/**
+	 * extractDirtyIds
+	 *
+	 * @description Remove the registered dirty record ids from the given set and returns them
+	 *
+	 * @param sObjectType A SObjectType reference for the dirty registered records
+	 * @param idSet The set of Ids where the clean Ids will be extracted from and returns the set without them
+	 *
+	 * @return A set of Ids which are stored as dirty and member of the given idSet
+	 */
+	Set<Id> extractDirtyIds(Schema.SObjectType sObjectType, Set<Id> idSet);
+	/**
+	 * extractDirtyIds
+	 *
+	 * @description Remove the registered dirty record ids from the given set and returns them
+	 *
+	 * @param sObjectType The name of the registered dirty SObjectType
+	 * @param idSet The set of Ids where the dirty record ids will be extracted from and returns the set without them
+	 *
+	 * @return A set of Ids which are stored as dirty and member of the given idSet
+	 */
+	Set<Id> extractDirtyIds(String sObjectType, Set<Id> idSet);
+	/**
+	 * getClean
+	 *
+	 * @description Get the clean registered records of the given id set
+	 *
+	 * @param sObjectType The name of the registered clean SObjectType
+	 * @param idSet A set of Id's to search for
+	 *
+	 * @return A list of clean registered SObjects which are member of the given idSet
+	 */
+	List<SObject> getClean(String sObjectType, Set<Id> idSet);
+	/**
+	 * getClean
+	 *
+	 * @description Get the clean registered records of the given id set
+	 *
+	 * @param sObjectType A SObjectType reference registered clean SObjectType
+	 * @param idSet A set of Id's to search for
+	 *
+	 * @return A list of clean registered SObjects which are member of the given idSet
+	 */
+    List<SObject> getClean(Schema.SObjectType sObjectType, Set<Id> idSet);
+	/**
+	 * getDeleted
+	 *
+	 * @description Get the deleted registered records of the given id set
+	 *
+	 * @param sObjectType The name of the registered deleted SObjectType
+	 * @param idSet A set of Id's to search for
+	 */
+	List<SObject> getDeleted(String sObjectType, Set<Id> idSet);
+	/**
+	 * getDeleted
+	 *
+	 * @description Get the deleted registered records of the given id set
+	 *
+	 * @param sObjectType A SObjectType reference registered deleted SObjectType
+	 * @param idSet A set of Id's to search for
+	 */
+	List<SObject> getDeleted(Schema.SObjectType sObjectType, Set<Id> idSet);
+	/**
+	 * getDirty
+	 *
+	 * @description Get the dirty registered records of the given id set
+	 *
+	 * @param sObjectType The name of the registered clean SObjectType
+	 * @param idSet A set of Id's to search for
+	 */
+	List<SObject> getDirty(String sObjectType, Set<Id> idSet);
+	/**
+	 * getDirty
+	 *
+	 * @description Get the dirty registered records of the given id set
+	 *
+	 * @param sObjectType A SObjectType reference registered dirty SObjectType
+	 * @param idSet A set of Id's to search for
+	 */
+	List<SObject> getDirty(Schema.SObjectType sObjectType, Set<Id> idSet);
      /**
      * Register a just queried SObject that has not been changed yet
      *
@@ -26,38 +150,6 @@ public interface fflib_ISObjectUnitOfWork
      * @param records A list of queried SObject instances
      **/
 	void registerClean(List<SObject> records);
-	/**
-	 * Get clean registered records
-	 *
-	 * @param sObjectType
-	 * @param idSet A set of Id's to search for
-	 */
-	Map<Id, SObject> getClean(String sObjectType, Set<Id> idSet);
-    Map<Id, SObject> getClean(Schema.SObjectType sObjectType, Set<Id> idSet);
-	/**
-	 * Get dirty registered records
-	 *
-	 * @param sObjectType
-	 * @param idSet A set of Id's to search for
-	 */
-	Map<Id, SObject> getDirty(String sObjectType, Set<Id> idSet);
-	Map<Id, SObject> getDirty(Schema.SObjectType sObjectType, Set<Id> idSet);
-	/**
-	 * Get deleted registered records
-	 *
-	 * @param sObjectType
-	 * @param idSet A set of Id's to search for
-	 */
-	Map<Id, SObject> getDeleted(String sObjectType, Set<Id> idSet);
-	Map<Id, SObject> getDeleted(Schema.SObjectType sObjectType, Set<Id> idSet);
-	/**
-     * Get Ids of deleted registered records
-     *
-     * @param sObjectType
-     * @param idSet A set of Id's to search for
-     */
-	Set<Id> getDeletedIds(String sObjectType, Set<Id> idSet);
-	Set<Id> getDeletedIds(Schema.SObjectType sObjectType, Set<Id> idSet);
     /**
      * Register a newly created SObject instance to be inserted when commitWork is called
      *

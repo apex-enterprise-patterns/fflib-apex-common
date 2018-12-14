@@ -235,6 +235,114 @@ public virtual class fflib_SObjectUnitOfWork
 		}
 	}
 
+	/**
+	 * extractCleanIds
+	 *
+	 * @description Remove the registered clean record ids from the given set and returns them
+	 *
+	 * @param sObjectType A SObjectType reference for the clean registered records
+	 * @param idSet The set of Ids where the clean record ids will be extracted from and returns the set without them
+	 *
+	 * @return A set of Ids which are stored as clean and member of the given idSet
+	 */
+	public Set<Id> extractCleanIds(Schema.SObjectType sObjectType, Set<Id> idSet)
+	{
+		return extractCleanIds(sObjectType.getDescribe().getName(), idSet);
+	}
+
+	/**
+	 * extractCleanIds
+	 *
+	 * @description Remove the registered clean record ids from the given set and returns them
+	 *
+	 * @param sObjectType The name of the registered clean SObjectType
+	 * @param idSet The set of Ids where the clean record ids will be extracted from and returns the set without them
+	 *
+	 * @return A set of Ids which are stored as clean and member of the given idSet
+	 */
+	public Set<Id> extractCleanIds(String sObjectType, Set<Id> idSet)
+	{
+		return extractIds(m_cleanMapByType.get(sObjectType).keySet(), idSet);
+	}
+
+	/**
+	 * extractDeletedIds
+	 *
+	 * @description Remove the registered deleted record ids from the given set and returns them
+	 *
+	 * @param sObjectType A SObjectType reference for the deleted registered records
+	 * @param idSet The set of Ids where the deleted record ids will be extracted from and returns the set without them
+	 *
+	 * @return A set of Ids which are stored as deleted and member of the given idSet
+	 */
+	public Set<Id> extractDeletedIds(Schema.SObjectType sObjectType, Set<Id> idSet)
+	{
+		return extractDeletedIds(sObjectType.getDescribe().getName(), idSet);
+	}
+
+	/**
+	 * extractDeletedIds
+	 *
+	 * @description Remove the registered deleted record ids from the given set and returns them
+	 *
+	 * @param sObjectType The name of the registered deleted SObjectType
+	 * @param idSet The set of Ids where the deleted record ids will be extracted from and returns the set without them
+	 *
+	 * @return A set of Ids which are stored as deleted and member of the given idSet
+	 */
+	public Set<Id> extractDeletedIds(String sObjectType, Set<Id> idSet)
+	{
+		return extractIds(m_deletedMapByType.get(sObjectType).keySet(), idSet);
+	}
+
+	/**
+	 * extractDirtyIds
+	 *
+	 * @description Remove the registered dirty record ids from the given set and returns them
+	 *
+	 * @param sObjectType A SObjectType reference for the dirty registered records
+	 * @param idSet The set of Ids where the clean Ids will be extracted from and returns the set without them
+	 *
+	 * @return A set of Ids which are stored as dirty and member of the given idSet
+	 */
+	public Set<Id> extractDirtyIds(Schema.SObjectType sObjectType, Set<Id> idSet)
+	{
+		return extractDirtyIds(sObjectType.getDescribe().getName(), idSet);
+	}
+
+	/**
+	 * extractDirtyIds
+	 *
+	 * @description Remove the registered dirty record ids from the given set and returns them
+	 *
+	 * @param sObjectType The name of the registered dirty SObjectType
+	 * @param idSet The set of Ids where the dirty record ids will be extracted from and returns the set without them
+	 *
+	 * @return A set of Ids which are stored as dirty and member of the given idSet
+	 */
+	public Set<Id> extractDirtyIds(String sObjectType, Set<Id> idSet)
+	{
+		return extractIds(m_dirtyMapByType.get(sObjectType).keySet(), idSet);
+	}
+
+	/**
+	 * extractIds
+	 *
+	 * @description Remove the ids to extract from the given id set and return them.
+	 *
+	 * @param idSet The set of ids where the ids will be extracted from and will be returned without them
+	 * @param idsToExtract The name of the registered dirty SObjectType
+	 *
+	 * @return A set of Ids which are stored as dirty and member of the given idSet
+	 */
+	private Set<Id> extractIds(Set<Id> idSet, Set<Id> idsToExtract)
+	{
+		Set<Id> extractedIds = new Set<Id>(idSet);
+		extractedIds.retainAll(idSet);
+		idsToExtract.removeAll(extractedIds);
+		return extractedIds;
+	}
+
     /**
      * Register a newly created SObject instance to be inserted when commitWork is called
      *
@@ -463,89 +571,102 @@ public virtual class fflib_SObjectUnitOfWork
     }
 
 	/**
-	 * Get clean registered records
+	 * getClean
 	 *
-	 * @param sObjectType
+	 * @description Get the clean registered records of the given id set
+	 *
+	 * @param sObjectType A SObjectType reference registered clean SObjectType
 	 * @param idSet A set of Id's to search for
+	 *
+	 * @return A list of clean registered SObjects which are member of the given idSet
 	 */
-	public Map<Id, SObject> getClean(Schema.SObjectType sObjectType, Set<Id> idSet)
+	public List<SObject> getClean(Schema.SObjectType sObjectType, Set<Id> idSet)
 	{
 		return getClean(sObjectType.getDescribe().getName(), idSet);
 	}
 
 	/**
-	 * Get clean registered records
+	 * getClean
 	 *
-	 * @param sObjectType
+	 * @description Get the clean registered records of the given id set
+	 *
+	 * @param sObjectType The name of the registered clean SObjectType
 	 * @param idSet A set of Id's to search for
+	 *
+	 * @return A list of clean registered SObjects which are member of the given idSet
 	 */
-	public Map<Id, SObject> getClean(String sObjectType, Set<Id> idSet)
+	public List<SObject> getClean(String sObjectType, Set<Id> idSet)
 	{
 		if (m_cleanMapByType.containsKey(sObjectType))
 		{
-			return retainAllInMap(m_cleanMapByType.get(sObjectType), idSet);
+			return getRecords(m_cleanMapByType.get(sObjectType), idSet);
 		}
-		else
-		{
-			return new Map<Id, SObject>();
-		}
+		return new List<SObject>();
 	}
 
 	/**
-	 * Get dirty registered records
+	 * getDeleted
 	 *
-	 * @param sObjectType
+	 * @description Get the deleted registered records of the given id set
+	 *
+	 * @param sObjectType A SObjectType reference registered deleted SObjectType
 	 * @param idSet A set of Id's to search for
 	 */
-	public Map<Id, SObject> getDirty(Schema.SObjectType sObjectType, Set<Id> idSet)
-	{
-		return getDirty(sObjectType.getDescribe().getName(), idSet);
-	}
-
-	/**
-	 * Get dirty registered records
-	 *
-	 * @param sObjectType
-	 * @param idSet A set of Id's to search for
-	 */
-	public Map<Id, SObject> getDirty(String sObjectType, Set<Id> idSet)
-	{
-		if (m_dirtyMapByType.containsKey(sObjectType))
-		{
-			return retainAllInMap(m_dirtyMapByType.get(sObjectType), idSet);
-		}
-		else
-		{
-			return new Map<Id, SObject>();
-		}
-	}
-
-	/**
-	 * Get deleted registered records
-	 *
-	 * @param sObjectType
-	 * @param idSet A set of Id's to search for
-	 */
-	public Map<Id, SObject> getDeleted(Schema.SObjectType sObjectType, Set<Id> idSet)
+	public List<SObject> getDeleted(Schema.SObjectType sObjectType, Set<Id> idSet)
 	{
 		return getDeleted(sObjectType.getDescribe().getName(), idSet);
 	}
 
 	/**
-	 * Get deleted registered records
+	 * getDeleted
 	 *
-	 * @param sObjectType
+	 * @description Get the deleted registered records of the given id set
+	 *
+	 * @param sObjectType The name of the registered deleted SObjectType
 	 * @param idSet A set of Id's to search for
 	 */
-	public Map<Id, SObject> getDeleted(String sObjectType, Set<Id> idSet)
+	public List<SObject> getDeleted(String sObjectType, Set<Id> idSet)
 	{
 		if (m_deletedMapByType.containsKey(sObjectType))
 		{
-			return retainAllInMap(m_deletedMapByType.get(sObjectType), idSet);
+			return getRecords(m_deletedMapByType.get(sObjectType), idSet);
 		}
 		else
 		{
-			return new Map<Id, SObject>();
+			return new List<SObject>();
+		}
+	}
+
+	/**
+	 * getDirty
+	 *
+	 * @description Get the dirty registered records of the given id set
+	 *
+	 * @param sObjectType A SObjectType reference registered dirty SObjectType
+	 * @param idSet A set of Id's to search for
+	 */
+	public List<SObject> getDirty(Schema.SObjectType sObjectType, Set<Id> idSet)
+	{
+		return getDirty(sObjectType.getDescribe().getName(), idSet);
+	}
+
+	/**
+	 * getDirty
+	 *
+	 * @description Get the dirty registered records of the given id set
+	 *
+	 * @param sObjectType The name of the registered clean SObjectType
+	 * @param idSet A set of Id's to search for
+	 */
+	public List<SObject> getDirty(String sObjectType, Set<Id> idSet)
+	{
+		if (m_dirtyMapByType.containsKey(sObjectType))
+		{
+			return getRecords(m_dirtyMapByType.get(sObjectType), idSet);
+		}
+		else
+		{
+			return new List<SObject>();
 		}
 	}
 
@@ -578,6 +699,30 @@ public virtual class fflib_SObjectUnitOfWork
 		{
 			return new Set<Id>();
 		}
+	}
+
+
+	/**
+	 * getRecords
+	 *
+	 * @description Fetch a set of records from a recordById map
+	 *
+	 * @param recordByIds The source map of records
+	 * @param idSet A set of record ids to fetch from the map
+	 *
+	 * @return A list of SObject fetched from the recordByIds map
+	 */
+	private List<SObject> getRecords(Map<Id, SObject> recordByIds, Set<Id> idSet)
+	{
+		List<SObject> result = new List<SObject>();
+		for (Id recordId : idSet)
+		{
+			if (recordByIds.containsKey(recordId))
+			{
+				result.add(recordByIds.get(recordId));
+			}
+		}
+		return result;
 	}
 
     /**
@@ -642,31 +787,6 @@ public virtual class fflib_SObjectUnitOfWork
             onCommitWorkFinished(wasSuccessful);
         }
     }
-
-	/**
-	 * Retain All elements in the map with a key provided in the set of Ids
-	 *
-	 * @param recordMap The Map to process
-	 * @param idSet The Id's of elements that should remain
-	 */
-	private Map<Id, SObject> retainAllInMap(Map<Id, SObject> recordMap, Set<Id> idSet)
-	{
-		Set<Id> recordIds = new Set<Id>(recordMap.keySet());
-		if (recordIds.retainAll(idSet))
-		{
-			Map<Id, SObject> sObjectsByIds = new Map<Id, SObject>();
-			for (Id id : recordIds)
-			{
-				sObjectsByIds.put(id, recordMap.get(id));
-			}
-			return sObjectsByIds;
-		}
-		else
-		{
-			return new Map<Id, SObject>(recordMap);
-		}
-		return new Map<Id, sObject>();
-	}
 
 
     private class Relationships

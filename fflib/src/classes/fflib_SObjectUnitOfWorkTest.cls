@@ -45,7 +45,9 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 		// WHEN the clean account is registered to the unit of work and it becomes dirty due to a changed
 		unitOfWork.registerClean(myAccount);
 		myAccount.Name = 'Test A';
-		Map<Id, SObject> cleanRecords = unitOfWork.getClean(Account.SObjectType, new Set<Id> {myAccount.Id});
+		Map<Id, SObject> cleanRecords = new Map<Id, SObject>(
+				unitOfWork.getClean(Account.SObjectType, new Set<Id> {myAccount.Id})
+		);
 
 		// THEN then the clean account in the unit of work should exist and be as it was, clean
 		System.assert(!cleanRecords.isEmpty(), 'Clean records were not stored or retrieved correctly from unit of work');
@@ -64,7 +66,9 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 
 		// WHEN both accounts are registered as clean
 		unitOfWork.registerClean(new List<SObject> { accountA, accountB });
-		Map<Id, SObject> cleanRecords = unitOfWork.getClean(Account.SObjectType, new Set<Id> { accountId });
+		Map<Id, SObject> cleanRecords = new Map<Id, SObject>(
+				unitOfWork.getClean(Account.SObjectType, new Set<Id> { accountId })
+		);
 
 		// THEN one record should be returned with all fields merged into the account
 		System.assert(!cleanRecords.isEmpty(), 'Clean records were not stored or retrieved correctly from unit of work');
@@ -87,7 +91,9 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 		);
 
 		// WHEN a single dirty account is requested
-		Map<Id, SObject> dirtyRecords = unitOfWork.getDirty(Account.SObjectType, new Set<Id> {myAccountA.Id});
+		Map<Id, SObject> dirtyRecords = new Map<Id, SObject>(
+				unitOfWork.getDirty(Account.SObjectType, new Set<Id> {myAccountA.Id})
+		);
 
 		// THEN the dirty account record should be returned
 		System.assert(!dirtyRecords.isEmpty(), 'Should have had one record returned by the unit of work');
@@ -114,7 +120,9 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 				myAccountA.Id,
 				fflib_IDGenerator.generate(Account.SObjectType)
 		};
-		Map<Id, SObject> deletedRecords = unitOfWork.getDeleted(Account.SObjectType, accountIds);
+		Map<Id, SObject> deletedRecords = new Map<Id, SObject>(
+				unitOfWork.getDeleted(Account.SObjectType, accountIds)
+		);
 		Set<Id> deletedRecordIds = unitOfWork.getDeletedIds(Account.SObjectType, accountIds);
 
 		// THEN only the registered account for deletion should be returned
@@ -145,7 +153,9 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 				});
 
 		// THEN it should only register the changed field, and not overwrite the first dirty registered fields
-		Map<Id, SObject> dirtyRecords = unitOfWork.getDirty(Account.SObjectType, new Set<Id> {accountId});
+		Map<Id, SObject> dirtyRecords = new Map<Id, SObject>(
+				unitOfWork.getDirty(Account.SObjectType, new Set<Id> {accountId})
+		);
 		System.assert(!dirtyRecords.isEmpty(), 'Should have one dirty record');
 		System.assert(dirtyRecords.containsKey(accountId), 'Dirty account not returned');
 		System.assertEquals(
