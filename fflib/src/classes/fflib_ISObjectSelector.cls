@@ -20,4 +20,9 @@ public interface fflib_ISObjectSelector
 	 * Selects by Id records using the fields defined by the Selector configuration
 	 **/
 	List<SObject> selectSObjectsById(Set<Id> idSet);	
+
+	/**
+	 * Selects by Id records using UnitOfWork and queries non-registered records
+	 **/
+	List<SObject> selectSObjectsById(Set<Id> idSet, fflib_ISObjectUnitOfWork unitOfWork);
 }

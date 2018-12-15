@@ -188,6 +188,21 @@ public class fflib_Application
 		 **/
 		public List<SObject> selectById(Set<Id> recordIds)
 		{
+			return selectById(recordIds, null);
+		}
+
+		/**
+		 * Helper method to fetch the given SObject records from the registered records in the unitOfWork and
+		 *   query any non-registered records
+		 *   Internally creates an instance of the registered Selector and calls its
+		 *     selectSObjectById method
+		 *
+		 * @param recordIds The SObject record Ids, must be all the same SObjectType
+		 * @param unitOfWork Instance of fflib_ISObjectUnitOfWork for fetching registered records
+		 * @exception Is thrown if the record Ids are not all the same or the SObjectType is not registered
+		 **/
+		public List<SObject> selectById(Set<Id> recordIds, fflib_ISObjectUnitOfWork unitOfWork)
+		{
 			// No point creating an empty Domain class, nor can we determine the SObjectType anyway
 			if(recordIds==null || recordIds.size()==0)
 				throw new DeveloperException('Invalid record Id\'s set');	
@@ -199,7 +214,15 @@ public class fflib_Application
 					throw new DeveloperException('Unable to determine SObjectType, Set contains Id\'s from different SObject types');	
 
 			// Construct Selector class and query by Id for the records
-			return newInstance(domainSObjectType).selectSObjectsById(recordIds);
+			fflib_ISObjectSelector selector = newInstance(domainSObjectType);
+			if (null == unitOfWork)
+			{
+				return selector.selectSObjectsById(recordIds);
+			}
+			else
+			{
+				return selector.selectSObjectsById(recordIds, unitOfWork);
+			}
 		}
 
 		/**
