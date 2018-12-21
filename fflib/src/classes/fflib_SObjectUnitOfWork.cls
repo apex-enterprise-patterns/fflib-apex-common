@@ -242,6 +242,28 @@ public virtual class fflib_SObjectUnitOfWork
     }
 
     /**
+     * Registers a relationship between a record and a lookup value using an external ID field and a provided value. This
+     * information will be used during the commitWork phase to make the lookup reference requested when inserted to the database.
+     *
+     * @param record An existing or newly created record
+     * @param relatedToField A SObjectField reference to the lookup field that relates the two records together
+     * @param externalIdField A SObjectField reference to a field on the target SObject that is marked as isExternalId
+     * @param externalId A Object representing the targetted value of the externalIdField in said lookup
+     *
+     * Usage Example: uow.registerRelationship(recordSObject, record_sobject__c.relationship_field__c, lookup_sobject__c.external_id__c, 'abc123');
+     *
+     * Wraps putSObject, creating a new instance of the lookup sobject using the external id field and value.
+     */
+    public void registerRelationship(SObject record, Schema.sObjectField relatedToField, Schema.sObjectField externalIdField, Object externalId)
+    {
+        // NOTE: Due to the lack of ExternalID references on Standard Objects, this method can not be provided a standardized Unit Test. - Rick Parker
+        String sObjectType = record.getSObjectType().getDescribe().getName();
+        if(!m_newListByType.containsKey(sObjectType))
+            throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
+        m_relationships.get(sObjectType).add(record, relatedToField, externalIdField, externalId);
+    }
+
+    /**
      * Register an existing record to be updated during the commitWork method
      *
      * @param record An existing record
@@ -417,6 +439,42 @@ public virtual class fflib_SObjectUnitOfWork
 
         }
 
+        public void add(SObject record, Schema.sObjectField relatedToField, Schema.SObjectField externalIdField, Object externalId)
+        {
+            if (relatedToField == null) {
+                throw new UnitOfWorkException('Invalid argument: relatedToField.');
+            }
+
+            String relationshipName = relatedToField.getDescribe().getRelationshipName();
+            if (String.isBlank(relationshipName)) {
+                throw new UnitOfWorkException('Invalid argument: relatedToField. Field supplied is not a relationship field.');
+            }
+
+            List<Schema.SObjectType> relatedObjects = relatedToField.getDescribe().getReferenceTo();
+            Schema.SObjectType relatedObject = relatedObjects[0];
+
+            String externalIdFieldName = externalIdField.getDescribe().getName();
+            Boolean relatedHasExternalIdField = relatedObject.getDescribe().fields.getMap().keySet().contains(externalIdFieldName.toLowerCase());
+            Boolean externalIdFieldIsValid = externalIdField.getDescribe().isExternalId();
+
+            if (!relatedHasExternalIdField) {
+                throw new UnitOfWorkException('Invalid argument: externalIdField. Field supplied is not a known field on the target sObject.');
+            }
+
+            if (!externalIdFieldIsValid) {
+                throw new UnitOfWorkException('Invalid argument: externalIdField. Field supplied is not a marked as an External Identifier.');
+            }
+
+            RelationshipByExternalId relationship = new RelationshipByExternalId();
+            relationship.Record = record;
+            relationship.RelatedToField = relatedToField;
+            relationship.RelatedTo = relatedObject;
+            relationship.RelationshipName = relationshipName;
+            relationship.ExternalIdField = externalIdField;
+            relationship.ExternalId = externalId;
+            m_relationships.add(relationship);
+        }
+
         public void add(SObject record, Schema.sObjectField relatedToField, SObject relatedTo)
         {
             // Relationship to resolve
@@ -439,6 +497,23 @@ public virtual class fflib_SObjectUnitOfWork
     private interface IRelationship
     {
         void resolve();
+    }
+
+    private class RelationshipByExternalId implements IRelationship
+    {
+        public SObject Record;
+        public Schema.sObjectField RelatedToField;
+        public Schema.SObjectType RelatedTo;
+        public String RelationshipName;
+        public Schema.sObjectField ExternalIdField;
+        public Object ExternalId;
+
+        public void resolve()
+        {
+            SObject relationshipObject = this.RelatedTo.newSObject();
+            relationshipObject.put( ExternalIdField.getDescribe().getName(), this.ExternalId );
+            this.Record.putSObject( this.RelationshipName, relationshipObject );
+        }
     }
 
     private class Relationship implements IRelationship
