@@ -109,8 +109,41 @@ public virtual class fflib_SObjectUnitOfWork
         this(sObjectTypes,new SimpleDML());
     }
 
+    /**
+     * Constructs a new UnitOfWork to support work against the given object list
+     *
+     * @param sObjectTypes A list of objects given in dependency order (least dependent first)
+     * @param resolveOutOfOrderRelationships If true and a relationship is registered where a parent is inserted after a
+     *                                       child then will update the child post-insert to set the relationship. If
+     *                                       false then relationship will not be set.
+     */
+    public fflib_SObjectUnitOfWork(List<Schema.SObjectType> sObjectTypes, Boolean resolveOutOfOrderRelationships) {
+        this(sObjectTypes, new SimpleDML(), resolveOutOfOrderRelationships);
+    }
 
+    /**
+     * Constructs a new UnitOfWork to support work against the given object list
+     *
+     * @param sObjectTypes A list of objects given in dependency order (least dependent first)
+     * @param resolveOutOfOrderRelationships If true and a relationship is registered where a parent is inserted after a
+     *                                       child then will update the child post-insert to set the relationship. If
+     *                                       false then relationship will not be set.
+     */
     public fflib_SObjectUnitOfWork(List<Schema.SObjectType> sObjectTypes, IDML dml)
+    {
+        this(sObjectTypes, dml, false);
+    }
+
+    /**
+     * Constructs a new UnitOfWork to support work against the given object list
+     *
+     * @param sObjectTypes A list of objects given in dependency order (least dependent first)
+     * @param dml Modify the database via this class
+     * @param resolveOutOfOrderRelationships If true and a relationship is registered where a parent is inserted after a
+     *                                       child then will update the child post-insert to set the relationship. If
+     *                                       false then relationship will not be set.
+     */
+    public fflib_SObjectUnitOfWork(List<Schema.SObjectType> sObjectTypes, IDML dml, Boolean resolveOutOfOrderRelationships)
     {
         m_sObjectTypes = sObjectTypes.clone();
 
@@ -125,6 +158,10 @@ public virtual class fflib_SObjectUnitOfWork
         m_workList.add(m_emailWork);
 
         m_dml = dml;
+
+        if (resolveOutOfOrderRelationships) {
+            attemptToResolveOutOfOrderRelationships();
+        }
     }
 
     // default implementations for commitWork events
@@ -144,7 +181,7 @@ public virtual class fflib_SObjectUnitOfWork
      *
      * @return this unit of work
      */
-    public fflib_SObjectUnitOfWork attemptToResolveOutOfOrderRelationships()
+    private fflib_SObjectUnitOfWork attemptToResolveOutOfOrderRelationships()
     {
         m_attemptToResolveOutOfOrderRelationships = true;
         for (Relationships relationships : m_relationships.values()) {
