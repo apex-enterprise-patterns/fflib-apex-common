@@ -25,7 +25,7 @@
 **/
 
 /**
- * Base class aiding in the implemetnation of a Domain Model around SObject collections
+ * Base class aiding in the implementation of a Domain Model around SObject collections
  * 
  * Domain (software engineering). “a set of common requirements, terminology, and functionality 
  * for any software program constructed to solve a problem in that field”,
@@ -72,7 +72,7 @@ public virtual with sharing class fflib_SObjectDomain
 	private static Map<Type, List<fflib_SObjectDomain>> TriggerStateByClass; 
 	
 	/**
-	 * Retains the trigger tracking configuraiton used for each domain
+	 * Retains the trigger tracking configuration used for each domain
 	 **/
 	private static Map<Type, TriggerEvent> TriggerEventByClass;
 
@@ -90,7 +90,7 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Constructs the domain class with the data on which to apply the behaviour implemented within
 	 *
-	 * @param sObjectList A concreate list (e.g. List<Account> vs List<SObject>) of records
+	 * @param sObjectList A concrete list (e.g. List<Account> vs List<SObject>) of records
 
 	 **/
 	public fflib_SObjectDomain(List<SObject> sObjectList)
@@ -504,7 +504,7 @@ public virtual with sharing class fflib_SObjectDomain
 	public class Configuration
 	{
 		/** 
-		 * Backwards compatability mode for handleAfterUpdate routing to onValidate()
+		 * Backwards compatibility mode for handleAfterUpdate routing to onValidate()
 		 **/
 		public Boolean OldOnUpdateValidateBehaviour {get; private set;}		
 		/**
