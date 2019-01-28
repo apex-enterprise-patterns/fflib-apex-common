@@ -85,6 +85,18 @@ public interface fflib_ISObjectUnitOfWork
      **/
     void registerDirty(List<SObject> records);
     /**
+     * Register a new or existing record to be inserted or updated during the commitWork method
+     *
+     * @param record An new or existing record
+     **/
+    void registerUpsert(SObject record);
+    /**
+     * Register a list of mix of new and existing records to be upserted during the commitWork method
+     *
+     * @param records A list of mix of existing and new records
+     **/
+    void registerUpsert(List<SObject> records);
+    /**
      * Register an existing record to be deleted during the commitWork method
      *
      * @param record An existing record
