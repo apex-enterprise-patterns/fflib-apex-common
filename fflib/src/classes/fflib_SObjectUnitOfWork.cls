@@ -40,7 +40,7 @@
  * "A Unit of Work keeps track of everything you do during a business transaction that can affect the database. When you're done,
  *  it figures out everything that needs to be done to alter the database as a result of your work."
  *
- * In an Apex context this pattern provides the following specific benifits
+ * In an Apex context this pattern provides the following specific benefits
  *  - Applies bulkfication to DML operations, insert, update and delete
  *  - Manages a business transaction around the work and ensures a rollback occurs (even when exceptions are later handled by the caller)
  *  - Honours dependency rules between records and updates dependent relationships automatically during the commit
@@ -93,16 +93,20 @@ public virtual class fflib_SObjectUnitOfWork
 
     public class SimpleDML implements IDML
     {
-        public void dmlInsert(List<SObject> objList){
+        public void dmlInsert(List<SObject> objList)
+        {
             insert objList;
         }
-        public void dmlUpdate(List<SObject> objList){
+        public void dmlUpdate(List<SObject> objList)
+        {
             update objList;
         }
-        public void dmlDelete(List<SObject> objList){
+        public void dmlDelete(List<SObject> objList)
+        {
             delete objList;
         }
-        public void eventPublish(List<SObject> objList){
+        public void eventPublish(List<SObject> objList)
+        {
             EventBus.publish(objList);
         }
     }
@@ -120,7 +124,7 @@ public virtual class fflib_SObjectUnitOfWork
     {
         m_sObjectTypes = sObjectTypes.clone();
 
-        for(Schema.SObjectType sObjectType : m_sObjectTypes)
+        for (Schema.SObjectType sObjectType : m_sObjectTypes)
         {
             // register the type
             handleRegisterType(sObjectType);
@@ -210,7 +214,7 @@ public virtual class fflib_SObjectUnitOfWork
      **/
     public void registerNew(List<SObject> records)
     {
-        for(SObject record : records)
+        for (SObject record : records)
         {
             registerNew(record, null, null);
         }
@@ -218,28 +222,23 @@ public virtual class fflib_SObjectUnitOfWork
 
     /**
      * Register a newly created SObject instance to be inserted when commitWork is called,
-     *   you may also provide a reference to the parent record instance (should also be registered as new separatly)
+     *   you may also provide a reference to the parent record instance (should also be registered as new separately)
      *
      * @param record A newly created SObject instance to be inserted during commitWork
      * @param relatedToParentField A SObjectField reference to the child field that associates the child record with its parent
-     * @param relatedToParentRecord A SObject instance of the parent record (should also be registered as new separatly)
+     * @param relatedToParentRecord A SObject instance of the parent record (should also be registered as new separately)
      **/
     public void registerNew(SObject record, Schema.sObjectField relatedToParentField, SObject relatedToParentRecord)
     {
-        if(record.Id != null)
+        if (record.Id != null)
             throw new UnitOfWorkException('Only new records can be registered as new');
         String sObjectType = record.getSObjectType().getDescribe().getName();
 
-        if(sObjectType.length() > 3 && sObjectType.right(3)  == '__e')
-        {
-            throw new UnitOfWorkException(String.format('SObject type {0} must use registerPublishBeforeTransaction or ' +
-                    'registerPublishAfterTransaction methods to be used within this unit of work', new String[] { sObjectType }));
-        }
+		throwExceptionOnEventSObjectType(sObjectType);
+		throwExceptionOnUnsupportedSObjectType(m_newListByType, sObjectType);
 
-        if(!m_newListByType.containsKey(sObjectType))
-            throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
         m_newListByType.get(sObjectType).add(record);
-        if(relatedToParentRecord!=null && relatedToParentField!=null)
+        if (relatedToParentRecord!=null && relatedToParentField!=null)
             registerRelationship(record, relatedToParentField, relatedToParentRecord);
     }
 
@@ -248,21 +247,16 @@ public virtual class fflib_SObjectUnitOfWork
      *  used during the commitWork phase to make the references only when related records have been inserted to the database.
      *
      * @param record An existing or newly created record
-     * @param relatedToField A SObjectField referene to the lookup field that relates the two records together
-     * @param relatedTo A SOBject instance (yet to be commited to the database)
+     * @param relatedToField A SObjectField reference to the lookup field that relates the two records together
+     * @param relatedTo A SObject instance (yet to be committed to the database)
      */
     public void registerRelationship(SObject record, Schema.sObjectField relatedToField, SObject relatedTo)
     {
         String sObjectType = record.getSObjectType().getDescribe().getName();
 
-        if(sObjectType.length() > 3 && sObjectType.right(3)  == '__e')
-        {
-            throw new UnitOfWorkException(String.format('SObject type {0} must use registerPublishBeforeTransaction or ' +
-                    'registerPublishAfterTransaction methods to be used within this unit of work', new String[] { sObjectType }));
-        }
+		throwExceptionOnEventSObjectType(sObjectType);
+		throwExceptionOnUnsupportedSObjectType(m_newListByType, sObjectType);
 
-        if(!m_newListByType.containsKey(sObjectType))
-            throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
         m_relationships.get(sObjectType).add(record, relatedToField, relatedTo);
     }
 
@@ -272,7 +266,7 @@ public virtual class fflib_SObjectUnitOfWork
      *  used during the commitWork phase to make the references only when related records have been inserted to the database.
      *
      * @param a single email message instance
-     * @param relatedTo A SOBject instance (yet to be commited to the database)
+     * @param relatedTo A SObject instance (yet to be committed to the database)
      */
     public void registerRelationship( Messaging.SingleEmailMessage email, SObject relatedTo )
     {
@@ -291,18 +285,12 @@ public virtual class fflib_SObjectUnitOfWork
 
     public void registerDirty(SObject record, List<SObjectField> dirtyFields)
     {
-        if(record.Id == null)
+        if (record.Id == null)
             throw new UnitOfWorkException('New records cannot be registered as dirty');
         String sObjectType = record.getSObjectType().getDescribe().getName();
 
-        if(sObjectType.length() > 3 && sObjectType.right(3)  == '__e')
-        {
-            throw new UnitOfWorkException(String.format('SObject type {0} must use registerPublishBeforeTransaction or ' +
-                    'registerPublishAfterTransaction methods to be used within this unit of work', new String[] { sObjectType }));
-        }
-
-        if(!m_dirtyMapByType.containsKey(sObjectType))
-            throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
+		throwExceptionOnEventSObjectType(sObjectType);
+		throwExceptionOnUnsupportedSObjectType(m_dirtyMapByType, sObjectType);
 
         // If record isn't registered as dirty, or no dirty fields to drive a merge
         if (!m_dirtyMapByType.get(sObjectType).containsKey(record.Id) || dirtyFields.isEmpty())
@@ -325,28 +313,23 @@ public virtual class fflib_SObjectUnitOfWork
 
     /**
      * Register an existing record to be updated when commitWork is called,
-     *   you may also provide a reference to the parent record instance (should also be registered as new separatly)
+     *   you may also provide a reference to the parent record instance (should also be registered as new separately)
      *
      * @param record A newly created SObject instance to be inserted during commitWork
      * @param relatedToParentField A SObjectField reference to the child field that associates the child record with its parent
-     * @param relatedToParentRecord A SObject instance of the parent record (should also be registered as new separatly)
+     * @param relatedToParentRecord A SObject instance of the parent record (should also be registered as new separately)
      **/
     public void registerDirty(SObject record, Schema.sObjectField relatedToParentField, SObject relatedToParentRecord)
     {
-        if(record.Id == null)
+        if (record.Id == null)
             throw new UnitOfWorkException('New records cannot be registered as dirty');
         String sObjectType = record.getSObjectType().getDescribe().getName();
 
-        if(sObjectType.length() > 3 && sObjectType.right(3)  == '__e')
-        {
-            throw new UnitOfWorkException(String.format('SObject type {0} must use registerPublishBeforeTransaction or ' +
-                    'registerPublishAfterTransaction methods to be used within this unit of work', new String[] { sObjectType }));
-        }
+		throwExceptionOnEventSObjectType(sObjectType);
+		throwExceptionOnUnsupportedSObjectType(m_dirtyMapByType, sObjectType);
 
-        if(!m_dirtyMapByType.containsKey(sObjectType))
-            throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
         m_dirtyMapByType.get(sObjectType).put(record.Id, record);
-        if(relatedToParentRecord!=null && relatedToParentField!=null)
+        if (relatedToParentRecord!=null && relatedToParentField!=null)
             registerRelationship(record, relatedToParentField, relatedToParentRecord);
     }
 
@@ -357,7 +340,7 @@ public virtual class fflib_SObjectUnitOfWork
      **/
     public void registerDirty(List<SObject> records)
     {
-        for(SObject record : records)
+        for (SObject record : records)
         {
             this.registerDirty(record);
         }
@@ -373,7 +356,9 @@ public virtual class fflib_SObjectUnitOfWork
         if (record.Id == null) 
         {
             registerNew(record, null, null);
-        } else {
+        }
+        else
+        {
             registerDirty(record, new List<SObjectField>());
         }
     }
@@ -385,7 +370,7 @@ public virtual class fflib_SObjectUnitOfWork
      **/
     public void registerUpsert(List<SObject> records)
     {
-        for(SObject record : records)
+        for (SObject record : records)
         {
             this.registerUpsert(record);
         }
@@ -398,18 +383,13 @@ public virtual class fflib_SObjectUnitOfWork
      **/
     public void registerDeleted(SObject record)
     {
-        if(record.Id == null)
+        if (record.Id == null)
             throw new UnitOfWorkException('New records cannot be registered for deletion');
         String sObjectType = record.getSObjectType().getDescribe().getName();
 
-        if(sObjectType.length() > 3 && sObjectType.right(3)  == '__e')
-        {
-            throw new UnitOfWorkException(String.format('SObject type {0} must use registerPublishBeforeTransaction or ' +
-                    'registerPublishAfterTransaction methods to be used within this unit of work', new String[] { sObjectType }));
-        }
+		throwExceptionOnEventSObjectType(sObjectType);
+		throwExceptionOnUnsupportedSObjectType(m_deletedMapByType, sObjectType);
 
-        if(!m_deletedMapByType.containsKey(sObjectType))
-            throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
         m_deletedMapByType.get(sObjectType).put(record.Id, record);
     }
 
@@ -420,7 +400,7 @@ public virtual class fflib_SObjectUnitOfWork
      **/
     public void registerDeleted(List<SObject> records)
     {
-        for(SObject record : records)
+        for (SObject record : records)
         {
             this.registerDeleted(record);
         }
@@ -435,14 +415,8 @@ public virtual class fflib_SObjectUnitOfWork
     {
         String sObjectType = record.getSObjectType().getDescribe().getName();
 
-        if(sObjectType.length() > 3 && sObjectType.right(3)  != '__e')
-        {
-            throw new UnitOfWorkException(String.format('SObject type {0} is invalid for publishing within this unit of work', new String[] { sObjectType }));
-        }
-
-        if(!m_publishBeforeListByType.containsKey(sObjectType)) {
-            throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
-        }
+		throwExceptionOnNonEventSObjectType(sObjectType);
+		throwExceptionOnUnsupportedSObjectType(m_publishBeforeListByType, sObjectType);
 
         m_publishBeforeListByType.get(sObjectType).add(record);
     }
@@ -454,7 +428,7 @@ public virtual class fflib_SObjectUnitOfWork
      **/
     public void registerPublishBeforeTransaction(List<SObject> records)
     {
-        for(SObject record : records)
+        for (SObject record : records)
         {
             this.registerPublishBeforeTransaction(record);
         }
@@ -469,14 +443,8 @@ public virtual class fflib_SObjectUnitOfWork
     {
         String sObjectType = record.getSObjectType().getDescribe().getName();
 
-        if(sObjectType.length() > 3 && sObjectType.right(3)  != '__e')
-        {
-            throw new UnitOfWorkException(String.format('SObject type {0} is invalid for publishing within this unit of work', new String[] { sObjectType }));
-        }
-
-        if(!m_publishAfterSuccessListByType.containsKey(sObjectType)) {
-            throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
-        }
+		throwExceptionOnNonEventSObjectType(sObjectType);
+		throwExceptionOnUnsupportedSObjectType(m_publishAfterSuccessListByType, sObjectType);
 
         m_publishAfterSuccessListByType.get(sObjectType).add(record);
     }
@@ -488,7 +456,7 @@ public virtual class fflib_SObjectUnitOfWork
      **/
     public void registerPublishAfterSuccessTransaction(List<SObject> records)
     {
-        for(SObject record : records)
+        for (SObject record : records)
         {
             this.registerPublishAfterSuccessTransaction(record);
         }
@@ -502,14 +470,8 @@ public virtual class fflib_SObjectUnitOfWork
     {
         String sObjectType = record.getSObjectType().getDescribe().getName();
 
-        if(sObjectType.length() > 3 && sObjectType.right(3)  != '__e')
-        {
-            throw new UnitOfWorkException(String.format('SObject type {0} is invalid for publishing within this unit of work', new String[] { sObjectType }));
-        }
-
-        if(!m_publishAfterFailureListByType.containsKey(sObjectType)) {
-            throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
-        }
+		throwExceptionOnNonEventSObjectType(sObjectType);
+		throwExceptionOnUnsupportedSObjectType(m_publishAfterFailureListByType, sObjectType);
 
         m_publishAfterFailureListByType.get(sObjectType).add(record);
     }
@@ -521,7 +483,7 @@ public virtual class fflib_SObjectUnitOfWork
      **/
     public void registerPublishAfterFailureTransaction(List<SObject> records)
     {
-        for(SObject record : records)
+        for (SObject record : records)
         {
             this.registerPublishAfterFailureTransaction(record);
         }
@@ -543,7 +505,7 @@ public virtual class fflib_SObjectUnitOfWork
             // notify anyone that we are starting the before transaction events and publishing them to the bus
             onPublishBeforeEventsStarting();
 
-            for(Schema.SObjectType sObjectType : m_sObjectTypes)
+            for (Schema.SObjectType sObjectType : m_sObjectTypes)
             {
                 m_dml.eventPublish(m_publishBeforeListByType.get(sObjectType.getDescribe().getName()));
             }
@@ -553,17 +515,17 @@ public virtual class fflib_SObjectUnitOfWork
             // notify we're starting the DML operations
             onDMLStarting();
             // Insert by type
-            for(Schema.SObjectType sObjectType : m_sObjectTypes)
+            for (Schema.SObjectType sObjectType : m_sObjectTypes)
             {
                 m_relationships.get(sObjectType.getDescribe().getName()).resolve();
                 m_dml.dmlInsert(m_newListByType.get(sObjectType.getDescribe().getName()));
             }
             // Update by type
-            for(Schema.SObjectType sObjectType : m_sObjectTypes)
+            for (Schema.SObjectType sObjectType : m_sObjectTypes)
                 m_dml.dmlUpdate(m_dirtyMapByType.get(sObjectType.getDescribe().getName()).values());
             // Delete by type (in reverse dependency order)
             Integer objectIdx = m_sObjectTypes.size() - 1;
-            while(objectIdx>=0)
+            while (objectIdx>=0)
                 m_dml.dmlDelete(m_deletedMapByType.get(m_sObjectTypes[objectIdx--].getDescribe().getName()).values());
 
             // manage any record relationships to emails that need to be resolved.
@@ -576,7 +538,7 @@ public virtual class fflib_SObjectUnitOfWork
             onDoWorkStarting();
             // Generic work
             m_workList.add(m_emailWork);
-            for(IDoWork work : m_workList)
+            for (IDoWork work : m_workList)
                 work.doWork();
             // notify we've completed processing registered work
             onDoWorkFinished();
@@ -598,12 +560,12 @@ public virtual class fflib_SObjectUnitOfWork
         finally
         {
 
-            if(wasSuccessful)
+            if (wasSuccessful)
             {
                 // notify anyone that we are starting the before transaction events and publishing them to the bus
                 onPublishAfterSuccessEventsStarting();
 
-                for(Schema.SObjectType sObjectType : m_sObjectTypes)
+                for (Schema.SObjectType sObjectType : m_sObjectTypes)
                 {
                     m_dml.eventPublish(m_publishAfterSuccessListByType.get(sObjectType.getDescribe().getName()));
                 }
@@ -615,7 +577,7 @@ public virtual class fflib_SObjectUnitOfWork
                 onPublishAfterFailureEventsStarting();
 
                 // before we bubble the error up lets send out the failure platform events
-                for(Schema.SObjectType sObjectType : m_sObjectTypes)
+                for (Schema.SObjectType sObjectType : m_sObjectTypes)
                 {
                     m_dml.eventPublish(m_publishAfterFailureListByType.get(sObjectType.getDescribe().getName()));
                 }
@@ -628,6 +590,46 @@ public virtual class fflib_SObjectUnitOfWork
         }
     }
 
+	private void throwExceptionOnEventSObjectType(String sObjectType)
+	{
+		if (sObjectType.length() > 3 && sObjectType.right(3)  == '__e')
+		{
+			throw new UnitOfWorkException(
+					String.format(
+							'SObject type {0} must use registerPublishBeforeTransaction or ' +
+									'registerPublishAfterTransaction methods to be used within this unit of work',
+							new List<String> { sObjectType }
+					)
+			);
+		}
+	}
+
+	private void throwExceptionOnNonEventSObjectType(String sObjectType)
+	{
+		if (sObjectType.length() > 3 && sObjectType.right(3) != '__e')
+		{
+			throw new UnitOfWorkException(
+					String.format(
+							'SObject type {0} is invalid for publishing within this unit of work',
+							new List<String> {sObjectType}
+					)
+			);
+		}
+	}
+
+	private void throwExceptionOnUnsupportedSObjectType(Map<String, Object> theMap, String sObjectType)
+	{
+		if (!theMap.containsKey(sObjectType))
+		{
+			throw new UnitOfWorkException(
+					String.format(
+							'SObject type {0} is not supported by this unit of work',
+							new List<String> { sObjectType }
+					)
+			);
+		}
+	}
+
     private class Relationships
     {
         private List<IRelationship> m_relationships = new List<IRelationship>();
@@ -635,7 +637,7 @@ public virtual class fflib_SObjectUnitOfWork
         public void resolve()
         {
             // Resolve relationships
-            for(IRelationship relationship : m_relationships)
+            for (IRelationship relationship : m_relationships)
             {
                 //relationship.Record.put(relationship.RelatedToField, relationship.RelatedTo.Id);
                 relationship.resolve();
@@ -719,7 +721,7 @@ public virtual class fflib_SObjectUnitOfWork
 
         public void doWork()
         {
-            if(emails.size() > 0) Messaging.sendEmail(emails);
+            if (emails.size() > 0) Messaging.sendEmail(emails);
         }
     }
 }
