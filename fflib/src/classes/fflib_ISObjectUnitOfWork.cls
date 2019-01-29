@@ -109,6 +109,45 @@ public interface fflib_ISObjectUnitOfWork
      **/
     void registerDeleted(List<SObject> records);
     /**
+     * Register a newly created SObject (Platform Event) instance to be published when commitWork is called
+     *
+     * @param record A newly created SObject (Platform Event) instance to be inserted during commitWork
+     **/
+    void registerPublishBeforeTransaction(SObject record);
+    /**
+     * Register a list of newly created SObject (Platform Event) instance to be published when commitWork is called
+     *
+     * @param records A list of existing records
+     **/
+    void registerPublishBeforeTransaction(List<SObject> records);
+    /**
+     * Register a newly created SObject (Platform Event) instance to be published when commitWork has successfully
+     * completed
+     *
+     * @param record A newly created SObject (Platform Event) instance to be inserted during commitWork
+     **/
+    void registerPublishAfterSuccessTransaction(SObject record);
+    /**
+     * Register a list of newly created SObject (Platform Event) instance to be published when commitWork has successfully
+     * completed
+     *
+     * @param records A list of existing records
+     **/
+    void registerPublishAfterSuccessTransaction(List<SObject> records);
+    /**
+     * Register a newly created SObject (Platform Event) instance to be published when commitWork has caused an error
+     *
+     * @param record A newly created SObject (Platform Event) instance to be inserted during commitWork
+     **/
+    void registerPublishAfterFailureTransaction(SObject record);
+    /**
+     * Register a list of newly created SObject (Platform Event) instance to be published when commitWork has caused an
+     * error
+     *
+     * @param records A list of existing records
+     **/
+    void registerPublishAfterFailureTransaction(List<SObject> records);
+    /**
      * Takes all the work that has been registered with the UnitOfWork and commits it to the database
      **/
     void commitWork();

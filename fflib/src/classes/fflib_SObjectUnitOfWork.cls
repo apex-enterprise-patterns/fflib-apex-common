@@ -64,6 +64,10 @@ public virtual class fflib_SObjectUnitOfWork
 
     protected Map<String, Relationships> m_relationships = new Map<String, Relationships>();
 
+    protected Map<String, List<SObject>> m_publishBeforeListByType = new Map<String, List<SObject>>();
+    protected Map<String, List<SObject>> m_publishAfterSuccessListByType = new Map<String, List<SObject>>();
+    protected Map<String, List<SObject>> m_publishAfterFailureListByType = new Map<String, List<SObject>>();
+
     protected List<IDoWork> m_workList = new List<IDoWork>();
 
     @TestVisible
@@ -84,6 +88,7 @@ public virtual class fflib_SObjectUnitOfWork
         void dmlInsert(List<SObject> objList);
         void dmlUpdate(List<SObject> objList);
         void dmlDelete(List<SObject> objList);
+        void eventPublish(List<SObject> objList);
     }
 
     public class SimpleDML implements IDML
@@ -96,6 +101,9 @@ public virtual class fflib_SObjectUnitOfWork
         }
         public void dmlDelete(List<SObject> objList){
             delete objList;
+        }
+        public void eventPublish(List<SObject> objList){
+            EventBus.publish(objList);
         }
     }
     /**
@@ -126,10 +134,22 @@ public virtual class fflib_SObjectUnitOfWork
     // default implementations for commitWork events
     public virtual void onRegisterType(Schema.SObjectType sObjectType) {}
     public virtual void onCommitWorkStarting() {}
+
+    public virtual void onPublishBeforeEventsStarting() {}
+    public virtual void onPublishBeforeEventsFinished() {}
+
     public virtual void onDMLStarting() {}
     public virtual void onDMLFinished() {}
+
     public virtual void onDoWorkStarting() {}
     public virtual void onDoWorkFinished() {}
+
+    public virtual void onPublishAfterSuccessEventsStarting() {}
+    public virtual void onPublishAfterSuccessEventsFinished() {}
+
+    public virtual void onPublishAfterFailureEventsStarting() {}
+    public virtual void onPublishAfterFailureEventsFinished() {}
+
     public virtual void onCommitWorkFinishing() {}
     public virtual void onCommitWorkFinished(Boolean wasSuccessful) {}
 
@@ -141,11 +161,17 @@ public virtual class fflib_SObjectUnitOfWork
      */
     private void handleRegisterType(Schema.SObjectType sObjectType)
     {
+        String sObjectName = sObjectType.getDescribe().getName();
+
         // add type to dml operation tracking
-        m_newListByType.put(sObjectType.getDescribe().getName(), new List<SObject>());
-        m_dirtyMapByType.put(sObjectType.getDescribe().getName(), new Map<Id, SObject>());
-        m_deletedMapByType.put(sObjectType.getDescribe().getName(), new Map<Id, SObject>());
-        m_relationships.put(sObjectType.getDescribe().getName(), new Relationships());
+        m_newListByType.put(sObjectName, new List<SObject>());
+        m_dirtyMapByType.put(sObjectName, new Map<Id, SObject>());
+        m_deletedMapByType.put(sObjectName, new Map<Id, SObject>());
+        m_relationships.put(sObjectName, new Relationships());
+
+        m_publishBeforeListByType.put(sObjectName, new List<SObject>());
+        m_publishAfterSuccessListByType.put(sObjectName, new List<SObject>());
+        m_publishAfterFailureListByType.put(sObjectName, new List<SObject>());
 
         // give derived class opportunity to register the type
         onRegisterType(sObjectType);
@@ -203,6 +229,13 @@ public virtual class fflib_SObjectUnitOfWork
         if(record.Id != null)
             throw new UnitOfWorkException('Only new records can be registered as new');
         String sObjectType = record.getSObjectType().getDescribe().getName();
+
+        if(sObjectType.length() > 3 && sObjectType.right(3)  == '__e')
+        {
+            throw new UnitOfWorkException(String.format('SObject type {0} must use registerPublishBeforeTransaction or ' +
+                    'registerPublishAfterTransaction methods to be used within this unit of work', new String[] { sObjectType }));
+        }
+
         if(!m_newListByType.containsKey(sObjectType))
             throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
         m_newListByType.get(sObjectType).add(record);
@@ -221,6 +254,13 @@ public virtual class fflib_SObjectUnitOfWork
     public void registerRelationship(SObject record, Schema.sObjectField relatedToField, SObject relatedTo)
     {
         String sObjectType = record.getSObjectType().getDescribe().getName();
+
+        if(sObjectType.length() > 3 && sObjectType.right(3)  == '__e')
+        {
+            throw new UnitOfWorkException(String.format('SObject type {0} must use registerPublishBeforeTransaction or ' +
+                    'registerPublishAfterTransaction methods to be used within this unit of work', new String[] { sObjectType }));
+        }
+
         if(!m_newListByType.containsKey(sObjectType))
             throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
         m_relationships.get(sObjectType).add(record, relatedToField, relatedTo);
@@ -254,6 +294,13 @@ public virtual class fflib_SObjectUnitOfWork
         if(record.Id == null)
             throw new UnitOfWorkException('New records cannot be registered as dirty');
         String sObjectType = record.getSObjectType().getDescribe().getName();
+
+        if(sObjectType.length() > 3 && sObjectType.right(3)  == '__e')
+        {
+            throw new UnitOfWorkException(String.format('SObject type {0} must use registerPublishBeforeTransaction or ' +
+                    'registerPublishAfterTransaction methods to be used within this unit of work', new String[] { sObjectType }));
+        }
+
         if(!m_dirtyMapByType.containsKey(sObjectType))
             throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
 
@@ -289,6 +336,13 @@ public virtual class fflib_SObjectUnitOfWork
         if(record.Id == null)
             throw new UnitOfWorkException('New records cannot be registered as dirty');
         String sObjectType = record.getSObjectType().getDescribe().getName();
+
+        if(sObjectType.length() > 3 && sObjectType.right(3)  == '__e')
+        {
+            throw new UnitOfWorkException(String.format('SObject type {0} must use registerPublishBeforeTransaction or ' +
+                    'registerPublishAfterTransaction methods to be used within this unit of work', new String[] { sObjectType }));
+        }
+
         if(!m_dirtyMapByType.containsKey(sObjectType))
             throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
         m_dirtyMapByType.get(sObjectType).put(record.Id, record);
@@ -347,6 +401,13 @@ public virtual class fflib_SObjectUnitOfWork
         if(record.Id == null)
             throw new UnitOfWorkException('New records cannot be registered for deletion');
         String sObjectType = record.getSObjectType().getDescribe().getName();
+
+        if(sObjectType.length() > 3 && sObjectType.right(3)  == '__e')
+        {
+            throw new UnitOfWorkException(String.format('SObject type {0} must use registerPublishBeforeTransaction or ' +
+                    'registerPublishAfterTransaction methods to be used within this unit of work', new String[] { sObjectType }));
+        }
+
         if(!m_deletedMapByType.containsKey(sObjectType))
             throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
         m_deletedMapByType.get(sObjectType).put(record.Id, record);
@@ -366,6 +427,107 @@ public virtual class fflib_SObjectUnitOfWork
     }
 
     /**
+     * Register a newly created SObject (Platform Event) instance to be published when commitWork is called
+     *
+     * @param record A newly created SObject (Platform Event) instance to be inserted during commitWork
+     **/
+    public void registerPublishBeforeTransaction(SObject record)
+    {
+        String sObjectType = record.getSObjectType().getDescribe().getName();
+
+        if(sObjectType.length() > 3 && sObjectType.right(3)  != '__e')
+        {
+            throw new UnitOfWorkException(String.format('SObject type {0} is invalid for publishing within this unit of work', new String[] { sObjectType }));
+        }
+
+        if(!m_publishBeforeListByType.containsKey(sObjectType)) {
+            throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
+        }
+
+        m_publishBeforeListByType.get(sObjectType).add(record);
+    }
+
+    /**
+     * Register a list of newly created SObject (Platform Event) instance to be published when commitWork is called
+     *
+     * @param records A list of existing records
+     **/
+    public void registerPublishBeforeTransaction(List<SObject> records)
+    {
+        for(SObject record : records)
+        {
+            this.registerPublishBeforeTransaction(record);
+        }
+    }
+
+    /**
+     * Register a newly created SObject (Platform Event) instance to be published when commitWork is called
+     *
+     * @param record A newly created SObject (Platform Event) instance to be inserted during commitWork
+     **/
+    public void registerPublishAfterSuccessTransaction(SObject record)
+    {
+        String sObjectType = record.getSObjectType().getDescribe().getName();
+
+        if(sObjectType.length() > 3 && sObjectType.right(3)  != '__e')
+        {
+            throw new UnitOfWorkException(String.format('SObject type {0} is invalid for publishing within this unit of work', new String[] { sObjectType }));
+        }
+
+        if(!m_publishAfterSuccessListByType.containsKey(sObjectType)) {
+            throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
+        }
+
+        m_publishAfterSuccessListByType.get(sObjectType).add(record);
+    }
+
+    /**
+     * Register a list of newly created SObject (Platform Event) instance to be published when commitWork is called
+     *
+     * @param records A list of existing records
+     **/
+    public void registerPublishAfterSuccessTransaction(List<SObject> records)
+    {
+        for(SObject record : records)
+        {
+            this.registerPublishAfterSuccessTransaction(record);
+        }
+    }
+    /**
+     * Register a newly created SObject (Platform Event) instance to be published when commitWork is called
+     *
+     * @param record A newly created SObject (Platform Event) instance to be inserted during commitWork
+     **/
+    public void registerPublishAfterFailureTransaction(SObject record)
+    {
+        String sObjectType = record.getSObjectType().getDescribe().getName();
+
+        if(sObjectType.length() > 3 && sObjectType.right(3)  != '__e')
+        {
+            throw new UnitOfWorkException(String.format('SObject type {0} is invalid for publishing within this unit of work', new String[] { sObjectType }));
+        }
+
+        if(!m_publishAfterFailureListByType.containsKey(sObjectType)) {
+            throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
+        }
+
+        m_publishAfterFailureListByType.get(sObjectType).add(record);
+    }
+
+    /**
+     * Register a list of newly created SObject (Platform Event) instance to be published when commitWork is called
+     *
+     * @param records A list of existing records
+     **/
+    public void registerPublishAfterFailureTransaction(List<SObject> records)
+    {
+        for(SObject record : records)
+        {
+            this.registerPublishAfterFailureTransaction(record);
+        }
+    }
+
+    /**
      * Takes all the work that has been registered with the UnitOfWork and commits it to the database
      **/
     public void commitWork()
@@ -378,6 +540,16 @@ public virtual class fflib_SObjectUnitOfWork
         Boolean wasSuccessful = false;
         try
         {
+            // notify anyone that we are starting the before transaction events and publishing them to the bus
+            onPublishBeforeEventsStarting();
+
+            for(Schema.SObjectType sObjectType : m_sObjectTypes)
+            {
+                m_dml.eventPublish(m_publishBeforeListByType.get(sObjectType.getDescribe().getName()));
+            }
+
+            onPublishBeforeEventsFinished();
+
             // notify we're starting the DML operations
             onDMLStarting();
             // Insert by type
@@ -419,11 +591,38 @@ public virtual class fflib_SObjectUnitOfWork
         {
             // Rollback
             Database.rollback(sp);
+
             // Throw exception on to caller
             throw e;
         }
         finally
         {
+
+            if(wasSuccessful)
+            {
+                // notify anyone that we are starting the before transaction events and publishing them to the bus
+                onPublishAfterSuccessEventsStarting();
+
+                for(Schema.SObjectType sObjectType : m_sObjectTypes)
+                {
+                    m_dml.eventPublish(m_publishAfterSuccessListByType.get(sObjectType.getDescribe().getName()));
+                }
+
+                onPublishAfterSuccessEventsFinished();
+            }
+            else 
+            {
+                onPublishAfterFailureEventsStarting();
+
+                // before we bubble the error up lets send out the failure platform events
+                for(Schema.SObjectType sObjectType : m_sObjectTypes)
+                {
+                    m_dml.eventPublish(m_publishAfterFailureListByType.get(sObjectType.getDescribe().getName()));
+                }
+
+                onPublishAfterFailureEventsFinished();
+            }
+            
             // notify we're done with commit work
             onCommitWorkFinished(wasSuccessful);
         }
