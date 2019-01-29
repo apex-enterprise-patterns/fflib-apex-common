@@ -444,6 +444,7 @@ private class fflib_ApplicationTest
 		public boolean isInsertCalled = false;
 		public boolean isUpdateCalled = false;
 		public boolean isDeleteCalled = false;
+		public boolean isPublishCalled = false;
 
 		public void dmlInsert(List<SObject> objList){
 			this.isInsertCalled = true;
@@ -453,6 +454,10 @@ private class fflib_ApplicationTest
 		}
 		public void dmlDelete(List<SObject> objList){
 			this.isDeleteCalled = true;
+		}
+		public void eventPublish(List<SObject> objList)
+		{
+			this.isPublishCalled = true;
 		}
 	}
 
