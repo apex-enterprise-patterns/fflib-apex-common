@@ -213,6 +213,23 @@ private class fflib_ApplicationTest
 	}
 
 	@IsTest
+	private static void callingUnitOfWorkFactoryWithCustomTypesShouldGivenStandardImplsAndMockImpls()
+	{
+		// Standard behaviour
+		System.assert(
+				UnitOfWork.newInstance(
+						new List<SObjectType>{ Account.SObjectType}
+				) instanceof fflib_SObjectUnitOfWork);
+
+		// Mocking behaviour
+		UnitOfWork.setMock(new fflib_SObjectMocks.SObjectUnitOfWork(new fflib_ApexMocks()));
+		System.assert(
+				UnitOfWork.newInstance(
+						new List<SObjectType>{ Account.SObjectType}
+				) instanceof fflib_SObjectMocks.SObjectUnitOfWork);
+	}
+
+	@IsTest
 	private static void callingServiceFactoryShouldGiveRegisteredImplsAndMockImpls()
 	{
 		// Standard behaviour
@@ -348,6 +365,96 @@ private class fflib_ApplicationTest
 		System.assert(Selector.newInstance(Opportunity.SObjectType) instanceof OpportuntiesSelector);
 	}
 
+
+	@IsTest
+	private static void callingUnitOfWorkWithCustomDML()
+	{
+		// Given a custom DML class and a new record
+		CustomDML customDML = new CustomDML();
+		Account myAccount = new Account(Name = 'Test Account');
+
+		// When the unit of work is instantiated from the Application Class and the record is registered and commited
+		fflib_ISObjectUnitOfWork unitOfWork = UnitOfWork.newInstance(customDML);
+		unitOfWork.registerNew(myAccount);
+		unitOfWork.commitWork();
+
+		// Then the Custom DML is used by the unit of Work
+		System.assert(customDML.isInsertCalled, 'Oops, custom DML was not called');
+	}
+
+	@IsTest
+	private static void callingMockedUnitOfWorkWithCustomDML()
+	{
+		// Given a custom DML class and a new record
+		CustomDML customDML = new CustomDML();
+		Account myAccount = new Account(Name = 'Test Account');
+
+		// When the unit of work is instantiated from the Application Class and the record is registered and commited
+		UnitOfWork.setMock(new fflib_SObjectMocks.SObjectUnitOfWork(new fflib_ApexMocks()));
+		fflib_ISObjectUnitOfWork uow = UnitOfWork.newInstance(customDML);
+
+		uow.registerNew(myAccount);
+		uow.commitWork();
+
+		// Then the Custom DML should not be used by the unit of Work
+		System.assert(!customDML.isInsertCalled, 'Oops, custom DML was called');
+	}
+
+	@IsTest
+	private static void callingUnitOfWorkWithCustomObjectTypesAndDML()
+	{
+		// Given a custom DML class and a new record
+		CustomDML customDML = new CustomDML();
+		Account myAccount = new Account(Name = 'Test Account');
+
+		// When the unit of work is instantiated from the Application Class and the record is registered and commited
+		fflib_ISObjectUnitOfWork unitOfWork = UnitOfWork.newInstance(
+				new List<SObjectType>{ Account.SObjectType },
+				customDML
+		);
+		unitOfWork.registerNew(myAccount);
+		unitOfWork.commitWork();
+
+		// Then the Custom DML is used by the unit of Work
+		System.assert(customDML.isInsertCalled, 'Oops, custom DML was not called');
+	}
+
+	@IsTest
+	private static void callingMockedUnitOfWorkWithCustomObjectTypesAndDML()
+	{
+		// Given a custom DML class and a new record
+		CustomDML customDML = new CustomDML();
+		Account myAccount = new Account(Name = 'Test Account');
+
+		// When the unit of work is instantiated from the Application Class and the record is registered and commited
+		UnitOfWork.setMock(new fflib_SObjectMocks.SObjectUnitOfWork(new fflib_ApexMocks()));
+		fflib_ISObjectUnitOfWork uow = UnitOfWork.newInstance(
+				new List<SObjectType>{ Account.SObjectType },
+				customDML
+		);
+		uow.registerNew(myAccount);
+		uow.commitWork();
+
+		// Then the Custom DML should not be used by the unit of Work
+		System.assert(!customDML.isInsertCalled, 'Oops, custom DML was called');
+	}
+
+	public class CustomDML implements fflib_SObjectUnitOfWork.IDML
+	{
+		public boolean isInsertCalled = false;
+		public boolean isUpdateCalled = false;
+		public boolean isDeleteCalled = false;
+
+		public void dmlInsert(List<SObject> objList){
+			this.isInsertCalled = true;
+		}
+		public void dmlUpdate(List<SObject> objList){
+			this.isUpdateCalled = true;
+		}
+		public void dmlDelete(List<SObject> objList){
+			this.isDeleteCalled = true;
+		}
+	}
 
 	// Configure and create the ServiceFactory for this Application
 	public static final fflib_Application.ServiceFactory Service = 

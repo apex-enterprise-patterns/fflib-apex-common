@@ -25,7 +25,7 @@
 **/
 
 /**
- * Base class aiding in the implemetnation of a Domain Model around SObject collections
+ * Base class aiding in the implementation of a Domain Model around SObject collections
  * 
  * Domain (software engineering). “a set of common requirements, terminology, and functionality 
  * for any software program constructed to solve a problem in that field”,
@@ -72,7 +72,7 @@ public virtual with sharing class fflib_SObjectDomain
 	private static Map<Type, List<fflib_SObjectDomain>> TriggerStateByClass; 
 	
 	/**
-	 * Retains the trigger tracking configuraiton used for each domain
+	 * Retains the trigger tracking configuration used for each domain
 	 **/
 	private static Map<Type, TriggerEvent> TriggerEventByClass;
 
@@ -90,7 +90,7 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Constructs the domain class with the data on which to apply the behaviour implemented within
 	 *
-	 * @param sObjectList A concreate list (e.g. List<Account> vs List<SObject>) of records
+	 * @param sObjectList A concrete list (e.g. List<Account> vs List<SObject>) of records
 
 	 **/
 	public fflib_SObjectDomain(List<SObject> sObjectList)
@@ -272,6 +272,46 @@ public virtual with sharing class fflib_SObjectDomain
     	return Records;
     }
     
+	/**
+	 * Detects whether any values in context records have changed for given fields as strings
+	 * Returns list of SObject records that have changes in the specified fields
+	 **/
+	public List<SObject> getChangedRecords(Set<String> fieldNames)
+	{
+		List<SObject> changedRecords = new List<SObject>();
+		for(SObject newRecord : Records)
+		{
+			Id recordId = (Id)newRecord.get('Id');
+			if(Trigger.oldMap == null || !Trigger.oldMap.containsKey(recordId)) continue;
+			SObject oldRecord = Trigger.oldMap.get(recordId);
+			for(String fieldName : fieldNames)
+			{
+				if(oldRecord.get(fieldName) != newRecord.get(fieldName)) changedRecords.add(newRecord);
+			}
+		}
+		return changedRecords;
+	}
+
+	/**
+	 * Detects whether any values in context records have changed for given fields as tokens
+	 * Returns list of SObject records that have changes in the specified fields
+	 **/
+	public List<SObject> getChangedRecords(Set<Schema.SObjectField> fieldTokens)
+	{
+		List<SObject> changedRecords = new List<SObject>();
+		for(SObject newRecord : Records)
+		{
+			Id recordId = (Id)newRecord.get('Id');
+			if(Trigger.oldMap == null || !Trigger.oldMap.containsKey(recordId)) continue;
+			SObject oldRecord = Trigger.oldMap.get(recordId);
+			for(Schema.SObjectField fieldToken : fieldTokens)
+			{
+				if(oldRecord.get(fieldToken) != newRecord.get(fieldToken)) changedRecords.add(newRecord);
+			}
+		}
+		return changedRecords;
+	}
+
 	/**
 	 * Interface used to aid the triggerHandler in constructing instances of Domain classes
 	 **/
@@ -504,7 +544,7 @@ public virtual with sharing class fflib_SObjectDomain
 	public class Configuration
 	{
 		/** 
-		 * Backwards compatability mode for handleAfterUpdate routing to onValidate()
+		 * Backwards compatibility mode for handleAfterUpdate routing to onValidate()
 		 **/
 		public Boolean OldOnUpdateValidateBehaviour {get; private set;}		
 		/**
@@ -974,6 +1014,29 @@ public virtual with sharing class fflib_SObjectDomain
 			return new TestSObjectOnValidateBehaviour(sObjectList);
 		}				
 	}
+
+	/**
+	 * Test domain class (ideally this would be in the test class, however Type.newInstance does not see such classes)
+	 **/
+	public with sharing class TestSObjectChangedRecords 
+		extends fflib_SObjectDomain 
+	{
+		public TestSObjectChangedRecords(List<Opportunity> sObjectList)
+		{
+			super(sObjectList);
+		}
+	}	
+	
+	/**
+	 * Typically an inner class to the domain class, supported here for test purposes
+	 **/	
+	public class TestSObjectChangedRecordsConstructor implements fflib_SObjectDomain.IConstructable
+	{
+		public fflib_SObjectDomain construct(List<SObject> sObjectList)
+		{
+			return new TestSObjectChangedRecords(sObjectList);
+		}				
+	}					
 	
 	/**
 	 * Test domain class (ideally this would be in the test class, however Type.newInstance does not see such classes)
