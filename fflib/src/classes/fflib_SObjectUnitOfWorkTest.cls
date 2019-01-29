@@ -46,6 +46,8 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 
         fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
 
+        uow.m_emailWork = new Mock_SendEmailWork();
+
         Opportunity opp = new Opportunity();
         opp.Name = testRecordName;
         opp.StageName = 'Open';
@@ -60,8 +62,8 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 
         List<Opportunity> opps = [select Id, Name, (Select Id from OpportunityLineItems) from Opportunity where Name = :testRecordName order by Name];
 
-        // assert that an email was sent
-        system.assertEquals(1, Limits.getEmailInvocations());
+        // assert that mock email functionality was called
+        system.assert(((Mock_SendEmailWork) uow.m_emailWork).doWorkWasCalled);
 
         System.assertEquals(1, opps.size());
     }
@@ -525,6 +527,30 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         {
             addEvent('onCommitWorkFinished - ' + wasSuccessful);
         }
+    }
+
+    /**
+     * Mock implementation of fflib_SObjectUnitOfWork.SendEmailWork
+     **/
+    private class Mock_SendEmailWork implements fflib_SObjectUnitOfWork.IEmailWork
+    {
+        public Mock_SendEmailWork()
+        {
+        }
+
+        public void registerEmail(Messaging.Email email)
+        {
+        }
+
+        public void doWork()
+        {
+            doWorkWasCalled = true;
+            // The code in the fflib_SObjectUnitOfWork class
+            // causes unit test failures in Orgs that do not
+            // have email enabled.
+        }
+
+        private boolean doWorkWasCalled = false;
     }
 
     public class DerivedUnitOfWorkException extends Exception {}
