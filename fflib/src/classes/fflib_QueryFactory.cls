@@ -788,15 +788,19 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			this.fieldName = fieldName;
 			this.setMessage( 'Invalid field \''+fieldName+'\' for object \''+objectType+'\'' );
 		}
-	}public class InvalidRelationshipException extends Exception{
-		private String fieldName;
-        private Schema.SObjectType objectType;
-        public InvalidRelationshipException(String fieldname, Schema.SObjectType objectType) {
+	}
+	
+	public class InvalidRelationshipException extends Exception
+	{
+	        private String fieldName;
+                private Schema.SObjectType objectType;
+                public InvalidRelationshipException(String fieldname, Schema.SObjectType objectType) {
 			this.fieldname = fieldname;
-            this.objectType = objectType;
-            this.setMessage( 'Not able to find related sObjectType for object \''+objectType+'\' denoted by field \''+fieldname+'\'' );
+                        this.objectType = objectType;
+                        this.setMessage( 'Not able to find related sObjectType for object \''+objectType+'\' denoted by field \''+fieldname+'\'' );
+                }
         }
-    }
+	
 	public class InvalidFieldSetException extends Exception{}
 	public class NonReferenceFieldException extends Exception{}
 	public class InvalidSubqueryRelationshipException extends Exception{}	
