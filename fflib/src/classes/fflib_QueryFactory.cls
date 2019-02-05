@@ -224,17 +224,18 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	public fflib_QueryFactory selectField(String fieldName){ 		
 		fields.add( getFieldPath(fieldName, null) );
 		return this;
-	} 
-    /**
-     * Selects a single field from the SObject specified in {@link #table}.
-     * Selecting fields is idempotent, if this field is already selected calling this method will have no additional impact.
-     * @param fieldName the API name of the field to add to the query's SELECT clause.
+	}
+	
+        /**
+	 * Selects a single field from the SObject specified in {@link #table}.
+     	 * Selecting fields is idempotent, if this field is already selected calling this method will have no additional impact.
+     	 * @param fieldName the API name of the field to add to the query's SELECT clause.
 	 * @param relatedSObjectType the related sObjectType to resolve polymorphic object fields.
-     **/
-    public fflib_QueryFactory selectField(String fieldName, Schema.sOBjectType relatedObjectType){        
-        fields.add( getFieldPath(fieldName, relatedObjectType) );
-        return this;
-    }
+     	**/
+    	public fflib_QueryFactory selectField(String fieldName, Schema.sOBjectType relatedObjectType){        
+        	fields.add( getFieldPath(fieldName, relatedObjectType) );
+        	return this;
+    	}
 	
 	/**
 	 * Selects a field, avoiding the possible ambiguitiy of String API names.
