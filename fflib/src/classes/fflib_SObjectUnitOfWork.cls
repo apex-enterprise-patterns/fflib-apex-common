@@ -130,7 +130,7 @@ public virtual class fflib_SObjectUnitOfWork
             handleRegisterType(sObjectType);
         }
 
-        m_relationships.put( Messaging.SingleEmailMessage.class.getName(), new Relationships());
+		m_relationships.put(Messaging.SingleEmailMessage.class.getName(), new Relationships());
 
         m_dml = dml;
     }
@@ -492,103 +492,136 @@ public virtual class fflib_SObjectUnitOfWork
     /**
      * Takes all the work that has been registered with the UnitOfWork and commits it to the database
      **/
-    public void commitWork()
-    {
-        // notify we're starting the commit work
-        onCommitWorkStarting();
+	public void commitWork()
+	{
+		Savepoint sp = Database.setSavePoint();
+		Boolean wasSuccessful = false;
+		try
+		{
+			doCommitWork();
+			wasSuccessful = true;
+		}
+		catch (Exception e)
+		{
+			Database.rollback(sp);
+			throw e;
+		}
+		finally
+		{
+			doAfterCommitWorkSteps(wasSuccessful);
+		}
+	}
 
-        // Wrap the work in its own transaction
-        Savepoint sp = Database.setSavePoint();
-        Boolean wasSuccessful = false;
-        try
-        {
-            // notify anyone that we are starting the before transaction events and publishing them to the bus
-            onPublishBeforeEventsStarting();
+	private void doCommitWork()
+	{
+		onCommitWorkStarting();
+		onPublishBeforeEventsStarting();
+		publishBeforeEventsStarting();
+		onPublishBeforeEventsFinished();
 
-            for (Schema.SObjectType sObjectType : m_sObjectTypes)
-            {
-                m_dml.eventPublish(m_publishBeforeListByType.get(sObjectType.getDescribe().getName()));
-            }
+		onDMLStarting();
+		insertDmlByType();
+		updateDmlByType();
+		deleteDmlByType();
+		resolveEmailRelationships();
+		onDMLFinished();
 
-            onPublishBeforeEventsFinished();
+		onDoWorkStarting();
+		doWork();
+		onDoWorkFinished();
+		onCommitWorkFinishing();
+	}
 
-            // notify we're starting the DML operations
-            onDMLStarting();
-            // Insert by type
-            for (Schema.SObjectType sObjectType : m_sObjectTypes)
-            {
-                m_relationships.get(sObjectType.getDescribe().getName()).resolve();
-                m_dml.dmlInsert(m_newListByType.get(sObjectType.getDescribe().getName()));
-            }
-            // Update by type
-            for (Schema.SObjectType sObjectType : m_sObjectTypes)
-                m_dml.dmlUpdate(m_dirtyMapByType.get(sObjectType.getDescribe().getName()).values());
-            // Delete by type (in reverse dependency order)
-            Integer objectIdx = m_sObjectTypes.size() - 1;
-            while (objectIdx>=0)
-                m_dml.dmlDelete(m_deletedMapByType.get(m_sObjectTypes[objectIdx--].getDescribe().getName()).values());
+	private void doAfterCommitWorkSteps(Boolean wasSuccessful)
+	{
+		if (wasSuccessful)
+		{
+			doAfterCommitWorkSuccessSteps();
+		}
+		else
+		{
+			doAfterCommitWorkFailureSteps();
+		}
+		onCommitWorkFinished(wasSuccessful);
+	}
 
-            // manage any record relationships to emails that need to be resolved.
-            m_relationships.get( Messaging.SingleEmailMessage.class.getName() ).resolve();
+	private void doAfterCommitWorkSuccessSteps()
+	{
+		onPublishAfterSuccessEventsStarting();
+		publishAfterSuccessEvents();
+		onPublishAfterSuccessEventsFinished();
+	}
 
-            // notify we're done with DML
-            onDMLFinished();
+	private void doAfterCommitWorkFailureSteps()
+	{
+		onPublishAfterFailureEventsStarting();
+		publishAfterFailureEvents();
+		onPublishAfterFailureEventsFinished();
+	}
 
-            // notify we're starting to process registered work
-            onDoWorkStarting();
-            // Generic work
-            m_workList.add(m_emailWork);
-            for (IDoWork work : m_workList)
-                work.doWork();
-            // notify we've completed processing registered work
-            onDoWorkFinished();
+	private void publishBeforeEventsStarting()
+	{
+		for (Schema.SObjectType sObjectType : m_sObjectTypes)
+		{
+			m_dml.eventPublish(m_publishBeforeListByType.get(sObjectType.getDescribe().getName()));
+		}
+	}
 
-            // notify we've completed all steps and are in the final stage of completing
-            onCommitWorkFinishing();
+	private void insertDmlByType()
+	{
+		for (Schema.SObjectType sObjectType : m_sObjectTypes)
+		{
+			m_relationships.get(sObjectType.getDescribe().getName()).resolve();
+			m_dml.dmlInsert(m_newListByType.get(sObjectType.getDescribe().getName()));
+		}
+	}
 
-            // mark tracker to indicate success
-            wasSuccessful = true;
-        }
-        catch (Exception e)
-        {
-            // Rollback
-            Database.rollback(sp);
+	private void updateDmlByType()
+	{
+		for (Schema.SObjectType sObjectType : m_sObjectTypes)
+		{
+			m_dml.dmlUpdate(m_dirtyMapByType.get(sObjectType.getDescribe().getName()).values());
+		}
+	}
 
-            // Throw exception on to caller
-            throw e;
-        }
-        finally
-        {
+	private void deleteDmlByType()
+	{
+		Integer objectIdx = m_sObjectTypes.size() - 1;
+		while (objectIdx >= 0)
+		{
+			m_dml.dmlDelete(m_deletedMapByType.get(m_sObjectTypes[objectIdx--].getDescribe().getName()).values());
+		}
+	}
 
-            if (wasSuccessful)
-            {
-                // notify anyone that we are starting the before transaction events and publishing them to the bus
-                onPublishAfterSuccessEventsStarting();
+	private void resolveEmailRelationships()
+	{
+		m_relationships.get(Messaging.SingleEmailMessage.class.getName()).resolve();
+	}
 
-                for (Schema.SObjectType sObjectType : m_sObjectTypes)
-                {
-                    m_dml.eventPublish(m_publishAfterSuccessListByType.get(sObjectType.getDescribe().getName()));
-                }
+	private void doWork()
+	{
+		m_workList.add(m_emailWork);
+		for (IDoWork work : m_workList)
+		{
+			work.doWork();
+		}
+	}
 
-                onPublishAfterSuccessEventsFinished();
-            }
-            else 
-            {
-                onPublishAfterFailureEventsStarting();
+	private void publishAfterSuccessEvents()
+	{
+		for (Schema.SObjectType sObjectType : m_sObjectTypes)
+		{
+			m_dml.eventPublish(m_publishAfterSuccessListByType.get(sObjectType.getDescribe().getName()));
+		}
+	}
 
-                // before we bubble the error up lets send out the failure platform events
-                for (Schema.SObjectType sObjectType : m_sObjectTypes)
-                {
-                    m_dml.eventPublish(m_publishAfterFailureListByType.get(sObjectType.getDescribe().getName()));
-                }
-
-                onPublishAfterFailureEventsFinished();
-            }
-            
-            // notify we're done with commit work
-            onCommitWorkFinished(wasSuccessful);
-        }
-    }
+	private void publishAfterFailureEvents()
+	{
+		for (Schema.SObjectType sObjectType : m_sObjectTypes)
+		{
+			m_dml.eventPublish(m_publishAfterFailureListByType.get(sObjectType.getDescribe().getName()));
+		}
+	}
 
 	private void assertForNonEventSObjectType(String sObjectType)
 	{
