@@ -234,8 +234,8 @@ public virtual class fflib_SObjectUnitOfWork
             throw new UnitOfWorkException('Only new records can be registered as new');
         String sObjectType = record.getSObjectType().getDescribe().getName();
 
-		throwExceptionOnEventSObjectType(sObjectType);
-		throwExceptionOnUnsupportedSObjectType(m_newListByType, sObjectType);
+		assertForNonEventSObjectType(sObjectType);
+		assertForSupportedSObjectType(m_newListByType, sObjectType);
 
         m_newListByType.get(sObjectType).add(record);
         if (relatedToParentRecord!=null && relatedToParentField!=null)
@@ -254,8 +254,8 @@ public virtual class fflib_SObjectUnitOfWork
     {
         String sObjectType = record.getSObjectType().getDescribe().getName();
 
-		throwExceptionOnEventSObjectType(sObjectType);
-		throwExceptionOnUnsupportedSObjectType(m_newListByType, sObjectType);
+		assertForNonEventSObjectType(sObjectType);
+		assertForSupportedSObjectType(m_newListByType, sObjectType);
 
         m_relationships.get(sObjectType).add(record, relatedToField, relatedTo);
     }
@@ -289,8 +289,8 @@ public virtual class fflib_SObjectUnitOfWork
             throw new UnitOfWorkException('New records cannot be registered as dirty');
         String sObjectType = record.getSObjectType().getDescribe().getName();
 
-		throwExceptionOnEventSObjectType(sObjectType);
-		throwExceptionOnUnsupportedSObjectType(m_dirtyMapByType, sObjectType);
+		assertForNonEventSObjectType(sObjectType);
+		assertForSupportedSObjectType(m_dirtyMapByType, sObjectType);
 
         // If record isn't registered as dirty, or no dirty fields to drive a merge
         if (!m_dirtyMapByType.get(sObjectType).containsKey(record.Id) || dirtyFields.isEmpty())
@@ -325,8 +325,8 @@ public virtual class fflib_SObjectUnitOfWork
             throw new UnitOfWorkException('New records cannot be registered as dirty');
         String sObjectType = record.getSObjectType().getDescribe().getName();
 
-		throwExceptionOnEventSObjectType(sObjectType);
-		throwExceptionOnUnsupportedSObjectType(m_dirtyMapByType, sObjectType);
+		assertForNonEventSObjectType(sObjectType);
+		assertForSupportedSObjectType(m_dirtyMapByType, sObjectType);
 
         m_dirtyMapByType.get(sObjectType).put(record.Id, record);
         if (relatedToParentRecord!=null && relatedToParentField!=null)
@@ -387,8 +387,8 @@ public virtual class fflib_SObjectUnitOfWork
             throw new UnitOfWorkException('New records cannot be registered for deletion');
         String sObjectType = record.getSObjectType().getDescribe().getName();
 
-		throwExceptionOnEventSObjectType(sObjectType);
-		throwExceptionOnUnsupportedSObjectType(m_deletedMapByType, sObjectType);
+		assertForNonEventSObjectType(sObjectType);
+		assertForSupportedSObjectType(m_deletedMapByType, sObjectType);
 
         m_deletedMapByType.get(sObjectType).put(record.Id, record);
     }
@@ -415,8 +415,8 @@ public virtual class fflib_SObjectUnitOfWork
     {
         String sObjectType = record.getSObjectType().getDescribe().getName();
 
-		throwExceptionOnNonEventSObjectType(sObjectType);
-		throwExceptionOnUnsupportedSObjectType(m_publishBeforeListByType, sObjectType);
+		assertForEventSObjectType(sObjectType);
+		assertForSupportedSObjectType(m_publishBeforeListByType, sObjectType);
 
         m_publishBeforeListByType.get(sObjectType).add(record);
     }
@@ -443,8 +443,8 @@ public virtual class fflib_SObjectUnitOfWork
     {
         String sObjectType = record.getSObjectType().getDescribe().getName();
 
-		throwExceptionOnNonEventSObjectType(sObjectType);
-		throwExceptionOnUnsupportedSObjectType(m_publishAfterSuccessListByType, sObjectType);
+		assertForEventSObjectType(sObjectType);
+		assertForSupportedSObjectType(m_publishAfterSuccessListByType, sObjectType);
 
         m_publishAfterSuccessListByType.get(sObjectType).add(record);
     }
@@ -470,8 +470,8 @@ public virtual class fflib_SObjectUnitOfWork
     {
         String sObjectType = record.getSObjectType().getDescribe().getName();
 
-		throwExceptionOnNonEventSObjectType(sObjectType);
-		throwExceptionOnUnsupportedSObjectType(m_publishAfterFailureListByType, sObjectType);
+		assertForEventSObjectType(sObjectType);
+		assertForSupportedSObjectType(m_publishAfterFailureListByType, sObjectType);
 
         m_publishAfterFailureListByType.get(sObjectType).add(record);
     }
@@ -590,7 +590,7 @@ public virtual class fflib_SObjectUnitOfWork
         }
     }
 
-	private void throwExceptionOnEventSObjectType(String sObjectType)
+	private void assertForNonEventSObjectType(String sObjectType)
 	{
 		if (sObjectType.length() > 3 && sObjectType.right(3)  == '__e')
 		{
@@ -604,7 +604,7 @@ public virtual class fflib_SObjectUnitOfWork
 		}
 	}
 
-	private void throwExceptionOnNonEventSObjectType(String sObjectType)
+	private void assertForEventSObjectType(String sObjectType)
 	{
 		if (sObjectType.length() > 3 && sObjectType.right(3) != '__e')
 		{
@@ -617,7 +617,7 @@ public virtual class fflib_SObjectUnitOfWork
 		}
 	}
 
-	private void throwExceptionOnUnsupportedSObjectType(Map<String, Object> theMap, String sObjectType)
+	private void assertForSupportedSObjectType(Map<String, Object> theMap, String sObjectType)
 	{
 		if (!theMap.containsKey(sObjectType))
 		{
