@@ -60,7 +60,7 @@ public virtual class fflib_SObjectUnitOfWork
      * ATTEMPT_RESOLVE_OUT_OF_ORDER - Set the child lookup post-insert and update
      * IGNORE_OUT_OF_ORDER - leave the lookup null (default behaviour)
      */
-    public enum UnresolvedRelationshipBehavior { ATTEMPT_RESOLVE_OUT_OF_ORDER, IGNORE_OUT_OF_ORDER }
+    public enum UnresolvedRelationshipBehavior { AttemptResolveOutOfOrder, IgnoreOutOfOrder }
 
     protected List<Schema.SObjectType> m_sObjectTypes = new List<Schema.SObjectType>();
 
@@ -79,7 +79,7 @@ public virtual class fflib_SObjectUnitOfWork
     protected IDML m_dml;
 
     protected UnresolvedRelationshipBehavior m_unresolvedRelationshipBehaviour =
-            UnresolvedRelationshipBehavior.IGNORE_OUT_OF_ORDER;
+            UnresolvedRelationshipBehavior.IgnoreOutOfOrder;
 
     /**
      * Interface describes work to be performed during the commitWork method
@@ -140,7 +140,7 @@ public virtual class fflib_SObjectUnitOfWork
      */
     public fflib_SObjectUnitOfWork(List<Schema.SObjectType> sObjectTypes, IDML dml)
     {
-        this(sObjectTypes, dml, UnresolvedRelationshipBehavior.IGNORE_OUT_OF_ORDER);
+        this(sObjectTypes, dml, UnresolvedRelationshipBehavior.IgnoreOutOfOrder);
     }
 
     /**
@@ -429,7 +429,7 @@ public virtual class fflib_SObjectUnitOfWork
             }
 
             // Resolve any unresolved relationships where parent was inserted after child, and so child lookup was not set
-            if (m_unresolvedRelationshipBehaviour == UnresolvedRelationshipBehavior.ATTEMPT_RESOLVE_OUT_OF_ORDER)
+            if (m_unresolvedRelationshipBehaviour == UnresolvedRelationshipBehavior.AttemptResolveOutOfOrder)
             {
                 for(Schema.SObjectType sObjectType : m_sObjectTypes)
                 {
@@ -488,7 +488,7 @@ public virtual class fflib_SObjectUnitOfWork
     {
         private List<IRelationship> m_relationships = new List<IRelationship>();
         private UnresolvedRelationshipBehavior m_unresolvedRelationshipBehaviour =
-                UnresolvedRelationshipBehavior.IGNORE_OUT_OF_ORDER;
+                UnresolvedRelationshipBehavior.IgnoreOutOfOrder;
         private List<RelationshipPermittingOutOfOrderInsert> m_parentInsertedAfterChildRelationships =
                 new List<RelationshipPermittingOutOfOrderInsert>();
 
@@ -516,7 +516,7 @@ public virtual class fflib_SObjectUnitOfWork
                 relationship.resolve();
 
                 // Check if parent is inserted after the child
-                if (m_unresolvedRelationshipBehaviour == UnresolvedRelationshipBehavior.ATTEMPT_RESOLVE_OUT_OF_ORDER &&
+                if (m_unresolvedRelationshipBehaviour == UnresolvedRelationshipBehavior.AttemptResolveOutOfOrder &&
                         relationship instanceof RelationshipPermittingOutOfOrderInsert &&
                         !((RelationshipPermittingOutOfOrderInsert) relationship).Resolved)
                 {
@@ -577,7 +577,7 @@ public virtual class fflib_SObjectUnitOfWork
         public void add(SObject record, Schema.sObjectField relatedToField, SObject relatedTo)
         {
             // Relationship to resolve
-            if (m_unresolvedRelationshipBehaviour == UnresolvedRelationshipBehavior.IGNORE_OUT_OF_ORDER)
+            if (m_unresolvedRelationshipBehaviour == UnresolvedRelationshipBehavior.IgnoreOutOfOrder)
             {
                 Relationship relationship = new Relationship();
                 relationship.Record = record;

@@ -77,7 +77,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
                 };
 
         fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(dependencyOrder,
-                fflib_SObjectUnitOfWork.UnresolvedRelationshipBehavior.ATTEMPT_RESOLVE_OUT_OF_ORDER);
+                fflib_SObjectUnitOfWork.UnresolvedRelationshipBehavior.AttemptResolveOutOfOrder);
         List<Account> accounts = new List<Account>();
         List<Contact> contacts = new List<Contact>();
         for(Integer i=0; i<10; i++)
