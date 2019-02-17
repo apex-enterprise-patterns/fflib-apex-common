@@ -54,13 +54,18 @@
 public virtual class fflib_SObjectUnitOfWork
     implements fflib_ISObjectUnitOfWork
 {
+
     /*
-     * Ways a unit of work can handle unresolved relationships where child is inserted at same time or after the parent
+     * Unit of work has two ways of resolving registered relationships that require an update to resolve (e.g. parent
+     * and child are same sobject type, or the parent is inserted after the child):
      *
-     * AttemptResolveOutOfOrder - Set the child lookup post-insert and update
-     * IgnoreOutOfOrder - leave the lookup null (default behaviour)
+     * AttemptResolveOutOfOrder - Update child to set the relationship (e.g. insert parent, insert child, update child)
+     * IgnoreOutOfOrder (default behaviour) - Do not set the relationship (e.g. leave lookup null)
      */
     public enum UnresolvedRelationshipBehavior { AttemptResolveOutOfOrder, IgnoreOutOfOrder }
+
+    private static final UnresolvedRelationshipBehavior DEFAULT_UNRESOLVED_RELATIONSHIP_BEHAVIOR =
+            UnresolvedRelationshipBehavior.IgnoreOutOfOrder;
 
     protected List<Schema.SObjectType> m_sObjectTypes = new List<Schema.SObjectType>();
 
@@ -83,8 +88,7 @@ public virtual class fflib_SObjectUnitOfWork
 
     protected IDML m_dml;
 
-    protected UnresolvedRelationshipBehavior m_unresolvedRelationshipBehaviour =
-            UnresolvedRelationshipBehavior.IgnoreOutOfOrder;
+    protected final UnresolvedRelationshipBehavior m_unresolvedRelationshipBehaviour;
 
     /**
      * Interface describes work to be performed during the commitWork method
@@ -135,9 +139,9 @@ public virtual class fflib_SObjectUnitOfWork
      * Constructs a new UnitOfWork to support work against the given object list
      *
      * @param sObjectTypes A list of objects given in dependency order (least dependent first)
-     * @param unresolvedRelationshipsBehaviour If ATTEMPT_OUT_OF_ORDER_RELATIONSHIPS and a relationship is registered
+     * @param unresolvedRelationshipsBehaviour If AttemptOutOfOrderRelationships and a relationship is registered
      *                                       where a parent is inserted after a child then will update the child
-     *                                       post-insert to set the relationship. If IGNORE_OUT_OF_ORDER then
+     *                                       post-insert to set the relationship. If IgnoreOutOfOrder then
      *                                       relationship will not be set.
      */
     public fflib_SObjectUnitOfWork(List<Schema.SObjectType> sObjectTypes,
@@ -153,7 +157,7 @@ public virtual class fflib_SObjectUnitOfWork
      */
     public fflib_SObjectUnitOfWork(List<Schema.SObjectType> sObjectTypes, IDML dml)
     {
-        this(sObjectTypes, dml, UnresolvedRelationshipBehavior.IgnoreOutOfOrder);
+        this(sObjectTypes, dml, DEFAULT_UNRESOLVED_RELATIONSHIP_BEHAVIOR);
     }
 
     /**
@@ -161,14 +165,16 @@ public virtual class fflib_SObjectUnitOfWork
      *
      * @param sObjectTypes A list of objects given in dependency order (least dependent first)
      * @param dml Modify the database via this class
-     * @param unresolvedRelationshipsBehaviour If ATTEMPT_OUT_OF_ORDER_RELATIONSHIPS and a relationship is registered
+     * @param unresolvedRelationshipsBehaviour If AttemptOutOfOrderRelationships and a relationship is registered
      *                                       where a parent is inserted after a child then will update the child
-     *                                       post-insert to set the relationship. If IGNORE_OUT_OF_ORDER then
-     *                                       relationship will not be set.
+     *                                       post-insert to set the relationship. If IgnoreOutOfOrder then relationship
+     *                                       will not be set.
      */
     public fflib_SObjectUnitOfWork(List<Schema.SObjectType> sObjectTypes, IDML dml,
             UnresolvedRelationshipBehavior unresolvedRelationshipBehavior)
     {
+        m_unresolvedRelationshipBehaviour = unresolvedRelationshipBehavior;
+
         m_sObjectTypes = sObjectTypes.clone();
 
         for (Schema.SObjectType sObjectType : m_sObjectTypes)
@@ -177,11 +183,10 @@ public virtual class fflib_SObjectUnitOfWork
             handleRegisterType(sObjectType);
         }
 
-		m_relationships.put(Messaging.SingleEmailMessage.class.getName(), new Relationships());
+		m_relationships.put(Messaging.SingleEmailMessage.class.getName(),
+                new Relationships(unresolvedRelationshipBehavior));
 
         m_dml = dml;
-
-        setUnresolvedRelationshipsBehaviour(unresolvedRelationshipBehavior);
     }
 
     // default implementations for commitWork events
@@ -207,24 +212,6 @@ public virtual class fflib_SObjectUnitOfWork
     public virtual void onCommitWorkFinished(Boolean wasSuccessful) {}
 
     /**
-     * Calling this allows relationships class to track relationships that weren't resolved on insert and attempt
-     * to set the relationship in a subsequent update. This is slightly less efficient than the default behaviour
-     * of silently failing to set the lookup in this scenario.
-     *
-     * @param behavior
-     *
-     * @return this unit of work
-     */
-    private fflib_SObjectUnitOfWork setUnresolvedRelationshipsBehaviour(UnresolvedRelationshipBehavior behavior)
-    {
-        m_unresolvedRelationshipBehaviour = behavior;
-        for (Relationships relationships : m_relationships.values()) {
-            relationships.attemptToResolveOutOfOrderRelationships(m_unresolvedRelationshipBehaviour);
-        }
-        return this;
-    }
-
-    /**
      * Registers the type to be used for DML operations
      *
      * @param sObjectType - The type to register
@@ -238,8 +225,7 @@ public virtual class fflib_SObjectUnitOfWork
         m_newListByType.put(sObjectName, new List<SObject>());
         m_dirtyMapByType.put(sObjectName, new Map<Id, SObject>());
         m_deletedMapByType.put(sObjectName, new Map<Id, SObject>());
-        m_relationships.put(sObjectName,
-                new Relationships().attemptToResolveOutOfOrderRelationships(m_unresolvedRelationshipBehaviour));
+        m_relationships.put(sObjectName, new Relationships(m_unresolvedRelationshipBehaviour));
 
         m_publishBeforeListByType.put(sObjectName, new List<SObject>());
         m_publishAfterSuccessListByType.put(sObjectName, new List<SObject>());
@@ -748,24 +734,22 @@ public virtual class fflib_SObjectUnitOfWork
     private class Relationships
     {
         private List<IRelationship> m_relationships = new List<IRelationship>();
-        private UnresolvedRelationshipBehavior m_unresolvedRelationshipBehaviour =
-                UnresolvedRelationshipBehavior.IgnoreOutOfOrder;
         private List<RelationshipPermittingOutOfOrderInsert> m_parentInsertedAfterChildRelationships =
                 new List<RelationshipPermittingOutOfOrderInsert>();
+        private final UnresolvedRelationshipBehavior m_unresolvedRelationshipBehaviour;
 
         /**
-         * Calling this allows relationships class to track relationships that weren't resolved on insert and attempt
-         * to set the relationship in a subsequent update. This is slightly less efficient than the default behaviour
-         * of silently failing to set the lookup in this scenario.
+         * Unit of work has two ways of resolving registered relationships that require an update to resolve (e.g.
+         * parent and child are same sobject type, or the parent is inserted after the child):
          *
-         * @param attemptToResolve If true then will track relationships that weren't resolved on insert
+         * AttemptResolveOutOfOrder - Update child to set the relationship (e.g. insert parent, insert child, update
+         *                              child)
+         * IgnoreOutOfOrder (default behaviour) - Do not set the relationship (e.g. leave lookup null)
          *
-         * @return this object
+         * @param unresolvedRelationshipBehaviour The behaviour to use when encountering unresolved relationships
          */
-        public Relationships attemptToResolveOutOfOrderRelationships(UnresolvedRelationshipBehavior behavior)
-        {
-            m_unresolvedRelationshipBehaviour = behavior;
-            return this;
+        public Relationships(UnresolvedRelationshipBehavior unresolvedRelationshipBehaviour) {
+            m_unresolvedRelationshipBehaviour = unresolvedRelationshipBehaviour;
         }
 
         public void resolve()
@@ -778,7 +762,6 @@ public virtual class fflib_SObjectUnitOfWork
 
                 // Check if parent is inserted after the child
                 if (m_unresolvedRelationshipBehaviour == UnresolvedRelationshipBehavior.AttemptResolveOutOfOrder &&
-                        relationship instanceof RelationshipPermittingOutOfOrderInsert &&
                         !((RelationshipPermittingOutOfOrderInsert) relationship).Resolved)
                 {
                     m_parentInsertedAfterChildRelationships.add((RelationshipPermittingOutOfOrderInsert) relationship);
@@ -882,6 +865,10 @@ public virtual class fflib_SObjectUnitOfWork
         }
     }
 
+    /**
+     * Similar to Relationship, but has a Resolved property that is set to false when relationship is not resolved
+     * because RelatedTo does not have an ID and/or resolve() has not been called.
+     */
     private class RelationshipPermittingOutOfOrderInsert implements IRelationship {
         public SObject Record;
         public Schema.sObjectField RelatedToField;
@@ -902,10 +889,10 @@ public virtual class fflib_SObjectUnitOfWork
                             'before child so child does not need an update. In unit of work initialization put ' +
                             '' + RelatedTo.getSObjectType() + ' before ' + Record.getSObjectType());
                 }
-                resolved = false;
+                Resolved = false;
             } else {
                 Record.put(RelatedToField, RelatedTo.Id);
-                resolved = true;
+                Resolved = true;
             }
         }
     }
