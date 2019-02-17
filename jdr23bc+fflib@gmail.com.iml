@@ -1,0 +1,2183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="IlluminatedCloud" version="4">
+  <component name="FacetManager">
+    <facet type="IlluminatedCloud" name="Illuminated Cloud">
+      <configuration>
+        <option name="connectionName" value="fflib" />
+        <option name="moduleContents">
+          <ModuleContents>
+            <option name="contentSelectionType" value="PACKAGE_XML" />
+            <option name="manifest">
+              <Manifest>
+                <option name="types">
+                  <set>
+                    <MetadataType>
+                      <option name="name" value="ActionLinkGroupTemplate" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="AnalyticSnapshot" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="ApexClass" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="ApexComponent" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="ApexPage" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="ApexTestSuite" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="ApexTrigger" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="name" value="AppSwitcher" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Salesforce1" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="AppMenu" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="ApprovalProcess" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="name" value="Case.Standard" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Lead.Standard" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="AssignmentRule" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="name" value="Case" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Lead" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="AssignmentRules" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="AuraDefinitionBundle" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="AuthProvider" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="AutoResponseRule" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="name" value="Case" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Lead" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="AutoResponseRules" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="BrandingSet" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="BusinessProcess" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="CallCenter" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="CaseSubjectParticle" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="Certificate" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="ChannelLayout" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="ChatterExtension" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="name" value="DataCloudGeoLocation" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="CleanDataService" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="name" value="Internal Zone" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="Community" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="CompactLayout" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="ConnectedApp" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="ContentAsset" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="CorsWhitelistOrigin" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="CspTrustedSite" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="name" value="standard__AppLauncher" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard__Chatter" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard__Community" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard__Content" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard__Insights" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard__LightningBolt" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard__LightningInstrumentation" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard__LightningSales" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard__LightningSalesConsole" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard__LightningService" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard__Marketing" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard__Platform" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard__Sales" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard__Service" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard__ServiceConsole" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard__Sites" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="CustomApplication" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="CustomApplicationComponent" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="CustomFeedFilter" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="name" value="Account.Active__c" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Account.CustomerPriority__c" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Account.NumberofLocations__c" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Account.SLA__c" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Account.SLAExpirationDate__c" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Account.SLASerialNumber__c" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Account.UpsellOpportunity__c" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Case.EngineeringReqNumber__c" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Case.PotentialLiability__c" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Case.Product__c" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Case.SLAViolation__c" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="CaseComment.CommentBody" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="CaseComment.ParentOrigin" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Contact.Languages__c" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Contact.Level__c" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Goal.OrigGoalId__c" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Lead.CurrentGenerators__c" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Lead.NumberofLocations__c" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Lead.Primary__c" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Lead.ProductInterest__c" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Lead.SICCode__c" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Metric.OrigMetricId__c" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Opportunity.CurrentGenerators__c" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Opportunity.DeliveryInstallationStatus__c" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Opportunity.MainCompetitors__c" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Opportunity.OrderNumber__c" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Opportunity.TrackingNumber__c" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="CustomField" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="CustomLabel" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="name" value="CustomLabels" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="CustomLabels" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="CustomMetadata" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="name" value="Account" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="AccountCleanInfo" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="AccountContactRole" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Activity" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Asset" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="AssetRelationship" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="AssistantProgress" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Campaign" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="CampaignMember" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Case" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="CaseComment" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="CaseContactRole" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="ChatterActivity" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="CollaborationGroup" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="CollaborationGroupMember" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="ConsumptionRate" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="ConsumptionSchedule" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Contact" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="ContactCleanInfo" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="ContactRequest" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="ContentVersion" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Contract" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="ContractContactRole" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="DandBCompany" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Document" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="DuplicateRecordItem" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="DuplicateRecordSet" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="EmailMessage" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Event" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="ExchangeUserMapping" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="FeedItem" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="ForecastingCategoryMapping" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Idea" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Image" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Lead" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="LeadCleanInfo" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Macro" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="MacroAction" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="MacroInstruction" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Opportunity" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="OpportunityCompetitor" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="OpportunityContactRole" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="OpportunityLineItem" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Order" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="OrderItem" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="OrgDeleteRequest" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="PartnerRole" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Pricebook2" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="PricebookEntry" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Product2" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="ProductConsumptionSchedule" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="PushTopic" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="QuickText" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Recommendation" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="RecordAction" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="RequestsForAccessSIQ" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Scorecard" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="ScorecardAssociation" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="ScorecardMetric" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Site" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="SocialPersona" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Solution" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="StreamActivityAccess" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="StreamingChannel" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Task" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Topic" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="TopicAssignment" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="User" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="UserProvisioningRequest" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="CustomObject" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="CustomObjectTranslation" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="CustomPageWebLink" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="CustomPermission" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="CustomSite" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="name" value="standard-Account" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-AppLauncher" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-Asset" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-Campaign" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-Case" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-Chatter" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-CollaborationGroup" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-Console" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-ConsumptionSchedule" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-Contact" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-ContactRequest" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-ContentContribute" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-ContentSearch" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-ContentSubscriptions" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-Contract" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-DandBCompany" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-Dashboard" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-Document" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-DuplicateRecordSet" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-File" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-Forecasting3" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-home" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-Idea" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-Image" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-JigsawSearch" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-Lead" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-ListEmail" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-Macro" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-Opportunity" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-Order" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-OtherUserProfile" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-Pricebook2" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-Product2" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-ProfilePlatformFeed" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-ProfilePlatformOverview" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-Recommendation" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-report" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-Sites" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-Solution" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-StreamingChannel" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-UserProfile" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-UserProvisioningRequest" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-WaveHome" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="standard-Workspace" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="CustomTab" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="Dashboard" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="DataCategoryGroup" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="DelegateGroup" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="Document" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="name" value="Account.Standard_Account_Duplicate_Rule" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Contact.Standard_Contact_Duplicate_Rule" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Lead.Standard_Lead_Duplicate_Rule" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="DuplicateRule" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="EclairGeoData" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="EmailServicesFunction" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="folder" value="true" />
+                            <option name="name" value="unfiled$public" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="unfiled$public/MarketingProductInquiryResponse" />
+                            <option name="parentFolder" value="unfiled$public" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="unfiled$public/SalesNewCustomerEmail" />
+                            <option name="parentFolder" value="unfiled$public" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="unfiled$public/SupportCaseAssignmentNotification" />
+                            <option name="parentFolder" value="unfiled$public" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="unfiled$public/SupportCaseCreatedPhoneInquiries" />
+                            <option name="parentFolder" value="unfiled$public" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="unfiled$public/SupportCaseCreatedWebInquiries" />
+                            <option name="parentFolder" value="unfiled$public" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="unfiled$public/SupportCaseResponse" />
+                            <option name="parentFolder" value="unfiled$public" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="unfiled$public/SupportEscalatedCaseNotification" />
+                            <option name="parentFolder" value="unfiled$public" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="unfiled$public/SupportEscalatedCaseReassignment" />
+                            <option name="parentFolder" value="unfiled$public" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="unfiled$public/SUPPORTSelfServiceNewCommentNotificationSAMPLE" />
+                            <option name="parentFolder" value="unfiled$public" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="unfiled$public/SupportSelfServiceNewLoginandPassword" />
+                            <option name="parentFolder" value="unfiled$public" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="unfiled$public/SUPPORTSelfServiceNewUserLoginInformationSAMPLE" />
+                            <option name="parentFolder" value="unfiled$public" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="unfiled$public/SupportSelfServiceResetPassword" />
+                            <option name="parentFolder" value="unfiled$public" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="unfiled$public/SUPPORTSelfServiceResetPasswordSAMPLE" />
+                            <option name="parentFolder" value="unfiled$public" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="EmailTemplate" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="EmbeddedServiceBranding" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="EmbeddedServiceConfig" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="name" value="Case.Standard" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="EscalationRule" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="name" value="Case" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="EscalationRules" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="EventDelivery" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="EventSubscription" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="ExternalDataSource" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="ExternalServiceRegistration" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="FieldSet" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="name" value="LightningSalesConsole_UtilityBar" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="LightningService_UtilityBar" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="FlexiPage" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="Flow" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="FlowCategory" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="FlowDefinition" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="GlobalValueSet" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="GlobalValueSetTranslation" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="Group" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="HomePageComponent" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="name" value="DE Default" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="HomePageLayout" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="Index" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="InstalledPackage" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="name" value="Account-Account %28Marketing%29 Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Account-Account %28Sales%29 Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Account-Account %28Support%29 Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Account-Account Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Asset-Asset Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="AssetRelationship-Asset Relationship Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Campaign-Campaign Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="CampaignMember-Campaign Member Page Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Case-Case %28Marketing%29 Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Case-Case %28Sales%29 Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Case-Case %28Support%29 Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Case-Case Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="CaseClose-Close Case Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="CommunityMemberLayout-Community Member Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="ConsumptionRate-Consumption Rate Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="ConsumptionSchedule-Consumption Schedule Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Contact-Contact %28Marketing%29 Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Contact-Contact %28Sales%29 Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Contact-Contact %28Support%29 Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Contact-Contact Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="ContentVersion-Content Version Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Contract-Contract Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="DandBCompany-D%26B Company Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="DuplicateRecordSet-Duplicate Record Set Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="EmailMessage-Email Message Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Event-Event Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Global-Global Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Idea-Idea Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Lead-Lead %28Marketing%29 Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Lead-Lead %28Sales%29 Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Lead-Lead %28Support%29 Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Lead-Lead Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Macro-Macro Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Opportunity-Opportunity %28Marketing%29 Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Opportunity-Opportunity %28Sales%29 Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Opportunity-Opportunity %28Support%29 Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Opportunity-Opportunity Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="OpportunityLineItem-Opportunity Product Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Order-Order Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="OrderItem-Order Product Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Pricebook2-Price Book Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="PricebookEntry-Price Book Entry Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Product2-Product Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="ProductConsumptionSchedule-Product Consumption Schedule Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="QuickText-Quick Text Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Scorecard-Scorecard Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="ScorecardAssociation-Scorecard Association Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="ScorecardMetric-Scorecard Metric Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="SocialPersona-Social Persona Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="SocialPost-Social Post Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Solution-Solution Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Task-Task Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="User-User Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="UserProvAccount-User Provisioning Account Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="UserProvisioningLog-User Provisioning Log Layout" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="UserProvisioningRequest-User Provisioning Request Layout" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="Layout" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="LeadConvertSettings" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="Letterhead" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="LightningBolt" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="LightningExperienceTheme" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="name" value="Account.AllAccounts" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Account.MyAccounts" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Account.NewLastWeek" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Account.NewThisWeek" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Account.PlatinumandGoldSLACustomers" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Activity.AllActivities" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Activity.MyActivities" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Activity.TodaysTasks" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Activity.UpcomingEvents" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Asset.AllAssets" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Campaign.AllActiveCampaigns" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Campaign.MyActiveCampaigns" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Case.AllClosedCases" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Case.AllOpenCases" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Case.MyCases" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Case.MyOpenCases" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="CollaborationGroup.All_ChatterGroups" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="ConsumptionSchedule.All_ConsumptionSchedules" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="ConsumptionSchedule.My_ConsumptionSchedules" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Contact.AllContacts" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Contact.BirthdaysThisMonth" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Contact.MyContacts" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Contact.NewLastWeek" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Contact.NewThisWeek" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="ContactRequest.My_ContactRequests" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Contract.AllActivatedContracts" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Contract.AllContracts" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Contract.AllDraftContracts" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Contract.AllInApprovalContracts" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Contract.MyActivatedContracts" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Contract.MyDraftContracts" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Contract.MyInApprovalContracts" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Idea.Ideas_Last_7_Days" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Lead.AllOpenLeads" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Lead.MyUnreadLeads" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Lead.TodaysLeads" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Lead.ViewCustom1" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Lead.ViewCustom2" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Opportunity.AllOpportunities" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Opportunity.ClosingNextMonth" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Opportunity.ClosingThisMonth" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Opportunity.Default_Opportunity_Pipeline" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Opportunity.MyOpportunities" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Opportunity.NewLastWeek" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Opportunity.NewThisWeek" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Opportunity.Private" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Opportunity.Won" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Order.AllActivatedOrders" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Order.AllDraftOrders" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Order.AllOrders" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Product2.AllProducts" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Recommendation.All_Recommendations" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Scorecard.AllScorecards" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Scorecard.MyScorecards" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="SocialPersona.AllSocialPersonas" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Solution.AllReviewedSolutions" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Solution.AllUnreviewedSolutions" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Task.CompletedTasks" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Task.DelegatedTasks" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Task.OpenTasks" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Task.OverdueTasks" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Task.RecurringTasks" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Task.TodaysTasks" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Task.UnscheduledTasks" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="User.ActiveUsers" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="User.AdminUsers" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="User.AllUsers" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="WorkFeedbackRequest.AboutTopics" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="WorkFeedbackRequest.All" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="WorkFeedbackTemplate.All" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="ListView" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="name" value="Account.Standard_Account_Match_Rule_v1_0" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Contact.Standard_Contact_Match_Rule_v1_1" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Lead.Standard_Lead_Match_Rule_v1_0" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="MatchingRule" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="name" value="Account" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Contact" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Lead" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="MatchingRules" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="NamedCredential" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="NetworkBranding" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="PathAssistant" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="PermissionSet" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="PlatformCachePartition" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="PostTemplate" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="name" value="Admin" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Analytics Cloud Integration User" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Analytics Cloud Security User" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Authenticated Website" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Chatter External User" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Chatter Free User" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Chatter Moderator User" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="ContractManager" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Cross Org Data Proxy User" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Custom%3A Marketing Profile" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Custom%3A Sales Profile" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Custom%3A Support Profile" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Customer Community Login User" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Customer Community Plus Login User" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Customer Community Plus User" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Customer Community User" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Customer Portal Manager Custom" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Customer Portal Manager Standard" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="External Identity User" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Force%2Ecom - App Subscription User" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Force%2Ecom - Free User" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Gold Partner User" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="High Volume Customer Portal User" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="HighVolumePortal" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Identity User" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="MarketingProfile" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Partner App Subscription User" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Partner Community Login User" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Partner Community User" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="PlatformPortal" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="ReadOnly" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Silver Partner User" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="SolutionManager" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Standard" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="StandardAul" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Work%2Ecom Only User" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="Profile" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="ProfilePasswordPolicy" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="ProfileSessionSetting" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="Queue" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="name" value="Case.LogACall" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Case.NewChildCase" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="CollaborationGroup.NewGroupMember" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="CollaborationGroup.NewGroupRecord" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="FeedItem.NewTaskFromFeedItem" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="LogACall" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="NewAccount" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="NewCase" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="NewContact" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="NewEvent" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="NewGroup" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="NewLead" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="NewNote" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="NewOpportunity" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="NewTask" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="SendEmail" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Task.Defer" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Task.Defer_0" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Task.EditDescription" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Task.EditDescription_0" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Task.UpdatePriority" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Task.UpdatePriority_0" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Task.UpdateStatus" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Task.UpdateStatus_0" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="QuickAction" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="name" value="Metric.Completion" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Metric.Progress" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="RecordType" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="name" value="ApexDevNet" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="RemoteSiteSetting" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="name" value="unfiled$public" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="Report" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="ReportType" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="name" value="CEO" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="CFO" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="ChannelSalesTeam" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="COO" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="CustomerSupportInternational" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="CustomerSupportNorthAmerica" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="DirectorChannelSales" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="DirectorDirectSales" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="EasternSalesTeam" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="InstallationRepairServices" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="MarketingTeam" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="SVPCustomerServiceSupport" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="SVPHumanResources" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="SVPSalesMarketing" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="VPInternationalSales" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="VPMarketing" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="VPNorthAmericanSales" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="WesternSalesTeam" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="Role" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="SamlSsoConfig" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="Scontrol" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="name" value="Account" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Activities" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Address" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="BusinessHours" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Case" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Company" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Contract" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Entitlement" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="FieldService" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="FileUploadAndDownloadSecurity" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Forecasting" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Ideas" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="IoT" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Knowledge" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="LiveAgent" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Macro" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Mobile" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Name" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="OmniChannel" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Opportunity" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Order" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="OrgPreference" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="PathAssistant" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Product" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Quote" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Search" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Security" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="Settings" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="SharingCriteriaRule" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="SharingOwnerRule" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="SharingReason" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="name" value="Account" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Asset" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Campaign" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Case" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Contact" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="FlowInterview" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Lead" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="ListEmail" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Opportunity" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Order" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="User" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="SharingRules" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="SharingSet" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="SiteDotCom" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="name" value="AccountContactMultiRoles" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="AccountContactRole" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="AccountOwnership" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="AccountRating" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="AccountType" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="AssetStatus" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="CampaignMemberStatus" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="CampaignStatus" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="CampaignType" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="CaseContactRole" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="CaseOrigin" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="CasePriority" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="CaseReason" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="CaseStatus" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="CaseType" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="ContactRole" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="ContractContactRole" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="ContractStatus" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="EntitlementType" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="EventSubject" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="EventType" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="FiscalYearPeriodName" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="FiscalYearPeriodPrefix" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="FiscalYearQuarterName" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="FiscalYearQuarterPrefix" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="IdeaMultiCategory" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="IdeaStatus" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="IdeaThemeStatus" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Industry" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="LeadSource" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="LeadStatus" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="OpportunityCompetitor" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="OpportunityStage" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="OpportunityType" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="OrderType" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="PartnerRole" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Product2Family" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="QuickTextCategory" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="QuickTextChannel" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="QuoteStatus" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="RoleInTerritory2" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="SalesTeamRole" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Salutation" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="ServiceContractApprovalStatus" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="SocialPostClassification" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="SocialPostEngagementLevel" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="SocialPostReviewedStatus" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="SolutionStatus" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="TaskPriority" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="TaskStatus" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="TaskSubject" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="TaskType" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="WorkOrderLineItemStatus" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="WorkOrderPriority" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="WorkOrderStatus" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="StandardValueSet" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="StandardValueSetTranslation" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="StaticResource" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="SynonymDictionary" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="name" value="Account" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Asset" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Campaign" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Case" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Contact" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="ContentDocument" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Contract" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Event" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Lead" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Opportunity" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Order" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Solution" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Task" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="TopicsForObjects" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="TransactionSecurityPolicy" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="ValidationRule" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="entries">
+                        <list>
+                          <MetadataEntry>
+                            <option name="name" value="Account.Billing" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Campaign.ViewCampaignInfluenceReport" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Case.UpsellCrosssellOpportunity" />
+                          </MetadataEntry>
+                          <MetadataEntry>
+                            <option name="name" value="Opportunity.DeliveryStatus" />
+                          </MetadataEntry>
+                        </list>
+                      </option>
+                      <option name="name" value="WebLink" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="Workflow" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="WorkflowAlert" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="WorkflowFieldUpdate" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="WorkflowKnowledgePublish" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="WorkflowOutboundMessage" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="WorkflowRule" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="WorkflowSend" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                    <MetadataType>
+                      <option name="name" value="WorkflowTask" />
+                      <option name="wildcard" value="false" />
+                    </MetadataType>
+                  </set>
+                </option>
+              </Manifest>
+            </option>
+            <option name="packageXmlRelativePath" value="fflib/src/package.xml" />
+          </ModuleContents>
+        </option>
+      </configuration>
+    </facet>
+  </component>
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/fflib/src" isTestSource="false" />
+    </content>
+    <orderEntry type="jdk" jdkName="IlluminatedCloud (fflib-apex-mocks/fflib)" jdkType="IlluminatedCloud" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>
