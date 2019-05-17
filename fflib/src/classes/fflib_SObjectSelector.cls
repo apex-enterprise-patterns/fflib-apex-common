@@ -143,21 +143,27 @@ public abstract with sharing class fflib_SObjectSelector
     {
         return null;
     }
-    
-    /**
-     * Override this method to control the default ordering of records returned by the base queries, 
-     * defaults to the name field of the object or CreatedDate if there is none
-     **/
-    public virtual String getOrderBy()
-    {
-        if(m_orderBy == null) {
-   		m_orderBy = 'CreatedDate';
-   		if(describeWrapper.getNameField() != null) {
-	    		m_orderBy = describeWrapper.getNameField().getDescribe().getName();
-	    	}
+
+	/**
+	 * Override this method to control the default ordering of records returned by the base queries,
+	 * defaults to the name field of the object if it is not encrypted or CreatedDate if there is none
+	 **/
+	public virtual String getOrderBy()
+	{
+		if (m_orderBy == null)
+		{
+			Schema.SObjectField nameField = describeWrapper.getNameField();
+			if (nameField != null && !nameField.getDescribe().isEncrypted())
+			{
+				m_orderBy = nameField.getDescribe().getName();
+			}
+			else
+			{
+				m_orderBy = 'CreatedDate';
+			}
+		}
+		return m_orderBy;
 	}
-   	return m_orderBy;
-    }
 
     /** 
      * Returns True if this Selector instance has been instructed by the caller to include Field Set fields
