@@ -52,28 +52,28 @@
  * There is a google doc providing additional guideance on the use of this class with field sets at
  * https://docs.google.com/a/financialforce.com/document/d/1I4cxN4xHT4UJj_3Oi0YBL_MJ5chm-KG8kMN1D1un8-g/edit?usp=sharing
 **/
-public class fflib_QueryFactory { //No explicit sharing declaration - inherit from caller
+public  virtual class fflib_QueryFactory { //No explicit sharing declaration - inherit from caller
 	public enum SortOrder {ASCENDING, DESCENDING}
 
 	/**
 	 * This property is read-only and may not be set after instantiation.
 	 * The {@link Schema.SObjectType} token of the SObject that will be used in the FROM clause of the resultant query.
 	**/
-	public Schema.SObjectType table {get; private set;}
+	public Schema.SObjectType table {get; protected set;}
 	@testVisible
-	private Set<String> fields; 
-	private String conditionExpression;
-	private Integer limitCount;
-	private Integer offsetCount;
-	private List<Ordering> order;
+	protected Set<String> fields; 
+	protected String conditionExpression;
+	protected Integer limitCount;
+	protected Integer offsetCount;
+	protected List<Ordering> order;
 	/**
 	 * Integrate checking for READ Field Level Security within the selectField(s) methods
 	 * This can optionally be enforced (or not) by calling the setEnforceFLS method prior to calling 
 	 * one of the selectField or selectFieldset methods.
 	**/
-	private Boolean enforceFLS;
+	protected Boolean enforceFLS;
 	
-	private Boolean sortSelectFields = true;
+	protected Boolean sortSelectFields = true;
 	
 	/**
 	 * The relationship and  subselectQueryMap variables are used to support subselect queries.  Subselects can be added to 
@@ -81,10 +81,10 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * a query, but they may only be 1 level deep (no subselect inside a subselect)
 	 * to add a subselect, call the subselectQuery method, passing in the ChildRelationship.
 	**/
-	private Schema.ChildRelationship relationship;
-	private Map<Schema.ChildRelationship, fflib_QueryFactory> subselectQueryMap;
+	protected Schema.ChildRelationship relationship;
+	protected Map<Schema.ChildRelationship, fflib_QueryFactory> subselectQueryMap;
 
-	private String getFieldPath(String fieldName){
+	protected String getFieldPath(String fieldName){
 		if(!fieldName.contains('.')){ //single field
 			Schema.SObjectField token = fflib_SObjectDescribe.getDescribe(table).getField(fieldName.toLowerCase());
 			if(token == null)
@@ -124,7 +124,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	}
 
 	@TestVisible
-	private static String getFieldTokenPath(Schema.SObjectField field){
+	protected static String getFieldTokenPath(Schema.SObjectField field){
 		if(field == null){
 			throw new InvalidFieldException('Invalid field: null');		
 		}
@@ -162,7 +162,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * You *must* call selectField(s) before {@link #toSOQL} will return a valid, runnable query.
 	 * @param relationship the ChildRelationship to be used in the FROM Clause of the resultant Query (when set overrides value of table). This sets the value of {@link #relationship} and {@link #table}.
 	**/
-	private fflib_QueryFactory(Schema.ChildRelationship relationship){
+	protected fflib_QueryFactory(Schema.ChildRelationship relationship){
 		this(relationship.getChildSObject()); 
 		this.relationship = relationship;
 	}
@@ -437,7 +437,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @exception InvalidSubqueryRelationshipException If this method is called on a subselectQuery or with an invalid relationship 
 	 * @param relationship The ChildRelationship to be added as a subquery
 	**/
-	private fflib_QueryFactory setSubselectQuery(ChildRelationship relationship, Boolean assertIsAccessible){
+	protected fflib_QueryFactory setSubselectQuery(ChildRelationship relationship, Boolean assertIsAccessible){
 		if (this.relationship != null){
 			throw new InvalidSubqueryRelationshipException('Invalid call to subselectQuery.  You may not add a subselect query to a subselect query.');
 		} 
@@ -474,7 +474,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * Get the ChildRelationship from the Table for the object type passed in.
 	 * @param objType The object type of the child relationship to get
 	**/
- 	private Schema.ChildRelationship getChildRelationship(sObjectType objType){
+ 	protected Schema.ChildRelationship getChildRelationship(sObjectType objType){
         for (Schema.ChildRelationship childRow : table.getDescribe().getChildRelationships()){
         	//occasionally on some standard objects (Like Contact child of Contact) do not have a relationship name.  
         	//if there is no relationship name, we cannot query on it, so throw an exception.
@@ -489,7 +489,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * Get the ChildRelationship from the Table for the relationship name passed in.
 	 * @param relationshipName The name of the object's ChildRelationship on get
 	**/
- 	private Schema.ChildRelationship getChildRelationship(String relationshipName){
+ 	protected Schema.ChildRelationship getChildRelationship(String relationshipName){
         for (Schema.ChildRelationship childRow : table.getDescribe().getChildRelationships()){
             if (childRow.getRelationshipName() == relationshipName){ 
                 return childRow;
@@ -708,9 +708,9 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	}
 	
 	public class Ordering{
-		private SortOrder direction;
-		private boolean nullsLast;
-		private String field;
+		protected SortOrder direction;
+		protected boolean nullsLast;
+		protected String field;
 
 		public Ordering(String sobjType, String fieldName, SortOrder direction){
 			this(
@@ -729,11 +729,11 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			this(fflib_QueryFactory.getFieldTokenPath(field), direction, nullsLast);
 		}
 		@testVisible
-		private Ordering(String field, SortOrder direction){
+		protected Ordering(String field, SortOrder direction){
 			this(field, direction, false);
 		}
 		@testVisible
-		private Ordering(String field, SortOrder direction, Boolean nullsLast){
+		protected Ordering(String field, SortOrder direction, Boolean nullsLast){
 			this.direction = direction;
 			this.field = field;
 			this.nullsLast = nullsLast;
@@ -752,8 +752,8 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 
 	
 	public class InvalidFieldException extends Exception{
-		private String fieldName;
-		private Schema.SObjectType objectType;
+		protected String fieldName;
+		protected Schema.SObjectType objectType;
 		public InvalidFieldException(String fieldname, Schema.SObjectType objectType){
 			this.objectType = objectType;
 			this.fieldName = fieldName;
