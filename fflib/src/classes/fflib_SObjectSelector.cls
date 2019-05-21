@@ -47,17 +47,17 @@ public abstract with sharing class fflib_SObjectSelector
     /**
      * Should this selector automatically include the FieldSet fields when building queries?
      **/
-    private Boolean m_includeFieldSetFields;
+    protected Boolean m_includeFieldSetFields;
     
     /**
      * Enforce FLS Security
      **/
-   	private Boolean m_enforceFLS;
+   	protected Boolean m_enforceFLS;
 
     /**
      * Enforce CRUD Security
      **/
-   	private Boolean m_enforceCRUD;
+   	protected Boolean m_enforceCRUD;
    	
    /**
     * Order by field
@@ -143,20 +143,38 @@ public abstract with sharing class fflib_SObjectSelector
     {
         return null;
     }
-    
+
     /**
-     * Override this method to control the default ordering of records returned by the base queries, 
-     * defaults to the name field of the object or CreatedDate if there is none
-     **/
+	 * Override this method to control the default ordering of records returned by the base queries,
+	 * defaults to the name field of the object if it is not encrypted or CreatedDate if there the object has createdDated or Id
+	 **/
     public virtual String getOrderBy()
     {
-        if(m_orderBy == null) {
-   		m_orderBy = 'CreatedDate';
-   		if(describeWrapper.getNameField() != null) {
-	    		m_orderBy = describeWrapper.getNameField().getDescribe().getName();
-	    	}
-	}
-   	return m_orderBy;
+        if (m_orderBy == null)
+        {
+            Schema.SObjectField nameField = describeWrapper.getNameField();
+            if (nameField != null && !nameField.getDescribe().isEncrypted())
+            {
+                m_orderBy = nameField.getDescribe().getName();
+            }
+            else
+            {
+                m_orderBy = 'CreatedDate';
+                //Tahsin Zulkarnine: Check whether createdDate field exists in the object. Certain object might not have it, ie AccountShare, etc
+                Boolean invalidField = false;
+                try
+                    {
+                        if(describeWrapper.getField(m_orderBy) == null) invalidField = true;
+                }
+                catch(fflib_QueryFactory.InvalidFieldException ex){
+                    // Tahsin Zulkarnine: if not found, making the default field to Id as all saleforce object has id
+                    invalidField = true;
+                }
+                if(invalidField)	m_orderBy = 'Id';
+
+            }
+        }
+        return m_orderBy;
     }
 
     /** 
@@ -385,7 +403,7 @@ public abstract with sharing class fflib_SObjectSelector
 	/**
 	 * Configures a QueryFactory instance according to the configuration of this selector
 	 **/        
-    private fflib_QueryFactory configureQueryFactory(fflib_QueryFactory queryFactory, Boolean assertCRUD, Boolean enforceFLS, Boolean includeSelectorFields)
+    protected fflib_QueryFactory configureQueryFactory(fflib_QueryFactory queryFactory, Boolean assertCRUD, Boolean enforceFLS, Boolean includeSelectorFields)
     {
         // CRUD and FLS security required?
         if (assertCRUD)
