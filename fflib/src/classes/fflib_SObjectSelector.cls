@@ -69,7 +69,7 @@ public abstract with sharing class fflib_SObjectSelector
      * Switch this off if you need more performant queries.
      **/
     private Boolean m_sortSelectFields;
-  
+
    /**
    * Describe helper
    **/
@@ -81,7 +81,13 @@ public abstract with sharing class fflib_SObjectSelector
    		}
    		set;
    	}
-   	 
+   	/**
+   	* static variables
+    **/
+
+   	protected static String DEFAULT_SORT_FIELD = 'CreatedDate';
+   	protected static String SF_ID_FIELD = 'Id';
+
     /**
      * Implement this method to inform the base class of the SObject (custom or standard) to be queried
      **/
@@ -148,7 +154,7 @@ public abstract with sharing class fflib_SObjectSelector
 	 * Override this method to control the default ordering of records returned by the base queries,
 	 * defaults to the name field of the object if it is not encrypted or CreatedDate if there the object has createdDated or Id
 	 **/
-    public virtual String getOrderBy()
+     public virtual String getOrderBy()
     {
         if (m_orderBy == null)
         {
@@ -159,19 +165,16 @@ public abstract with sharing class fflib_SObjectSelector
             }
             else
             {
-                m_orderBy = 'CreatedDate';
-                //Tahsin Zulkarnine: Check whether createdDate field exists in the object. Certain object might not have it, ie AccountShare, etc
-                Boolean invalidField = false;
-                try
+                m_orderBy = DEFAULT_SORT_FIELD;
+                try {
+                    if (describeWrapper.getField(m_orderBy) == null)
                     {
-                        if(describeWrapper.getField(m_orderBy) == null) invalidField = true;
+                        m_orderBy = SF_ID_FIELD;
+                    }
                 }
-                catch(fflib_QueryFactory.InvalidFieldException ex){
-                    // Tahsin Zulkarnine: if not found, making the default field to Id as all saleforce object has id
-                    invalidField = true;
+                catch(fflib_QueryFactory.InvalidFieldException ex) {
+                    m_orderBy = SF_ID_FIELD;
                 }
-                if(invalidField)	m_orderBy = 'Id';
-
             }
         }
         return m_orderBy;
