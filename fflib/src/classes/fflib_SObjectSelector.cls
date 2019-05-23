@@ -47,17 +47,17 @@ public abstract with sharing class fflib_SObjectSelector
     /**
      * Should this selector automatically include the FieldSet fields when building queries?
      **/
-    protected Boolean m_includeFieldSetFields;
+    private Boolean m_includeFieldSetFields;
     
     /**
      * Enforce FLS Security
      **/
-    protected Boolean m_enforceFLS;
+    private Boolean m_enforceFLS;
 
     /**
      * Enforce CRUD Security
      **/
-    protected Boolean m_enforceCRUD;
+    private Boolean m_enforceCRUD;
    	
     /**
      * Order by field
@@ -84,8 +84,8 @@ public abstract with sharing class fflib_SObjectSelector
     /**
      * static variables
      **/
-    protected static String DEFAULT_SORT_FIELD = 'CreatedDate';
-    protected static String SF_ID_FIELD = 'Id';
+    private static String DEFAULT_SORT_FIELD = 'CreatedDate';
+    private static String SF_ID_FIELD = 'Id';
 
     /**
      * Implement this method to inform the base class of the SObject (custom or standard) to be queried
@@ -405,7 +405,7 @@ public abstract with sharing class fflib_SObjectSelector
     /**
      * Configures a QueryFactory instance according to the configuration of this selector
      **/        
-    protected fflib_QueryFactory configureQueryFactory(fflib_QueryFactory queryFactory, Boolean assertCRUD, Boolean enforceFLS, Boolean includeSelectorFields)
+    private fflib_QueryFactory configureQueryFactory(fflib_QueryFactory queryFactory, Boolean assertCRUD, Boolean enforceFLS, Boolean includeSelectorFields)
     {
         // CRUD and FLS security required?
         if (assertCRUD)
