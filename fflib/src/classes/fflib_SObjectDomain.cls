@@ -286,7 +286,11 @@ public virtual with sharing class fflib_SObjectDomain
 			SObject oldRecord = Trigger.oldMap.get(recordId);
 			for(String fieldName : fieldNames)
 			{
-				if(oldRecord.get(fieldName) != newRecord.get(fieldName)) changedRecords.add(newRecord);
+				if(oldRecord.get(fieldName) != newRecord.get(fieldName)) 
+                {
+                    changedRecords.add(newRecord);
+                    break;
+                }
 			}
 		}
 		return changedRecords;
@@ -306,7 +310,11 @@ public virtual with sharing class fflib_SObjectDomain
 			SObject oldRecord = Trigger.oldMap.get(recordId);
 			for(Schema.SObjectField fieldToken : fieldTokens)
 			{
-				if(oldRecord.get(fieldToken) != newRecord.get(fieldToken)) changedRecords.add(newRecord);
+				if(oldRecord.get(fieldToken) != newRecord.get(fieldToken)) 
+                {
+                    changedRecords.add(newRecord);
+                    break;
+                }
 			}
 		}
 		return changedRecords;
