@@ -62,7 +62,7 @@ public virtual with sharing class fflib_SObjectDomain
 	public static ErrorFactory Errors  {get; private set;}
 	
 	/**
-	 * Useful during unit testing to access mock support for database inserts and udpates (testing without DML)
+	 * Useful during unit testing to access mock support for database inserts and updates (testing without DML)
 	 **/
 	public static TestFactory Test  {get; private set;}
 	
@@ -214,7 +214,7 @@ public virtual with sharing class fflib_SObjectDomain
     public virtual void handleAfterUpdate(Map<Id,SObject> existingRecords) 
     {    	
     	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isUpdateable()) 			    		
-    	   throw new DomainException('Permission to udpate an ' + SObjectDescribe.getName() + ' denied.');
+    	   throw new DomainException('Permission to update an ' + SObjectDescribe.getName() + ' denied.');
     	
     	if(Configuration.OldOnUpdateValidateBehaviour)
     		onValidate();
