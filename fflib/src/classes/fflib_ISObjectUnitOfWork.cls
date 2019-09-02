@@ -54,6 +54,20 @@ public interface fflib_ISObjectUnitOfWork
      */
     void registerRelationship(Messaging.SingleEmailMessage email, SObject relatedTo);
     /**
+     * Registers a relationship between a record and a lookup value using an external ID field and a provided value. This
+     * information will be used during the commitWork phase to make the lookup reference requested when inserted to the database.
+     *
+     * @param record An existing or newly created record
+     * @param relatedToField A SObjectField reference to the lookup field that relates the two records together
+     * @param externalIdField A SObjectField reference to a field on the target SObject that is marked as isExternalId
+     * @param externalId A Object representing the targetted value of the externalIdField in said lookup
+     *
+     * Usage Example: uow.registerRelationship(recordSObject, record_sobject__c.relationship_field__c, lookup_sobject__c.external_id__c, 'abc123');
+     *
+     * Wraps putSObject, creating a new instance of the lookup sobject using the external id field and value.
+     */
+     void registerRelationship(SObject record, Schema.sObjectField relatedToField, Schema.sObjectField externalIdField, Object externalId);
+    /**
      * Register an existing record to be updated during the commitWork method
      *
      * @param record An existing record
