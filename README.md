@@ -1,5 +1,5 @@
-FinancialForce Apex Common
-==========================
+FFLib Apex Common
+=================
 
 [![Build Status](https://travis-ci.org/financialforcedev/fflib-apex-common.svg)](https://travis-ci.org/financialforcedev/fflib-apex-common) 
 
