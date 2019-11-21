@@ -403,7 +403,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param assertIsAccessible indicates whether to check if the user has access to the subquery object
 	**/
 	public fflib_QueryFactory subselectQuery(String relationshipName, Boolean assertIsAccessible){
-		ChildRelationship relationship = getChildRelationship(relationshipName);
+		Schema.ChildRelationship relationship = getChildRelationship(relationshipName);
 		if (relationship != null) {
 			return setSubselectQuery(relationship, assertIsAccessible);
 		}
@@ -416,7 +416,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @exception InvalidSubqueryRelationshipException If this method is called on a subselectQuery or with an invalid relationship 
 	 * @param relationship The ChildRelationship to be added as a subquery
 	**/
-	public fflib_QueryFactory subselectQuery(ChildRelationship relationship){ 
+	public fflib_QueryFactory subselectQuery(Schema.ChildRelationship relationship){ 
 		return subselectQuery(relationship, false);
 	}
 
@@ -427,7 +427,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param relationship The ChildRelationship to be added as a subquery
 	 * @param assertIsAccessible indicates whether to check if the user has access to the subquery object
 	**/
-	public fflib_QueryFactory subselectQuery(ChildRelationship relationship, Boolean assertIsAccessible){
+	public fflib_QueryFactory subselectQuery(Schema.ChildRelationship relationship, Boolean assertIsAccessible){
 		return setSubselectQuery(relationship, assertIsAccessible);
 	}
 
@@ -437,12 +437,12 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @exception InvalidSubqueryRelationshipException If this method is called on a subselectQuery or with an invalid relationship 
 	 * @param relationship The ChildRelationship to be added as a subquery
 	**/
-	private fflib_QueryFactory setSubselectQuery(ChildRelationship relationship, Boolean assertIsAccessible){
+	private fflib_QueryFactory setSubselectQuery(Schema.ChildRelationship relationship, Boolean assertIsAccessible){
 		if (this.relationship != null){
 			throw new InvalidSubqueryRelationshipException('Invalid call to subselectQuery.  You may not add a subselect query to a subselect query.');
 		} 
 		if (this.subselectQueryMap == null){
-			this.subselectQueryMap = new Map<ChildRelationship, fflib_QueryFactory>();
+			this.subselectQueryMap = new Map<Schema.ChildRelationship, fflib_QueryFactory>();
 		}
 		if (this.subselectQueryMap.containsKey(relationship)){
 			return subselectQueryMap.get(relationship);
