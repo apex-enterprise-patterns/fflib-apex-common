@@ -57,7 +57,15 @@ public virtual with sharing class fflib_SObjectDomain
 		{
 			if (ExistingRecords == null)
 			{
-				ExistingRecords = Trigger.oldMap;
+				if (System.Test.isRunningTest() & Test.Database.hasRecords())
+				{
+					// If in test context and records are in the mock database use those instead of Trigger.oldMap
+					ExistingRecords = Test.Database.oldRecords;
+				}
+				else
+				{
+					ExistingRecords = Trigger.oldMap;
+				}
 			}
 			return ExistingRecords;
 

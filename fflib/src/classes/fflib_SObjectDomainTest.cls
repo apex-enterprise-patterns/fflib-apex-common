@@ -288,7 +288,7 @@ private with sharing class fflib_SObjectDomainTest
 		newRecords.get(0).Description = 'Jedi Master';
 		newRecords.get(1).Name = 'Han Solo';
 		Accounts accounts = new Accounts(newRecords);
-		accounts.ExistingRecords = new Map<Id, SObject>(oldRecords);
+		fflib_SObjectDomain.Test.Database.onUpdate(newRecords, new Map<Id, SObject>(oldRecords));
 
 		// WHEN we create a domain with ExistingRecords and request the changed records
 		List<SObject> result = accounts.getChangedRecords(
