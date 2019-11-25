@@ -45,7 +45,26 @@ public virtual with sharing class fflib_SObjectDomain
 	 * Provides access to the data represented by this domain class
 	 **/
 	public List<SObject> Records { get; private set;}
-	
+
+
+	/**
+     * Provides access to Trigger.oldMap and allowing it to be mocked in unit-tests
+     **/
+	@TestVisible
+	protected Map<Id, SObject> ExistingRecords
+	{
+		get
+		{
+			if (ExistingRecords == null)
+			{
+				ExistingRecords = Trigger.oldMap;
+			}
+			return ExistingRecords;
+
+		}
+		private set;
+	}
+
 	/**
 	 * Derived from the records provided during construction, provides the native describe for the standard or custom object
 	 **/
@@ -279,14 +298,22 @@ public virtual with sharing class fflib_SObjectDomain
 	public List<SObject> getChangedRecords(Set<String> fieldNames)
 	{
 		List<SObject> changedRecords = new List<SObject>();
-		for(SObject newRecord : Records)
+		for (SObject newRecord : Records)
 		{
-			Id recordId = (Id)newRecord.get('Id');
-			if(Trigger.oldMap == null || !Trigger.oldMap.containsKey(recordId)) continue;
-			SObject oldRecord = Trigger.oldMap.get(recordId);
-			for(String fieldName : fieldNames)
+			Id recordId = (Id) newRecord.get('Id');
+			if (this.ExistingRecords == null || !this.ExistingRecords.containsKey(recordId))
 			{
-				if(oldRecord.get(fieldName) != newRecord.get(fieldName)) changedRecords.add(newRecord);
+				continue;
+			}
+
+			SObject oldRecord = this.ExistingRecords.get(recordId);
+			for (String fieldName : fieldNames)
+			{
+				if (oldRecord.get(fieldName) != newRecord.get(fieldName))
+				{
+					changedRecords.add(newRecord);
+					break;  // prevents the records from being added multiple times
+				}
 			}
 		}
 		return changedRecords;
@@ -299,14 +326,21 @@ public virtual with sharing class fflib_SObjectDomain
 	public List<SObject> getChangedRecords(Set<Schema.SObjectField> fieldTokens)
 	{
 		List<SObject> changedRecords = new List<SObject>();
-		for(SObject newRecord : Records)
+		for (SObject newRecord : Records)
 		{
-			Id recordId = (Id)newRecord.get('Id');
-			if(Trigger.oldMap == null || !Trigger.oldMap.containsKey(recordId)) continue;
-			SObject oldRecord = Trigger.oldMap.get(recordId);
-			for(Schema.SObjectField fieldToken : fieldTokens)
+			Id recordId = (Id) newRecord.get('Id');
+			if (this.ExistingRecords == null || !this.ExistingRecords.containsKey(recordId))
 			{
-				if(oldRecord.get(fieldToken) != newRecord.get(fieldToken)) changedRecords.add(newRecord);
+				continue;
+			}
+			SObject oldRecord = this.ExistingRecords.get(recordId);
+			for (Schema.SObjectField fieldToken : fieldTokens)
+			{
+				if (oldRecord.get(fieldToken) != newRecord.get(fieldToken))
+				{
+					changedRecords.add(newRecord);
+					break;  // prevents the records from being added multiple times
+				}
 			}
 		}
 		return changedRecords;
