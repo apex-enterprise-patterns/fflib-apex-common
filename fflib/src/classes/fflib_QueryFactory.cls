@@ -84,13 +84,19 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	private Schema.ChildRelationship relationship;
 	private Map<Schema.ChildRelationship, fflib_QueryFactory> subselectQueryMap;
 
-	private String getFieldPath(String fieldName){
+	private String getFieldPath(String fieldName)
+	{
+		if (!enforceFLS)
+		{
+			// There is no need to validate FLS for individual fields in the relationship
+			return fieldName;
+		}
+
 		if(!fieldName.contains('.')){ //single field
 			Schema.SObjectField token = fflib_SObjectDescribe.getDescribe(table).getField(fieldName.toLowerCase());
 			if(token == null)
 				throw new InvalidFieldException(fieldName,this.table);
-			if (enforceFLS) 
-				fflib_SecurityUtils.checkFieldIsReadable(this.table, token);	
+			fflib_SecurityUtils.checkFieldIsReadable(this.table, token);
 			return token.getDescribe().getName();
 		}
 
@@ -103,7 +109,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			Schema.SObjectField token = fflib_SObjectDescribe.getDescribe(lastSObjectType).getField(field.toLowerCase());
 			DescribeFieldResult tokenDescribe = token != null ? token.getDescribe() : null;
 			
-			if (token != null && enforceFLS) {
+			if (token != null) {
 				fflib_SecurityUtils.checkFieldIsReadable(lastSObjectType, token);
 			}
 
