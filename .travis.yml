@@ -1,10 +1,15 @@
-language: java
+dist: trusty
+language: node_js
+node_js:
+  - 10
 jdk:
   - oraclejdk8
 sudo: false
 branches:
   only:
     - master
-script: 
+script:
+  - 'npm install'
   - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && ant -lib lib/ant-salesforce.jar -Dsf.username=${SFUSER} -Dsf.password=${SFPWD} deploy || [ "${TRAVIS_PULL_REQUEST}" != "false" ]'
   - '[ "${TRAVIS_PULL_REQUEST}" != "false" ] && ant -lib lib/ant-salesforce.jar -Dsf.username=${SFUSER} -Dsf.password=${SFPWD} deploy || [ "${TRAVIS_PULL_REQUEST}" = "false" ]'
+  - 'npx semantic-release'

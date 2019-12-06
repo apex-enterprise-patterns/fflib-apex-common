@@ -3,3 +3,5 @@
 *.prefs
 
 fflib/salesforce.schema
+.idea/
+node_modules/

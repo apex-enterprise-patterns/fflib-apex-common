@@ -1,0 +1,71 @@
+{
+  "name": "fflib-apex-commons",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test:unit": "lwc-jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:apex-enterprise-patterns/fflib-apex-common"
+  },
+  "author": "",
+  "license": "ISC",
+  "homepage": "https://github.com/apex-enterprise-patterns/fflib-apex-common#readme",
+  "devDependencies": {
+    "@commitlint/cli": "^8.2.0",
+    "@commitlint/config-conventional": "^8.2.0",
+    "@salesforce/lwc-jest": "^0.5.4",
+    "@semantic-release/changelog": "^3.0.4",
+    "@semantic-release/exec": "^3.3.7",
+    "@semantic-release/git": "^7.0.16",
+    "@semantic-release/github": "^5.5.5",
+    "cz-conventional-changelog": "^3.0.2",
+    "husky": "^3.0.9"
+  },
+  "release": {
+    "branch": "master",
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      [
+        "@semantic-release/github",
+        {
+          "assets": [
+            {
+              "path": "build/package.version.result.json",
+              "label": "Package Version Information"
+            }
+          ]
+        }
+      ],
+      [
+        "@semantic-release/changelog",
+        {
+          "changelogFile": "docs/CHANGELOG.md"
+        }
+      ],
+      [
+        "@semantic-release/git",
+        {
+          "assets": [
+            "fflib/**/*.*",
+            "docs"
+          ],
+          "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+        }
+      ]
+    ]
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  }
+}
