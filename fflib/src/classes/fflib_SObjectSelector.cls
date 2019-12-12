@@ -208,6 +208,7 @@ public abstract with sharing class fflib_SObjectSelector
     public fflib_SObjectSelector unsortedSelectFields()
     {
         this.m_sortSelectFields = false;
+        return this;
     }
 
     /**
