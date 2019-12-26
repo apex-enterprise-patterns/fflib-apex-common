@@ -46,6 +46,8 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 
         fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
 
+        uow.m_emailWork = new Mock_SendEmailWork();
+
         Opportunity opp = new Opportunity();
         opp.Name = testRecordName;
         opp.StageName = 'Open';
@@ -60,8 +62,8 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 
         List<Opportunity> opps = [select Id, Name, (Select Id from OpportunityLineItems) from Opportunity where Name = :testRecordName order by Name];
 
-        // assert that an email was sent
-        system.assertEquals(1, Limits.getEmailInvocations());
+        // assert that mock email functionality was called
+        system.assert(((Mock_SendEmailWork) uow.m_emailWork).doWorkWasCalled);
 
         System.assertEquals(1, opps.size());
     }
@@ -69,7 +71,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     @isTest
     private static void testUnitOfWorkNewDirtyDelete()
     {
-        // Insert Opporunities with UnitOfWork
+        // Insert Opportunities with UnitOfWork
         {
             fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
             for(Integer o=0; o<10; o++)
@@ -242,11 +244,15 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 
         assertEvents(new List<String> {
                 'onCommitWorkStarting'
+                , 'onPublishBeforeEventsStarting'
+                , 'onPublishBeforeEventsFinished'
                 , 'onDMLStarting'
                 , 'onDMLFinished'
                 , 'onDoWorkStarting'
                 , 'onDoWorkFinished'
                 , 'onCommitWorkFinishing'
+                , 'onPublishAfterSuccessEventsStarting'
+                , 'onPublishAfterSuccessEventsFinished'
                 , 'onCommitWorkFinished - true'
             }
             , uow.getCommitWorkEventsFired(), new Set<Schema.SObjectType>(MY_SOBJECTS), uow.getRegisteredTypes());
@@ -284,7 +290,11 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 
         assertEvents(new List<String> {
                 'onCommitWorkStarting'
+                , 'onPublishBeforeEventsStarting'
+                , 'onPublishBeforeEventsFinished'
                 , 'onDMLStarting'
+                , 'onPublishAfterFailureEventsStarting'
+                , 'onPublishAfterFailureEventsFinished'
                 , 'onCommitWorkFinished - false'
             }
             , uow.getCommitWorkEventsFired(), new Set<Schema.SObjectType>(MY_SOBJECTS), uow.getRegisteredTypes());
@@ -330,9 +340,13 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 
         assertEvents(new List<String> {
                 'onCommitWorkStarting'
+                , 'onPublishBeforeEventsStarting'
+                , 'onPublishBeforeEventsFinished'
                 , 'onDMLStarting'
                 , 'onDMLFinished'
                 , 'onDoWorkStarting'
+                , 'onPublishAfterFailureEventsStarting'
+                , 'onPublishAfterFailureEventsFinished'
                 , 'onCommitWorkFinished - false'
             }
             , uow.getCommitWorkEventsFired(), new Set<Schema.SObjectType>(MY_SOBJECTS), uow.getRegisteredTypes());
@@ -384,6 +398,28 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         opp = [select Name, Amount from Opportunity where Id = :opp.Id];
         System.assertEquals(opp.Name, nameUpdate.Name);
         System.assertEquals(opp.Amount, amountUpdate.Amount);
+    }
+
+    @isTest
+    private static void testRegisterUpsert() {
+        Opportunity existingOpp = new Opportunity(Name = 'Existing Opportunity', StageName = 'Open', CloseDate = System.today());
+        insert existingOpp;
+
+        existingOpp.StageName = 'Closed';
+
+        Opportunity newOpportunity = new Opportunity(Name = 'New Opportunity', StageName = 'Closed', CloseDate = System.today());
+
+        System.assertEquals(1, [SELECT COUNT() FROM Opportunity]);
+        System.assertEquals(0, [SELECT COUNT() FROM Opportunity WHERE StageName = 'Closed']);
+        
+        Test.startTest();
+            fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
+            uow.registerUpsert(new List<Opportunity>{existingOpp, newOpportunity});
+            uow.commitWork();
+        Test.stopTest();
+
+        System.assertEquals(2, [SELECT COUNT() FROM Opportunity]);
+        System.assertEquals(2, [SELECT COUNT() FROM Opportunity WHERE StageName = 'Closed']);
     }
 
     /**
@@ -474,6 +510,16 @@ private with sharing class fflib_SObjectUnitOfWorkTest
             addEvent('onCommitWorkStarting');
         }
 
+        public override void onPublishBeforeEventsStarting()
+        {
+            addEvent('onPublishBeforeEventsStarting');
+        }
+
+        public override void onPublishBeforeEventsFinished()
+        {
+            addEvent('onPublishBeforeEventsFinished');
+        }
+
         public override void onDMLStarting()
         {
             addEvent('onDMLStarting');
@@ -499,10 +545,54 @@ private with sharing class fflib_SObjectUnitOfWorkTest
             addEvent('onCommitWorkFinishing');
         }
 
+        public override void onPublishAfterSuccessEventsStarting()
+        {
+            addEvent('onPublishAfterSuccessEventsStarting');
+        }
+
+        public override void onPublishAfterSuccessEventsFinished()
+        {
+            addEvent('onPublishAfterSuccessEventsFinished');
+        }
+
+        public override void onPublishAfterFailureEventsStarting()
+        {
+            addEvent('onPublishAfterFailureEventsStarting');
+        }
+
+        public override void onPublishAfterFailureEventsFinished()
+        {
+            addEvent('onPublishAfterFailureEventsFinished');
+        }
+
         public override void onCommitWorkFinished(Boolean wasSuccessful)
         {
             addEvent('onCommitWorkFinished - ' + wasSuccessful);
         }
+    }
+
+    /**
+     * Mock implementation of fflib_SObjectUnitOfWork.SendEmailWork
+     **/
+    private class Mock_SendEmailWork implements fflib_SObjectUnitOfWork.IEmailWork
+    {
+        public Mock_SendEmailWork()
+        {
+        }
+
+        public void registerEmail(Messaging.Email email)
+        {
+        }
+
+        public void doWork()
+        {
+            doWorkWasCalled = true;
+            // The code in the fflib_SObjectUnitOfWork class
+            // causes unit test failures in Orgs that do not
+            // have email enabled.
+        }
+
+        private boolean doWorkWasCalled = false;
     }
 
     public class DerivedUnitOfWorkException extends Exception {}

@@ -6,7 +6,7 @@
 * infringement of copyright and may result in criminal or other legal
 * proceedings.
 *
-* Copyright (c) 2013 FinancialForce.com, inc. All rights reserved.
+* Copyright (c) 2013-2014 FinancialForce.com, inc. All rights reserved.
 */
 
 public interface fflib_ISObjectSelector
