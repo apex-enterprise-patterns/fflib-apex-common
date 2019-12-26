@@ -6,7 +6,7 @@
 * infringement of copyright and may result in criminal or other legal
 * proceedings.
 *
-* Copyright (c) 2013 FinancialForce.com, inc. All rights reserved.
+* Copyright (c) 2013-2014 FinancialForce.com, inc. All rights reserved.
 */
 
 /**
@@ -54,6 +54,20 @@ public interface fflib_ISObjectUnitOfWork
      */
     void registerRelationship(Messaging.SingleEmailMessage email, SObject relatedTo);
     /**
+     * Registers a relationship between a record and a lookup value using an external ID field and a provided value. This
+     * information will be used during the commitWork phase to make the lookup reference requested when inserted to the database.
+     *
+     * @param record An existing or newly created record
+     * @param relatedToField A SObjectField reference to the lookup field that relates the two records together
+     * @param externalIdField A SObjectField reference to a field on the target SObject that is marked as isExternalId
+     * @param externalId A Object representing the targetted value of the externalIdField in said lookup
+     *
+     * Usage Example: uow.registerRelationship(recordSObject, record_sobject__c.relationship_field__c, lookup_sobject__c.external_id__c, 'abc123');
+     *
+     * Wraps putSObject, creating a new instance of the lookup sobject using the external id field and value.
+     */
+     void registerRelationship(SObject record, Schema.sObjectField relatedToField, Schema.sObjectField externalIdField, Object externalId);
+    /**
      * Register an existing record to be updated during the commitWork method
      *
      * @param record An existing record
@@ -85,6 +99,18 @@ public interface fflib_ISObjectUnitOfWork
      **/
     void registerDirty(List<SObject> records);
     /**
+     * Register a new or existing record to be inserted or updated during the commitWork method
+     *
+     * @param record An new or existing record
+     **/
+    void registerUpsert(SObject record);
+    /**
+     * Register a list of mix of new and existing records to be upserted during the commitWork method
+     *
+     * @param records A list of mix of existing and new records
+     **/
+    void registerUpsert(List<SObject> records);
+    /**
      * Register an existing record to be deleted during the commitWork method
      *
      * @param record An existing record
@@ -96,6 +122,45 @@ public interface fflib_ISObjectUnitOfWork
      * @param records A list of existing records
      **/
     void registerDeleted(List<SObject> records);
+    /**
+     * Register a newly created SObject (Platform Event) instance to be published when commitWork is called
+     *
+     * @param record A newly created SObject (Platform Event) instance to be inserted during commitWork
+     **/
+    void registerPublishBeforeTransaction(SObject record);
+    /**
+     * Register a list of newly created SObject (Platform Event) instance to be published when commitWork is called
+     *
+     * @param records A list of existing records
+     **/
+    void registerPublishBeforeTransaction(List<SObject> records);
+    /**
+     * Register a newly created SObject (Platform Event) instance to be published when commitWork has successfully
+     * completed
+     *
+     * @param record A newly created SObject (Platform Event) instance to be inserted during commitWork
+     **/
+    void registerPublishAfterSuccessTransaction(SObject record);
+    /**
+     * Register a list of newly created SObject (Platform Event) instance to be published when commitWork has successfully
+     * completed
+     *
+     * @param records A list of existing records
+     **/
+    void registerPublishAfterSuccessTransaction(List<SObject> records);
+    /**
+     * Register a newly created SObject (Platform Event) instance to be published when commitWork has caused an error
+     *
+     * @param record A newly created SObject (Platform Event) instance to be inserted during commitWork
+     **/
+    void registerPublishAfterFailureTransaction(SObject record);
+    /**
+     * Register a list of newly created SObject (Platform Event) instance to be published when commitWork has caused an
+     * error
+     *
+     * @param records A list of existing records
+     **/
+    void registerPublishAfterFailureTransaction(List<SObject> records);
     /**
      * Takes all the work that has been registered with the UnitOfWork and commits it to the database
      **/

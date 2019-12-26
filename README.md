@@ -1,29 +1,27 @@
-FinancialForce Apex Common
-==========================
+FFLib Apex Common
+=================
 
-[![Build Status](https://travis-ci.org/financialforcedev/fflib-apex-common.svg)](https://travis-ci.org/financialforcedev/fflib-apex-common) 
+[![Build Status](https://travis-ci.org/apex-enterprise-patterns/fflib-apex-common.svg)](https://travis-ci.org/apex-enterprise-patterns/fflib-apex-common) 
 
-**Dependencies:** Must deploy [ApexMocks](https://github.com/financialforcedev/fflib-apex-mocks) before deploying this library
+**Dependencies:** Must deploy [ApexMocks](https://github.com/apex-enterprise-patterns/fflib-apex-mocks) before deploying this library
 
-<a href="https://githubsfdeploy.herokuapp.com?owner=financialforcedev&repo=fflib-apex-common">
+<a href="https://githubsfdeploy.herokuapp.com?owner=apex-enterprise-patterns&repo=fflib-apex-common">
   <img alt="Deploy to Salesforce"
        src="https://raw.githubusercontent.com/afawcett/githubsfdeploy/master/src/main/webapp/resources/img/deploy.png">
 </a>
 
-See here for [MavensMate Templates](http://andyinthecloud.com/2014/05/23/mavensmate-templates-and-apex-enterprise-patterns/)
-
 Updates
 =======
 
-- **September 2014**, **IMPORTANT CHANGE**, changes applied to support Dreamforce 2014 advanced presentation, library now provides Application factories for major layers and support for ApexMocks. More details to follow! As a result [ApexMocks](https://github.com/financialforcedev/fflib-apex-mocks) must be deployed to the org before deploying this library. The sample application [here](https://github.com/financialforcedev/fflib-apex-common-samplecode) has also been updated to demonstrate the new features!
+- **September 2014**, **IMPORTANT CHANGE**, changes applied to support Dreamforce 2014 advanced presentation, library now provides Application factories for major layers and support for ApexMocks. More details to follow! As a result [ApexMocks](https://github.com/apex-enterprise-patterns/fflib-apex-mocks) must be deployed to the org before deploying this library. The sample application [here](https://github.com/apex-enterprise-patterns/fflib-apex-common-samplecode) has also been updated to demonstrate the new features!
 - **July 2014**, **IMPORTANT CHANGE**, prior **23rd July 2014**, both the ``fflib_SObjectDomain.onValidate()`` and ``fflib_SObjectDomain.onValidate(Map<Id, SObject> existingRecords)`` methods where called during an on **after update** trigger event. From this point on the ``onValidate()`` method will only be called during on **after insert**. If you still require the orignal behaviour add the line ``Configuration.enableOldOnUpdateValidateBehaviour();`` into your constructor.
 - **June 2014**, New classes providing utilities to support security and dynamic queries, in addition to improvements to existing Apex Enterprise Pattern base classes. Read more [here](http://andyinthecloud.com/2014/06/28/financialforce-apex-common-updates/).
-- **June 2014**, Experimental [branch](https://github.com/financialforcedev/fflib-apex-common/tree/fls-support-experiment) supporting automated FLS checking, see [README](https://github.com/financialforcedev/fflib-apex-common/tree/fls-support-experiment#expirimental-crud-and-fls-support) for more details.
+- **June 2014**, Experimental [branch](https://github.com/apex-enterprise-patterns/fflib-apex-common/tree/fls-support-experiment) supporting automated FLS checking, see [README](https://github.com/apex-enterprise-patterns/fflib-apex-common/tree/fls-support-experiment#expirimental-crud-and-fls-support) for more details.
 
 This Library
 ============
 
-Is derived from the **Dreamforce 2012** presentation on [Apex Enterprise Patterns](https://github.com/financialforcedev/df12-apex-enterprise-patterns) and progresses the patterns further with a more general ongoing home for them. It also adds some form of namespace qualification from the previous version. So that classes are grouped together more easily in the IDE's and packages. Below you can find comprehensive articles and videos on the use of these patterns. There is also a **working sample application** illustrating the patterns [here](https://github.com/financialforcedev/fflib-apex-common-samplecode).
+Is derived from the **Dreamforce 2012** presentation on [Apex Enterprise Patterns](https://github.com/financialforcedev/df12-apex-enterprise-patterns) and progresses the patterns further with a more general ongoing home for them. It also adds some form of namespace qualification from the previous version. So that classes are grouped together more easily in the IDE's and packages. Below you can find comprehensive articles and videos on the use of these patterns. There is also a **working sample application** illustrating the patterns [here](https://github.com/apex-enterprise-patterns/fflib-apex-common-samplecode).
 
 ![Alt text](/images/patternsturning.png "Optional title")
 
