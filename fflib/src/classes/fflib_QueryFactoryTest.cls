@@ -80,6 +80,35 @@ private class fflib_QueryFactoryTest {
 	}
 
 	@isTest
+	static void selectFunction_COUNT() {
+		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
+		qf.selectField( 'COUNT()' );
+		qf.selectField( 'COUNT( eMail ) as countEmail' );
+		qf.selectField( 'COUNT_DISTINCT( Name )' );
+		String query = qf.toSOQL();
+		System.assertEquals( 'SELECT COUNT( Email ) as countEmail, COUNT(), COUNT_DISTINCT( Name ) FROM Contact', query, 'Expected COUNT fields to be in query '+ query );
+	}
+
+	@isTest
+	static void selectFunction_ToLabel() {
+		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
+		qf.selectField( 'toLabel(Name)' );
+		String query = qf.toSOQL();
+		System.assertEquals( 'SELECT toLabel(Name) FROM Contact', query, 'Expected COUNT fields to be in query '+ query );
+	}
+
+	@isTest
+	static void selectFunction_Exception() {
+		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
+		try{
+			qf.selectField( 'AVG( MIN( CreatedDate ) )' );
+			System.assert( false, 'Expected exception to be thrown' );
+		} catch( Exception ex ){
+			System.assert( ex.getMessage().contains( 'does specify a ( function opening' ), 'Expected exception to be thrown' );
+		}
+	}
+
+	@isTest
 	static void equalityCheck(){
 		fflib_QueryFactory qf1 = new fflib_QueryFactory(Contact.SObjectType);
 		fflib_QueryFactory qf2 = new fflib_QueryFactory(Contact.SObjectType);

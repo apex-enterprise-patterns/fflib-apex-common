@@ -84,17 +84,51 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	private Schema.ChildRelationship relationship;
 	private Map<Schema.ChildRelationship, fflib_QueryFactory> subselectQueryMap;
 
-	private String getFieldPath(String fieldName){
-		if(!fieldName.contains('.')){ //single field
-			Schema.SObjectField token = fflib_SObjectDescribe.getDescribe(table).getField(fieldName.toLowerCase());
-			if(token == null)
-				throw new InvalidFieldException(fieldName,this.table);
-			if (enforceFLS) 
-				fflib_SecurityUtils.checkFieldIsReadable(this.table, token);	
-			return token.getDescribe().getName();
+	/**
+	 * Pattern variable to prevent the Pattern to be compiled for each field
+	 */
+	private Pattern soqlFunctionPattern { get{
+		if( soqlFunctionPattern == null ){
+			soqlFunctionPattern = Pattern.compile( '^([a-zA-Z_]*\\(\\s*)([a-zA-Z0-9_\\.]+)?(\\s*\\)[a-zA-Z ]*)$' );
+		}
+		return soqlFunctionPattern;
+	} set; }
+
+	private String getFieldPath( String fieldName ){
+		// Check whether field contains a SOQL function statement - if so, split from field
+		String beforeField = '';
+		String afterField = '';
+		if( fieldName.contains( '(' ) ){
+			// Splitting string into three groups: [ 'METHOD( ', 'Field__c', ') as c' ]
+			Matcher match = this.soqlFunctionPattern.matcher( fieldName );
+
+			if( match.matches() ){
+				beforeField = match.group( 1 );
+				fieldName = match.group( 2 );
+				afterField = match.group( 3 );
+
+				// When no fieldName is specified (e.g. COUNT() ), return directly, since nothing to check
+				if( String.isBlank( fieldName ) ){
+					return beforeField + afterField;
+				}
+			} else{
+				throw new InvalidFieldException( 'The field '+ fieldName + 'does specify a ( function opening, but doesn\'t match the pattern' );
+			}
 		}
 
-		//traversing FK relationship(s)
+		if( !fieldName.contains( '.' ) ){ //single field
+			Schema.SObjectField token = fflib_SObjectDescribe.getDescribe(table).getField(fieldName.toLowerCase());
+			if( token == null ){
+				throw new InvalidFieldException( fieldName, this.table );
+			}
+			if( enforceFLS ){
+				fflib_SecurityUtils.checkFieldIsReadable( this.table, token );
+			}
+			// Once verified field exists and user has access, include function parts back in
+			return beforeField + token.getDescribe().getName() + afterField;
+		}
+
+		// Traversing FK relationship(s)
 		List<String> fieldPath = new List<String>();
 		Schema.sObjectType lastSObjectType = table;
 		Iterator<String> i = fieldName.split('\\.').iterator();
@@ -113,14 +147,15 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			}else if(token != null && !i.hasNext()){
 				fieldPath.add(tokenDescribe.getName());
 			}else{
-				if(token == null)
-					throw new InvalidFieldException(field,lastSObjectType);
-				else
-					throw new NonReferenceFieldException(lastSObjectType+'.'+field+' is not a lookup or master-detail field but is used in a cross-object query field.');
+				if(token == null){
+					throw new InvalidFieldException( field, lastSObjectType );
+				} else{
+					throw new NonReferenceFieldException( lastSObjectType + '.' + field + ' is not a lookup or master-detail field but is used in a cross-object query field.' );
+				}
 			}
 		}
 
-		return String.join(fieldPath,'.');
+		return beforeField + String.join( fieldPath, '.' ) + afterField;
 	}
 
 	@TestVisible
