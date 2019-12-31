@@ -36,6 +36,77 @@ private with sharing class fflib_SObjectUnitOfWorkTest
             OpportunityLineItem.SObjectType };
 
     @isTest
+    private static void testDoNotSupportOutOfOrderRelationships() {
+        // Insert contacts before accounts
+        List<Schema.SObjectType> dependencyOrder =
+                new Schema.SObjectType[] {
+                        Contact.SObjectType,
+                        Account.SObjectType
+                };
+
+        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(dependencyOrder);
+        List<Contact> contacts = new List<Contact>();
+        for(Integer i=0; i<10; i++)
+        {
+            Account acc = new Account(Name = 'Account ' + i);
+            uow.registerNew(new List<SObject>{acc});
+            Contact cont = new Contact(LastName='Contact ' + i);
+            contacts.add(cont);
+            uow.registerNew(cont, Contact.AccountId, acc);
+        }
+
+        uow.commitWork();
+
+        // Assert that the lookups were not set (default behaviour)
+        contacts = [
+                SELECT AccountId
+                FROM Contact
+                WHERE Id IN :contacts
+        ];
+        for (Contact cont : contacts) {
+            System.assertEquals(null, cont.AccountId);
+        }
+    }
+    @isTest
+    private static void testSupportOutOfOrderRelationships() {
+        // Insert contacts before accounts
+        List<Schema.SObjectType> dependencyOrder =
+                new Schema.SObjectType[] {
+                        Contact.SObjectType,
+                        Account.SObjectType
+                };
+
+        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(dependencyOrder,
+                fflib_SObjectUnitOfWork.UnresolvedRelationshipBehavior.AttemptResolveOutOfOrder);
+        List<Account> accounts = new List<Account>();
+        List<Contact> contacts = new List<Contact>();
+        for(Integer i=0; i<10; i++)
+        {
+            Account acc = new Account(Name = 'Account ' + i);
+            uow.registerNew(new List<SObject>{acc});
+            accounts.add(acc);
+            Contact cont = new Contact(LastName='Contact ' + i);
+            contacts.add(cont);
+            uow.registerNew(cont, Contact.AccountId, acc);
+        }
+
+        uow.commitWork();
+
+        // Assert that the lookups were set
+        Map<Id, Contact> contactMap = new Map<Id, Contact> ([
+                SELECT AccountId
+                FROM Contact
+                WHERE Id IN :contacts
+        ]);
+
+        for (Integer i = 0; i < 10; i++) {
+            Contact cont = contacts[i];
+            Account acc = accounts[i];
+            System.assertEquals(acc.Id, contactMap.get(cont.Id).AccountId);
+        }
+    }
+
+    @isTest
     private static void testUnitOfWorkEmail()
     {
         string testRecordName = 'UoW Test Name 1';
