@@ -445,6 +445,7 @@ private class fflib_ApplicationTest
 		public boolean isUpdateCalled = false;
 		public boolean isDeleteCalled = false;
 		public boolean isPublishCalled = false;
+		public Boolean isEmptyRecycleBinCalled = false;
 
 		public void dmlInsert(List<SObject> objList){
 			this.isInsertCalled = true;
@@ -458,6 +459,10 @@ private class fflib_ApplicationTest
 		public void eventPublish(List<SObject> objList)
 		{
 			this.isPublishCalled = true;
+		}
+		public void emptyRecycleBin(List<SObject> objList)
+		{
+			this.isEmptyRecycleBinCalled = true;
 		}
 	}
 

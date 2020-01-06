@@ -111,10 +111,15 @@ public virtual class fflib_SObjectUnitOfWork
         {
             EventBus.publish(objList);
         }
-	    public void emptyRecycleBin(List<SObject> objList)
-	    {
+		public void emptyRecycleBin(List<SObject> objList)
+		{
+			if (objList.isEmpty())
+			{
+				return;
+			}
+
 			Database.emptyRecycleBin(objList);
-	    }
+		}
     }
     /**
      * Constructs a new UnitOfWork to support work against the given object list
