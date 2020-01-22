@@ -127,7 +127,7 @@ private with sharing class fflib_SObjectDomainTest
 				fflib_SObjectDomain.triggerHandler(fflib_SObjectDomain.TestSObjectDomainConstructor.class);
 				System.assert(false, 'Expected access denied exception');						
 			} catch (Exception e) {
-				System.assertEquals('Permission to udpate an Opportunity denied.', e.getMessage());
+				System.assertEquals('Permission to update an Opportunity denied.', e.getMessage());
 			}		
 			
 			// Test Delete object security
