@@ -61,6 +61,7 @@ public virtual class fflib_SObjectUnitOfWork
     protected Map<String, Map<Id, SObject>> m_dirtyMapByType = new Map<String, Map<Id, SObject>>();
 
     protected Map<String, Map<Id, SObject>> m_deletedMapByType = new Map<String, Map<Id, SObject>>();
+    protected Map<String, Map<Id, SObject>> m_emptyRecycleBinMapByType = new Map<String, Map<Id, SObject>>();
 
     protected Map<String, Relationships> m_relationships = new Map<String, Relationships>();
 
@@ -89,6 +90,7 @@ public virtual class fflib_SObjectUnitOfWork
         void dmlUpdate(List<SObject> objList);
         void dmlDelete(List<SObject> objList);
         void eventPublish(List<SObject> objList);
+	    void emptyRecycleBin(List<SObject> objList);
     }
 
     public class SimpleDML implements IDML
@@ -109,6 +111,15 @@ public virtual class fflib_SObjectUnitOfWork
         {
             EventBus.publish(objList);
         }
+		public void emptyRecycleBin(List<SObject> objList)
+		{
+			if (objList.isEmpty())
+			{
+				return;
+			}
+
+			Database.emptyRecycleBin(objList);
+		}
     }
     /**
      * Constructs a new UnitOfWork to support work against the given object list
@@ -171,6 +182,7 @@ public virtual class fflib_SObjectUnitOfWork
         m_newListByType.put(sObjectName, new List<SObject>());
         m_dirtyMapByType.put(sObjectName, new Map<Id, SObject>());
         m_deletedMapByType.put(sObjectName, new Map<Id, SObject>());
+	    m_emptyRecycleBinMapByType.put(sObjectName, new Map<Id, SObject>());
         m_relationships.put(sObjectName, new Relationships());
 
         m_publishBeforeListByType.put(sObjectName, new List<SObject>());
@@ -196,6 +208,32 @@ public virtual class fflib_SObjectUnitOfWork
     {
         m_emailWork.registerEmail(email);
     }
+
+	/**
+	 * Register an deleted record to be removed from the recycle bin during the commitWork method
+	 *
+	 * @param record An deleted record
+	 **/
+	public void registerEmptyRecycleBin(SObject record)
+	{
+		String sObjectType = record.getSObjectType().getDescribe().getName();
+		assertForSupportedSObjectType(m_emptyRecycleBinMapByType, sObjectType);
+
+		m_emptyRecycleBinMapByType.get(sObjectType).put(record.Id, record);
+	}
+
+	/**
+	 * Register deleted records to be removed from the recycle bin during the commitWork method
+	 *
+	 * @param records Deleted records
+	 **/
+	public void registerEmptyRecycleBin(List<SObject> records)
+	{
+		for (SObject record : records)
+		{
+			registerEmptyRecycleBin(record);
+		}
+	}
 
     /**
      * Register a newly created SObject instance to be inserted when commitWork is called
@@ -428,6 +466,28 @@ public virtual class fflib_SObjectUnitOfWork
         }
     }
 
+	/**
+     * Register a list of existing records to be deleted and removed from the recycle bin during the commitWork method
+     *
+     * @param records A list of existing records
+     **/
+    public void registerPermanentlyDeleted(List<SObject> records)
+    {
+	    this.registerEmptyRecycleBin(records);
+	    this.registerDeleted(records);
+    }
+
+	/**
+     * Register a list of existing records to be deleted and removed from the recycle bin during the commitWork method
+     *
+     * @param records A list of existing records
+     **/
+    public void registerPermanentlyDeleted(SObject record)
+    {
+	    this.registerEmptyRecycleBin(record);
+        this.registerDeleted(record);
+    }
+
     /**
      * Register a newly created SObject (Platform Event) instance to be published when commitWork is called
      *
@@ -545,6 +605,7 @@ public virtual class fflib_SObjectUnitOfWork
 		insertDmlByType();
 		updateDmlByType();
 		deleteDmlByType();
+		emptyRecycleBinByType();
 		resolveEmailRelationships();
 		onDMLFinished();
 
@@ -612,6 +673,15 @@ public virtual class fflib_SObjectUnitOfWork
 		while (objectIdx >= 0)
 		{
 			m_dml.dmlDelete(m_deletedMapByType.get(m_sObjectTypes[objectIdx--].getDescribe().getName()).values());
+		}
+	}
+
+	private void emptyRecycleBinByType()
+	{
+		Integer objectIdx = m_sObjectTypes.size() - 1;
+		while (objectIdx >= 0)
+		{
+			m_dml.emptyRecycleBin(m_emptyRecycleBinMapByType.get(m_sObjectTypes[objectIdx--].getDescribe().getName()).values());
 		}
 	}
 

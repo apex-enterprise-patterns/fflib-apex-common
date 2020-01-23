@@ -99,6 +99,18 @@ public interface fflib_ISObjectUnitOfWork
      **/
     void registerDirty(List<SObject> records);
     /**
+	 * Register an deleted record to be removed from the recycle bin during the commitWork method
+	 *
+	 * @param record An deleted record
+	 **/
+    void registerEmptyRecycleBin(SObject record);
+    /**
+	 * Register deleted records to be removed from the recycle bin during the commitWork method
+	 *
+	 * @param records Deleted records
+	 **/
+    void registerEmptyRecycleBin(List<SObject> records);
+    /**
      * Register a new or existing record to be inserted or updated during the commitWork method
      *
      * @param record An new or existing record
@@ -122,6 +134,18 @@ public interface fflib_ISObjectUnitOfWork
      * @param records A list of existing records
      **/
     void registerDeleted(List<SObject> records);
+    /**
+     * Register a list of existing records to be deleted and removed from the recycle bin during the commitWork method
+     *
+     * @param records A list of existing records
+     **/
+    void registerPermanentlyDeleted(List<SObject> records);
+    /**
+     * Register a list of existing records to be deleted and removed from the recycle bin during the commitWork method
+     *
+     * @param records A list of existing records
+     **/
+    void registerPermanentlyDeleted(SObject record);
     /**
      * Register a newly created SObject (Platform Event) instance to be published when commitWork is called
      *
