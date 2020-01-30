@@ -296,7 +296,7 @@ public abstract with sharing class fflib_SObjectSelector
      *   - Ordered by the fields returned via getOrderBy
      * @returns A list of SObject's
      **/
-    public List<SObject> selectSObjectsById(Set<Id> idSet)
+    public virtual List<SObject> selectSObjectsById(Set<Id> idSet)
     {
         return Database.query(buildQuerySObjectById());
     }
@@ -309,7 +309,7 @@ public abstract with sharing class fflib_SObjectSelector
      *   - Ordered by the fields returned via getOrderBy
      * @returns A QueryLocator (typically for use in a Batch Apex job)
      **/
-    public Database.QueryLocator queryLocatorById(Set<Id> idSet)
+    public virtual Database.QueryLocator queryLocatorById(Set<Id> idSet)
     {
         return Database.getQueryLocator(buildQuerySObjectById());
     }
