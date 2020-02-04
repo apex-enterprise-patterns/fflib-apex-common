@@ -194,7 +194,7 @@ public virtual class fflib_SObjectUnitOfWork
     }
 
     /**
-     * Register a generic peace of work to be invoked during the commitWork phase
+     * Register a generic piece of work to be invoked during the commitWork phase
      **/
     public void registerWork(IDoWork work)
     {
