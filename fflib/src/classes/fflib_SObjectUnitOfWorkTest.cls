@@ -423,6 +423,31 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     }
 
     /**
+     * Try registering a single field as dirty, while entry record has more fields populated.
+     *
+     *  Testing:
+     *
+     *      - only that specific field is updated
+     */
+    @IsTest
+    private static void testRegisterDirty_onlyDirtyField() {
+        String originalName = 'test name';
+        Opportunity opp = new Opportunity(Name = originalName, StageName = 'Open', Amount = 200, CloseDate = System.today());
+        insert opp;
+
+        opp.Name = 'Changed name';
+        opp.Amount = 300;
+
+        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
+        uow.registerDirty( opp, new List<SObjectField> { Opportunity.Amount } );
+        uow.commitWork();
+
+        Opportunity afterUpdate = [SELECT Name, Amount FROM Opportunity WHERE Id = :opp.Id];
+        System.assertEquals( opp.Amount, afterUpdate.Amount, 'Expected Amount to be changed after registerDirty' );
+        System.assertEquals( originalName, afterUpdate.Name, 'Expected Name to be unchanged as field was not registered' );
+    }
+
+    /**
      * Assert that actual events exactly match expected events (size, order and name)
      * and types match expected types
      */

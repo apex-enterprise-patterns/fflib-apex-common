@@ -352,22 +352,38 @@ public virtual class fflib_SObjectUnitOfWork
 		assertForNonEventSObjectType(sObjectType);
 		assertForSupportedSObjectType(m_dirtyMapByType, sObjectType);
 
-        // If record isn't registered as dirty, or no dirty fields to drive a merge
-        if (!m_dirtyMapByType.get(sObjectType).containsKey(record.Id) || dirtyFields.isEmpty())
+        // If record isn't registered as dirty, register it
+        if (!m_dirtyMapByType.get(sObjectType).containsKey(record.Id))
         {
-            // Register the record as dirty
-            m_dirtyMapByType.get(sObjectType).put(record.Id, record);
-        }
-        else
-        {
-            // Update the registered record's fields
-            SObject registeredRecord = m_dirtyMapByType.get(sObjectType).get(record.Id);
-
-            for (SObjectField dirtyField : dirtyFields) {
-                registeredRecord.put(dirtyField, record.get(dirtyField));
+            if (dirtyFields.isEmpty() )
+            {
+                // When no dirty fields are specified, register full record dirty and end method
+                m_dirtyMapByType.get(sObjectType).put(record.Id, record);
+                return;
             }
+            else
+            {
+                // When dirty fields are specified, register clean SObject to make sure only dirty fields get populated
+                m_dirtyMapByType.get(sObjectType).put(record.Id, record.getSObjectType().newSObject( record.Id ) );
+            }
+            
+        }
 
-            m_dirtyMapByType.get(sObjectType).put(record.Id, registeredRecord);
+        // Fetch existing or newly instantiated record to update the specified fields
+        SObject registeredRecord = m_dirtyMapByType.get(sObjectType).get(record.Id);
+
+        // When provided instance is different than registered one and NO fields are provided, system cannot determine
+        // what changes to apply (assuming updating nothing is incorrect)
+        // Scenario: first registerDirty(record, fields), followed by registerDirty( record ) 
+        if (registeredRecord !== record && dirtyFields.isEmpty())
+        {
+            throw new UnitOfWorkException('Cannot determine what fields to update on record ' + record);
+        }
+
+		// When records have same memory reference, or only a subset of fields are registered, update the registered record
+        for (SObjectField dirtyField : dirtyFields)
+        {
+            registeredRecord.put(dirtyField, record.get(dirtyField));
         }
     }
 
