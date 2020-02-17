@@ -330,15 +330,6 @@ public abstract with sharing class fflib_SObjectSelector
      * Public acccess for the getSObjectType during Mock registration 
      *   (adding public to the existing method broken base class API backwards compatability)
      **/
-    public SObjectType getSObjectType2()
-    {
-        return getSObjectType();
-    }
-
-    /**
-     * Public acccess for the getSObjectType during Mock registration 
-     *   (adding public to the existing method broken base class API backwards compatability)
-     **/
     public SObjectType sObjectType()
     {
         return getSObjectType();
@@ -368,7 +359,7 @@ public abstract with sharing class fflib_SObjectSelector
     {
     	// Construct QueryFactory around the given SObject
         return configureQueryFactory(
-        	new fflib_QueryFactory(getSObjectType2()), 
+        	new fflib_QueryFactory(getSObjectType()), 
         		assertCRUD, enforceFLS, includeSelectorFields);
     }
 
@@ -401,7 +392,7 @@ public abstract with sharing class fflib_SObjectSelector
     public fflib_QueryFactory addQueryFactorySubselect(fflib_QueryFactory parentQueryFactory, Boolean includeSelectorFields)
     {    	
     	fflib_QueryFactory subSelectQueryFactory = 
-    		parentQueryFactory.subselectQuery(getSObjectType2());
+    		parentQueryFactory.subselectQuery(getSObjectType());
     	return configureQueryFactory(
     		subSelectQueryFactory, 
     		m_enforceCRUD, 
