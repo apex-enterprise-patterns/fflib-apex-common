@@ -167,7 +167,7 @@ private with sharing class fflib_SObjectSelectorTest
 		System.assertEquals(false, selector.isIncludeFieldSetFields());
 		
 		System.assertEquals('Account', selector.getSObjectName());
-		System.assertEquals(Account.SObjectType, selector.getSObjectType2());
+		System.assertEquals(Account.SObjectType, selector.getSObjectType());
 	}
 	
 	private static void assertFieldListString(String fieldListString, String prefix) {
