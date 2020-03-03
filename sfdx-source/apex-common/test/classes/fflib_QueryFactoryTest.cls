@@ -284,81 +284,37 @@ private class fflib_QueryFactoryTest {
 
 	@isTest
 	static void addChildQueriesWithChildRelationship_success(){
-		Account acct = new Account();
-		acct.Name = 'testchildqueriesacct';
-		insert acct;
-		Contact cont = new Contact();
-		cont.FirstName = 'test';
-		cont.LastName = 'test';
-		cont.AccountId = acct.Id;
-		insert cont;
-        Task tsk = new Task();
-        tsk.WhoId = cont.Id;
-        tsk.Subject = 'test';
-        tsk.ActivityDate = System.today();
-        insert tsk;
-
 		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
-		qf.selectField('name').selectField('Id').setCondition( 'name like \'%test%\'' ).addOrdering('CreatedDate',fflib_QueryFactory.SortOrder.DESCENDING, true);
+		qf.selectField('name').selectField('Id').setCondition('name=\'test\'').addOrdering('CreatedDate', fflib_QueryFactory.SortOrder.DESCENDING, true);
 		Schema.DescribeSObjectResult descResult = Contact.SObjectType.getDescribe();
 		//explicitly assert object accessibility when creating the subselect
 		qf.subselectQuery('Tasks', true).selectField('Id').selectField('Subject').setCondition(' IsDeleted = false ');
 		List<fflib_QueryFactory> queries = qf.getSubselectQueries();
 		System.assert(queries != null);
-		List<Contact> contacts = Database.query(qf.toSOQL());
-		System.assert(contacts != null && contacts.size() == 1);
-		System.assert(contacts[0].Tasks.size() == 1);
-		System.assert(contacts[0].Tasks[0].Subject == 'test');
+		System.assert(
+				Pattern.matches('SELECT.*(SELECT.*FROM Tasks WHERE.*).*FROM Contact WHERE.*', qf.toSOQL()),
+				'Incorrect returned query'
+		);
 	}
 
 	@isTest
 	static void addChildQueriesWithChildRelationshipNoAccessibleCheck_success(){
-		Account acct = new Account();
-		acct.Name = 'testchildqueriesacct';
-		insert acct;
-		Contact cont = new Contact();
-		cont.FirstName = 'test';
-		cont.LastName = 'test';
-		cont.AccountId = acct.Id;
-		insert cont;
-        Task tsk = new Task();
-        tsk.WhoId = cont.Id;
-        tsk.Subject = 'test';
-        tsk.ActivityDate = System.today();
-        insert tsk;
-
 		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
-		qf.selectField('name').selectField('Id').setCondition( 'name like \'%test%\'' ).addOrdering('CreatedDate',fflib_QueryFactory.SortOrder.DESCENDING, true);
+		qf.selectField('name').selectField('Id').setCondition('name=\'test\'').addOrdering('CreatedDate', fflib_QueryFactory.SortOrder.DESCENDING, true);
 		//explicitly assert object accessibility when creating the subselect
 		qf.subselectQuery('Tasks').selectField('Id').selectField('Subject').setCondition(' IsDeleted = false ');
 		List<fflib_QueryFactory> queries = qf.getSubselectQueries();
 		System.assert(queries != null);
-		String soql = qf.toSOQL();
-		System.debug(soql);
-		List<Contact> contacts = Database.query(soql);
-		System.assert(contacts != null && contacts.size() == 1);
-		System.assert(contacts[0].Tasks.size() == 1);
-		System.assert(contacts[0].Tasks[0].Subject == 'test');
+		System.assert(
+				Pattern.matches('SELECT.*(SELECT.*FROM Tasks WHERE.*).*FROM Contact WHERE.*', qf.toSOQL()),
+				'Incorrect returned query'
+		);
 	}
 
 	@isTest
 	static void addChildQueriesWithChildRelationshipObjCheckIsAccessible_success(){
-		Account acct = new Account();
-		acct.Name = 'testchildqueriesacct';
-		insert acct;
-		Contact cont = new Contact();
-		cont.FirstName = 'test';
-		cont.LastName = 'test';
-		cont.AccountId = acct.Id;
-		insert cont;
-        Task tsk = new Task();
-        tsk.WhoId = cont.Id;
-        tsk.Subject = 'test';
-        tsk.ActivityDate = System.today();
-        insert tsk;
-
 		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
-		qf.selectField('name').selectField('Id').setCondition( 'name like \'%test%\'' ).addOrdering('CreatedDate',fflib_QueryFactory.SortOrder.DESCENDING, true);
+		qf.selectField('name').selectField('Id').setCondition('name=\'test\'').addOrdering('CreatedDate', fflib_QueryFactory.SortOrder.DESCENDING, true);
 		Schema.DescribeSObjectResult descResult = Contact.SObjectType.getDescribe();
 		Schema.ChildRelationship relationship;
 		for (Schema.ChildRelationship childRow : descResult.getChildRelationships()){
@@ -372,30 +328,16 @@ private class fflib_QueryFactoryTest {
 		qf.subselectQuery(relationship, true).selectField('Id').selectField('Subject').setCondition(' IsDeleted = false ');
 		List<fflib_QueryFactory> queries = qf.getSubselectQueries();
 		System.assert(queries != null);
-		List<Contact> contacts = Database.query(qf.toSOQL());
-		System.assert(contacts != null && contacts.size() == 1);
-		System.assert(contacts[0].Tasks.size() == 1);
-		System.assert(contacts[0].Tasks[0].Subject == 'test');
+		System.assert(
+				Pattern.matches('SELECT.*(SELECT.*FROM Tasks WHERE.*).*FROM Contact WHERE.*', qf.toSOQL()),
+				'Incorrect returned query'
+		);
 	}
 
 	@isTest
 	static void addChildQueriesWithChildRelationshipObj_success(){
-		Account acct = new Account();
-		acct.Name = 'testchildqueriesacct';
-		insert acct;
-		Contact cont = new Contact();
-		cont.FirstName = 'test';
-		cont.LastName = 'test';
-		cont.AccountId = acct.Id;
-		insert cont;
-        Task tsk = new Task();
-        tsk.WhoId = cont.Id;
-        tsk.Subject = 'test';
-        tsk.ActivityDate = System.today();
-        insert tsk;
-
 		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
-		qf.selectField('name').selectField('Id').setCondition( 'name like \'%test%\'' ).addOrdering('CreatedDate',fflib_QueryFactory.SortOrder.DESCENDING, true);
+		qf.selectField('name').selectField('Id').setCondition( 'name=\'%test%\'' ).addOrdering('CreatedDate',fflib_QueryFactory.SortOrder.DESCENDING, true);
 		Schema.DescribeSObjectResult descResult = Contact.SObjectType.getDescribe();
 		Schema.ChildRelationship relationship;
 		for (Schema.ChildRelationship childRow : descResult.getChildRelationships()){
@@ -409,30 +351,16 @@ private class fflib_QueryFactoryTest {
 		qf.subselectQuery(relationship).selectField('Id').selectField('Subject').setCondition(' IsDeleted = false ');
 		List<fflib_QueryFactory> queries = qf.getSubselectQueries();
 		System.assert(queries != null);
-		List<Contact> contacts = Database.query(qf.toSOQL());
-		System.assert(contacts != null && contacts.size() == 1);
-		System.assert(contacts[0].Tasks.size() == 1);
-		System.assert(contacts[0].Tasks[0].Subject == 'test');
+		System.assert(
+				Pattern.matches('SELECT.*(SELECT.*FROM Tasks WHERE.*).*FROM Contact WHERE.*', qf.toSOQL()),
+				'Incorrect returned query'
+		);
 	}
 
 	@isTest
 	static void addChildQueriesWithChildRelationshipNoAccessibleCheck_fail(){
-		Account acct = new Account();
-		acct.Name = 'testchildqueriesacct';
-		insert acct;
-		Contact cont = new Contact();
-		cont.FirstName = 'test';
-		cont.LastName = 'test';
-		cont.AccountId = acct.Id;
-		insert cont;
-        Task tsk = new Task();
-        tsk.WhoId = cont.Id;
-        tsk.Subject = 'test';
-        tsk.ActivityDate = System.today();
-        insert tsk;
-
 		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
-		qf.selectField('name').selectField('Id').setCondition( 'name like \'%test%\'' ).addOrdering('CreatedDate',fflib_QueryFactory.SortOrder.DESCENDING, true);
+		qf.selectField('name').selectField('Id').setCondition( 'name=\'test\'' ).addOrdering('CreatedDate',fflib_QueryFactory.SortOrder.DESCENDING, true);
 		Schema.DescribeSObjectResult descResult = Contact.SObjectType.getDescribe();
 		//explicitly assert object accessibility when creating the subselect
 		//
@@ -447,20 +375,6 @@ private class fflib_QueryFactoryTest {
 
 	@isTest
 	static void addChildQueries_success(){
-		Account acct = new Account();
-		acct.Name = 'testchildqueriesacct';
-		insert acct;
-		Contact cont = new Contact();
-		cont.FirstName = 'test';
-		cont.LastName = 'test';
-		cont.AccountId = acct.Id;
-		insert cont;
-        Task tsk = new Task();
-        tsk.WhoId = cont.Id;
-        tsk.Subject = 'test';
-        tsk.ActivityDate = System.today();
-        insert tsk;
-
 		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
 		qf.selectField('name').selectField('Id').setCondition( 'name like \'%test%\'' ).addOrdering('CreatedDate',fflib_QueryFactory.SortOrder.DESCENDING, true);
 		Schema.DescribeSObjectResult descResult = Contact.SObjectType.getDescribe();
@@ -468,27 +382,14 @@ private class fflib_QueryFactoryTest {
 		qf.subselectQuery(Task.SObjectType, true).selectField('Id').selectField('Subject').setCondition(' IsDeleted = false ');
 		List<fflib_QueryFactory> queries = qf.getSubselectQueries();
 		System.assert(queries != null);
-		List<Contact> contacts = Database.query(qf.toSOQL());
-		System.assert(contacts != null && contacts.size() == 1);
-		System.assert(contacts[0].Tasks.size() == 1);
-		System.assert(contacts[0].Tasks[0].Subject == 'test');
+		System.assert(
+				Pattern.matches('SELECT.*(SELECT.*FROM Tasks WHERE.*).*FROM Contact WHERE.*', qf.toSOQL()),
+				'Incorrect returned query'
+		);
 	}
 
 	@isTest
 	static void addChildQuerySameRelationshipAgain_success(){
-		Account acct = new Account();
-		acct.Name = 'testchildqueriesacct';
-		insert acct;
-		Contact cont = new Contact();
-		cont.FirstName = 'test';
-		cont.LastName = 'test';
-		cont.AccountId = acct.Id;
-		insert cont;
-        Task tsk = new Task();
-        tsk.WhoId = cont.Id;
-        tsk.Subject = 'test';
-        tsk.ActivityDate = System.today();
-        insert tsk;
 		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
 		qf.selectField('name');
 		qf.selectField('Id');
@@ -514,14 +415,6 @@ private class fflib_QueryFactoryTest {
 
 	@isTest
 	static void addChildQueries_invalidChildRelationship(){
-		Account acct = new Account();
-		acct.Name = 'testchildqueriesacct';
-		insert acct;
-		Contact cont = new Contact();
-		cont.FirstName = 'test';
-		cont.LastName = 'test';
-		cont.AccountId = acct.Id;
-		insert cont;
 		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
 		qf.selectField('name');
 		qf.selectField('email');
@@ -541,14 +434,6 @@ private class fflib_QueryFactoryTest {
 
 	@isTest
 	static void addChildQueries_invalidChildRelationshipTooDeep(){
-		Account acct = new Account();
-		acct.Name = 'testchildqueriesacct';
-		insert acct;
-		Contact cont = new Contact();
-		cont.FirstName = 'test';
-		cont.LastName = 'test';
-		cont.AccountId = acct.Id;
-		insert cont;
 		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
 		qf.selectField('name');
 		qf.selectField('email');
@@ -572,7 +457,7 @@ private class fflib_QueryFactoryTest {
 	static void checkFieldObjectReadSort_success(){
 		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
 		qf.assertIsAccessible()
-		  .setEnforceFLS(true) 
+		  .setEnforceFLS(true)
 		  .selectField('createdby.name')
 		  .selectField(Contact.LastModifiedById)
 		  .selectFields(new List<SObjectField>{Contact.LastModifiedDate})
@@ -585,7 +470,7 @@ private class fflib_QueryFactoryTest {
 		  .addOrdering(new fflib_QueryFactory.Ordering('Contact','name',fflib_QueryFactory.SortOrder.ASCENDING) )
 		  .addOrdering(Contact.LastModifiedDate,fflib_QueryFactory.SortOrder.DESCENDING)
 		  .addOrdering(Contact.CreatedDate,fflib_QueryFactory.SortOrder.DESCENDING, true);
-		Set<String> fields = qf.getSelectedFields();  
+		Set<String> fields = qf.getSelectedFields();
 		fflib_QueryFactory.Ordering ordering = new fflib_QueryFactory.Ordering('Contact','name',fflib_QueryFactory.SortOrder.ASCENDING);
 		System.assertEquals('Name',ordering.getField());
 
