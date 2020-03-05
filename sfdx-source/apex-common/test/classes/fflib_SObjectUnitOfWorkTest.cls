@@ -504,7 +504,6 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         ); 
         uow.commitWork();
 
-        // todo - assert that DML update is called with the correct records
         // THEN only the first record should be registered with both changed values for Amount and StageName and the second should be the original
         System.assert(
                 !new fflib_MatcherDefinitions.SObjectsWith(
