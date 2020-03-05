@@ -93,25 +93,25 @@ public virtual class fflib_SObjectUnitOfWork
 	    void emptyRecycleBin(List<SObject> objList);
     }
 
-    public class SimpleDML implements IDML
+    public virtual class SimpleDML implements IDML
     {
-        public void dmlInsert(List<SObject> objList)
+        public virtual void dmlInsert(List<SObject> objList)
         {
             insert objList;
         }
-        public void dmlUpdate(List<SObject> objList)
+        public virtual void dmlUpdate(List<SObject> objList)
         {
             update objList;
         }
-        public void dmlDelete(List<SObject> objList)
+        public virtual void dmlDelete(List<SObject> objList)
         {
             delete objList;
         }
-        public void eventPublish(List<SObject> objList)
+        public virtual void eventPublish(List<SObject> objList)
         {
             EventBus.publish(objList);
         }
-		public void emptyRecycleBin(List<SObject> objList)
+		public virtual void emptyRecycleBin(List<SObject> objList)
 		{
 			if (objList.isEmpty())
 			{
