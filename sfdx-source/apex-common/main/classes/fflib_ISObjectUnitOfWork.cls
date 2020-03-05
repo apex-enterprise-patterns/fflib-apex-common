@@ -89,6 +89,16 @@ public interface fflib_ISObjectUnitOfWork
      **/
     void registerDirty(SObject record);
     /**
+     * Register specific fields on records to be updated when work is committed
+     *
+     * If the records are previously registered as dirty, the dirty fields on the records in this call will overwrite
+     * the values of the previously registered dirty records
+     *
+     * @param records A list of existing records
+     * @param dirtyFields The fields to update if record is already registered
+     **/
+    void registerDirty(List<SObject> records, List<SObjectField> dirtyFields);
+    /**
      * Register specific fields on record to be updated when work is commited
      *
      * If the record has previously been registered as dirty, the dirty fields on the record in this call will overwrite
