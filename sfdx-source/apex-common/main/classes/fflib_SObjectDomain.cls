@@ -250,8 +250,8 @@ public virtual with sharing class fflib_SObjectDomain
      **/
     public virtual void handleAfterInsert()
     {
-    	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isCreateable()) 
 		System.debug(LoggingLevel.WARN, 'The use of fflib_SObjectDomain as trigger handler is deprecated and will be removed in a future release. Use fflib_SObjectTriggerHandler instead.');
+    	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isCreateable())
     	   throw new DomainException('Permission to create an ' + SObjectDescribe.getName() + ' denied.');
     	   
     	onValidate();
@@ -266,8 +266,8 @@ public virtual with sharing class fflib_SObjectDomain
      **/
     public virtual void handleAfterUpdate(Map<Id,SObject> existingRecords) 
     {    	
-    	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isUpdateable()) 			    		
 		System.debug(LoggingLevel.WARN, 'The use of fflib_SObjectDomain as trigger handler is deprecated and will be removed in a future release. Use fflib_SObjectTriggerHandler instead.');
+    	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isUpdateable())
     	   throw new DomainException('Permission to update an ' + SObjectDescribe.getName() + ' denied.');
     	
     	if(Configuration.OldOnUpdateValidateBehaviour)
