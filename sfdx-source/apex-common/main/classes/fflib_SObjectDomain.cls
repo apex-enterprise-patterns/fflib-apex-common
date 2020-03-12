@@ -87,8 +87,8 @@ public virtual with sharing class fflib_SObjectDomain
 		
 	/**
 	 * Useful during unit testign to assert at a more granular and robust level for errors raised during the various trigger events
-	 **/	
 	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
+	 **/
 	public static ErrorFactory Errors  {get; private set;}
 	
 	/**
