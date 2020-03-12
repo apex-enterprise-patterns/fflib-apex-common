@@ -49,6 +49,7 @@ public virtual with sharing class fflib_SObjectDomain
 
 	/**
      * Provides access to Trigger.oldMap and allowing it to be mocked in unit-tests
+     * @Deprecated - Use fflib_SObjectTriggerHandler instead
      **/
 	@TestVisible
 	protected Map<Id, SObject> ExistingRecords
@@ -80,29 +81,35 @@ public virtual with sharing class fflib_SObjectDomain
 
 	/**
 	 * Exposes the configuration for this domain class instance
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/ 
 	public Configuration Configuration {get; private set;}    
 		
 	/**
 	 * Useful during unit testign to assert at a more granular and robust level for errors raised during the various trigger events
 	 **/	
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	public static ErrorFactory Errors  {get; private set;}
 	
 	/**
 	 * Useful during unit testing to access mock support for database inserts and updates (testing without DML)
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/
 	public static TestFactory Test  {get; private set;}
 	
 	/**
 	 * Retains instances of domain classes implementing trigger stateful
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/
 	private static Map<Type, List<fflib_SObjectDomain>> TriggerStateByClass; 
 	
 	/**
 	 * Retains the trigger tracking configuration used for each domain
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/
 	private static Map<Type, TriggerEvent> TriggerEventByClass;
 
+	// @Deprecated - Use fflib_SObjectTriggerHandler instead
 	static
 	{
 		Errors = new ErrorFactory();
@@ -146,76 +153,92 @@ public virtual with sharing class fflib_SObjectDomain
 	
 	/**
 	 * Override this to apply defaults to the records, this is called by the handleBeforeInsert method
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/
 	public virtual void onApplyDefaults() { }
 	
 	/**
 	 * Override this to apply general validation to be performed during insert or update, called by the handleAfterInsert and handleAfterUpdate methods
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/
 	public virtual void onValidate() {	}
 	
 	/**
 	 * Override this to apply validation to be performed during insert, called by the handleAfterUpdate method
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/
 	public virtual void onValidate(Map<Id,SObject> existingRecords)	{ }
 
 	/**
 	 * Override this to perform processing during the before insert phase, this is called by the handleBeforeInsert method
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/
     public virtual void onBeforeInsert() { }
     
 	/**
 	 * Override this to perform processing during the before update phase, this is called by the handleBeforeUpdate method
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/
     public virtual void onBeforeUpdate(Map<Id,SObject> existingRecords) { }
     
 	/**
 	 * Override this to perform processing during the before delete phase, this is called by the handleBeforeDelete method
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/
     public virtual void onBeforeDelete() { }
     
 	/**
 	 * Override this to perform processing during the after insert phase, this is called by the handleAfterInsert method
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/
     public virtual void onAfterInsert() { }
     
 	/**
 	 * Override this to perform processing during the after update phase, this is called by the handleAfterUpdate method
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/    
     public virtual void onAfterUpdate(Map<Id,SObject> existingRecords) { }
     
 	/**
 	 * Override this to perform processing during the after delete phase, this is called by the handleAfterDelete method
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/    
     public virtual void onAfterDelete() { }	
 	
 	/**
 	 * Override this to perform processing during the after undelete phase, this is called by the handleAfterDelete method
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/    
     public virtual void onAfterUndelete() { }	
 	
 	/**
 	 * Base handler for the Apex Trigger event Before Insert, calls the onApplyDefaults method, followed by onBeforeInsert
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/
     public virtual void handleBeforeInsert() 
     { 
+		System.debug(LoggingLevel.WARN, 'The use of fflib_SObjectDomain as trigger handler is deprecated and will be removed in a future release. Use fflib_SObjectTriggerHandler instead.');
     	onApplyDefaults(); 
     	onBeforeInsert();
     }
     
     /**
      * Base handler for the Apex Trigger event Before Update, calls the onBeforeUpdate method
+     * @Deprecated - Use fflib_SObjectTriggerHandler instead
      **/
     public virtual void handleBeforeUpdate(Map<Id,SObject> existingRecords) 
     {
+		System.debug(LoggingLevel.WARN, 'The use of fflib_SObjectDomain as trigger handler is deprecated and will be removed in a future release. Use fflib_SObjectTriggerHandler instead.');
     	onBeforeUpdate(existingRecords);
     }
     
     /**
      * Base handler for the Apex Trigger event Before Delete, calls the onBeforeDelete method
+     * @Deprecated - Use fflib_SObjectTriggerHandler instead
      **/
     public virtual void handleBeforeDelete() 
     {
+		System.debug(LoggingLevel.WARN, 'The use of fflib_SObjectDomain as trigger handler is deprecated and will be removed in a future release. Use fflib_SObjectTriggerHandler instead.');
     	onBeforeDelete();
     }
     
@@ -223,10 +246,12 @@ public virtual with sharing class fflib_SObjectDomain
      * Base handler for the Apex Trigger event After Insert, checks object security and calls the onValidate and onAfterInsert methods
      *
      * @throws DomainException if the current user context is not able to create records
+     * @Deprecated - Use fflib_SObjectTriggerHandler instead
      **/
     public virtual void handleAfterInsert()
     {
     	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isCreateable()) 
+		System.debug(LoggingLevel.WARN, 'The use of fflib_SObjectDomain as trigger handler is deprecated and will be removed in a future release. Use fflib_SObjectTriggerHandler instead.');
     	   throw new DomainException('Permission to create an ' + SObjectDescribe.getName() + ' denied.');
     	   
     	onValidate();
@@ -237,10 +262,12 @@ public virtual with sharing class fflib_SObjectDomain
      * Base handler for the Apex Trigger event After Update, checks object security and calls the onValidate, onValidate(Map<Id,SObject>) and onAfterUpdate methods
      *
      * @throws DomainException if the current user context is not able to update records
+     * @Deprecated - Use fflib_SObjectTriggerHandler instead
      **/
     public virtual void handleAfterUpdate(Map<Id,SObject> existingRecords) 
     {    	
     	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isUpdateable()) 			    		
+		System.debug(LoggingLevel.WARN, 'The use of fflib_SObjectDomain as trigger handler is deprecated and will be removed in a future release. Use fflib_SObjectTriggerHandler instead.');
     	   throw new DomainException('Permission to update an ' + SObjectDescribe.getName() + ' denied.');
     	
     	if(Configuration.OldOnUpdateValidateBehaviour)
@@ -253,9 +280,11 @@ public virtual with sharing class fflib_SObjectDomain
      * Base handler for the Apex Trigger event After Delete, checks object security and calls the onAfterDelete method
      *
      * @throws DomainException if the current user context is not able to delete records
+     * @Deprecated - Use fflib_SObjectTriggerHandler instead
      **/
     public virtual void handleAfterDelete() 
     {
+		System.debug(LoggingLevel.WARN, 'The use of fflib_SObjectDomain as trigger handler is deprecated and will be removed in a future release. Use fflib_SObjectTriggerHandler instead.');
     	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isDeletable())
     	   throw new DomainException('Permission to delete an ' + SObjectDescribe.getName() + ' denied.');
     	   
@@ -266,9 +295,11 @@ public virtual with sharing class fflib_SObjectDomain
      * Base handler for the Apex Trigger event After Undelete, checks object security and calls the onAfterUndelete method
      *
      * @throws DomainException if the current user context is not able to delete records
+     * @Deprecated - Use fflib_SObjectTriggerHandler instead
      **/
     public virtual void handleAfterUndelete() 
     {
+		System.debug(LoggingLevel.WARN, 'The use of fflib_SObjectDomain as trigger handler is deprecated and will be removed in a future release. Use fflib_SObjectTriggerHandler instead.');
     	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isCreateable())
     	   throw new DomainException('Permission to create an ' + SObjectDescribe.getName() + ' denied.');
     	   
@@ -302,9 +333,11 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Detects whether any values in context records have changed for given fields as strings
 	 * Returns list of SObject records that have changes in the specified fields
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/
 	public List<SObject> getChangedRecords(Set<String> fieldNames)
 	{
+		System.debug(LoggingLevel.WARN, 'fflib_SObjectDomain.getChangedRecords is deprecated and will be removed in a future release. Use fflib_SObjectTriggerHandler instead.');
 		List<SObject> changedRecords = new List<SObject>();
 		for (SObject newRecord : Records)
 		{
@@ -330,9 +363,11 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Detects whether any values in context records have changed for given fields as tokens
 	 * Returns list of SObject records that have changes in the specified fields
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/
 	public List<SObject> getChangedRecords(Set<Schema.SObjectField> fieldTokens)
 	{
+		System.debug(LoggingLevel.WARN, 'fflib_SObjectDomain.getChangedRecords is deprecated and will be removed in a future release. Use fflib_SObjectTriggerHandler instead.');
 		List<SObject> changedRecords = new List<SObject>();
 		for (SObject newRecord : Records)
 		{
@@ -376,9 +411,11 @@ public virtual with sharing class fflib_SObjectDomain
 	 *   the Domain class trigger has not yet fired or the given domain class does not implement
 	 *   the ITriggerStateful interface. Note this method is sensitive to recursion, meaning
 	 *   it will return the applicable domain instance for the level of recursion
+	 *   @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/ 
 	public static fflib_SObjectDomain getTriggerInstance(Type domainClass)
 	{
+		System.debug(LoggingLevel.WARN, 'The use of fflib_SObjectDomain as trigger handler is deprecated and will be removed in a future release. Use fflib_SObjectTriggerHandler instead.');
 		List<fflib_SObjectDomain> domains = TriggerStateByClass.get(domainClass);
 		if(domains==null || domains.size()==0)
 			return null;
@@ -388,9 +425,11 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Method constructs the given Domain class with the current Trigger context 
 	 * before calling the applicable override methods such as beforeInsert, beforeUpdate etc.
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/
 	public static void triggerHandler(Type domainClass)
 	{		
+		System.debug(LoggingLevel.WARN, 'The use of fflib_SObjectDomain as trigger handler is deprecated and will be removed in a future release. Use fflib_SObjectTriggerHandler instead.');
 		// Process the trigger context
 		if(System.Test.isRunningTest() & Test.Database.hasRecords())
 		{
@@ -414,6 +453,7 @@ public virtual with sharing class fflib_SObjectDomain
 	
 	/**
 	 * Calls the applicable override methods such as beforeInsert, beforeUpdate etc. based on a Trigger context
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/
 	private static void triggerHandler(Type domainClass, Boolean isBefore, Boolean isAfter, Boolean isInsert, Boolean isUpdate, Boolean isDelete, Boolean isUndelete, List<SObject> newRecords, Map<Id, SObject> oldRecordsMap)
 	{	
@@ -473,6 +513,7 @@ public virtual with sharing class fflib_SObjectDomain
 	
 	/**
 	 * Pops from the stack of domain classes per type a domain object instance and updates the record set
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/
 	private static fflib_SObjectDomain popTriggerInstance(Type domainClass, List<SObject> records)
 	{
@@ -484,8 +525,10 @@ public virtual with sharing class fflib_SObjectDomain
 		return domain;
 	}
 	
+	// @Deprecated - Use fflib_SObjectTriggerHandler instead
 	public static TriggerEvent getTriggerEvent(Type domainClass)
 	{
+		System.debug(LoggingLevel.WARN, 'The use of fflib_SObjectDomain as trigger handler is deprecated and will be removed in a future release. Use fflib_SObjectTriggerHandler instead.');
 		if(!TriggerEventByClass.containsKey(domainClass))
 		{
 			TriggerEventByClass.put(domainClass, new TriggerEvent());
@@ -494,6 +537,7 @@ public virtual with sharing class fflib_SObjectDomain
 		return TriggerEventByClass.get(domainClass);
 	}
 
+	// @Deprecated - Use fflib_SObjectTriggerHandler instead
 	public class TriggerEvent
 	{
 		public boolean BeforeInsertEnabled {get; private set;}
@@ -507,6 +551,7 @@ public virtual with sharing class fflib_SObjectDomain
 
 		public TriggerEvent()
 		{
+			System.debug(LoggingLevel.WARN, 'The use of fflib_SObjectDomain as trigger handler is deprecated and will be removed in a future release. Use fflib_SObjectTriggerHandler instead.');
 			this.enableAll();
 		}
 
@@ -582,6 +627,7 @@ public virtual with sharing class fflib_SObjectDomain
 
 	/**
 	 * Fluent style Configuration system for Domain class creation
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/
 	public class Configuration
 	{
@@ -604,6 +650,7 @@ public virtual with sharing class fflib_SObjectDomain
 		 **/
 		public Configuration()
 		{
+			System.debug(LoggingLevel.WARN, 'The use of fflib_SObjectDomain as trigger handler is deprecated and will be removed in a future release. Use fflib_SObjectTriggerHandler instead.');
 			EnforcingTriggerCRUDSecurity = true; // Default is true for backwards compatability
 			TriggerStateEnabled = false;
 			OldOnUpdateValidateBehaviour = false; // Breaking change, but felt to better practice
@@ -673,14 +720,17 @@ public virtual with sharing class fflib_SObjectDomain
 
 	/**
 	 * Ensures logging of errors in the Domain context for later assertions in tests
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/
 	public String error(String message, SObject record)
 	{
-		return Errors.error(this, message, record);	
+		System.debug(LoggingLevel.WARN, 'The use of fflib_SObjectDomain as trigger handler is deprecated and will be removed in a future release. Use fflib_SObjectTriggerHandler instead.');
+		return Errors.error(this, message, record);
 	}
 	
 	/**
 	 * Ensures logging of errors in the Domain context for later assertions in tests
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/
 	public String error(String message, SObject record, SObjectField field)
 	{
@@ -689,6 +739,7 @@ public virtual with sharing class fflib_SObjectDomain
 	
 	/**
 	 * Ensures logging of errors in the Domain context for later assertions in tests
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/
 	public class ErrorFactory
 	{
@@ -743,6 +794,7 @@ public virtual with sharing class fflib_SObjectDomain
 	
 	/**
 	 * Ensures logging of errors in the Domain context for later assertions in tests
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/
 	public virtual class FieldError extends ObjectError
 	{
@@ -756,6 +808,7 @@ public virtual with sharing class fflib_SObjectDomain
 	
 	/**
 	 * Ensures logging of errors in the Domain context for later assertions in tests
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/
 	public virtual class ObjectError extends Error
 	{
@@ -769,6 +822,7 @@ public virtual with sharing class fflib_SObjectDomain
 	
 	/**
 	 * Ensures logging of errors in the Domain context for later assertions in tests
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/
 	public abstract class Error
 	{
@@ -778,6 +832,7 @@ public virtual with sharing class fflib_SObjectDomain
 
 	/**
 	 * Provides test context mocking facilities to unit tests testing domain classes
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/	
 	public class TestFactory
 	{
@@ -791,6 +846,7 @@ public virtual with sharing class fflib_SObjectDomain
 	
 	/**
 	 * Class used during Unit testing of Domain classes, can be used (not exclusively) to speed up test execution and focus testing
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/
 	public class MockDatabase
 	{
@@ -860,6 +916,7 @@ public virtual with sharing class fflib_SObjectDomain
 
 	/**
 	 * Test domain class (ideally this would be in the test class, however Type.newInstance does not see such classes)
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/
 	public with sharing class TestSObjectDomain extends fflib_SObjectDomain
 	{
@@ -953,6 +1010,7 @@ public virtual with sharing class fflib_SObjectDomain
 	
 	/**
 	 * Typically an inner class to the domain class, supported here for test purposes
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/	
 	public class TestSObjectDomainConstructor implements fflib_SObjectDomain.IConstructable
 	{
@@ -964,6 +1022,7 @@ public virtual with sharing class fflib_SObjectDomain
 	
 	/**
 	 * Test domain class (ideally this would be in the test class, however Type.newInstance does not see such classes)
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/
 	public with sharing class TestSObjectStatefulDomain 
 		extends fflib_SObjectDomain 
@@ -1015,7 +1074,8 @@ public virtual with sharing class fflib_SObjectDomain
 	
 	/**
 	 * Typically an inner class to the domain class, supported here for test purposes
-	 **/	
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
+	 **/
 	public class TestSObjectStatefulDomainConstructor implements fflib_SObjectDomain.IConstructable
 	{
 		public fflib_SObjectDomain construct(List<SObject> sObjectList)
@@ -1026,6 +1086,7 @@ public virtual with sharing class fflib_SObjectDomain
 	
 	/**
 	 * Test domain class (ideally this would be in the test class, however Type.newInstance does not see such classes)
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/
 	public with sharing class TestSObjectOnValidateBehaviour 
 		extends fflib_SObjectDomain 
@@ -1048,7 +1109,8 @@ public virtual with sharing class fflib_SObjectDomain
 	
 	/**
 	 * Typically an inner class to the domain class, supported here for test purposes
-	 **/	
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
+	 **/
 	public class TestSObjectOnValidateBehaviourConstructor implements fflib_SObjectDomain.IConstructable
 	{
 		public fflib_SObjectDomain construct(List<SObject> sObjectList)
@@ -1059,6 +1121,7 @@ public virtual with sharing class fflib_SObjectDomain
 
 	/**
 	 * Test domain class (ideally this would be in the test class, however Type.newInstance does not see such classes)
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/
 	public with sharing class TestSObjectChangedRecords 
 		extends fflib_SObjectDomain 
@@ -1071,7 +1134,8 @@ public virtual with sharing class fflib_SObjectDomain
 	
 	/**
 	 * Typically an inner class to the domain class, supported here for test purposes
-	 **/	
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
+	 **/
 	public class TestSObjectChangedRecordsConstructor implements fflib_SObjectDomain.IConstructable
 	{
 		public fflib_SObjectDomain construct(List<SObject> sObjectList)
@@ -1082,6 +1146,7 @@ public virtual with sharing class fflib_SObjectDomain
 	
 	/**
 	 * Test domain class (ideally this would be in the test class, however Type.newInstance does not see such classes)
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/
 	public with sharing class TestSObjectDisableBehaviour 
 		extends fflib_SObjectDomain 
@@ -1129,6 +1194,7 @@ public virtual with sharing class fflib_SObjectDomain
 
 	/**
 	 * Typically an inner class to the domain class, supported here for test purposes
+	 * @Deprecated - Use fflib_SObjectTriggerHandler instead
 	 **/    
 	public class TestSObjectDisableBehaviourConstructor implements fflib_SObjectDomain.IConstructable
 	{
@@ -1137,4 +1203,121 @@ public virtual with sharing class fflib_SObjectDomain
 			return new TestSObjectDisableBehaviour(sObjectList);
 		}
 	}
+
+	/**
+	 * getRecordIds
+	 *
+	 * @return Set with the record Ids from the domain
+	 */
+	public Set<Id> getRecordIds()
+	{
+		return (new Map<Id,SObject>(Records)).keySet();
+	}
+
+	/**
+	 * isEmpty
+	 *
+	 * @return True if the domain does not contain any records
+	 */
+	public Boolean isEmpty()
+	{
+		return Records.isEmpty();
+	}
+
+	/**
+	 * isNotEmpty
+	 *
+	 * @return True if the domain contains records
+	 */
+	public Boolean isNotEmpty()
+	{
+		return !isEmpty();
+	}
+
+	/**
+	 * getIdFieldValues
+	 *
+	 * @param sObjectField The SObjectField reference to the Id field to fetch
+	 *
+	 * @return Set of Id values of the provided SObjectField
+	 *
+	 * @example
+	 *    public class Contacts extends fflib_SObjectDomain
+	 *    {
+	 *       ...
+	 *       public Set<Id> getAccountIds()
+	 *       {
+	 *         return getIdFieldValues(Contact.AccountId);
+	 *       }
+	 *       ...
+	 *    }
+	 */
+	@TestVisible
+	protected Set<Id> getIdFieldValues(Schema.SObjectField sObjectField)
+	{
+		DisplayType fieldType = sObjectField.getDescribe().getType();
+		if (fieldType != DisplayType.REFERENCE && fieldType != DisplayType.ID)
+		{
+			throw newInvalidParameterTypeException('Id');
+		}
+
+		Set<Id> result = new Set<Id>();
+		for (SObject record : Records)
+		{
+			Id fieldValue = (Id) record.get(sObjectField);
+			if (fieldValue == null) continue;
+			result.add(fieldValue);
+		}
+		return result;
+	}
+
+	/**
+	 * getStringFieldValues
+	 *
+	 * @param sObjectField The SObjectField reference to the String field to fetch
+	 *
+	 * @return Set of String values of the provided SObjectField
+	 *
+	 * @example
+	 *    public class Accounts extends fflib_SObjectDomain
+	 *    {
+	 *       ...
+	 *       public Set<String> getShippingCountry()
+	 *       {
+	 *         return getStringFieldValues(Account.ShippingCountry);
+	 *       }
+	 *       ...
+	 *    }
+	 */
+	@TestVisible
+	protected Set<String> getStringFieldValues(Schema.SObjectField sObjectField)
+	{
+		System.debug('sObjectField.getDescribe().getType(): '+sObjectField.getDescribe().getType());
+		DisplayType fieldType = sObjectField.getDescribe().getType();
+		if (fieldType != DisplayType.STRING && fieldType != DisplayType.PICKLIST && fieldType != DisplayType.MULTIPICKLIST)
+		{
+			throw newInvalidParameterTypeException('String');
+		}
+
+		Set<String> result = new Set<String>();
+		for (SObject record : Records)
+		{
+			String fieldValue = (String) record.get(sObjectField);
+			if (fieldValue == null) continue;
+			result.add(fieldValue);
+		}
+		return result;
+	}
+
+	protected InvalidParameterTypeException newInvalidParameterTypeException(String parameterType)
+	{
+		throw new InvalidParameterTypeException(
+				String.format(
+						'You can only use a field of the type {0}',
+						new List<String> { parameterType }
+				)
+		);
+	}
+
+	public class InvalidParameterTypeException extends Exception {}
 }

@@ -492,11 +492,221 @@ private with sharing class fflib_SObjectDomainTest
 		*/
 	}
 
+	@IsTest
+	private static void itShouldGetTheSObjectType()
+	{
+		// GIVEN a domain with Accounts;
+		Accounts domain = new Accounts(generateAccounts());
 
+		// WHEN we get the SObjectType of the domain
+		Schema.SObjectType sObjectType = domain.sObjectType();
+
+		// THEN it should return the SObjectType for Accounts
+		System.assert(sObjectType == Account.SObjectType);
+	}
+
+
+	@IsTest
+	private static void itShouldReturnTheRecords()
+	{
+		List<Account> records = generateAccounts();
+
+		Accounts accounts = new Accounts(records.clone());
+
+		System.assertEquals(records, accounts.getRecords());
+	}
+
+	@IsTest
+	private static void itShouldGetAllTheRecordIds()
+	{
+		// GIVEN a list of records inside a domain
+		List<Account> accounts = generateAccounts();
+		Accounts domain = new Accounts(accounts);
+
+		// WHEN we request a set of all record Ids
+		Set<Id> result = domain.getRecordIds();
+
+		// THEN all record Ids should be present
+		System.assertEquals(
+				new Map<Id, SObject>(accounts).keySet(),
+				result,
+				'Incorrect recordIds returned'
+		);
+	}
+
+	@IsTest
+	private static void itShouldCheckForAnEmptyDomain()
+	{
+		// GIVEN an empty domain
+		Accounts domain = new Accounts(new List<Account>());
+
+		// WHEN we check if the domain is empty
+		Boolean result = domain.isEmpty();
+
+		// THEN it should be empty
+		System.assert(result, 'The domain was not empty');
+	}
+
+	@IsTest
+	private static void itShouldCheckForAnEmptyDomain_failure()
+	{
+		// GIVEN an empty domain
+		Accounts domain = new Accounts(generateAccounts());
+
+		// WHEN we check if the domain is empty
+		Boolean result = domain.isEmpty();
+
+		// THEN it should be empty
+		System.assert(!result, 'Oops the domain was not empty but validated as empty');
+	}
+
+	@IsTest
+	private static void itShouldCheckForANotEmptyDomain()
+	{
+		// GIVEN an empty domain
+		Accounts domain = new Accounts(generateAccounts());
+
+		// WHEN we check if the domain is empty
+		Boolean result = domain.isNotEmpty();
+
+		// THEN it should be empty
+		System.assert(result, 'The domain was not empty, but validated as empty');
+	}
+
+	@IsTest
+	private static void itShouldCheckForANotEmptyDomain_failure()
+	{
+		// GIVEN an empty domain
+		Accounts domain = new Accounts(new List<Account>());
+
+		// WHEN we check if the domain is empty
+		Boolean result = domain.isNotEmpty();
+
+		// THEN it should be empty
+		System.assert(!result, 'Oops the domain was empty but validated as not empty');
+	}
+
+	@IsTest
+	private static void itShouldGetTheIdValues()
+	{
+		// GIVEN a domain with Contacts related to Accounts
+		List<Account> accounts = generateAccounts();
+		Set<Id> accountIds = new Map<Id, SObject>(accounts).keySet();
+		List<Contact> contacts = generateContacts(accounts);
+		Contacts domain = new Contacts(contacts);
+
+		// WHEN we get the Id's of the related AccountId field
+		Set<Id> result = domain.getIdFieldValues(Contact.AccountId);
+
+		// THEN It should return the Ids of the Accounts
+		System.assertEquals(result.size(), accountIds.size(), 'Incorrect number or returned records');
+		System.assert(result.containsAll(accountIds), 'All account Ids should be returned');
+	}
+
+	@IsTest
+	private static void itShouldThrowExceptionOnIncorrectFieldTypeForGetIdFieldValues()
+	{
+		// GIVEN a domain with Contacts related to Accounts
+		List<Account> accounts = generateAccounts();
+		Set<Id> accountIds = new Map<Id, SObject>(accounts).keySet();
+		List<Contact> contacts = generateContacts(accounts);
+		Contacts domain = new Contacts(contacts);
+
+		// WHEN we get the values for the incorrect field type
+		Boolean exceptionThrown = false;
+		try
+		{
+			domain.getIdFieldValues(Contact.LastName);
+		}
+		catch (fflib_SObjectDomain.InvalidParameterTypeException e)
+		{
+			System.assertEquals('You can only use a field of the type Id', e.getMessage());
+			exceptionThrown = true;
+		}
+
+		// THEN it should throw an exception
+		System.assert(exceptionThrown, 'It should have thrown an exception for an incorrect field type');
+	}
+
+	@IsTest
+	private static void itShouldGetAlShippingCountries()
+	{
+		// GIVEN a domain of Accounts with ShippingCountry values
+		List<Account> accounts = generateAccounts();
+		Accounts domain = new Accounts(accounts);
+		Set<String> shippingCountries = new Set<String>();
+		for (Account account : accounts)
+		{
+			shippingCountries.add(account.ShippingCountry);
+		}
+		System.assert(!shippingCountries.isEmpty(), 'Incorrect data to initiate test');
+
+		// WHEN we get the Id's of the related AccountId field
+		Set<String> result = domain.getStringFieldValues(Account.ShippingCountry);
+
+		// THEN It should return the Ids of the Accounts
+		System.assertEquals(result.size(), shippingCountries.size(), 'Incorrect number or returned values');
+		System.assert(result.containsAll(shippingCountries), 'Not all shippingCountry values were returned');
+	}
+
+	@IsTest
+	private static void itShouldThrowExceptionOnIncorrectFieldTypeForGetStringFieldValues()
+	{
+		// GIVEN a domain of Accounts with ShippingCountry values
+		Accounts domain = new Accounts(generateAccounts());
+
+		// WHEN we get the values for the incorrect field type
+		Boolean exceptionThrown = false;
+		try
+		{
+			Set<String> result = domain.getStringFieldValues(Account.OwnerId);
+		}
+		catch (fflib_SObjectDomain.InvalidParameterTypeException e)
+		{
+			System.assertEquals('You can only use a field of the type String', e.getMessage());
+			exceptionThrown = true;
+		}
+
+		// THEN it should throw an exception
+		System.assert(exceptionThrown, 'It should have thrown an exception for an incorrect field type');
+	}
+
+	private static List<Account> generateAccounts()
+	{
+		return new List<Account>
+		{
+				new Account(Id = fflib_IDGenerator.generate(Account.SObjectType), Name = 'Account A', ShippingCountry = 'USA'),
+				new Account(Id = fflib_IDGenerator.generate(Account.SObjectType), Name = 'Account B', ShippingCountry = 'Ireland'),
+				new Account(Id = fflib_IDGenerator.generate(Account.SObjectType), Name = 'Account C', ShippingCountry = 'Holland')
+		};
+	}
+
+	private static List<Contact> generateContacts(List<Account> accounts)
+	{
+		List<Contact> result = new List<Contact>();
+		for (Account account : accounts)
+		{
+			result.add(
+					new Contact(
+							Id = xa.fflib_IDGenerator.generate(Contact.SObjectType),
+							AccountId = account.Id
+					)
+			);
+		}
+		return result;
+	}
 
 	private class Accounts extends fflib_SObjectDomain
 	{
 		public Accounts(List<SObject> records)
+		{
+			super(records);
+		}
+	}
+
+	private class Contacts extends fflib_SObjectDomain
+	{
+		public Contacts(List<SObject> records)
 		{
 			super(records);
 		}
