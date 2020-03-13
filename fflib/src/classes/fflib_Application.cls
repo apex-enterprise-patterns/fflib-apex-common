@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, FinancialForce.com, inc
+ * Copyright (c), FinancialForce.com, inc
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, 
@@ -29,12 +29,12 @@
  * of the Apex Enterprise Patterns, Service, Unit Of Work, Selector and Domain.
  *   See the sample applications Application.cls file for an example
  **/
-public class fflib_Application 
+public virtual class fflib_Application
 {
 	/**
 	 * Class implements a Unit of Work factory
 	 **/
-	public class UnitOfWorkFactory
+	public virtual class UnitOfWorkFactory
 	{
 		private List<SObjectType> m_objectTypes;
 		private fflib_ISObjectUnitOfWork m_mockUow;
@@ -120,11 +120,11 @@ public class fflib_Application
 	/**
 	 * Simple Service Factory implementaiton
 	 **/
-	public class ServiceFactory
+	public virtual class ServiceFactory
 	{
-		private Map<Type, Type> m_serviceInterfaceTypeByServiceImplType;
+		protected Map<Type, Type> m_serviceInterfaceTypeByServiceImplType;
 
-		private Map<Type, Object> m_serviceInterfaceTypeByMockService;
+		protected Map<Type, Object> m_serviceInterfaceTypeByMockService;
 
 		/**
 		 * Constructs a simple Service Factory, 
@@ -148,7 +148,7 @@ public class fflib_Application
 		 * @param serviceInterfaceType Apex interface type
 		 * @exception Is thrown if there is no registered Apex class for the interface type
 		 **/
-		public Object newInstance(Type serviceInterfaceType)
+		public virtual Object newInstance(Type serviceInterfaceType)
 		{
 			// Mock implementation?
 			if(m_serviceInterfaceTypeByMockService.containsKey(serviceInterfaceType))
@@ -162,7 +162,7 @@ public class fflib_Application
 		}
 
 		@TestVisible
-		private void setMock(Type serviceInterfaceType, Object serviceImpl)
+		private virtual void setMock(Type serviceInterfaceType, Object serviceImpl)
 		{
 			m_serviceInterfaceTypeByMockService.put(serviceInterfaceType, serviceImpl);
 		}
@@ -171,10 +171,10 @@ public class fflib_Application
 	/**
 	 * Class implements a Selector class factory
 	 **/
-	public class SelectorFactory
+	public virtual class SelectorFactory
 	{
-		private Map<SObjectType, Type> m_sObjectBySelectorType;
-		private Map<SObjectType, fflib_ISObjectSelector> m_sObjectByMockSelector;
+		protected Map<SObjectType, Type> m_sObjectBySelectorType;
+		protected Map<SObjectType, fflib_ISObjectSelector> m_sObjectByMockSelector;
 
 		/**
 		 * Consturcts a Selector Factory linking SObjectType's with Apex Classes implement the fflib_ISObjectSelector interface
@@ -195,7 +195,7 @@ public class fflib_Application
 		 *
 		 * @param sObjectType An SObjectType token, e.g. Account.SObjectType
 		 **/
-		public fflib_ISObjectSelector newInstance(SObjectType sObjectType)
+		public virtual fflib_ISObjectSelector newInstance(SObjectType sObjectType)
 		{
 			// Mock implementation?
 			if(m_sObjectByMockSelector.containsKey(sObjectType))
@@ -259,7 +259,7 @@ public class fflib_Application
 		}
 
 		@TestVisible
-		private void setMock(fflib_ISObjectSelector selectorInstance)
+		private virtual void setMock(fflib_ISObjectSelector selectorInstance)
 		{
 			m_sObjectByMockSelector.put(selectorInstance.sObjectType(), selectorInstance);
 		} 
@@ -268,13 +268,13 @@ public class fflib_Application
 	/**
 	 * Class implements a Domain class factory
 	 **/
-	public class DomainFactory 
+	public virtual class DomainFactory
 	{
-		private fflib_Application.SelectorFactory m_selectorFactory;
+		protected fflib_Application.SelectorFactory m_selectorFactory;
 
-		private Map<SObjectType, Type> m_sObjectByDomainConstructorType;
+		protected Map<SObjectType, Type> m_sObjectByDomainConstructorType;
 
-		private Map<SObjectType, fflib_ISObjectDomain> m_sObjectByMockDomain;
+		protected Map<SObjectType, fflib_ISObjectDomain> m_sObjectByMockDomain;
 
 		/**
 		 * Consturcts a Domain factory, using an instance of the Selector Factory
@@ -301,7 +301,7 @@ public class fflib_Application
 		 * @param recordIds A list of Id's of the same type
 		 * @exception Throws an exception via the Selector Factory if the Ids are not all of the same SObjectType
 		 **/
-		public fflib_ISObjectDomain newInstance(Set<Id> recordIds)
+		public virtual fflib_ISObjectDomain newInstance(Set<Id> recordIds)
 		{
 			return newInstance(m_selectorFactory.selectById(recordIds));
 
@@ -315,7 +315,7 @@ public class fflib_Application
 		 * @exception Throws an exception if the SObjectType cannot be determined from the list 
 		 *              or the constructor for Domain class was not registered for the SOBjectType
 		 **/
-		public fflib_ISObjectDomain newInstance(List<SObject> records)
+		public virtual fflib_ISObjectDomain newInstance(List<SObject> records)
 		{
 			SObjectType domainSObjectType = records.getSObjectType();
 			if(domainSObjectType==null)
@@ -347,7 +347,7 @@ public class fflib_Application
 		 * @remark Will support List<SObject> but all records in the list will be assumed to be of
 		 *         the type specified in sObjectType
 		 **/
-		public fflib_ISObjectDomain newInstance(List<SObject> records, SObjectType domainSObjectType)
+		public virtual fflib_ISObjectDomain newInstance(List<SObject> records, SObjectType domainSObjectType)
 		{
 			if(domainSObjectType==null)
 				throw new DeveloperException('Must specify sObjectType');
@@ -368,7 +368,7 @@ public class fflib_Application
 		}
 
 		@TestVisible
-		private void setMock(fflib_ISObjectDomain mockDomain)
+		private virtual void setMock(fflib_ISObjectDomain mockDomain)
 		{
 			m_sObjectByMockDomain.put(mockDomain.sObjectType(), mockDomain);			
 		}

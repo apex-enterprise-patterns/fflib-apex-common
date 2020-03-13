@@ -9,7 +9,7 @@
  *      this list of conditions and the following disclaimer.
  * - Redistributions in binary form must reproduce the above copyright notice, 
  *      this list of conditions and the following disclaimer in the documentation 
- *      and/or other materials provided with the distribution. 
+ *      and/or other materials provided with the distribution.
  * - Neither the name of the FinancialForce.com, inc nor the names of its contributors 
  *      may be used to endorse or promote products derived from this software without 
  *      specific prior written permission.
@@ -47,17 +47,17 @@ public abstract with sharing class fflib_SObjectSelector
     /**
      * Should this selector automatically include the FieldSet fields when building queries?
      **/
-    private Boolean m_includeFieldSetFields;
+    private Boolean m_includeFieldSetFields = false;
     
     /**
      * Enforce FLS Security
      **/
-    private Boolean m_enforceFLS;
+    private Boolean m_enforceFLS = false;
 
     /**
      * Enforce CRUD Security
      **/
-    private Boolean m_enforceCRUD;
+    private Boolean m_enforceCRUD = true;
    	
     /**
      * Order by field
@@ -68,7 +68,7 @@ public abstract with sharing class fflib_SObjectSelector
      * Sort the query fields in the select statement (defaults to true, at the expense of performance).
      * Switch this off if you need more performant queries.
      **/
-    private Boolean m_sortSelectFields;
+    private Boolean m_sortSelectFields = true;
 
     /**
      * Describe helper
@@ -98,12 +98,9 @@ public abstract with sharing class fflib_SObjectSelector
     abstract List<Schema.SObjectField> getSObjectFieldList();
 
     /**
-     * Constructs the Selector, defaults to not including any FieldSet fields automatically
+     * Constructs the Selector with the default settings
      **/
-    public fflib_SObjectSelector()
-    {
-        this(false);
-    }
+    public fflib_SObjectSelector() { }
     
     /**
      * Constructs the Selector
@@ -179,7 +176,42 @@ public abstract with sharing class fflib_SObjectSelector
         return m_orderBy;
     }
 
-    /** 
+
+    /**
+     * @description Set the selector to enforce FLS Security
+     **/
+    public fflib_SObjectSelector enforceFLS()
+    {
+        m_enforceFLS = true;
+        return this;
+    }
+
+    /**
+     * @description Set the selector to automatically include the FieldSet fields when building queries
+     **/
+    public fflib_SObjectSelector includeFieldSetFields()
+    {
+        this.m_includeFieldSetFields = true;
+        return this;
+    }
+
+    /**
+     * @description Set the selector to ignore CRUD security
+     * @return
+     */
+    public fflib_SObjectSelector ignoreCRUD()
+    {
+        this.m_enforceCRUD = false;
+        return this;
+    }
+
+    public fflib_SObjectSelector unsortedSelectFields()
+    {
+        this.m_sortSelectFields = false;
+        return this;
+    }
+
+    /**
      * Returns True if this Selector instance has been instructed by the caller to include Field Set fields
      **/
     public Boolean isIncludeFieldSetFields() 
@@ -264,7 +296,7 @@ public abstract with sharing class fflib_SObjectSelector
      *   - Ordered by the fields returned via getOrderBy
      * @returns A list of SObject's
      **/
-    public List<SObject> selectSObjectsById(Set<Id> idSet)
+    public virtual List<SObject> selectSObjectsById(Set<Id> idSet)
     {
         return Database.query(buildQuerySObjectById());
     }
@@ -277,7 +309,7 @@ public abstract with sharing class fflib_SObjectSelector
      *   - Ordered by the fields returned via getOrderBy
      * @returns A QueryLocator (typically for use in a Batch Apex job)
      **/
-    public Database.QueryLocator queryLocatorById(Set<Id> idSet)
+    public virtual Database.QueryLocator queryLocatorById(Set<Id> idSet)
     {
         return Database.getQueryLocator(buildQuerySObjectById());
     }
@@ -373,7 +405,7 @@ public abstract with sharing class fflib_SObjectSelector
     	return configureQueryFactory(
     		subSelectQueryFactory, 
     		m_enforceCRUD, 
-    		m_enforceFLS, 
+    		m_enforceFLS,
     		includeSelectorFields);
     }
         

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014-2015, FinancialForce.com, inc
+ * Copyright (c), FinancialForce.com, inc
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, 
@@ -495,7 +495,7 @@ private class fflib_QueryFactoryTest {
 		qf.setCondition( 'name like \'%test%\'' );
 		qf.addOrdering( new fflib_QueryFactory.Ordering('Contact','name',fflib_QueryFactory.SortOrder.ASCENDING) ).addOrdering('CreatedBy.Name',fflib_QueryFactory.SortOrder.DESCENDING);
 		Schema.DescribeSObjectResult descResult = Contact.SObjectType.getDescribe();
-       	ChildRelationship relationship;
+       	Schema.ChildRelationship relationship;
         for (Schema.ChildRelationship childRow : descResult.getChildRelationships()) {
             if (childRow.getRelationshipName() == 'Tasks') {
                 relationship = childRow;
