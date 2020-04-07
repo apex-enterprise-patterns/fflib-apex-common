@@ -60,6 +60,9 @@ public virtual class fflib_SObjectUnitOfWork
 
     protected Map<String, Map<Id, SObject>> m_dirtyMapByType = new Map<String, Map<Id, SObject>>();
 
+    protected Map<String, List<SObject>> m_upsertRecordsPerType = new Map<String, List<SObject>>();
+    protected Map<String, Schema.SObjectField> m_externalIdToUpsertPerType = new Map<String, Schema.SObjectField>();
+
     protected Map<String, Map<Id, SObject>> m_deletedMapByType = new Map<String, Map<Id, SObject>>();
     protected Map<String, Map<Id, SObject>> m_emptyRecycleBinMapByType = new Map<String, Map<Id, SObject>>();
 
@@ -88,6 +91,7 @@ public virtual class fflib_SObjectUnitOfWork
     {
         void dmlInsert(List<SObject> objList);
         void dmlUpdate(List<SObject> objList);
+        void dmlUpsert(List<SObject> objList, Schema.SObjectField externalId);
         void dmlDelete(List<SObject> objList);
         void eventPublish(List<SObject> objList);
 	    void emptyRecycleBin(List<SObject> objList);
@@ -103,7 +107,12 @@ public virtual class fflib_SObjectUnitOfWork
         {
             update objList;
         }
-        public virtual void dmlDelete(List<SObject> objList)
+        public void dmlUpsert(List<SObject> objList, Schema.SObjectField externalId) {
+            if (!objList.isEmpty()) {
+                Database.upsert(objList, externalId);
+            }
+        }
+        public void dmlDelete(List<SObject> objList)
         {
             delete objList;
         }
@@ -181,6 +190,7 @@ public virtual class fflib_SObjectUnitOfWork
         // add type to dml operation tracking
         m_newListByType.put(sObjectName, new List<SObject>());
         m_dirtyMapByType.put(sObjectName, new Map<Id, SObject>());
+        m_upsertRecordsPerType.put(sObjectName, new List<SObject>());
         m_deletedMapByType.put(sObjectName, new Map<Id, SObject>());
 	    m_emptyRecycleBinMapByType.put(sObjectName, new Map<Id, SObject>());
         m_relationships.put(sObjectName, new Relationships());
@@ -457,6 +467,59 @@ public virtual class fflib_SObjectUnitOfWork
     }
 
     /**
+     * Register a list of mix of new and existing records to be inserted updated during the commitWork method by and external id
+     *
+     * @param records A list of mix of new and existing records
+     * @param externalIdField External id field to use for upserting operation
+     **/
+    public void registerUpsert(List<SObject> records, Schema.SObjectField externalIdField) 
+    {
+        for (SObject record : records) 
+        {
+            this.registerUpsert(record, externalIdField, null, null);
+        }
+    }
+
+
+    /**
+     * Register an existing or new record to be upserted when commitWork is called using an external id field,
+     *   you may also provide a reference to the parent record instance (should also be registered as new separately)
+     *
+     * @param record A newly created SObject instance to be inserted during commitWork
+     * @param relatedToParentField A SObjectField reference to the child field that associates the child record with its parent
+     * @param relatedToParentRecord A SObject instance of the parent record (should also be registered as new separately)
+     **/
+    public void registerUpsert(SObject record, Schema.SObjectField externalIdField, Schema.sObjectField relatedToParentField, SObject relatedToParentRecord) 
+    {
+
+        SObjectType sObjectType = record.getSObjectType();
+        String sObjName = sObjectType.getDescribe().getName();
+
+		assertForNonEventSObjectType(sObjName);
+		assertForSupportedSObjectType(m_upsertRecordsPerType, sObjName);
+
+        if (externalIdField == null) 
+            throw new UnitOfWorkException('Invalid argument: externalIdField. If you want to upsert by id, use the registerUpsert method that has only one argument');
+
+        assertValidExternalId(sObjectType, externalIdField);
+
+        Schema.SObjectField registeredExternalId = m_externalIdToUpsertPerType.get(sObjName);
+        if (registeredExternalId != null && registeredExternalId != externalIdField) 
+        {
+            throw new UnitOfWorkException(String.format(
+                'SObject type {0} has already registered an upsert by external id {1}, you cannot use another is this unit of work.',
+                new List<String> {sObjName, registeredExternalId.getDescribe().getName()}
+			));
+        }
+
+        m_upsertRecordsPerType.get(sObjName).add(record);
+        m_externalIdToUpsertPerType.put(sObjName, externalIdField);
+
+        if (relatedToParentRecord!=null && relatedToParentField!=null)
+            registerRelationship(record, relatedToParentField, relatedToParentRecord);
+    }
+
+    /**
      * Register an existing record to be deleted during the commitWork method
      *
      * @param record An existing record
@@ -624,6 +687,7 @@ public virtual class fflib_SObjectUnitOfWork
 		onDMLStarting();
 		insertDmlByType();
 		updateDmlByType();
+        upsertDmlByType();
 		deleteDmlByType();
 		emptyRecycleBinByType();
 		resolveEmailRelationships();
@@ -686,6 +750,15 @@ public virtual class fflib_SObjectUnitOfWork
 			m_dml.dmlUpdate(m_dirtyMapByType.get(sObjectType.getDescribe().getName()).values());
 		}
 	}
+
+    private void upsertDmlByType() 
+    {
+        String sobjName;
+        for (Schema.SObjectType sObjectType : m_sObjectTypes) {
+            sobjName = sObjectType.getDescribe().getName();
+			m_dml.dmlUpsert(m_upsertRecordsPerType.get(sobjName), m_externalIdToUpsertPerType.get(sobjName));
+		}
+    }
 
 	private void deleteDmlByType()
 	{
@@ -775,6 +848,22 @@ public virtual class fflib_SObjectUnitOfWork
 		}
 	}
 
+    private static void assertValidExternalId(Schema.SObjectType relatedObject, Schema.SObjectField  externalIdField) 
+    {
+
+        String externalIdFieldName = externalIdField.getDescribe().getName();
+        Boolean relatedHasExternalIdField = relatedObject.getDescribe().fields.getMap().keySet().contains(externalIdFieldName.toLowerCase());
+        Boolean externalIdFieldIsValid = externalIdField.getDescribe().isExternalId();
+
+        if (!relatedHasExternalIdField) {
+            throw new UnitOfWorkException('Invalid argument: externalIdField. Field supplied is not a known field on the target sObject.');
+        }
+
+        if (!externalIdFieldIsValid) {
+            throw new UnitOfWorkException('Invalid argument: externalIdField. Field supplied is not a marked as an External Identifier.');
+        }
+    }
+
     private class Relationships
     {
         private List<IRelationship> m_relationships = new List<IRelationship>();
@@ -804,17 +893,7 @@ public virtual class fflib_SObjectUnitOfWork
             List<Schema.SObjectType> relatedObjects = relatedToField.getDescribe().getReferenceTo();
             Schema.SObjectType relatedObject = relatedObjects[0];
 
-            String externalIdFieldName = externalIdField.getDescribe().getName();
-            Boolean relatedHasExternalIdField = relatedObject.getDescribe().fields.getMap().keySet().contains(externalIdFieldName.toLowerCase());
-            Boolean externalIdFieldIsValid = externalIdField.getDescribe().isExternalId();
-
-            if (!relatedHasExternalIdField) {
-                throw new UnitOfWorkException('Invalid argument: externalIdField. Field supplied is not a known field on the target sObject.');
-            }
-
-            if (!externalIdFieldIsValid) {
-                throw new UnitOfWorkException('Invalid argument: externalIdField. Field supplied is not a marked as an External Identifier.');
-            }
+            assertValidExternalId(relatedObject, externalIdField);
 
             RelationshipByExternalId relationship = new RelationshipByExternalId();
             relationship.Record = record;
