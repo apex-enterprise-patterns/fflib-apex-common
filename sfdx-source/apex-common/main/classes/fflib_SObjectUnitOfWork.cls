@@ -109,7 +109,12 @@ public virtual class fflib_SObjectUnitOfWork
         }
         public void dmlUpsert(List<SObject> objList, Schema.SObjectField externalId) {
             if (!objList.isEmpty()) {
-                Database.upsert(objList, externalId);
+
+                Type objListType = Type.ForName('List<' + objList[0].getSObjectType() + '>');
+                List<SObject> typpedList = (List<SObject>)objListType.newInstance();
+                typpedList.addAll(objList);
+
+                Database.upsert(typpedList, externalId);
             }
         }
         public void dmlDelete(List<SObject> objList)
@@ -491,7 +496,7 @@ public virtual class fflib_SObjectUnitOfWork
      **/
     public void registerUpsert(SObject record, Schema.SObjectField externalIdField, Schema.sObjectField relatedToParentField, SObject relatedToParentRecord) 
     {
-
+        
         SObjectType sObjectType = record.getSObjectType();
         String sObjName = sObjectType.getDescribe().getName();
 
@@ -501,7 +506,18 @@ public virtual class fflib_SObjectUnitOfWork
         if (externalIdField == null) 
             throw new UnitOfWorkException('Invalid argument: externalIdField. If you want to upsert by id, use the registerUpsert method that has only one argument');
 
-        assertValidExternalId(sObjectType, externalIdField);
+        String externalIdFieldName = externalIdField.getDescribe().getName();
+        Boolean relatedHasExternalIdField = sObjectType.getDescribe().fields.getMap().keySet().contains(externalIdFieldName.toLowerCase());
+        Boolean externalIdFieldIsValid = externalIdField.getDescribe().isIdLookup();
+
+        if (record.Id != null && externalIdFieldName != 'Id')
+            throw new UnitOfWorkException('When upserting by external id, the record cannot already have the standard id populated');
+
+        if (!relatedHasExternalIdField)
+            throw new UnitOfWorkException('Invalid argument: externalIdField. Field supplied is not a known field on the target sObject.');
+
+        if (!externalIdFieldIsValid)
+            throw new UnitOfWorkException('Invalid argument: externalIdField. Field supplied cannot be used with upsert.');
 
         Schema.SObjectField registeredExternalId = m_externalIdToUpsertPerType.get(sObjName);
         if (registeredExternalId != null && registeredExternalId != externalIdField) 
@@ -848,22 +864,6 @@ public virtual class fflib_SObjectUnitOfWork
 		}
 	}
 
-    private static void assertValidExternalId(Schema.SObjectType relatedObject, Schema.SObjectField  externalIdField) 
-    {
-
-        String externalIdFieldName = externalIdField.getDescribe().getName();
-        Boolean relatedHasExternalIdField = relatedObject.getDescribe().fields.getMap().keySet().contains(externalIdFieldName.toLowerCase());
-        Boolean externalIdFieldIsValid = externalIdField.getDescribe().isExternalId();
-
-        if (!relatedHasExternalIdField) {
-            throw new UnitOfWorkException('Invalid argument: externalIdField. Field supplied is not a known field on the target sObject.');
-        }
-
-        if (!externalIdFieldIsValid) {
-            throw new UnitOfWorkException('Invalid argument: externalIdField. Field supplied is not a marked as an External Identifier.');
-        }
-    }
-
     private class Relationships
     {
         private List<IRelationship> m_relationships = new List<IRelationship>();
@@ -893,7 +893,17 @@ public virtual class fflib_SObjectUnitOfWork
             List<Schema.SObjectType> relatedObjects = relatedToField.getDescribe().getReferenceTo();
             Schema.SObjectType relatedObject = relatedObjects[0];
 
-            assertValidExternalId(relatedObject, externalIdField);
+            String externalIdFieldName = externalIdField.getDescribe().getName();
+            Boolean relatedHasExternalIdField = relatedObject.getDescribe().fields.getMap().keySet().contains(externalIdFieldName.toLowerCase());
+            Boolean externalIdFieldIsValid = externalIdField.getDescribe().isExternalId();
+
+            if (!relatedHasExternalIdField) {
+                throw new UnitOfWorkException('Invalid argument: externalIdField. Field supplied is not a known field on the target sObject.');
+            }
+
+            if (!externalIdFieldIsValid) {
+                throw new UnitOfWorkException('Invalid argument: externalIdField. Field supplied is not a marked as an External Identifier.');
+            }
 
             RelationshipByExternalId relationship = new RelationshipByExternalId();
             relationship.Record = record;
