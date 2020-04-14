@@ -69,6 +69,72 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     }
 
     @isTest
+    private static void TestSkippingDMLOperations_Default_ExecuteDMLIsTrue()
+    {
+        string testRecordName = 'UoW Test Name 1';
+
+        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
+
+        Opportunity opp = new Opportunity();
+        opp.Name = testRecordName;
+        opp.StageName = 'Open';
+        opp.CloseDate = System.today();
+        uow.registerNew( opp );
+
+        uow.commitWork();
+
+        List<Opportunity> opps = [select Id, Name, (Select Id from OpportunityLineItems) from Opportunity where Name = :testRecordName order by Name];
+
+        System.assertEquals(1, opps.size());
+    }
+
+    @isTest
+    private static void TestSkippingDMLOperations_ExplicitlySetExecuteDMLToTrue()
+    {
+        string testRecordName = 'UoW Test Name 1';
+
+        fflib_SObjectUnitOfWork.SimpleDML dml = new fflib_SObjectUnitOfWork.SimpleDML();
+        dml.setExecuteDMLOperations(true);
+
+        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS, dml);
+
+        Opportunity opp = new Opportunity();
+        opp.Name = testRecordName;
+        opp.StageName = 'Open';
+        opp.CloseDate = System.today();
+        uow.registerNew( opp );
+
+        uow.commitWork();
+
+        List<Opportunity> opps = [select Id, Name, (Select Id from OpportunityLineItems) from Opportunity where Name = :testRecordName order by Name];
+
+        System.assertEquals(1, opps.size());
+    }
+
+    @isTest
+    private static void TestSkippingDMLOperations_ExplicitlySetExecuteDMLToFalse()
+    {
+        string testRecordName = 'UoW Test Name 1';
+
+        fflib_SObjectUnitOfWork.SimpleDML dml = new fflib_SObjectUnitOfWork.SimpleDML();
+        dml.setExecuteDMLOperations(false);
+
+        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS, dml);
+
+        Opportunity opp = new Opportunity();
+        opp.Name = testRecordName;
+        opp.StageName = 'Open';
+        opp.CloseDate = System.today();
+        uow.registerNew( opp );
+
+        uow.commitWork();
+
+        List<Opportunity> opps = [select Id, Name, (Select Id from OpportunityLineItems) from Opportunity where Name = :testRecordName order by Name];
+
+        System.assertEquals(0, opps.size());
+    }
+
+    @isTest
     private static void testUnitOfWorkNewDirtyDelete()
     {
         // Insert Opportunities with UnitOfWork
