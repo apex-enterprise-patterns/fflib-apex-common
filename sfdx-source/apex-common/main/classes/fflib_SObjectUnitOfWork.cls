@@ -701,9 +701,9 @@ public virtual class fflib_SObjectUnitOfWork
 		onPublishBeforeEventsFinished();
 
 		onDMLStarting();
-		insertDmlByType();
-		updateDmlByType();
+        insertDmlByType();
         upsertDmlByType();
+		updateDmlByType();
 		deleteDmlByType();
 		emptyRecycleBinByType();
 		resolveEmailRelationships();
