@@ -772,6 +772,7 @@ public virtual class fflib_SObjectUnitOfWork
         String sobjName;
         for (Schema.SObjectType sObjectType : m_sObjectTypes) {
             sobjName = sObjectType.getDescribe().getName();
+            m_relationships.get(sobjName).resolve();
 			m_dml.dmlUpsert(m_upsertRecordsPerType.get(sobjName), m_externalIdToUpsertPerType.get(sobjName));
 		}
     }
@@ -964,7 +965,8 @@ public virtual class fflib_SObjectUnitOfWork
 
         public void resolve()
         {
-            this.Record.put( this.RelatedToField, this.RelatedTo.Id);
+            if (this.Record.get(this.RelatedToField) == null) 
+                this.Record.put( this.RelatedToField, this.RelatedTo.Id);
         }
     }
 
