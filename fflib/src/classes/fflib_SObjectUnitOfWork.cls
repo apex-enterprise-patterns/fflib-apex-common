@@ -176,7 +176,7 @@ public virtual class fflib_SObjectUnitOfWork
      */
     private void handleRegisterType(Schema.SObjectType sObjectType)
     {
-        String sObjectName = sObjectType.getDescribe().getName();
+        String sObjectName = sObjectType.getDescribe(SObjectDescribeOptions.DEFERRED).getName();
 
         // add type to dml operation tracking
         m_newListByType.put(sObjectName, new List<SObject>());
@@ -216,7 +216,7 @@ public virtual class fflib_SObjectUnitOfWork
 	 **/
 	public void registerEmptyRecycleBin(SObject record)
 	{
-		String sObjectType = record.getSObjectType().getDescribe().getName();
+		String sObjectType = record.getSObjectType().getDescribe(SObjectDescribeOptions.DEFERRED).getName();
 		assertForSupportedSObjectType(m_emptyRecycleBinMapByType, sObjectType);
 
 		m_emptyRecycleBinMapByType.get(sObjectType).put(record.Id, record);
@@ -270,7 +270,7 @@ public virtual class fflib_SObjectUnitOfWork
     {
         if (record.Id != null)
             throw new UnitOfWorkException('Only new records can be registered as new');
-        String sObjectType = record.getSObjectType().getDescribe().getName();
+        String sObjectType = record.getSObjectType().getDescribe(SObjectDescribeOptions.DEFERRED).getName();
 
 		assertForNonEventSObjectType(sObjectType);
 		assertForSupportedSObjectType(m_newListByType, sObjectType);
@@ -290,7 +290,7 @@ public virtual class fflib_SObjectUnitOfWork
      */
     public void registerRelationship(SObject record, Schema.sObjectField relatedToField, SObject relatedTo)
     {
-        String sObjectType = record.getSObjectType().getDescribe().getName();
+        String sObjectType = record.getSObjectType().getDescribe(SObjectDescribeOptions.DEFERRED).getName();
 
 		assertForNonEventSObjectType(sObjectType);
 		assertForSupportedSObjectType(m_newListByType, sObjectType);
@@ -327,7 +327,7 @@ public virtual class fflib_SObjectUnitOfWork
     public void registerRelationship(SObject record, Schema.sObjectField relatedToField, Schema.sObjectField externalIdField, Object externalId)
     {
         // NOTE: Due to the lack of ExternalID references on Standard Objects, this method can not be provided a standardized Unit Test. - Rick Parker
-        String sObjectType = record.getSObjectType().getDescribe().getName();
+        String sObjectType = record.getSObjectType().getDescribe(SObjectDescribeOptions.DEFERRED).getName();
         if(!m_newListByType.containsKey(sObjectType))
             throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
         m_relationships.get(sObjectType).add(record, relatedToField, externalIdField, externalId);
@@ -347,7 +347,7 @@ public virtual class fflib_SObjectUnitOfWork
     {
         if (record.Id == null)
             throw new UnitOfWorkException('New records cannot be registered as dirty');
-        String sObjectType = record.getSObjectType().getDescribe().getName();
+        String sObjectType = record.getSObjectType().getDescribe(SObjectDescribeOptions.DEFERRED).getName();
 
 		assertForNonEventSObjectType(sObjectType);
 		assertForSupportedSObjectType(m_dirtyMapByType, sObjectType);
@@ -383,7 +383,7 @@ public virtual class fflib_SObjectUnitOfWork
     {
         if (record.Id == null)
             throw new UnitOfWorkException('New records cannot be registered as dirty');
-        String sObjectType = record.getSObjectType().getDescribe().getName();
+        String sObjectType = record.getSObjectType().getDescribe(SObjectDescribeOptions.DEFERRED).getName();
 
 		assertForNonEventSObjectType(sObjectType);
 		assertForSupportedSObjectType(m_dirtyMapByType, sObjectType);
@@ -445,7 +445,7 @@ public virtual class fflib_SObjectUnitOfWork
     {
         if (record.Id == null)
             throw new UnitOfWorkException('New records cannot be registered for deletion');
-        String sObjectType = record.getSObjectType().getDescribe().getName();
+        String sObjectType = record.getSObjectType().getDescribe(SObjectDescribeOptions.DEFERRED).getName();
 
 		assertForNonEventSObjectType(sObjectType);
 		assertForSupportedSObjectType(m_deletedMapByType, sObjectType);
@@ -495,7 +495,7 @@ public virtual class fflib_SObjectUnitOfWork
      **/
     public void registerPublishBeforeTransaction(SObject record)
     {
-        String sObjectType = record.getSObjectType().getDescribe().getName();
+        String sObjectType = record.getSObjectType().getDescribe(SObjectDescribeOptions.DEFERRED).getName();
 
 		assertForEventSObjectType(sObjectType);
 		assertForSupportedSObjectType(m_publishBeforeListByType, sObjectType);
@@ -523,7 +523,7 @@ public virtual class fflib_SObjectUnitOfWork
      **/
     public void registerPublishAfterSuccessTransaction(SObject record)
     {
-        String sObjectType = record.getSObjectType().getDescribe().getName();
+        String sObjectType = record.getSObjectType().getDescribe(SObjectDescribeOptions.DEFERRED).getName();
 
 		assertForEventSObjectType(sObjectType);
 		assertForSupportedSObjectType(m_publishAfterSuccessListByType, sObjectType);
@@ -550,7 +550,7 @@ public virtual class fflib_SObjectUnitOfWork
      **/
     public void registerPublishAfterFailureTransaction(SObject record)
     {
-        String sObjectType = record.getSObjectType().getDescribe().getName();
+        String sObjectType = record.getSObjectType().getDescribe(SObjectDescribeOptions.DEFERRED).getName();
 
 		assertForEventSObjectType(sObjectType);
 		assertForSupportedSObjectType(m_publishAfterFailureListByType, sObjectType);
@@ -646,7 +646,7 @@ public virtual class fflib_SObjectUnitOfWork
 	{
 		for (Schema.SObjectType sObjectType : m_sObjectTypes)
 		{
-			m_dml.eventPublish(m_publishBeforeListByType.get(sObjectType.getDescribe().getName()));
+			m_dml.eventPublish(m_publishBeforeListByType.get(sObjectType.getDescribe(SObjectDescribeOptions.DEFERRED).getName()));
 		}
 	}
 
@@ -654,8 +654,8 @@ public virtual class fflib_SObjectUnitOfWork
 	{
 		for (Schema.SObjectType sObjectType : m_sObjectTypes)
 		{
-			m_relationships.get(sObjectType.getDescribe().getName()).resolve();
-			m_dml.dmlInsert(m_newListByType.get(sObjectType.getDescribe().getName()));
+			m_relationships.get(sObjectType.getDescribe(SObjectDescribeOptions.DEFERRED).getName()).resolve();
+			m_dml.dmlInsert(m_newListByType.get(sObjectType.getDescribe(SObjectDescribeOptions.DEFERRED).getName()));
 		}
 	}
 
@@ -663,7 +663,7 @@ public virtual class fflib_SObjectUnitOfWork
 	{
 		for (Schema.SObjectType sObjectType : m_sObjectTypes)
 		{
-			m_dml.dmlUpdate(m_dirtyMapByType.get(sObjectType.getDescribe().getName()).values());
+			m_dml.dmlUpdate(m_dirtyMapByType.get(sObjectType.getDescribe(SObjectDescribeOptions.DEFERRED).getName()).values());
 		}
 	}
 
@@ -672,7 +672,7 @@ public virtual class fflib_SObjectUnitOfWork
 		Integer objectIdx = m_sObjectTypes.size() - 1;
 		while (objectIdx >= 0)
 		{
-			m_dml.dmlDelete(m_deletedMapByType.get(m_sObjectTypes[objectIdx--].getDescribe().getName()).values());
+			m_dml.dmlDelete(m_deletedMapByType.get(m_sObjectTypes[objectIdx--].getDescribe(SObjectDescribeOptions.DEFERRED).getName()).values());
 		}
 	}
 
@@ -681,7 +681,7 @@ public virtual class fflib_SObjectUnitOfWork
 		Integer objectIdx = m_sObjectTypes.size() - 1;
 		while (objectIdx >= 0)
 		{
-			m_dml.emptyRecycleBin(m_emptyRecycleBinMapByType.get(m_sObjectTypes[objectIdx--].getDescribe().getName()).values());
+			m_dml.emptyRecycleBin(m_emptyRecycleBinMapByType.get(m_sObjectTypes[objectIdx--].getDescribe(SObjectDescribeOptions.DEFERRED).getName()).values());
 		}
 	}
 
@@ -703,7 +703,7 @@ public virtual class fflib_SObjectUnitOfWork
 	{
 		for (Schema.SObjectType sObjectType : m_sObjectTypes)
 		{
-			m_dml.eventPublish(m_publishAfterSuccessListByType.get(sObjectType.getDescribe().getName()));
+			m_dml.eventPublish(m_publishAfterSuccessListByType.get(sObjectType.getDescribe(SObjectDescribeOptions.DEFERRED).getName()));
 		}
 	}
 
@@ -711,7 +711,7 @@ public virtual class fflib_SObjectUnitOfWork
 	{
 		for (Schema.SObjectType sObjectType : m_sObjectTypes)
 		{
-			m_dml.eventPublish(m_publishAfterFailureListByType.get(sObjectType.getDescribe().getName()));
+			m_dml.eventPublish(m_publishAfterFailureListByType.get(sObjectType.getDescribe(SObjectDescribeOptions.DEFERRED).getName()));
 		}
 	}
 
