@@ -12,6 +12,7 @@
     "sfdcLoginUrl": "https://login.salesforce.com",
     "sourceApiVersion": "48.0",
     "packageAliases": {
-        "fflib-apex-common": "0Ho2o000000TN4TCAW"
+        "fflib-apex-common": "0Ho2o000000TN4TCAW",
+        "fflib-apex-common@0.1.0-1": "0Ho2o000000TN4TCAW"
     }
 }
