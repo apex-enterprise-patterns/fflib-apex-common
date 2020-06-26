@@ -3,3 +3,4 @@
 *.prefs
 
 fflib/salesforce.schema
+.sfdx/
