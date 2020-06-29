@@ -759,15 +759,17 @@ public virtual class fflib_SObjectUnitOfWork
     {
         private List<IRelationship> m_relationships = new List<IRelationship>();
 
-        public void resolve()
+        public Boolean resolve()
         {
+            Boolean result = false;
             // Resolve relationships
             for (IRelationship relationship : m_relationships)
             {
-                //relationship.Record.put(relationship.RelatedToField, relationship.RelatedTo.Id);
                 relationship.resolve();
+                result = result || relationship.isSelfLookup();
             }
 
+            return result;
         }
 
         public void add(SObject record, Schema.sObjectField relatedToField, Schema.SObjectField externalIdField, Object externalId)
@@ -828,6 +830,7 @@ public virtual class fflib_SObjectUnitOfWork
     private interface IRelationship
     {
         void resolve();
+        Boolean isSelfLookup();
     }
 
     private class RelationshipByExternalId implements IRelationship
@@ -845,6 +848,11 @@ public virtual class fflib_SObjectUnitOfWork
             relationshipObject.put( ExternalIdField.getDescribe().getName(), this.ExternalId );
             this.Record.putSObject( this.RelationshipName, relationshipObject );
         }
+
+        public Boolean isSelfLookup() 
+        {
+            return Record.getSObjectType() == RelatedTo;
+        }
     }
 
     private class Relationship implements IRelationship
@@ -857,6 +865,11 @@ public virtual class fflib_SObjectUnitOfWork
         {
             this.Record.put( this.RelatedToField, this.RelatedTo.Id);
         }
+
+        public Boolean isSelfLookup() 
+        {
+            return Record.getSObjectType() == RelatedTo.getSObjectType();
+        }
     }
 
     private class EmailRelationship implements IRelationship
@@ -867,6 +880,11 @@ public virtual class fflib_SObjectUnitOfWork
         public void resolve()
         {
             this.email.setWhatId( this.RelatedTo.Id );
+        }
+
+        public Boolean isSelfLookup() 
+        {
+            return false;
         }
     }
 
