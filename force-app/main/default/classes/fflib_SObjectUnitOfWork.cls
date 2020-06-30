@@ -654,8 +654,14 @@ public virtual class fflib_SObjectUnitOfWork
 	{
 		for (Schema.SObjectType sObjectType : m_sObjectTypes)
 		{
-			m_relationships.get(sObjectType.getDescribe().getName()).resolve();
+			Boolean hasSelfLookup = m_relationships.get(sObjectType.getDescribe().getName()).resolve();
 			m_dml.dmlInsert(m_newListByType.get(sObjectType.getDescribe().getName()));
+            
+            // Note: In case of self lookup run a dirty cycle to populate parent ids
+            if(hasSelfLookup) {
+                m_relationships.get(sObjectType.getDescribe().getName()).resolve();
+                m_dml.dmlUpdate(m_newListByType.get(sObjectType.getDescribe().getName()));
+            }
 		}
 	}
 
@@ -768,7 +774,7 @@ public virtual class fflib_SObjectUnitOfWork
                 relationship.resolve();
                 result = result || relationship.isSelfLookup();
             }
-
+            
             return result;
         }
 
