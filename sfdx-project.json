@@ -2,10 +2,23 @@
     "packageDirectories": [
         {
             "path": "sfdx-source/apex-common",
-            "default": true
+            "package": "Apex Enterprise Patterns",
+            "versionName": "ver 0.1",
+            "versionNumber": "0.1.0.NEXT",
+            "default": true,
+            "dependencies": [
+                {
+                    "package": "ApexMocks Framework",
+                    "subscriberPackageVersionId": "04t0y000000u3k4AAA"
+                }
+            ]
         }
     ],
     "namespace": "",
     "sfdcLoginUrl": "https://login.salesforce.com",
-    "sourceApiVersion": "48.0"
+    "sourceApiVersion": "48.0",
+    "packageAliases": {
+        "Apex Enterprise Patterns": "0Ho0y000000PAtGCAW",
+        "Apex Enterprise Patterns@0.1.0-1": "04t0y000000u3k9AAA"
+    }
 }
