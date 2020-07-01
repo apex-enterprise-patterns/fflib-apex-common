@@ -5,7 +5,7 @@
             "default": true,
             "package": "fflib-apex-common",
             "versionName": "ver 0.1",
-            "versionNumber": "0.1.2.NEXT"
+            "versionNumber": "0.2.0.NEXT"
         }
     ],
     "namespace": "",
@@ -16,6 +16,8 @@
         "fflib-apex-common@0.1.0-1": "0Ho2o000000TN4TCAW",
         "fflib-apex-common@0.1.0-2": "04t2o000001Aw6tAAC",
         "fflib-apex-common@0.1.1-1": "04t2o000001Aw6yAAC",
-        "fflib-apex-common@0.1.2-1": "04t2o000001Aw73AAC"
+        "fflib-apex-common@0.1.2-1": "04t2o000001Aw73AAC",
+        "fflib-apex-common@0.1.2-2": "04t2o000001Aw99AAC",
+        "fflib-apex-common@0.2.0-1": "04t2o000001Aw9EAAS"
     }
 }
