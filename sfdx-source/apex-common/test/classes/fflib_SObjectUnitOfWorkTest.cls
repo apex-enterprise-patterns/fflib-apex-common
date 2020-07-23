@@ -400,6 +400,152 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         System.assertEquals(opp.Amount, amountUpdate.Amount);
     }
 
+    /**
+     * Try registering a single field as dirty on multiple records.
+     *
+     */
+    @isTest
+    private static void testRegisterDirtyRecordsWithDirtyFields()
+    {
+        // GIVEN a list of existing records
+        Opportunity opportunityA = new Opportunity(
+                Id = fflib_IDGenerator.generate(Opportunity.SObjectType),
+                Name = 'test name A',
+                StageName = 'Open',
+                CloseDate = System.today());
+        Opportunity opportunityB = new Opportunity(
+                Id = fflib_IDGenerator.generate(Opportunity.SObjectType),
+                Name = 'test name B',
+                StageName = 'Open',
+                CloseDate = System.today());
+
+        MockDML mockDML = new MockDML();
+        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS, mockDML);
+        uow.registerDirty(new List<Opportunity>{ opportunityA, opportunityB });
+
+        // WHEN we register the records again with different fields updated
+        List<Opportunity> recordsWithStageUpdate = new List<Opportunity>
+        {
+                new Opportunity(Id = opportunityA.Id, StageName = 'Closed'),
+                new Opportunity(Id = opportunityB.Id, StageName = 'Closed')
+        };
+        List<Opportunity> recordsWithAmountUpdate = new List<Opportunity>
+        {
+                new Opportunity(Id = opportunityA.Id, Amount = 250),
+                new Opportunity(Id = opportunityB.Id, Amount = 250)
+        };
+        uow.registerDirty(recordsWithStageUpdate, new List<SObjectField> { Opportunity.StageName });
+        uow.registerDirty(recordsWithAmountUpdate, new List<SObjectField> { Opportunity.Amount });
+        uow.commitWork();
+
+        // THEN the records should be registered with both changed values for Amount and StageName
+        System.assert(
+                new fflib_MatcherDefinitions.SObjectsWith(
+                        new List<Map<SObjectField, Object>>{
+                                new Map<SObjectField, Object>
+                                {
+                                     Opportunity.Id => opportunityA.Id,
+                                     Opportunity.Amount => 250,
+                                     Opportunity.StageName => 'Closed'
+                                },
+                                new Map<SObjectField, Object>
+                                {
+                                     Opportunity.Id => opportunityB.Id,
+                                     Opportunity.Amount => 250,
+                                     Opportunity.StageName => 'Closed'
+                                }
+                        }
+                )
+                        .matches(mockDML.recordsForUpdate),
+                'Records not registered with the correct values'
+        );
+    }    /**
+     * Try registering a single field as dirty on multiple records.
+     *
+     */
+    @isTest
+    private static void testRegisterDirtyRecordsWithDirtyFields_failing()
+    {
+        // GIVEN a list of existing records
+        Opportunity opportunityA = new Opportunity(
+                Id = fflib_IDGenerator.generate(Opportunity.SObjectType),
+                Name = 'test name A',
+                StageName = 'Open',
+                CloseDate = System.today());
+        Opportunity opportunityB = new Opportunity(
+                Id = fflib_IDGenerator.generate(Opportunity.SObjectType),
+                Name = 'test name B',
+                StageName = 'Open',
+                CloseDate = System.today());
+
+        MockDML mockDML = new MockDML();
+        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS, mockDML);
+        uow.registerDirty(new List<Opportunity>{ opportunityA, opportunityB });
+
+        // WHEN we register the records again with different fields updated
+        List<Opportunity> recordsWithStageUpdate = new List<Opportunity>
+        {
+                new Opportunity(Id = opportunityA.Id, StageName = 'Closed'),
+                new Opportunity(Id = opportunityB.Id, StageName = 'Closed')
+        };
+        List<Opportunity> recordsWithAmountUpdate = new List<Opportunity>
+        {
+                new Opportunity(Id = opportunityA.Id, Amount = 250),
+                new Opportunity(Id = opportunityB.Id, Amount = 250)
+        };
+        uow.registerDirty(recordsWithStageUpdate, new List<SObjectField> { Opportunity.StageName });
+        uow.registerDirty(recordsWithAmountUpdate, new List<SObjectField> { Opportunity.Amount });
+        uow.registerDirty( // Register again the original record, should overwrite the one with the dirty fields
+                new Opportunity(
+                Id = OpportunityB.Id,
+                Name = 'test name B',
+                StageName = 'Open',
+                CloseDate = System.today())
+        ); 
+        uow.commitWork();
+
+        // THEN only the first record should be registered with both changed values for Amount and StageName and the second should be the original
+        System.assert(
+                !new fflib_MatcherDefinitions.SObjectsWith(
+                        new List<Map<SObjectField, Object>>{
+                                new Map<SObjectField, Object>
+                                {
+                                     Opportunity.Id => opportunityA.Id,
+                                     Opportunity.Amount => 250,
+                                     Opportunity.StageName => 'Closed'
+                                },
+                                new Map<SObjectField, Object>
+                                {
+                                     Opportunity.Id => opportunityB.Id,
+                                     Opportunity.Amount => 250,
+                                     Opportunity.StageName => 'Closed'
+                                }
+                        }
+                )
+                        .matches(mockDML.recordsForUpdate),
+                'Not all records should not be registered with the dirty values'
+        );
+        System.assert(
+                new fflib_MatcherDefinitions.SObjectsWith(
+                        new List<Map<SObjectField, Object>>{
+                                new Map<SObjectField, Object>
+                                {
+                                     Opportunity.Id => opportunityA.Id,
+                                     Opportunity.Amount => 250,
+                                     Opportunity.StageName => 'Closed'
+                                },
+                                new Map<SObjectField, Object>
+                                {
+                                     Opportunity.Id => opportunityB.Id,
+                                     Opportunity.StageName => 'Open'
+                                }
+                        }
+                )
+                        .matches(mockDML.recordsForUpdate),
+                'The second record should be registered with the original values'
+        );
+    }
+
     @isTest
     private static void testRegisterUpsert() {
         Opportunity existingOpp = new Opportunity(Name = 'Existing Opportunity', StageName = 'Open', CloseDate = System.today());
@@ -593,6 +739,40 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         }
 
         private boolean doWorkWasCalled = false;
+    }
+
+    private class MockDML implements fflib_SObjectUnitOfWork.IDML
+    {
+        public List<SObject> recordsForInsert = new List<SObject>();
+        public List<SObject> recordsForUpdate = new List<SObject>();
+        public List<SObject> recordsForDelete = new List<SObject>();
+        public List<SObject> recordsForRecycleBin = new List<SObject>();
+        public List<SObject> recordsForEventPublish = new List<SObject>();
+
+        public void dmlInsert(List<SObject> objList)
+        {
+            this.recordsForInsert.addAll(objList);
+        }
+
+        public void dmlUpdate(List<SObject> objList)
+        {
+            this.recordsForUpdate.addAll(objList);
+        }
+
+        public void dmlDelete(List<SObject> objList)
+        {
+            this.recordsForDelete.addAll(objList);
+        }
+
+        public void eventPublish(List<SObject> objList)
+        {
+            this.recordsForEventPublish.addAll(objList);
+        }
+
+        public void emptyRecycleBin(List<SObject> objList)
+        {
+            this.recordsForRecycleBin.addAll(objList);
+        }
     }
 
     public class DerivedUnitOfWorkException extends Exception {}

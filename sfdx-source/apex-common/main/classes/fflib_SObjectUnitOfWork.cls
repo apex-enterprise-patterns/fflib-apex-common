@@ -343,6 +343,26 @@ public virtual class fflib_SObjectUnitOfWork
         registerDirty(record, new List<SObjectField>());
     }
 
+    /**
+     * Registers the entire records as dirty or just only the dirty fields if the record was already registered
+     *
+     * @param records SObjects to register as dirty
+     * @param dirtyFields A list of modified fields
+     */
+    public void registerDirty(List<SObject> records, List<SObjectField> dirtyFields)
+    {
+	    for (SObject record : records)
+	    {
+		    registerDirty(record, dirtyFields);
+	    }
+    }
+
+	/**
+	 * Registers the entire record as dirty or just only the dirty fields if the record was already registered
+	 *
+	 * @param records SObject to register as dirty
+	 * @param dirtyFields A list of modified fields
+	 */
     public void registerDirty(SObject record, List<SObjectField> dirtyFields)
     {
         if (record.Id == null)
