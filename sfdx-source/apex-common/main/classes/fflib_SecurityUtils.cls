@@ -93,7 +93,7 @@ public class fflib_SecurityUtils
     			String.format(
 	    			this.getMessage(),
 	    			new List<String>{
-	    				objectType.getDescribe().getName(),
+	    				objectType.getDescribe(SObjectDescribeOptions.DEFERRED).getName(),
 	    				fieldToken.getDescribe().getName()
 	    			}
 	    		)
@@ -304,7 +304,7 @@ public class fflib_SecurityUtils
     {
     	if (BYPASS_INTERNAL_FLS_AND_CRUD)
             return;
-    	if (!objType.getDescribe().isCreateable())
+    	if (!objType.getDescribe(SObjectDescribeOptions.DEFERRED).isCreateable())
     	{
     		throw new CrudException(OperationType.CREATE, objType);
     	}
@@ -318,7 +318,7 @@ public class fflib_SecurityUtils
     {
     	if (BYPASS_INTERNAL_FLS_AND_CRUD)
             return;
-        if (!objType.getDescribe().isAccessible())
+        if (!objType.getDescribe(SObjectDescribeOptions.DEFERRED).isAccessible())
         	throw new CrudException(OperationType.READ, objType);
     }
 
@@ -330,7 +330,7 @@ public class fflib_SecurityUtils
     {
     	if (BYPASS_INTERNAL_FLS_AND_CRUD)
             return;
-        if (!objType.getDescribe().isUpdateable())
+        if (!objType.getDescribe(SObjectDescribeOptions.DEFERRED).isUpdateable())
         	throw new CrudException(OperationType.MODIFY, objType);
     }
 
@@ -342,7 +342,7 @@ public class fflib_SecurityUtils
     {
     	if (BYPASS_INTERNAL_FLS_AND_CRUD)
             return;
-        if (!objType.getDescribe().isDeletable())
+        if (!objType.getDescribe(SObjectDescribeOptions.DEFERRED).isDeletable())
             throw new CrudException(OperationType.DEL, objType);
     }
 }
