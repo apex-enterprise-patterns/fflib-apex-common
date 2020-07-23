@@ -28,6 +28,13 @@ Referenced Packages/
 .vscode/
 .history/
 
+# IntelliJ IDE Related
+.idea/
+*.iml
+*.iws
+IlluminatedCloud/
+.project.license
+
 # SFDX Related
 .sfdx/
 sfdx-source/common-base/main/default/
