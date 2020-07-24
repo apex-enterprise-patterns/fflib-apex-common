@@ -266,7 +266,7 @@ public virtual class fflib_SObjectUnitOfWork
      * @param relatedToParentField A SObjectField reference to the child field that associates the child record with its parent
      * @param relatedToParentRecord A SObject instance of the parent record (should also be registered as new separately)
      **/
-    public void registerNew(SObject record, Schema.sObjectField relatedToParentField, SObject relatedToParentRecord)
+    public void registerNew(SObject record, Schema.SObjectField relatedToParentField, SObject relatedToParentRecord)
     {
         if (record.Id != null)
             throw new UnitOfWorkException('Only new records can be registered as new');
@@ -318,13 +318,13 @@ public virtual class fflib_SObjectUnitOfWork
      * @param record An existing or newly created record
      * @param relatedToField A SObjectField reference to the lookup field that relates the two records together
      * @param externalIdField A SObjectField reference to a field on the target SObject that is marked as isExternalId
-     * @param externalId A Object representing the targetted value of the externalIdField in said lookup
+     * @param externalId A Object representing the targeted value of the externalIdField in said lookup
      *
      * Usage Example: uow.registerRelationship(recordSObject, record_sobject__c.relationship_field__c, lookup_sobject__c.external_id__c, 'abc123');
      *
      * Wraps putSObject, creating a new instance of the lookup sobject using the external id field and value.
      */
-    public void registerRelationship(SObject record, Schema.sObjectField relatedToField, Schema.sObjectField externalIdField, Object externalId)
+    public void registerRelationship(SObject record, Schema.SObjectField relatedToField, Schema.SObjectField externalIdField, Object externalId)
     {
         // NOTE: Due to the lack of ExternalID references on Standard Objects, this method can not be provided a standardized Unit Test. - Rick Parker
         String sObjectType = record.getSObjectType().getDescribe().getName();
@@ -360,7 +360,7 @@ public virtual class fflib_SObjectUnitOfWork
 	/**
 	 * Registers the entire record as dirty or just only the dirty fields if the record was already registered
 	 *
-	 * @param records SObject to register as dirty
+	 * @param record SObject to register as dirty
 	 * @param dirtyFields A list of modified fields
 	 */
     public void registerDirty(SObject record, List<SObjectField> dirtyFields)
@@ -399,16 +399,9 @@ public virtual class fflib_SObjectUnitOfWork
      * @param relatedToParentField A SObjectField reference to the child field that associates the child record with its parent
      * @param relatedToParentRecord A SObject instance of the parent record (should also be registered as new separately)
      **/
-    public void registerDirty(SObject record, Schema.sObjectField relatedToParentField, SObject relatedToParentRecord)
+    public void registerDirty(SObject record, Schema.SObjectField relatedToParentField, SObject relatedToParentRecord)
     {
-        if (record.Id == null)
-            throw new UnitOfWorkException('New records cannot be registered as dirty');
-        String sObjectType = record.getSObjectType().getDescribe().getName();
-
-		assertForNonEventSObjectType(sObjectType);
-		assertForSupportedSObjectType(m_dirtyMapByType, sObjectType);
-
-        m_dirtyMapByType.get(sObjectType).put(record.Id, record);
+	    registerDirty(record);
         if (relatedToParentRecord!=null && relatedToParentField!=null)
             registerRelationship(record, relatedToParentField, relatedToParentRecord);
     }
@@ -735,6 +728,7 @@ public virtual class fflib_SObjectUnitOfWork
 		}
 	}
 
+	@TestVisible
 	private void assertForNonEventSObjectType(String sObjectType)
 	{
 		if (sObjectType.length() > 3 && sObjectType.right(3)  == '__e')
@@ -749,6 +743,7 @@ public virtual class fflib_SObjectUnitOfWork
 		}
 	}
 
+	@TestVisible
 	private void assertForEventSObjectType(String sObjectType)
 	{
 		if (sObjectType.length() > 3 && sObjectType.right(3) != '__e')
@@ -762,6 +757,7 @@ public virtual class fflib_SObjectUnitOfWork
 		}
 	}
 
+	@TestVisible
 	private void assertForSupportedSObjectType(Map<String, Object> theMap, String sObjectType)
 	{
 		if (!theMap.containsKey(sObjectType))
