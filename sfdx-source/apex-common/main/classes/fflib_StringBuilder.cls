@@ -76,7 +76,7 @@ public virtual class fflib_StringBuilder
 	}
 
 	/**
-	 * Subclasses the StringBuilder to produce a comma delimited contactination of strings
+	 * Subclasses the StringBuilder to produce a comma delimited concatenation of strings
 	 **/
 	public virtual with sharing class CommaDelimitedListBuilder extends fflib_StringBuilder
 	{
@@ -122,7 +122,7 @@ public virtual class fflib_StringBuilder
 			this(values, null);
 		}
 		
-		public FieldListBuilder(List<Schema.SObjectField> values, List<Schema.Fieldset> fieldSets)
+		public FieldListBuilder(List<Schema.SObjectField> values, List<Schema.FieldSet> fieldSets)
 		{
 			// Create a distinct set of fields (or field paths) to select
 			for(Schema.SObjectField value : values)
@@ -149,8 +149,8 @@ public virtual class fflib_StringBuilder
 		{
 			super(values, fieldSets);
 			
-			// Dynamically add CurrencyIsoCode field for mult-currency organisations						
-			if(Userinfo.isMultiCurrencyOrganization())
+			// Dynamically add CurrencyIsoCode field for multi-currency organisations
+			if(UserInfo.isMultiCurrencyOrganization())
 				add('CurrencyIsoCode');
 		}
 	}	

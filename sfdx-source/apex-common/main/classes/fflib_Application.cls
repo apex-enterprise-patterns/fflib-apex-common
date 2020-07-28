@@ -118,7 +118,7 @@ public virtual class fflib_Application
 	}
 
 	/**
-	 * Simple Service Factory implementaiton
+	 * Simple Service Factory implementation
 	 **/
 	public virtual class ServiceFactory
 	{
@@ -154,7 +154,7 @@ public virtual class fflib_Application
 			if(m_serviceInterfaceTypeByMockService.containsKey(serviceInterfaceType))
 				return m_serviceInterfaceTypeByMockService.get(serviceInterfaceType);
 
-			// Create an instance of the type impleneting the given interface
+			// Create an instance of the type implementing the given interface
 			Type serviceImpl = m_serviceInterfaceTypeByServiceImplType.get(serviceInterfaceType);
 			if(serviceImpl==null)
 				throw new DeveloperException('No implementation registered for service interface ' + serviceInterfaceType.getName());	
@@ -178,7 +178,7 @@ public virtual class fflib_Application
 
 		/**
 		 * Consturcts a Selector Factory linking SObjectType's with Apex Classes implement the fflib_ISObjectSelector interface
-		 *   Note that the factory does not chekc the given Apex Classes implement the interface
+		 *   Note that the factory does not check the given Apex Classes implement the interface
 		 *     currently this is not possible in Apex.
 		 *
 		 * @Param sObjectBySelectorType Map of SObjectType's to Selector Apex Classes
@@ -191,7 +191,7 @@ public virtual class fflib_Application
 
 		/**
 		 * Creates a new instance of the associated Apex Class implementing fflib_ISObjectSelector
-		 *   for the given SObjectType, or if provided via setMock returns the Mock implementaton
+		 *   for the given SObjectType, or if provided via setMock returns the Mock implementation
 		 *
 		 * @param sObjectType An SObjectType token, e.g. Account.SObjectType
 		 **/
@@ -241,9 +241,9 @@ public virtual class fflib_Application
 		 *   Account selector to query the related Account records, e.g.
 		 *
 		 *     List<Account> accounts = 
-		 *        (List<Account>) Applicaiton.Selector.selectByRelationship(myOpps, Opportunity.AccountId);
+		 *        (List<Account>) Application.Selector.selectByRelationship(myOpps, Opportunity.AccountId);
 		 *
-		 * @param relatedRecords used to extract the related record Ids, e.g. Opportunty records
+		 * @param relatedRecords used to extract the related record Ids, e.g. Opportunity records
 		 * @param relationshipField field in the passed records that contains the relationship records to query, e.g. Opportunity.AccountId
 		 **/
 		public List<SObject> selectByRelationship(List<SObject> relatedRecords, SObjectField relationshipField)
@@ -277,7 +277,7 @@ public virtual class fflib_Application
 		protected Map<SObjectType, fflib_ISObjectDomain> m_sObjectByMockDomain;
 
 		/**
-		 * Consturcts a Domain factory, using an instance of the Selector Factory
+		 * Constructs a Domain factory, using an instance of the Selector Factory
 		 *   and a map of Apex classes implementing fflib_ISObjectDomain by SObjectType
 		 *   Note this will not check the Apex classes provided actually implement the interfaces
 		 *     since this is not possible in the Apex runtime at present
@@ -308,12 +308,12 @@ public virtual class fflib_Application
 		}	
 
 		/**
-		 * Dynamically constructs an instace of the Domain class for the given records
+		 * Dynamically constructs an instance of the Domain class for the given records
 		 *   Will return a Mock implementation if one has been provided via setMock
 		 *
-		 * @param records A concreate list (e.g. List<Account> vs List<SObject>) of records
+		 * @param records A concrete list (e.g. List<Account> vs List<SObject>) of records
 		 * @exception Throws an exception if the SObjectType cannot be determined from the list 
-		 *              or the constructor for Domain class was not registered for the SOBjectType
+		 *              or the constructor for Domain class was not registered for the SObjectType
 		 **/
 		public virtual fflib_ISObjectDomain newInstance(List<SObject> records)
 		{
@@ -337,7 +337,7 @@ public virtual class fflib_Application
 		}	
 
 		/**
-		 * Dynamically constructs an instace of the Domain class for the given records and SObjectType
+		 * Dynamically constructs an instance of the Domain class for the given records and SObjectType
 		 *   Will return a Mock implementation if one has been provided via setMock
 		 *
 		 * @param records A list records
