@@ -124,7 +124,7 @@ public virtual class fflib_SObjectUnitOfWork
     /**
      * Constructs a new UnitOfWork to support work against the given object list
      *
-     * @param sObjectList A list of objects given in dependency order (least dependent first)
+     * @param sObjectTypes A list of objects given in dependency order (least dependent first)
      */
     public fflib_SObjectUnitOfWork(List<Schema.SObjectType> sObjectTypes)
     {
@@ -266,7 +266,7 @@ public virtual class fflib_SObjectUnitOfWork
      * @param relatedToParentField A SObjectField reference to the child field that associates the child record with its parent
      * @param relatedToParentRecord A SObject instance of the parent record (should also be registered as new separately)
      **/
-    public void registerNew(SObject record, Schema.sObjectField relatedToParentField, SObject relatedToParentRecord)
+    public void registerNew(SObject record, Schema.SObjectField relatedToParentField, SObject relatedToParentRecord)
     {
         if (record.Id != null)
             throw new UnitOfWorkException('Only new records can be registered as new');
@@ -288,7 +288,7 @@ public virtual class fflib_SObjectUnitOfWork
      * @param relatedToField A SObjectField reference to the lookup field that relates the two records together
      * @param relatedTo A SObject instance (yet to be committed to the database)
      */
-    public void registerRelationship(SObject record, Schema.sObjectField relatedToField, SObject relatedTo)
+    public void registerRelationship(SObject record, Schema.SObjectField relatedToField, SObject relatedTo)
     {
         String sObjectType = record.getSObjectType().getDescribe().getName();
 
@@ -303,7 +303,7 @@ public virtual class fflib_SObjectUnitOfWork
      *  to the database.  This information will be
      *  used during the commitWork phase to make the references only when related records have been inserted to the database.
      *
-     * @param a single email message instance
+     * @param email a single email message instance
      * @param relatedTo A SObject instance (yet to be committed to the database)
      */
     public void registerRelationship( Messaging.SingleEmailMessage email, SObject relatedTo )
@@ -318,13 +318,13 @@ public virtual class fflib_SObjectUnitOfWork
      * @param record An existing or newly created record
      * @param relatedToField A SObjectField reference to the lookup field that relates the two records together
      * @param externalIdField A SObjectField reference to a field on the target SObject that is marked as isExternalId
-     * @param externalId A Object representing the targetted value of the externalIdField in said lookup
+     * @param externalId A Object representing the targeted value of the externalIdField in said lookup
      *
      * Usage Example: uow.registerRelationship(recordSObject, record_sobject__c.relationship_field__c, lookup_sobject__c.external_id__c, 'abc123');
      *
      * Wraps putSObject, creating a new instance of the lookup sobject using the external id field and value.
      */
-    public void registerRelationship(SObject record, Schema.sObjectField relatedToField, Schema.sObjectField externalIdField, Object externalId)
+    public void registerRelationship(SObject record, Schema.SObjectField relatedToField, Schema.SObjectField externalIdField, Object externalId)
     {
         // NOTE: Due to the lack of ExternalID references on Standard Objects, this method can not be provided a standardized Unit Test. - Rick Parker
         String sObjectType = record.getSObjectType().getDescribe().getName();
@@ -360,7 +360,7 @@ public virtual class fflib_SObjectUnitOfWork
 	/**
 	 * Registers the entire record as dirty or just only the dirty fields if the record was already registered
 	 *
-	 * @param records SObject to register as dirty
+	 * @param record SObject to register as dirty
 	 * @param dirtyFields A list of modified fields
 	 */
     public void registerDirty(SObject record, List<SObjectField> dirtyFields)
@@ -399,7 +399,7 @@ public virtual class fflib_SObjectUnitOfWork
      * @param relatedToParentField A SObjectField reference to the child field that associates the child record with its parent
      * @param relatedToParentRecord A SObject instance of the parent record (should also be registered as new separately)
      **/
-    public void registerDirty(SObject record, Schema.sObjectField relatedToParentField, SObject relatedToParentRecord)
+    public void registerDirty(SObject record, Schema.SObjectField relatedToParentField, SObject relatedToParentRecord)
     {
         if (record.Id == null)
             throw new UnitOfWorkException('New records cannot be registered as dirty');
@@ -500,7 +500,7 @@ public virtual class fflib_SObjectUnitOfWork
 	/**
      * Register a list of existing records to be deleted and removed from the recycle bin during the commitWork method
      *
-     * @param records A list of existing records
+     * @param record A list of existing records
      **/
     public void registerPermanentlyDeleted(SObject record)
     {
@@ -596,7 +596,7 @@ public virtual class fflib_SObjectUnitOfWork
      **/
 	public void commitWork()
 	{
-		Savepoint sp = Database.setSavePoint();
+		Savepoint sp = Database.setSavepoint();
 		Boolean wasSuccessful = false;
 		try
 		{
@@ -790,7 +790,7 @@ public virtual class fflib_SObjectUnitOfWork
 
         }
 
-        public void add(SObject record, Schema.sObjectField relatedToField, Schema.SObjectField externalIdField, Object externalId)
+        public void add(SObject record, Schema.SObjectField relatedToField, Schema.SObjectField externalIdField, Object externalId)
         {
             if (relatedToField == null) {
                 throw new UnitOfWorkException('Invalid argument: relatedToField.');
@@ -826,7 +826,7 @@ public virtual class fflib_SObjectUnitOfWork
             m_relationships.add(relationship);
         }
 
-        public void add(SObject record, Schema.sObjectField relatedToField, SObject relatedTo)
+        public void add(SObject record, Schema.SObjectField relatedToField, SObject relatedTo)
         {
             // Relationship to resolve
             Relationship relationship = new Relationship();
@@ -853,10 +853,10 @@ public virtual class fflib_SObjectUnitOfWork
     private class RelationshipByExternalId implements IRelationship
     {
         public SObject Record;
-        public Schema.sObjectField RelatedToField;
+        public Schema.SObjectField RelatedToField;
         public Schema.SObjectType RelatedTo;
         public String RelationshipName;
-        public Schema.sObjectField ExternalIdField;
+        public Schema.SObjectField ExternalIdField;
         public Object ExternalId;
 
         public void resolve()
@@ -870,7 +870,7 @@ public virtual class fflib_SObjectUnitOfWork
     private class Relationship implements IRelationship
     {
         public SObject Record;
-        public Schema.sObjectField RelatedToField;
+        public Schema.SObjectField RelatedToField;
         public SObject RelatedTo;
 
         public void resolve()
@@ -886,7 +886,7 @@ public virtual class fflib_SObjectUnitOfWork
 
         public void resolve()
         {
-            this.email.setWhatId( this.RelatedTo.Id );
+            this.email.setWhatId( this.relatedTo.Id );
         }
     }
 
