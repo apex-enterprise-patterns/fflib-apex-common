@@ -26,7 +26,15 @@
 
 @IsTest
 private with sharing class fflib_SObjectDomainTest 
-{	
+{
+	private static final String COLD = 'Cold';
+	private static final String HOLLAND = 'Holland';
+	private static final String HOT = 'Hot';
+	private static final String IRELAND = 'Ireland';
+	private static final String ITALY = 'Italy';
+	private static final String USA = 'United States of America';
+	private static final String WARM = 'Warm';
+
 	@IsTest
 	private static void testValidationWithoutDML()
 	{
@@ -671,13 +679,133 @@ private with sharing class fflib_SObjectDomainTest
 		System.assert(exceptionThrown, 'It should have thrown an exception for an incorrect field type');
 	}
 
+	@IsTest
+	private static void itShouldGetAStringByStringMap()
+	{
+		Accounts domain = new Accounts(
+				new List<Account>
+				{
+						new Account(Name = 'Account A', ShippingCountry = USA, Rating = COLD),
+						new Account(Name = 'Account B', ShippingCountry = IRELAND, Rating = WARM),
+						new Account(Name = 'Account C', ShippingCountry = HOLLAND, Rating = HOT)
+				}
+		);
+		Map<String, String> result = domain.getRatingByShippingCountry();
+		System.assertEquals(3, result.size());
+		System.debug(result);
+		System.assertEquals(HOT, result.get(HOLLAND));
+		System.assertEquals(WARM, result.get(IRELAND));
+		System.assertEquals(COLD, result.get(USA));
+	}
+
+	@IsTest
+	private static void itShouldSetAFieldValue()
+	{
+		Accounts domain = new Accounts(
+				new List<Account>
+				{
+						new Account(Name = 'Account A', ShippingCountry = USA),
+						new Account(Name = 'Account B', ShippingCountry = IRELAND),
+						new Account(Name = 'Account C', ShippingCountry = ITALY)
+				}
+		);
+
+		domain.setShippingCountry(HOLLAND);
+		List<Account> results = (List<Account>) domain.getRecords();
+		System.assertEquals(3, results.size());
+		for (Account result : results)
+		{
+			System.assertEquals(HOLLAND, result.ShippingCountry);
+		}
+	}
+
+	@IsTest
+	private static void itShouldGetTheAccountNameById()
+	{
+		Id usaId = fflib_IDGenerator.generate(Account.SObjectType);
+		Id irelandId = fflib_IDGenerator.generate(Account.SObjectType);
+		Accounts domain = new Accounts(
+				new List<Account>
+				{
+						new Account(Id = usaId, Name = USA),
+						new Account(Id = irelandId, Name = IRELAND)
+				}
+		);
+
+		Map<Id, String> result = domain.getNameById();
+		System.assertEquals(2, result.size());
+		System.assertEquals(USA, result.get(usaId));
+		System.assertEquals(IRELAND, result.get(irelandId));
+	}
+
+	@IsTest
+	private static void itShouldGetContactsByAccountId()
+	{
+		Id usaId = fflib_IDGenerator.generate(Account.SObjectType);
+		Id irelandId = fflib_IDGenerator.generate(Account.SObjectType);
+
+		Contacts domain = new Contacts(
+				new List<Contact>
+				{
+						new Contact(AccountId = usaId),
+						new Contact(AccountId = usaId),
+						new Contact(AccountId = irelandId)
+				}
+		);
+
+		Map<Id, List<SObject>> result = domain.getSObjectsByAccountId();
+		System.assertEquals(2, result.size());
+		System.assertEquals(2, result.get(usaId).size());
+		System.assertEquals(1, result.get(irelandId).size());
+	}
+
+	@IsTest
+	private static void itShouldGetContactsByCountry()
+	{
+		Contacts domain = new Contacts(
+				new List<Contact>
+				{
+						new Contact(MailingCountry = USA),
+						new Contact(MailingCountry = IRELAND),
+						new Contact(MailingCountry = IRELAND),
+						new Contact(MailingCountry = ITALY)
+				}
+		);
+
+		Map<String, List<SObject>> result = domain.getSObjectsByMailingCountry();
+		System.assertEquals(3, result.size());
+		System.assertEquals(1, result.get(USA).size());
+		System.assertEquals(1, result.get(ITALY).size());
+		System.assertEquals(2, result.get(IRELAND).size());
+	}
+
+	@IsTest
+	private static void itShouldGetAccountByName()
+	{
+		Id usaId = fflib_IDGenerator.generate(Account.SObjectType);
+		Id irelandId = fflib_IDGenerator.generate(Account.SObjectType);
+
+		Accounts domain = new Accounts(
+				new List<Account>
+				{
+						new Account(Id = usaId, Name = USA),
+						new Account(Id = irelandId, Name = IRELAND)
+				}
+		);
+
+		Map<String, SObject> result = domain.getSObjectByAccountName();
+		System.assertEquals(2, result.size());
+		System.assertEquals(usaId, result.get(USA).Id);
+		System.assertEquals(irelandId, result.get(IRELAND).Id);
+	}
+
 	private static List<Account> generateAccounts()
 	{
 		return new List<Account>
 		{
 				new Account(Id = fflib_IDGenerator.generate(Account.SObjectType), Name = 'Account A', ShippingCountry = 'USA'),
-				new Account(Id = fflib_IDGenerator.generate(Account.SObjectType), Name = 'Account B', ShippingCountry = 'Ireland'),
-				new Account(Id = fflib_IDGenerator.generate(Account.SObjectType), Name = 'Account C', ShippingCountry = 'Holland')
+				new Account(Id = fflib_IDGenerator.generate(Account.SObjectType), Name = 'Account B', ShippingCountry = IRELAND),
+				new Account(Id = fflib_IDGenerator.generate(Account.SObjectType), Name = 'Account C', ShippingCountry = HOLLAND)
 		};
 	}
 
@@ -688,7 +816,7 @@ private with sharing class fflib_SObjectDomainTest
 		{
 			result.add(
 					new Contact(
-							Id = xa.fflib_IDGenerator.generate(Contact.SObjectType),
+							Id = fflib_IDGenerator.generate(Contact.SObjectType),
 							AccountId = account.Id
 					)
 			);
@@ -702,6 +830,26 @@ private with sharing class fflib_SObjectDomainTest
 		{
 			super(records);
 		}
+
+		public Map<String, String> getRatingByShippingCountry()
+		{
+			return getStringFieldByStringField(Account.Rating, Account.ShippingCountry);
+		}
+
+		public Map<Id, String> getNameById()
+		{
+			return getStringFieldByIdField(Account.Name, Account.Id);
+		}
+
+		public Map<String, SObject> getSObjectByAccountName()
+		{
+			return getSObjectByStringField(Account.Name);
+		}
+
+		public void setShippingCountry(String shippingCountry)
+		{
+			setFieldValue(Schema.Account.ShippingCountry, shippingCountry);
+		}
 	}
 
 	private class Contacts extends fflib_SObjectDomain
@@ -709,6 +857,16 @@ private with sharing class fflib_SObjectDomainTest
 		public Contacts(List<SObject> records)
 		{
 			super(records);
+		}
+
+		public Map<Id, List<SObject>> getSObjectsByAccountId()
+		{
+			return getSObjectsByIdField(Contact.AccountId);
+		}
+
+		public Map<String, List<SObject>> getSObjectsByMailingCountry()
+		{
+			return getSObjectsByStringField(Contact.MailingCountry);
 		}
 	}
 }

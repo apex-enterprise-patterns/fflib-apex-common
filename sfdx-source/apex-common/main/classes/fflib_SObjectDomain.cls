@@ -1234,6 +1234,62 @@ public virtual with sharing class fflib_SObjectDomain
 		return !isEmpty();
 	}
 
+	protected Map<Object, Object> getFieldByField(Schema.SObjectField valueField, Schema.SObjectField keyField)
+	{
+		Map<Object, Object> result = new Map<Object, Object>();
+		for (SObject record : getRecords())
+		{
+			result.put(
+					record.get(keyField),
+					record.get(valueField)
+			);
+		}
+		return result;
+	}
+
+	protected Map<Object, Set<Object>> getFieldsByField(SObjectField keyField, SObjectField valueField)
+	{
+		Map<Object, Set<Object>> result = new Map<Object, Set<Object>>();
+		for (SObject record : getRecords())
+		{
+			Object keyFieldValue = record.get(keyField);
+			if (!result.containsKey(keyFieldValue))
+			{
+				result.put(keyFieldValue, new Set<Object>());
+			}
+			result.get(keyFieldValue).add( record.get(valueField));
+		}
+		return result;
+	}
+
+	protected Map<Id, Id> getIdFieldByIdField(SObjectField keyField, SObjectField valueField)
+	{
+		Map<Id, Id> result = new Map<Id, Id>();
+		for (SObject record : getRecords())
+		{
+			result.put(
+					(Id) record.get(keyField),
+					(Id) record.get(valueField)
+			);
+		}
+		return result;
+	}
+
+	protected Map<Id, Set<Id>> getIdFieldsByIdField(SObjectField keyField, SObjectField valueField)
+	{
+		Map<Id, Set<Id>> result = new Map<Id, Set<Id>>();
+		for (SObject record : getRecords())
+		{
+			Id keyFieldId = (Id) record.get(keyField);
+			if (!result.containsKey(keyFieldId))
+			{
+				result.put(keyFieldId, new Set<Id>());
+			}
+			result.get(keyFieldId).add((Id) record.get(valueField));
+		}
+		return result;
+	}
+
 	/**
 	 * getIdFieldValues
 	 *
@@ -1267,6 +1323,84 @@ public virtual with sharing class fflib_SObjectDomain
 			Id fieldValue = (Id) record.get(sObjectField);
 			if (fieldValue == null) continue;
 			result.add(fieldValue);
+		}
+		return result;
+	}
+
+	protected Map<Id, SObject> getSObjectById()
+	{
+		return new Map<Id, SObject>(getRecords());
+	}
+
+	protected Map<Id, SObject> getSObjectByIdField(SObjectField sObjectField)
+	{
+		Map<Id, SObject> result = new Map<Id, SObject>();
+		for (SObject record : getRecords())
+		{
+			result.put((Id) record.get(sObjectField), record);
+		}
+		return result;
+	}
+
+	protected Map<String, SObject> getSObjectByStringField(SObjectField sObjectField)
+	{
+		Map<String, SObject> result = new Map<String, SObject>();
+		for (SObject record : getRecords())
+		{
+			String fieldValue = (String) record.get(sObjectField);
+			result.put(fieldValue, record);
+		}
+		return result;
+	}
+
+	protected Map<String, List<SObject>> getSObjectsByStringField(SObjectField sObjectField)
+	{
+		Map<String, List<SObject>> result = new Map<String, List<SObject>>();
+		for (SObject record : getRecords())
+		{
+			String fieldValue = (String) record.get(sObjectField);
+			if (!result.containsKey(fieldValue))
+			{
+				result.put(fieldValue, new List<SObject>());
+			}
+			result.get(fieldValue).add(record);
+		}
+		return result;
+	}
+
+	protected Map<Id, List<SObject>> getSObjectsByIdField(SObjectField sObjectField)
+	{
+		Map<Id, List<SObject>> result = new Map<Id, List<SObject>>();
+		for (SObject record : getRecords())
+		{
+			Id fieldId = (Id) record.get(sObjectField);
+			if (!result.containsKey(fieldId))
+			{
+				result.put(fieldId, new List<SObject>());
+			}
+			result.get(fieldId).add(record);
+		}
+		return result;
+	}
+
+	protected Map<Id, String> getStringFieldByIdField(SObjectField valueField, SObjectField keyField)
+	{
+		Map<Id, String> result = new Map<Id, String>();
+		Map<Object, Object> fieldByField = getFieldByField(valueField, keyField);
+		for (Object obj : fieldByField.keySet())
+		{
+			result.put((Id) obj, (String) fieldByField.get(obj));
+		}
+		return result;
+	}
+
+	protected Map<String, String> getStringFieldByStringField(SObjectField valueField, SObjectField keyField)
+	{
+		Map<String, String> result = new Map<String, String>();
+		Map<Object, Object> fieldByField = getFieldByField(valueField, keyField);
+		for (Object obj : fieldByField.keySet())
+		{
+			result.put((String) obj, (String) fieldByField.get(obj));
 		}
 		return result;
 	}
@@ -1307,6 +1441,66 @@ public virtual with sharing class fflib_SObjectDomain
 			result.add(fieldValue);
 		}
 		return result;
+	}
+
+	protected void setFieldValue(Schema.SObjectField sObjectFieldToUpdate, Object value)
+	{
+		for (SObject record : getRecords())
+		{
+			record.put(sObjectFieldToUpdate, value);
+		}
+	}
+
+	/**
+	 * Sets the value to a field based on a key-value map where keys are compared with another field
+	 *
+	 * @param sObjectFieldToUpdate
+	 * @param sObjectFieldToCheck
+	 * @param values
+	 *
+	 * @example
+	 *
+	 *      List<Contact> records = new List<Contact>
+	 *      {
+	 *          new Contact(Firstname = 'John', LastName = 'Smith', MailingCountry = 'Ireland', Discount__c = 0),
+	 *          new Contact(Firstname = 'Jack', LastName = 'Smith', MailingCountry = 'Ireland', Discount__c = 0),
+	 *          new Contact(Firstname = 'Han', LastName = 'Solo', MailingCountry = 'England', Discount__c = 0),
+	 *          new Contact(Firstname = 'Luke', LastName = 'Skywalker', MailingCountry = 'Finland', Discount__c = 0),
+	 *      }
+	 *
+	 *      List<SObject> result = new sflib_SObjects(records).setFieldValueByMap(
+	 *          Contact.Discount__c,
+	 *          Contact.MailingCountry,
+	 *          new Map<Object, Object>
+	 *          {
+	 *              'Ireland' => 15,
+	 *              'England' => 20,
+	 *              'Finland' => 35
+	 *          }
+     *      ).getRecords();
+     *
+     *      // result should contain:
+	 *      List<Contact>
+	 *      {
+	 *          new Contact(Firstname = 'John', LastName = 'Smith', MailingCountry = 'Ireland', Discount__c = 15),
+	 *          new Contact(Firstname = 'Jack', LastName = 'Smith', MailingCountry = 'Ireland', Discount__c = 15),
+	 *          new Contact(Firstname = 'Han', LastName = 'Solo', MailingCountry = 'England', Discount__c = 20),
+	 *          new Contact(Firstname = 'Luke', LastName = 'Skywalker', MailingCountry = 'Finland', Discount__c = 35),
+	 *      }
+	 */
+	protected void setFieldValueByMap(
+			Schema.SObjectField sObjectFieldToUpdate,
+			Schema.SObjectField sObjectFieldToCheck,
+			Map<Object, Object> values)
+	{
+		for (SObject record : getRecords())
+		{
+			Object keyValue = record.get(sObjectFieldToCheck);
+			if (values.containsKey(keyValue))
+			{
+				record.put(sObjectFieldToUpdate, values.get(keyValue));
+			}
+		}
 	}
 
 	protected InvalidParameterTypeException newInvalidParameterTypeException(String parameterType)
