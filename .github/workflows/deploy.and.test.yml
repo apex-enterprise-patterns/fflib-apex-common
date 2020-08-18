@@ -14,7 +14,8 @@ jobs:
           repository: apex-enterprise-patterns/fflib-apex-mocks
           path: fflib-apex-mocks
       - name: Hack the sfdx-project.json to prepend the second package directory for fflib-apex-mocks
-        run: cat sfdx-project.json | jq '.packageDirectories = [{path:"fflib-apex-mocks/sfdx-source"}] + .packageDirectories' > sfdx-project.json
+        run: cat sfdx-project.json | jq '.packageDirectories = [{path:"fflib-apex-mocks/sfdx-source"}] + .packageDirectories' > sfdx-project2.json
+      - run: mv sfdx-project2.json sfdx-project.json
       - run: cat sfdx-project.json
       - name: Install SFDX CLI and authorize DevHub
         uses: apex-enterprise-patterns/setup-sfdx@v1 #We're using a fork of https://github.com/sfdx-actions/setup-sfdx for safety
