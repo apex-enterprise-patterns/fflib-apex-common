@@ -1,4 +1,4 @@
-name: Create a Scratch Org and run Apex unit tests
+name: Create a Scratch Org, Push Source and Run Apex Tests
 
 on: [push]
 
