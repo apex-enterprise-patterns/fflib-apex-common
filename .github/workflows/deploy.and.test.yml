@@ -17,7 +17,7 @@ jobs:
         run: echo sfdx-project.json | jq '.packageDirectories = [{path:"fflib-apex-mocks/sfdx-source"}] + .packageDirectories' > sfdx-project.json
       - run: cat sfdx-project.json
       - name: Install SFDX CLI and authorize DevHub
-        uses: sfdx-actions/setup-sfdx@v1 #Might want to consider forking this guy's GH Action repo for safety
+        uses: apex-enterprise-patterns/setup-sfdx@v1 #We're using a fork of https://github.com/sfdx-actions/setup-sfdx for safety
         with:
           sfdx-auth-url: ${{ secrets.DEVHUB_SFDXURL }}
       - run: sfdx force:config:set defaultdevhubusername=SFDX-ENV -g #Even though the setup-sfdx action uses --setdefaultdevhubusername, it doesn't seem to stick since it uses --setdefaultusername so we brute force it here
