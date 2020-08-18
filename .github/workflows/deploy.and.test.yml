@@ -10,7 +10,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2 #Check out this repo
       - uses: actions/checkout@v2 #Checkout fflib-apex-mocks
-        - repository: apex-enterprise-patterns/fflib-apex-mocks
+        with:
+          repository: apex-enterprise-patterns/fflib-apex-mocks
+          path: fflib-apex-mocks
       - name: Hack the sfdx-project.json to prepend the second package directory
         run: echo sfdx-project.json | jq '.packageDirectories = [{path:"fflib-apex-mocks/sfdx-source"}] + .packageDirectories' > sfdx-project.json
       - run: cat sfdx-project.json
