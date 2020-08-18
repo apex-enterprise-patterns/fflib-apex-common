@@ -9,7 +9,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2 #Check out this repo
-      - uses: actions/checkout@v2 #Checkout fflib-apex-mocks
+      - uses: actions/checkout@v2 #Checkout fflib-apex-mocks as a sibling of this repo
         with:
           repository: apex-enterprise-patterns/fflib-apex-mocks
           path: fflib-apex-mocks
