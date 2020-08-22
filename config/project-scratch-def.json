@@ -2,8 +2,11 @@
     "orgName": "apex-common",
     "edition": "Developer",
     "settings": {
-        "orgPreferenceSettings": {
-            "s1DesktopEnabled": true
+        "lightningExperienceSettings": {
+            "enableS1DesktopEnabled": true
+        },
+        "mobileSettings": {
+            "enableS1EncryptedStoragePref2": true
         }
     }
 }
