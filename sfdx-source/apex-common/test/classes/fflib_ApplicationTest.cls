@@ -146,7 +146,7 @@ private class fflib_ApplicationTest
 		try {
 			Domain.newInstance(new List<SObject>());
 			System.assert(false, 'Expected exception');
-		} catch (fflib_Application.DeveloperException e) {
+		} catch (fflib_ClassicDomainBindingResolver.DeveloperException e) {
 			System.assertEquals('Unable to determine SObjectType', e.getMessage());
 		}
 	}
@@ -157,7 +157,7 @@ private class fflib_ApplicationTest
 		try {
 			Domain.newInstance(new List<SObject>(), null);
 			System.assert(false, 'Expected exception');
-		} catch (fflib_Application.DeveloperException e) {
+		} catch (fflib_ClassicDomainBindingResolver.DeveloperException e) {
 			System.assertEquals('Must specify sObjectType', e.getMessage());
 		}
 	}	
@@ -168,14 +168,14 @@ private class fflib_ApplicationTest
 		try {
 			Domain.newInstance(new List<Product2>{ new Product2(Name = 'Test Product') });
 			System.assert(false, 'Expected exception');
-		} catch (fflib_Application.DeveloperException e) {
+		} catch (fflib_ClassicDomainBindingResolver.DeveloperException e) {
 			System.assertEquals('Domain constructor class not found for SObjectType Product2', e.getMessage());
 		}
 
 		try {
 			Domain.newInstance(new List<SObject>{ new Product2(Name = 'Test Product') }, Product2.SObjectType);
 			System.assert(false, 'Expected exception');
-		} catch (fflib_Application.DeveloperException e) {
+		} catch (fflib_ClassicDomainBindingResolver.DeveloperException e) {
 			System.assertEquals('Domain constructor class not found for SObjectType Product2', e.getMessage());
 		}		
 	}
@@ -256,7 +256,7 @@ private class fflib_ApplicationTest
 		try {
 			Selector.newInstance(User.SObjectType);
 			System.assert(false, 'Expected exception');
-		} catch (fflib_Application.DeveloperException e) {
+		} catch (fflib_ClassicSelectorBindingResolver.DeveloperException e) {
 			System.assertEquals('Selector class not found for SObjectType User', e.getMessage());
 		}
 	}
@@ -267,13 +267,13 @@ private class fflib_ApplicationTest
 		try {
 			Selector.selectById(null);
 			System.assert(false, 'Expected exception');
-		} catch (fflib_Application.DeveloperException e) {
+		} catch (fflib_ClassicSelectorBindingResolver.DeveloperException e) {
 			System.assertEquals('Invalid record Id\'s set', e.getMessage());
 		}
 		try {
 			Selector.selectById(new Set<Id>());
 			System.assert(false, 'Expected exception');
-		} catch (fflib_Application.DeveloperException e) {
+		} catch (fflib_ClassicSelectorBindingResolver.DeveloperException e) {
 			System.assertEquals('Invalid record Id\'s set', e.getMessage());
 		}
 	}
@@ -287,7 +287,7 @@ private class fflib_ApplicationTest
 					fflib_IDGenerator.generate(Opportunity.SObjectType), 
 					fflib_IDGenerator.generate(Account.SObjectType) });
 			System.assert(true, 'Expected exception');
-		} catch (fflib_Application.DeveloperException e) {
+		} catch (fflib_ClassicSelectorBindingResolver.DeveloperException e) {
 			System.assertEquals('Unable to determine SObjectType, Set contains Id\'s from different SObject types', e.getMessage());
 		}		
 	}
