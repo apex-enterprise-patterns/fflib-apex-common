@@ -24,6 +24,6 @@ jobs:
       - run: sfdx force:source:push
       - run: sfdx force:apex:test:run -w 5
       - name: Destroy scratch org
-        #Need to read more about a post action -- experimental new feature https://github.community/t5/GitHub-Actions/About-post-in-an-Action/td-p/41973
-        #so that the scratch org gets deleted even if the source push or test run fails so we don't have a pileup of dysfunctional orgs
         run: sfdx force:org:delete -p
+        if: always()
+
