@@ -19,7 +19,7 @@ jobs:
           sfdx-auth-url: ${{ secrets.DEVHUB_SFDXURL }}
       - run: sfdx force:config:set defaultdevhubusername=SFDX-ENV -g #Even though the setup-sfdx action uses --setdefaultdevhubusername, it doesn't seem to stick since it uses --setdefaultusername so we brute force it here
       - run: echo y | sfdx plugins:install shane-sfdx-plugins
-      - run: sfdx shane:github:src:install -g apex-enterprise-patterns -r fflib-apex-mocks
+      - run: sfdx shane:github:src:install -c -g apex-enterprise-patterns -r fflib-apex-mocks -p sfdx-source/apex-mocks
       - run: sfdx force:org:create -f config/project-scratch-def.json --setdefaultusername -d 1
       - run: sfdx force:source:push
       - run: sfdx force:apex:test:run -w 5
