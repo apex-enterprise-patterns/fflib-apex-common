@@ -1,7 +1,11 @@
 name: Create a Scratch Org, Push Source and Run Apex Tests
 
-on: [push]
-
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+  
 jobs:
   build:
 
@@ -9,19 +13,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2 #Check out this repo
-      - uses: actions/checkout@v2 #Checkout fflib-apex-mocks as a sibling of this repo
-        with:
-          repository: apex-enterprise-patterns/fflib-apex-mocks
-          path: fflib-apex-mocks
-      - name: Hack the sfdx-project.json to prepend the second package directory for fflib-apex-mocks
-        run: cat sfdx-project.json | jq '.packageDirectories = [{path:"fflib-apex-mocks/sfdx-source"}] + .packageDirectories' > sfdx-project2.json
-      - run: mv sfdx-project2.json sfdx-project.json
-      - run: cat sfdx-project.json
       - name: Install SFDX CLI and authorize DevHub
         uses: apex-enterprise-patterns/setup-sfdx@v1 #We're using a fork of https://github.com/sfdx-actions/setup-sfdx for safety
         with:
           sfdx-auth-url: ${{ secrets.DEVHUB_SFDXURL }}
       - run: sfdx force:config:set defaultdevhubusername=SFDX-ENV -g #Even though the setup-sfdx action uses --setdefaultdevhubusername, it doesn't seem to stick since it uses --setdefaultusername so we brute force it here
+      - run: echo y | sfdx plugins:install shane-sfdx-plugins
+      - run: sfdx shane:github:src:install -g apex-enterprise-patterns -r fflib-apex-mocks
       - run: sfdx force:org:create -f config/project-scratch-def.json --setdefaultusername -d 1
       - run: sfdx force:source:push
       - run: sfdx force:apex:test:run -w 5
