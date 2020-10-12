@@ -80,16 +80,6 @@ public virtual with sharing class fflib_SObjectDomain
 	}
 
 	/**
-	 * Derived from the records provided during construction, provides the native describe for the standard or custom object
-	 **/
-	public Schema.DescribeSObjectResult SObjectDescribe {
-		get
-		{
-			return super.SObjectDescribe;
-		}
-	}
-
-	/**
 	 * Exposes the configuration for this domain class instance
 	 **/ 
 	public Configuration Configuration {get; private set;}    

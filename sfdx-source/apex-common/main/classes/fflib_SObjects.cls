@@ -8,7 +8,7 @@ public virtual class fflib_SObjects
 		extends fflib_Objects
 {
 
-	protected Schema.DescribeSObjectResult SObjectDescribe {get; private set;}
+	public Schema.DescribeSObjectResult SObjectDescribe {get; private set;}
 
 	/**
 	 * Class constructor
