@@ -38,7 +38,7 @@
  * http://martinfowler.com/eaaCatalog/domainModel.html
  *
  **/
-public virtual with sharing class fflib_SObjectDomain
+public virtual inherited sharing class fflib_SObjectDomain
 	implements fflib_ISObjectDomain
 {
 	/**
