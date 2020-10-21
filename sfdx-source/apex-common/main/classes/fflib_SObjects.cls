@@ -30,22 +30,22 @@ public virtual class fflib_SObjects
 		SObjectDescribe = sObjectType.getDescribe();
 	}
 
-	public List<SObject> getRecords()
+	public virtual List<SObject> getRecords()
 	{
 		return (List<SObject>) getObjects();
 	}
 
-	public override Object getType()
+	public virtual override Object getType()
 	{
 		return getSObjectType();
 	}
 
-	public SObjectType getSObjectType()
+	public virtual SObjectType getSObjectType()
 	{
 		return SObjectDescribe.getSObjectType();
 	}
 
-	protected Set<Object> getFieldValues(Schema.SObjectField sObjectField)
+	protected virtual Set<Object> getFieldValues(Schema.SObjectField sObjectField)
 	{
 		Set<Object> result = new Set<Object>();
 		for (SObject record : getRecords())
@@ -55,12 +55,12 @@ public virtual class fflib_SObjects
 		return result;
 	}
 
-	public Schema.SObjectType getObjectType()
+	public virtual Schema.SObjectType getObjectType()
 	{
 		return SObjectDescribe.getSObjectType();
 	}
 
-	protected fflib_SObjects selectByFieldValue(Schema.SObjectField sObjectField, Object value)
+	protected virtual fflib_SObjects selectByFieldValue(Schema.SObjectField sObjectField, Object value)
 	{
 		return selectByFieldValues(
 				sObjectField,
@@ -68,7 +68,7 @@ public virtual class fflib_SObjects
 		);
 	}
 
-	protected fflib_SObjects selectByFieldValues(Schema.SObjectField sObjectField, Set<Object> values)
+	protected virtual fflib_SObjects selectByFieldValues(Schema.SObjectField sObjectField, Set<Object> values)
 	{
 		List<SObject> result = new List<SObject>();
 		for (SObject record : getRecords())
@@ -81,7 +81,7 @@ public virtual class fflib_SObjects
 		return new fflib_SObjects(result, getObjectType());
 	}
 
-	protected void setFieldValue(Schema.SObjectField sObjectField, Object value)
+	protected virtual void setFieldValue(Schema.SObjectField sObjectField, Object value)
 	{
 		for (SObject record : getRecords())
 		{
@@ -94,7 +94,7 @@ public virtual class fflib_SObjects
 	 * @param sObjectFieldToUpdate The SObjectField to store the mapped value when the key matches the value in the sObjectFieldToUpdate field
 	 * @param values Map of values to store by the sObjectFieldToCheck fields value
 	 */
-	protected void setFieldValueByMap(
+	protected virtual void setFieldValueByMap(
 			Schema.SObjectField sObjectFieldToCheck,
 			Schema.SObjectField sObjectFieldToUpdate,
 			Map<Object, Object> values)
