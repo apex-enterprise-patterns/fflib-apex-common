@@ -43,6 +43,11 @@ public virtual with sharing class Ids
 		super(elements);
 	}
 
+	public Ids(Objects objects)
+	{
+		super(getIdList(objects));
+	}
+
 	public Set<Id> getIds()
 	{
 		return new Set<Id>(getIdList());
@@ -51,5 +56,17 @@ public virtual with sharing class Ids
 	public List<Id> getIdList()
 	{
 		return (List<Id>) getObjects();
+	}
+
+	private static List<Id> getIdList(Objects objects)
+	{
+		List<Id> result = new List<Id>();
+		for (Object obj : objects.getObjects())
+		{
+			if (!(obj instanceof Id)) continue;
+
+			result.add((Id) obj);
+		}
+		return result;
 	}
 }

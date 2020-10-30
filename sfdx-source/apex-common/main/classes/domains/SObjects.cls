@@ -64,13 +64,6 @@ public virtual class SObjects
 		SObjectDescribe = sObjectType.getDescribe();
 	}
 
-	/**
-	 * @return Return the SObject records contained in the domain
-	 */
-	public virtual List<SObject> getRecords()
-	{
-		return (List<SObject>) getObjects();
-	}
 
 	/**
 	 * @return Return the SObjectType of the SObjects contained in the domain
@@ -107,6 +100,18 @@ public virtual class SObjects
 
 	/**
 	 * @param sObjectField The Schema.SObjectField to get their Id values
+	 * @param criteria The criteria condition that must be met to include the value in the return
+	 *
+	 * @return The Date values of the given sObjectField, null values are omitted
+	 */
+	protected virtual Dates getDateFieldValues(Schema.SObjectField sObjectField, fflib_Criteria criteria)
+	{
+		return new SObjects(getRecords(criteria))
+				.getDateFieldValues(sObjectField);
+	}
+
+	/**
+	 * @param sObjectField The Schema.SObjectField to get their Id values
 	 *
 	 * @return The DateTime values of the given sObjectField, null values are omitted
 	 */
@@ -120,6 +125,18 @@ public virtual class SObjects
 			result.add((DateTime) fieldValue);
 		}
 		return new DateTimes(result);
+	}
+
+	/**
+	 * @param sObjectField The Schema.SObjectField to get their Id values
+	 * @param criteria The criteria condition that must be met to include the value in the return
+	 *
+	 * @return The DateTime values of the given sObjectField, null values are omitted
+	 */
+	protected virtual DateTimes getDateTimeFieldValues(Schema.SObjectField sObjectField, fflib_Criteria criteria)
+	{
+		return new SObjects(getRecords(criteria))
+				.getDateTimeFieldValues(sObjectField);
 	}
 
 	/**
@@ -141,6 +158,18 @@ public virtual class SObjects
 
 	/**
 	 * @param sObjectField The Schema.SObjectField to get their Id values
+	 * @param criteria The criteria condition that must be met to include the value in the return
+	 *
+	 * @return The Decimal values of the given sObjectField, null values are omitted
+	 */
+	protected virtual Decimals getDecimalFieldValues(Schema.SObjectField sObjectField, fflib_Criteria criteria)
+	{
+		return new SObjects(getRecords(criteria))
+				.getDecimalFieldValues(sObjectField);
+	}
+
+	/**
+	 * @param sObjectField The Schema.SObjectField to get their Id values
 	 *
 	 * @return The Double values of the given sObjectField, null values are omitted
 	 */
@@ -158,6 +187,18 @@ public virtual class SObjects
 
 	/**
 	 * @param sObjectField The Schema.SObjectField to get their Id values
+	 * @param criteria The criteria condition that must be met to include the value in the return
+	 *
+	 * @return The Double values of the given sObjectField, null values are omitted
+	 */
+	protected virtual Doubles getDoubleFieldValues(Schema.SObjectField sObjectField, fflib_Criteria criteria)
+	{
+		return new SObjects(getRecords(criteria))
+				.getDoubleFieldValues(sObjectField);
+	}
+
+	/**
+	 * @param sObjectField The Schema.SObjectField to get their Id values
 	 *
 	 * @return The Id values of the given sObjectField, null values are omitted
 	 */
@@ -171,6 +212,19 @@ public virtual class SObjects
 			result.add(Id.valueOf(String.valueOf(fieldValue)));
 		}
 		return new Ids(result);
+		// todo - alternative return to avoid code duplications: return new Ids(getFieldValues(sObjectField));
+	}
+
+	/**
+	 * @param sObjectField The Schema.SObjectField to get their Id values
+	 * @param criteria The criteria condition that must be met to include the value in the return
+	 *
+	 * @return The Id values of the given sObjectField, null values are omitted
+	 */
+	protected virtual Ids getIdFieldValues(Schema.SObjectField sObjectField, fflib_Criteria criteria)
+	{
+		return new SObjects(getRecords(criteria))
+				.getIdFieldValues(sObjectField);
 	}
 
 	/**
@@ -192,6 +246,18 @@ public virtual class SObjects
 
 	/**
 	 * @param sObjectField The Schema.SObjectField to get their values
+	 * @param criteria The criteria condition that must be met to include the value in the return
+	 *
+	 * @return The Integer values of the given sObjectField, null values are omitted
+	 */
+	protected virtual Integers getIntegerFieldValues(Schema.SObjectField sObjectField, fflib_Criteria criteria)
+	{
+		return new SObjects(getRecords(criteria))
+				.getIntegerFieldValues(sObjectField);
+	}
+
+	/**
+	 * @param sObjectField The Schema.SObjectField to get their values
 	 *
 	 * @return The values of the given sObjectField, null values are omitted
 	 */
@@ -205,6 +271,18 @@ public virtual class SObjects
 			result.add(fieldValue);
 		}
 		return new Objects(result);
+	}
+
+	/**
+	 * @param sObjectField The Schema.SObjectField to get their values
+	 * @param criteria The criteria condition that must be met to include the value in the return
+	 *
+	 * @return The values of the given sObjectField, null values are omitted
+	 */
+	protected virtual Objects getFieldValues(Schema.SObjectField sObjectField, fflib_Criteria criteria)
+	{
+		return new SObjects(getRecords(criteria))
+				.getFieldValues(sObjectField);
 	}
 
 	/**
@@ -226,19 +304,40 @@ public virtual class SObjects
 
 	/**
 	 * @param sObjectField The Schema.SObjectField to get their values
+	 * @param criteria The criteria condition that must be met to include the value in the return
 	 *
-	 * @return The String values of the given sObjectField
+	 * @return The Long values of the given sObjectField, null values are omitted
 	 */
-	protected virtual Strings getStringFieldValues(Schema.SObjectField sObjectField)
+	protected virtual Longs getLongFieldValues(Schema.SObjectField sObjectField, fflib_Criteria criteria)
 	{
-		Set<String> result = new Set<String>();
-		for (SObject record : getRecords())
-		{
-			result.add(String.valueOf(record.get(sObjectField)));
-		}
-		return new Strings(result);
+		return new SObjects(getRecords(criteria))
+				.getLongFieldValues(sObjectField);
 	}
 
+	/**
+	 * @return Return the SObject records contained in the domain
+	 */
+	public virtual List<SObject> getRecords()
+	{
+		return (List<SObject>) getObjects();
+	}
+
+	/**
+	 * @param criteria The condition the returned record must meet
+	 *
+	 * @return Return the SObject records contained in the domain
+	 */
+	public virtual List<SObject> getRecords(fflib_Criteria criteria)
+	{
+		List<SObject> result = new List<SObject>();
+		for (SObject record : getRecords())
+		{
+			if (!criteria.evaluate(record)) continue;
+
+			result.add(record);
+		}
+		return result;
+	}
 
 	/**
 	 * @param sObjectField The Schema.SObjectField to compare against the given value
@@ -246,9 +345,9 @@ public virtual class SObjects
 	 *
 	 * @return A list with only the SObjects where the given sObjectField has the provided value
 	 */
-	protected virtual List<SObject> selectByFieldValue(Schema.SObjectField sObjectField, Object value)
+	protected virtual List<SObject> getRecordsByFieldValue(Schema.SObjectField sObjectField, Object value)
 	{
-		return selectByFieldValues(sObjectField, new Objects(value));
+		return getRecordsByFieldValues(sObjectField, new Objects(value));
 	}
 
 	/**
@@ -257,9 +356,9 @@ public virtual class SObjects
 	 *
 	 * @return A list with only the SObjects where the given sObjectField value is part of the provided values
 	 */
-	protected virtual List<SObject> selectByFieldValues(Schema.SObjectField sObjectField, Set<Object> values)
+	protected virtual List<SObject> getRecordsByFieldValues(Schema.SObjectField sObjectField, Set<Object> values)
 	{
-		return selectByFieldValues(sObjectField, new Objects(values));
+		return getRecordsByFieldValues(sObjectField, new Objects(values));
 	}
 
 	/**
@@ -268,7 +367,7 @@ public virtual class SObjects
 	 *
 	 * @return A list with only the SObjects where the given sObjectField value is part of the provided values
 	 */
-	protected virtual List<SObject> selectByFieldValues(Schema.SObjectField sObjectField, Objects values)
+	protected virtual List<SObject> getRecordsByFieldValues(Schema.SObjectField sObjectField, Objects values)
 	{
 		List<SObject> result = new List<SObject>();
 		for (SObject record : getRecords())
@@ -282,6 +381,150 @@ public virtual class SObjects
 	}
 
 	/**
+	 * @param sObjectField The Schema.SObjectField to check its value for a Blank value
+	 *
+	 * @return A list with only the SObjects where the given sObjectField value is either null or '')
+	 */
+	protected virtual List<SObject> getRecordsWithBlankFieldValues(Schema.SObjectField sObjectField)
+	{
+		return getRecordsWithBlankFieldValues(
+				new Set<Schema.SObjectField> {sObjectField}
+		);
+	}
+
+	/**
+	 * @param sObjectFields The Schema.SObjectField's to check their value for a Blank value
+	 *
+	 * @return A list with only the SObjects where the at least one given sObjectField value is either null or '')
+	 */
+	protected virtual List<SObject> getRecordsWithBlankFieldValues(Set<Schema.SObjectField> sObjectFields)
+	{
+		List<SObject> result = new List<SObject>();
+		for (SObject record : getRecords())
+		{
+			for (SObjectField sObjectField : sObjectFields)
+			{
+				if (String.isBlank((String) record.get(sObjectField)))
+				{
+					result.add(record);
+					break;
+				}
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * @param sObjectFields The Schema.SObjectField's to check their value for a Blank value
+	 *
+	 * @return A list with only the SObjects where the at least one given sObjectField value is either null or ''
+	 */
+	protected virtual List<SObject> getRecordsWithAllBlankFieldValues(Set<Schema.SObjectField> sObjectFields)
+	{
+		List<SObject> result = new List<SObject>();
+		for (SObject record : getRecords())
+		{
+			Boolean allBlank = true;
+			for (SObjectField sObjectField : sObjectFields)
+			{
+				if (String.isNotBlank((String) record.get(sObjectField)))
+				{
+					allBlank = false;
+					break;
+				}
+			}
+			if (allBlank) result.add(record);
+		}
+		return result;
+	}
+
+	/**
+	 * @param sObjectField The Schema.SObjectField to check its value for a Non-Blank value
+	 *
+	 * @return A list with only the SObjects where the given sObjectField value is not null or ''
+	 */
+	protected virtual List<SObject> getRecordsWithNotBlankFieldValues(Schema.SObjectField sObjectField)
+	{
+		return getRecordsWithNotBlankFieldValues(
+				new Set<Schema.SObjectField> {sObjectField}
+		);
+	}
+
+	/**
+	 * @param sObjectFields The Schema.SObjectField's to check their value for a Non-Blank value
+	 *
+	 * @return A list with only the SObjects where the at least one given sObjectField value not null or ''
+	 */
+	protected virtual List<SObject> getRecordsWithNotBlankFieldValues(Set<Schema.SObjectField> sObjectFields)
+	{
+		List<SObject> result = new List<SObject>();
+		for (SObject record : getRecords())
+		{
+			for (SObjectField sObjectField : sObjectFields)
+			{
+				if (String.isBlank((String) record.get(sObjectField)))
+				{
+					result.add(record);
+					break;
+				}
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * @param sObjectFields The Schema.SObjectField's to check their value for a Non-Blank value
+	 *
+	 * @return A list with only the SObjects where the at least one given sObjectField value is not null or ''
+	 */
+	protected virtual List<SObject> getRecordsWithAllNotBlankFieldValues(Set<Schema.SObjectField> sObjectFields)
+	{
+		List<SObject> result = new List<SObject>();
+		for (SObject record : getRecords())
+		{
+			Boolean allBlank = true;
+			for (SObjectField sObjectField : sObjectFields)
+			{
+				if (String.isNotBlank((String) record.get(sObjectField)))
+				{
+					allBlank = false;
+					break;
+				}
+			}
+			if (allBlank) result.add(record);
+		}
+		return result;
+	}
+
+	/**
+	 * @param sObjectField The Schema.SObjectField to get their values
+	 *
+	 * @return The String values of the given sObjectField
+	 */
+	protected virtual Strings getStringFieldValues(Schema.SObjectField sObjectField)
+	{
+		Set<String> result = new Set<String>();
+		for (SObject record : getRecords())
+		{
+			result.add(String.valueOf(record.get(sObjectField)));
+		}
+		return new Strings(result);
+	}
+
+	/**
+	 * @param sObjectField The Schema.SObjectField to get their values
+	 * @param criteria The criteria condition that must be met to include the value in the return
+	 *
+	 * @return The String values of the given sObjectField
+	 */
+	protected virtual Strings getStringFieldValues(Schema.SObjectField sObjectField, fflib_Criteria criteria)
+	{
+		return new SObjects(getRecords(criteria))
+				.getStringFieldValues(sObjectField);
+	}
+
+
+	/**
 	 * @param sObjectField The Schema.SObjectField to change its value
 	 * @param value The new value for the given sObjectField
 	 */
@@ -291,6 +534,17 @@ public virtual class SObjects
 		{
 			record.put(sObjectField, value);
 		}
+	}
+
+	/**
+	 * @param sObjectField The Schema.SObjectField to change its value
+	 * @param value The new value for the given sObjectField
+	 * @param criteria
+	 */
+	protected virtual void setFieldValue(Schema.SObjectField sObjectField, Object value, fflib_Criteria criteria)
+	{
+		new SObjects(getRecords(criteria))
+				.setFieldValue(sObjectField, value);
 	}
 
 	/**

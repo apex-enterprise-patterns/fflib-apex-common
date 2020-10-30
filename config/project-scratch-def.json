@@ -1,9 +1,11 @@
 {
-    "orgName": "apex-common",
-    "edition": "Developer",
-    "settings": {
-        "lightningExperienceSettings": {
-            "enableS1DesktopEnabled": true
-        }
+  "orgName": "apex-common",
+  "edition": "Developer",
+  "hasSampleData": false,
+  "features": [],
+  "settings": {
+    "lightningExperienceSettings": {
+      "enableS1DesktopEnabled": true
     }
+  }
 }

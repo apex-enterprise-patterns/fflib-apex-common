@@ -175,4 +175,12 @@ public virtual with sharing class Objects
 	{
 		return this.objects;
 	}
+
+	/**
+	 * @return Returns a unique set of objects which are contained in the domain
+	 */
+	public Set<Object> getObjectsSet()
+	{
+		return new Set<Object>(getObjects());
+	}
 }
