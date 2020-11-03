@@ -1,11 +1,23 @@
 {
     "packageDirectories": [
         {
-            "path": "sfdx-source/apex-common",
-            "default": true
+            "path": "sfdx-source",
+            "package": "fflib-apex-common",
+            "versionName": "ver 0.1",
+            "versionNumber": "0.1.0.NEXT",
+            "default": true,
+            "dependencies": [
+                {
+                    "package": "04t1T000000RcvMQAS"
+                }
+            ]
         }
     ],
     "namespace": "",
     "sfdcLoginUrl": "https://login.salesforce.com",
-    "sourceApiVersion": "48.0"
+    "sourceApiVersion": "48.0",
+    "packageAliases": {
+        "fflib-apex-common": "0Ho1T000000PAtuSAG",
+        "fflib-apex-common@0.1.0-1": "04t1T000000RcvqQAC"
+    }
 }
