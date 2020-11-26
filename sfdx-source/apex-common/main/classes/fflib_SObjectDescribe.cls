@@ -2,22 +2,22 @@
  * Copyright (c), FinancialForce.com, inc
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification, 
+ * Redistribution and use in source and binary forms, with or without modification,
  *   are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, 
+ * - Redistributions of source code must retain the above copyright notice,
  *      this list of conditions and the following disclaimer.
- * - Redistributions in binary form must reproduce the above copyright notice, 
- *      this list of conditions and the following disclaimer in the documentation 
+ * - Redistributions in binary form must reproduce the above copyright notice,
+ *      this list of conditions and the following disclaimer in the documentation
  *      and/or other materials provided with the distribution.
- * - Neither the name of the FinancialForce.com, inc nor the names of its contributors 
- *      may be used to endorse or promote products derived from this software without 
+ * - Neither the name of the FinancialForce.com, inc nor the names of its contributors
+ *      may be used to endorse or promote products derived from this software without
  *      specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
- *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES 
- *  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
- *  THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ *  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+ *  THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
  *  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
  *  OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
@@ -30,7 +30,7 @@
  * as well as wrapper classes and methods to make common tasks like working with relationship field name oddities
  * as well namespace handling.
  *
- * Of particular note for use in contexts that may be released as managed packages are the #getFields and get #getGlobalDescribe methods 
+ * Of particular note for use in contexts that may be released as managed packages are the #getFields and get #getGlobalDescribe methods
  * These return special immutable wrapper objects that automatically imply the current namespace (detected as the one this class is contained in)
  * and allow an older API style of omitting the namespace when working with fields or global describe maps.
  * This allows both upgrading old code to APIv29 by making use of these as a nearly drop in replacement, as well as keeping
@@ -72,9 +72,18 @@ public class fflib_SObjectDescribe {
 			return wrappedFields;
 		}
 		set;
-	}
+    }
+    private FieldSetsMap wrappedFieldSets {
+        get {
+            if (wrappedFieldSets == null) {
+                wrappedFieldSets = new FieldSetsMap(this.fieldSets);
+            }
+            return wrappedFieldSets ;
+        }
+        set;
+    }
 
-	private fflib_SObjectDescribe(Schema.SObjectType token){	
+	private fflib_SObjectDescribe(Schema.SObjectType token){
 		if(token == null)
 			throw new InvalidDescribeException('Invalid SObject type: null');
 		if(instanceCache.containsKey( String.valueOf(token) ))
@@ -102,18 +111,18 @@ public class fflib_SObjectDescribe {
 	 * e.g. getting the Account field on Contact would fail without being referenced as AccountId - both work here.
 	**/
 	public Schema.SObjectField getField(String fieldName, Boolean implyNamespace){
-		Schema.SObjectField result = wrappedFields.get( 
+		Schema.SObjectField result = wrappedFields.get(
 			(fieldName.endsWithIgnoreCase('__r') ? //resolve custom field cross-object (__r) syntax
 			(fieldName.removeEndIgnoreCase('__r')+'__c') :
 			fieldName),
 			implyNamespace
-		); 
+		);
 		if(result == null){
 			result = wrappedFields.get(fieldName+'Id', implyNamespace); //in case it's a standard lookup in cross-object format
 		}
 		return result;
 	}
-	
+
 	/**
 	* Returns the field where isNameField() is true (if any); otherwise returns null
 	**/
@@ -129,7 +138,7 @@ public class fflib_SObjectDescribe {
 		}
 		return nameField;
 	}
-	
+
 	/**
 	 * Returns the raw Schema.DescribeSObjectResult an fflib_SObjectDescribe instance wraps.
 	**/
@@ -138,7 +147,7 @@ public class fflib_SObjectDescribe {
 	}
 	/**
 	 * This method returns the raw data and provides no namespace handling.
-	 * Due to this, __use of this method is discouraged__ in favor of getFields(). 
+	 * Due to this, __use of this method is discouraged__ in favor of getFields().
 	**/
 	public Map<String,Schema.SObjectField> getFieldsMap(){
 		return fields;
@@ -148,7 +157,10 @@ public class fflib_SObjectDescribe {
 	}
 	public Map<String,Schema.FieldSet> getFieldSetsMap(){
 		return fieldSets;
-	}
+    }
+    public FieldSetsMap getFieldSets() {
+        return wrappedFieldSets ;
+    }
 
 
 
@@ -178,7 +190,7 @@ public class fflib_SObjectDescribe {
 			if(instanceCache == null)
 				instanceCache = new Map<String,fflib_SObjectDescribe>();
 			return instanceCache;
-		} 
+		}
 		set;
 	}
 	public static fflib_SObjectDescribe getDescribe(String sObjectName){
@@ -199,7 +211,7 @@ public class fflib_SObjectDescribe {
 			return null;
 		fflib_SObjectDescribe result = instanceCache.get(String.valueOf(token).toLowerCase());
 		if(result == null)
-			result = new fflib_SObjectDescribe(token);		
+			result = new fflib_SObjectDescribe(token);
 		return result;
 	}
 	public static fflib_SObjectDescribe getDescribe(Schema.DescribeSObjectResult nativeDescribe){
@@ -223,7 +235,7 @@ public class fflib_SObjectDescribe {
 	public static GlobalDescribeMap getGlobalDescribe(){
 		return wrappedGlobalDescribe;
 	}
-	//Useful when working in heap space constrained environments. 
+	//Useful when working in heap space constrained environments.
 	//Existing references to SObjectDescribe instances will continue to work.
 	public static void flushCache(){
 		rawGlobalDescribe = null;
@@ -260,7 +272,7 @@ public class fflib_SObjectDescribe {
 			return this.getObject(name, true);
 		}
 		/**
-		 *  
+		 *
 		**/
 		protected virtual Object getObject(String name, Boolean implyNamespace){
 			if(name == null) //short-circuit lookup logic since null can't possibly be a valid field name, and it saves us null checking
@@ -332,6 +344,27 @@ public class fflib_SObjectDescribe {
 		}
 
 	}
+    /**
+	 * A subclass of NamespacedAttributeMap for handling the data returned by #Schema.DescribeSObjectResult.fieldSets.getMap
+	**/
+	public class FieldSetsMap extends NamespacedAttributeMap{
+
+		@TestVisible
+		private FieldSetsMap(Map<String,Schema.FieldSet> values){
+			super(values);
+		}
+
+		public Schema.FieldSet get(String name){
+			return this.get(name, true);
+		}
+		public Schema.FieldSet get(String name, Boolean implyNamespace){
+			return (Schema.FieldSet) this.getObject(name, implyNamespace);
+		}
+		public List<Schema.FieldSet> values(){
+			return (List<Schema.FieldSet>) values.values();
+		}
+
+	}
 	/**
 	 * A subclass of NamespacedAttributeMap for handling the data returned by #Schema.getGlobalDescribe
 	**/
@@ -350,7 +383,7 @@ public class fflib_SObjectDescribe {
 		public List<Schema.SObjectType> values(){
 			return (List<Schema.SObjectType>) values.values();
 		}
-	}
+    }
 
 
 	public abstract class DescribeException extends Exception{}
