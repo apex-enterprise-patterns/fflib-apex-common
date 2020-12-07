@@ -17,14 +17,6 @@ This fork of fflib-apex-commons has some major changes to its architecture;
   Ability to publish custom events in Apex. 
   Listeners will be invoked in realtime or can run as Queueable Apex.
   This feature will also replace the existing trigger handler (fflib_SObjectDomain).
-
-## What's new in v2.0
-This fork of fflib-apex-commons has some major changes to its architecture;
-
-- [Event driven arhitecture](#docs/events/README.md) <br/>
-  Ability to publish custom events in Apex. 
-  Listeners will be invoked in realtime or can run as Queueable Apex.
-  This feature will also replace the existing trigger handler (fflib_SObjectDomain).
 - [Domain architecture](#docs/domains/README.md) <br/>
   Domain can now be constructed with generic Objects and not limited to SObjects.
   This allows the creation of compound domains, DTO's and more.
@@ -64,12 +56,6 @@ This fork of fflib-apex-commons has some major changes to its architecture;
   Events are used to tell the application that the given action should be performed.
 
   
-  
-  
-  
-  
-  
-
 
 Updates
 =======
