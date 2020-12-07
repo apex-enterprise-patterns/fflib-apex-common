@@ -1,4 +1,4 @@
-FFLib Apex Common
+FFLib Apex Common 2.0
 =================
 
 [![Build Status](https://travis-ci.org/apex-enterprise-patterns/fflib-apex-common.svg)](https://travis-ci.org/apex-enterprise-patterns/fflib-apex-common) 
@@ -9,6 +9,14 @@ FFLib Apex Common
   <img alt="Deploy to Salesforce"
        src="https://raw.githubusercontent.com/afawcett/githubsfdeploy/master/src/main/webapp/resources/img/deploy.png">
 </a>
+
+## What's new in v2.0
+This fork of fflib-apex-commons has some major changes to its architecture;
+
+- [Event driven arhitecture](#docs/events/README.md) <br/>
+  Ability to publish custom events in Apex. 
+  Listeners will be invoked in realtime or can run as Queueable Apex.
+  This feature will also replace the existing trigger handler (fflib_SObjectDomain).
 
 Updates
 =======
