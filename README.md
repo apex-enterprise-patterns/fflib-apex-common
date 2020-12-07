@@ -1,4 +1,4 @@
-FFLib Apex Common
+FFLib Apex Common 2.0
 =================
 
 ![Push Source and Run Apex Tests](https://github.com/apex-enterprise-patterns/fflib-apex-common/workflows/Create%20a%20Scratch%20Org,%20Push%20Source%20and%20Run%20Apex%20Tests/badge.svg)
@@ -10,6 +10,14 @@ FFLib Apex Common
   <img alt="Deploy to Salesforce"
        src="https://raw.githubusercontent.com/afawcett/githubsfdeploy/master/src/main/webapp/resources/img/deploy.png">
 </a>
+
+## What's new in v2.0
+This fork of fflib-apex-commons has some major changes to its architecture;
+
+- [Event driven arhitecture](#docs/events/README.md) <br/>
+  Ability to publish custom events in Apex. 
+  Listeners will be invoked in realtime in will run as Queueable Apex.
+  This feature will also replace the existing trigger handler (fflib_SObjectDomain).
 
 Updates
 =======
