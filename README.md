@@ -15,7 +15,7 @@ This fork of fflib-apex-commons has some major changes to its architecture;
 
 - [Event driven arhitecture](#docs/events/README.md) <br/>
   Ability to publish custom events in Apex. 
-  Listeners will be invoked in realtime in will run as Queueable Apex.
+  Listeners will be invoked in realtime on can run as Queueable Apex.
   This feature will also replace the existing trigger handler (fflib_SObjectDomain).
 
 Updates
