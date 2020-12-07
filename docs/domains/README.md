@@ -16,6 +16,3 @@ The objects contained in a domain can be of these data-types;
 - SObjects
 - Compound domains
 - Data Transfer Objects (DTO's)  
-
-
-### Emitter and listeners
