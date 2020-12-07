@@ -1,4 +1,4 @@
-FFLib Apex Common
+FFLib Apex Common 2.0
 =================
 
 [![Build Status](https://travis-ci.org/apex-enterprise-patterns/fflib-apex-common.svg)](https://travis-ci.org/apex-enterprise-patterns/fflib-apex-common) 
@@ -9,6 +9,53 @@ FFLib Apex Common
   <img alt="Deploy to Salesforce"
        src="https://raw.githubusercontent.com/afawcett/githubsfdeploy/master/src/main/webapp/resources/img/deploy.png">
 </a>
+
+## What's new in v2.0
+This fork of fflib-apex-commons has some major changes to its architecture;
+
+- [Event driven architecture](docs/events/README.md) <br/>
+  Ability to publish custom events in Apex. 
+  Listeners will be invoked in realtime or can run as Queueable Apex.
+  This feature will also replace the existing trigger handler (fflib_SObjectDomain).
+- [Domain architecture](docs/domains/README.md) <br/>
+  Domain can now be constructed with generic Objects and not limited to SObjects.
+  This allows the creation of compound domains, DTO's and more.
+  Major improvement is the introduction of primitive domains.
+  
+## Road Map for fflib-apex-common v2.0
+
+- **Application Factories** <br/>
+  Redesign of interface structure of the Application class factories, in order to easily replace their implementation.
+  Then a simple implementation change can be made to use force-di for the bindings. 
+
+- **Criteria class** <br/> 
+  The criteria class can be used to have one common selector method for both selector and domain classes. 
+  Where the selector is querying its data for a source and the domain queries the data in memory from its own objects.
+  
+- **Selector Architecture** <br/>
+  The selector will be redesigned to that its not coupled to a database. 
+  In this new architecture the selector will retrieve data from wherever it is stored.
+  It should not be the concern of a service class calling the selector to know where the data is coming from.  
+  This new architecture should allow for getting the data from; 
+    - In memory
+      from previous queries (Identity Map Design Pattern)  
+    - A Platform Cache
+    - The Database
+    - External WebService
+    
+  The queries should also be able to roll-over. 
+  Like when the requested record is not in memory, 
+  then the next selector in line should be called as the record might be in the Platform cache. 
+  If it is still not found the record can be queried from a database.
+  
+- **Queued Actions** <br/>
+  A replacement for the scheduled actions of process builder flows,
+  as it is difficult to update flows with scheduled actions.
+  This feature contains a queue object with actions and scheduled jobs 
+  to execute the actions when they are scheduled. 
+  Events are used to tell the application that the given action should be performed.
+
+  
 
 Updates
 =======

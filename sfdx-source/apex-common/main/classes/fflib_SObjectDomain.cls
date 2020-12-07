@@ -39,12 +39,18 @@
  *
  **/
 public virtual with sharing class fflib_SObjectDomain
+		extends fflib_SObjects
 	implements fflib_ISObjectDomain
 {
 	/**
 	 * Provides access to the data represented by this domain class
 	 **/
-	public List<SObject> Records { get; private set;}
+	public List<SObject> Records {
+		get
+		{
+			return getRecords();
+		}
+	}
 
 
 	/**
@@ -72,11 +78,6 @@ public virtual with sharing class fflib_SObjectDomain
 		}
 		private set;
 	}
-
-	/**
-	 * Derived from the records provided during construction, provides the native describe for the standard or custom object
-	 **/
-	public Schema.DescribeSObjectResult SObjectDescribe {get; private set;}
 
 	/**
 	 * Exposes the configuration for this domain class instance
@@ -137,10 +138,9 @@ public virtual with sharing class fflib_SObjectDomain
 	public fflib_SObjectDomain(List<SObject> sObjectList, SObjectType sObjectType)
 	{
 		// Ensure the domain class has its own copy of the data
-		Records = sObjectList.clone(); 
-		// Capture SObjectType describe for this domain class
-		SObjectDescribe = sObjectType.getDescribe();
-		// Configure the Domain object instance 
+		super(sObjectList, sObjectType);
+
+		// Configure the Domain object instance
 		Configuration = new Configuration();		
 	}
 	
@@ -278,27 +278,11 @@ public virtual with sharing class fflib_SObjectDomain
     /**
      * Returns the SObjectType this Domain class represents
      **/
-    public SObjectType getSObjectType()
-    {
-    	return SObjectDescribe.getSObjectType();
-    }
-
-    /**
-     * Returns the SObjectType this Domain class represents
-     **/
     public SObjectType sObjectType()
     {
     	return getSObjectType();
     }
 
-    /**
-     * Alternative to the Records property, provided to support mocking of Domain classes
-     **/
-    public List<SObject> getRecords()
-    {
-    	return Records;
-    }
-    
 	/**
 	 * Detects whether any values in context records have changed for given fields as strings
 	 * Returns list of SObject records that have changes in the specified fields
@@ -480,7 +464,10 @@ public virtual with sharing class fflib_SObjectDomain
 		if(domains==null || domains.size()==0)
 			return null;		
 		fflib_SObjectDomain domain = domains.remove(domains.size()-1);
-		domain.Records = records;
+
+		// todo - The next line is not compatible, as it changes the context of the domain at runtime,
+		// shouldn't we create a new instance of the domain with just those records?
+//		domain.Records = records;
 		return domain;
 	}
 	
