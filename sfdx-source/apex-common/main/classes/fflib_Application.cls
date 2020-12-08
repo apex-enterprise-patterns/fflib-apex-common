@@ -122,7 +122,7 @@ public virtual class fflib_Application
 	 **/
 	public virtual class ServiceFactory extends Deprecated
 	{
-		protected fflib_ClassicServiceBindingResolver bindingResolver;
+		protected fflib_ClassicBindingResolver bindingResolver;
 
 		/**
 		 * DEPRECATED
@@ -132,7 +132,7 @@ public virtual class fflib_Application
 		public ServiceFactory(Map<Type, Type> serviceInterfaceTypeByServiceImplType)
 		{
 			logDeprecatedMessage('constructor');
-			this.bindingResolver = new fflib_ClassicServiceBindingResolver(serviceInterfaceTypeByServiceImplType);
+			this.bindingResolver = new fflib_ClassicBindingResolver(serviceInterfaceTypeByServiceImplType);
 		}
 
 		/**
@@ -146,7 +146,7 @@ public virtual class fflib_Application
 			try
 			{
 				return bindingResolver.newInstance(serviceInterfaceType);
-			} catch (fflib_ClassicServiceBindingResolver.DeveloperException e)
+			} catch (fflib_ClassicBindingResolver.DeveloperException e)
 			{
 				throw new DeveloperException(e.getMessage());
 			}
@@ -169,7 +169,7 @@ public virtual class fflib_Application
 			logDeprecatedMessage(
 					'ServiceFactory',
 					methodName,
-					'fflib_ServiceBindingResolver'
+					'fflib_BindingResolver'
 			);
 		}
 	}

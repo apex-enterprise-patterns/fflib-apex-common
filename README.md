@@ -3,7 +3,8 @@ FFLib Apex Common 2.0
 
 [![Build Status](https://travis-ci.org/apex-enterprise-patterns/fflib-apex-common.svg)](https://travis-ci.org/apex-enterprise-patterns/fflib-apex-common) 
 
-**Dependencies:** Must deploy [ApexMocks](https://github.com/apex-enterprise-patterns/fflib-apex-mocks) before deploying this library
+**Dependencies:** Must deploy [ApexMocks](https://github.com/apex-enterprise-patterns/fflib-apex-mocks) 
+and [Force-DI](https://github.com/apex-enterprise-patterns/force-di) before deploying this library
 
 <a href="https://githubsfdeploy.herokuapp.com">
   <img alt="Deploy to Salesforce"
@@ -11,7 +12,7 @@ FFLib Apex Common 2.0
 </a>
 
 ## What's new in v2.0
-This fork of fflib-apex-commons has some major changes to its architecture;
+This fork of fflib-apex-commons has some major changes to its architecture, while maintaining backwards compatible.
 
 - [Event driven architecture](docs/events/README.md) <br/>
   Ability to publish custom events in Apex. 
@@ -21,12 +22,14 @@ This fork of fflib-apex-commons has some major changes to its architecture;
   Domain can now be constructed with generic Objects and not limited to SObjects.
   This allows the creation of compound domains, DTO's and more.
   Major improvement is the introduction of primitive domains.
+- [Application factories redesigned and can use Force-DI](docs/application/README.md) <br/>
+  Redesign of interface structure of the Application class factories, in order to easily replace their implementation.
+  Now force-di is fully integrated into the application 
+  while also maintaining backwards compatibility with the classic way of working with Maps.
+  The force-di integration is just another implementation of the factories.
+  
   
 ## Road Map for fflib-apex-common v2.0
-
-- **Application Factories** <br/>
-  Redesign of interface structure of the Application class factories, in order to easily replace their implementation.
-  Then a simple implementation change can be made to use force-di for the bindings. 
 
 - **Criteria class** <br/> 
   The criteria class can be used to have one common selector method for both selector and domain classes. 
@@ -60,6 +63,7 @@ This fork of fflib-apex-commons has some major changes to its architecture;
 Updates
 =======
 
+- **December 2020**, **IMPORTANT CHANGE**, the repository had become dependent on force-di. If that is not desired, just exclude the folder `sfdx-source/apex-common/classes/force-di`. 
 - **April 2020**, **IMPORTANT CHANGE**, the directory format of this project repo was converted to [Salesforce DX Source Format](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_source_file_format.htm).  While the GIT commit history was maintained, it is not visible on GitHub.  If you need to see the history, either clone the repo and execute `git log --follow` from the command line or refer to this [tag](https://github.com/apex-enterprise-patterns/fflib-apex-common/tree/metadata-format-prior-to-dx-source-format-conversion) of the codebase prior to conversion.
 - **September 2014**, **IMPORTANT CHANGE**, changes applied to support Dreamforce 2014 advanced presentation, library now provides Application factories for major layers and support for ApexMocks. More details to follow! As a result [ApexMocks](https://github.com/apex-enterprise-patterns/fflib-apex-mocks) must be deployed to the org before deploying this library. The sample application [here](https://github.com/apex-enterprise-patterns/fflib-apex-common-samplecode) has also been updated to demonstrate the new features!
 - **July 2014**, **IMPORTANT CHANGE**, prior **23rd July 2014**, both the ``fflib_SObjectDomain.onValidate()`` and ``fflib_SObjectDomain.onValidate(Map<Id, SObject> existingRecords)`` methods where called during an on **after update** trigger event. From this point on the ``onValidate()`` method will only be called during on **after insert**. If you still require the orignal behaviour add the line ``Configuration.enableOldOnUpdateValidateBehaviour();`` into your constructor.
