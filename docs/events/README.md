@@ -190,8 +190,8 @@ and define the bindings of the event listener interface to its implementation.
 public class Application
 {
     // This will bind the defined event listener interfaces to it implementation
-    public static final fflib_Application.ServiceFactory EventListenerBindings =
-            new fflib_Application.ServiceFactory(
+    public static final fflib_BindingResolver EventListenerBindings =
+            new fflib_ClassicBindingResolver(
                     new Map<Type, Type>
                     {
                             OnChangedAccountSanitizer.class => OnChangedAccountSanitizerImp.class
