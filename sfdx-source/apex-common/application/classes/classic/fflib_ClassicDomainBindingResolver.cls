@@ -25,29 +25,50 @@
  *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public virtual class fflib_ClassicDomainBindingResolver implements fflib_DomainBindingResolver
+public virtual class fflib_ClassicDomainBindingResolver
+		implements fflib_DomainBindingResolver
 {
 	protected fflib_SelectorBindingResolver selectorBindingResolver;
 
-	protected Map<Schema.SObjectType, Type> domainConstructorBySObjectType;
+	protected Map<Object, Type> constructorTypeByObject;
 
-	protected Map<Schema.SObjectType, fflib_ISObjectDomain> mockDomainInstanceBySObjectType;
+	protected Map<Object, fflib_Domain> mockDomainByObject;
 
 	/**
-	 * Class constructor
+	 * Constructs a Domain factory, using an instance of the Selector Factory
+	 *   and a map of Apex classes implementing fflib_ISObjectDomain by SObjectType
+	 *   Note this will not check the Apex classes provided actually implement the interfaces
+	 *     since this is not possible in the Apex runtime at present
 	 *
-	 * @param selectorBindingResolver
-	 * @param domainConstructorBySObjectType
-	 */
+	 * @param selectorBindingResolver , e.g. Application.Selector
+	 * @param constructorTypeByObject Map of Domain classes by ObjectType
+	 **/
 	public fflib_ClassicDomainBindingResolver(
 			fflib_SelectorBindingResolver selectorBindingResolver,
-			Map<SObjectType, Type> domainConstructorBySObjectType)
+			Map<Object, Type> constructorTypeByObject)
 	{
 		this.selectorBindingResolver = selectorBindingResolver;
-		this.domainConstructorBySObjectType = domainConstructorBySObjectType;
-		this.mockDomainInstanceBySObjectType = new Map<SObjectType, fflib_ISObjectDomain>();
+		this.constructorTypeByObject = constructorTypeByObject;
+		this.mockDomainByObject = new Map<Object, fflib_Domain>();
 	}
 
+	/**
+	 * Constructs a Domain factory, using an instance of the Selector Factory
+	 *   and a map of Apex classes implementing fflib_ISObjectDomain by SObjectType
+	 *   Note this will not check the Apex classes provided actually implement the interfaces
+	 *     since this is not possible in the Apex runtime at present
+	 *
+	 * @param selectorBindingResolver Resolver for Selectors
+	 * @param sObjectByDomainConstructorType Map of Apex classes by SObjectType
+	 **/
+	public fflib_ClassicDomainBindingResolver(
+			fflib_SelectorBindingResolver selectorBindingResolver,
+			Map<SObjectType, Type> sObjectByDomainConstructorType)
+	{
+		this.selectorBindingResolver = selectorBindingResolver;
+		this.constructorTypeByObject = getConstructorTypeByObject(sObjectByDomainConstructorType);
+		this.mockDomainByObject = new Map<Object, fflib_Domain>();
+	}
 	/**
 	 * Dynamically constructs an instance of a Domain class for the given record Ids
 	 *   Internally uses the Selector Factory to query the records before passing to a
@@ -56,9 +77,9 @@ public virtual class fflib_ClassicDomainBindingResolver implements fflib_DomainB
 	 * @param recordIds A list of Id's of the same type
 	 * @exception Throws an exception via the Selector Factory if the Ids are not all of the same SObjectType
 	 *
-	 * @return Instance of fflib_ISObjectDomain containing the record with the provided Ids
+	 * @return Instance of the Domain
 	 **/
-	public virtual fflib_ISObjectDomain newInstance(Set<Id> recordIds)
+	public virtual fflib_Domain newInstance(Set<Id> recordIds)
 	{
 		return newInstance(selectorBindingResolver.selectById(recordIds));
 	}
@@ -69,30 +90,62 @@ public virtual class fflib_ClassicDomainBindingResolver implements fflib_DomainB
 	 *
 	 * @param records A concrete list (e.g. List<Account> vs List<SObject>) of records
 	 * @exception Throws an exception if the SObjectType cannot be determined from the list
-	 *              or the constructor for Domain class was not registered for the SOBjectType
+	 *              or the constructor for Domain class was not registered for the SObjectType
 	 *
-	 * @return Instance of fflib_ISObjectDomain containing the provided records
+	 * @return Instance of the Domain containing the given records
 	 **/
-	public virtual fflib_ISObjectDomain newInstance(List<SObject> records)
+	public virtual fflib_Domain newInstance(List<SObject> records)
 	{
 		SObjectType domainSObjectType = records.getSObjectType();
 		if (domainSObjectType == null)
 			throw new DeveloperException('Unable to determine SObjectType');
 
+		return newInstance((List<Object>) records, (Object) domainSObjectType);
+	}
+
+	/**
+	 * Dynamically constructs an instance of the Domain class for the given records and SObjectType
+	 *   Will return a Mock implementation if one has been provided via setMock
+	 *
+	 * @param objects A list objects
+	 * @param objectType ObjectType for list of objects
+	 *
+	 * @throws DeveloperException
+	 *
+	 * @return Instance of fflib_Domain containing the provided objects
+	 **/
+	public virtual fflib_Domain newInstance(List<Object> objects, Object objectType)
+	{
 		// Mock implementation?
-		if (mockDomainInstanceBySObjectType.containsKey(domainSObjectType))
-			return mockDomainInstanceBySObjectType.get(domainSObjectType);
+		if (mockDomainByObject.containsKey(objectType))
+			return mockDomainByObject.get(objectType);
 
 		// Determine SObjectType and Apex classes for Domain class
-		Type domainConstructorClass = domainConstructorBySObjectType.get(domainSObjectType);
+		Type domainConstructorClass = constructorTypeByObject.get(objectType);
 		if (domainConstructorClass == null)
-			throw new DeveloperException('Domain constructor class not found for SObjectType ' + domainSObjectType);
+			throw new DeveloperException('Domain constructor class not found for SObjectType ' + objectType);
 
 		// Construct Domain class passing in the queried records
-		fflib_SObjectDomain.IConstructable domainConstructor =
-				(fflib_SObjectDomain.IConstructable) domainConstructorClass.newInstance();
-		return (fflib_ISObjectDomain) domainConstructor.construct(records);
+		Object domainConstructor = domainConstructorClass.newInstance();
+
+		// for backwards compatibility
+		if (domainConstructor instanceof fflib_SObjectDomain.IConstructable2)
+		{
+			return (fflib_Domain)
+					((fflib_SObjectDomain.IConstructable2) domainConstructor)
+							.construct((List<SObject>) objects, (SObjectType) objectType);
+		}
+		else if (domainConstructor instanceof fflib_SObjectDomain.IConstructable)
+		{
+			return (fflib_Domain)
+					((fflib_SObjectDomain.IConstructable) domainConstructor)
+							.construct((List<SObject>) objects);
+		}
+
+		return ((fflib_DomainConstructor) domainConstructor)
+					.construct(objects);
 	}
+
 
 	/**
 	 * Dynamically constructs an instance of the Domain class for the given records and SObjectType
@@ -105,41 +158,52 @@ public virtual class fflib_ClassicDomainBindingResolver implements fflib_DomainB
 	 * @remark Will support List<SObject> but all records in the list will be assumed to be of
 	 *         the type specified in sObjectType
 	 *
-	 * @return Instance of fflib_ISObjectDomain containing the provided records
+	 * @return Instance of the Domain with the given records
 	 **/
-	public virtual fflib_ISObjectDomain newInstance(List<SObject> records, SObjectType domainSObjectType)
+	public virtual fflib_Domain newInstance(List<SObject> records, SObjectType domainSObjectType)
 	{
 		if (domainSObjectType == null)
 			throw new DeveloperException('Must specify sObjectType');
 
-		// Mock implementation?
-		if (mockDomainInstanceBySObjectType.containsKey(domainSObjectType))
-			return mockDomainInstanceBySObjectType.get(domainSObjectType);
-
-		// Determine SObjectType and Apex classes for Domain class
-		Type domainConstructorClass = domainConstructorBySObjectType.get(domainSObjectType);
-		if (domainConstructorClass == null)
-			throw new DeveloperException('Domain constructor class not found for SObjectType ' + domainSObjectType);
-
-		// Construct Domain class passing in the queried records
-		fflib_SObjectDomain.IConstructable2 domainConstructor =
-				(fflib_SObjectDomain.IConstructable2) domainConstructorClass.newInstance();
-		return (fflib_ISObjectDomain) domainConstructor.construct(records, domainSObjectType);
+		return newInstance(
+				(List<Object>) records,
+				(Object) domainSObjectType
+		);
 	}
 
-	public void replaceWith(SObjectType domainSObjectType, Type domainConstructorImplementationType)
+	public void replaceWith(fflib_Domain domain)
 	{
-		this.domainConstructorBySObjectType.put(domainSObjectType, domainConstructorImplementationType);
+		setMock(domain);
 	}
 
-	public virtual void setMock(fflib_ISObjectDomain mockDomain)
+	public void replaceWith(Object domainType, Object domainOrConstructorType)
 	{
-		setMock(mockDomain.sObjectType(), mockDomain);
+		if (domainOrConstructorType instanceof System.Type)
+		{
+			this.constructorTypeByObject.put(domainType, (System.Type) domainOrConstructorType);
+		}
+		else if (domainOrConstructorType instanceof fflib_Domain)
+		{
+			setMock((fflib_Domain) domainOrConstructorType);
+		}
 	}
 
-	public virtual void setMock(Schema.SObjectType domainSObjectType, fflib_ISObjectDomain mockDomain)
+	public virtual void setMock(fflib_Domain mockDomain)
 	{
-		mockDomainInstanceBySObjectType.put(domainSObjectType, mockDomain);
+		mockDomainByObject.put(mockDomain.getType(), mockDomain);
+	}
+
+	private Map<Object, Type> getConstructorTypeByObject(Map<SObjectType, Type> constructorTypeBySObjectType)
+	{
+		Map<Object, Type> result = new Map<Object, Type>();
+		for (SObjectType sObjectType : constructorTypeBySObjectType.keySet())
+		{
+			result.put(
+					(Object) sObjectType,
+					constructorTypeBySObjectType.get(sObjectType)
+			);
+		}
+		return result;
 	}
 
 	/**

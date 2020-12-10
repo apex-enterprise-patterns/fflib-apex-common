@@ -284,7 +284,7 @@ public virtual class fflib_Application
 		 * Method kept for backwards compatibility with AEP 1.0
 		 * It should no longer be used as it will be removed in a future version over AEP 2.0
 		 **/
-		public virtual fflib_ISObjectDomain newInstance(Set<Id> recordIds)
+		public virtual fflib_Domain newInstance(Set<Id> recordIds)
 		{
 			logDeprecatedMessage('newInstance(Set<Id>)');
 			return bindingResolver.newInstance(recordIds);
@@ -295,7 +295,7 @@ public virtual class fflib_Application
 		 * Method kept for backwards compatibility with AEP 1.0
 		 * It should no longer be used as it will be removed in a future version over AEP 2.0
 		 **/
-		public virtual fflib_ISObjectDomain newInstance(List<SObject> records)
+		public virtual fflib_Domain newInstance(List<SObject> records)
 		{
 			logDeprecatedMessage('newInstance(Set<Id>)');
 			return bindingResolver.newInstance(records);
@@ -306,7 +306,7 @@ public virtual class fflib_Application
 		 * Method kept for backwards compatibility with AEP 1.0
 		 * It should no longer be used as it will be removed in a future version over AEP 2.0
 		 **/
-		public virtual fflib_ISObjectDomain newInstance(List<SObject> records, SObjectType domainSObjectType)
+		public virtual fflib_Domain newInstance(List<SObject> records, SObjectType domainSObjectType)
 		{
 			logDeprecatedMessage('newInstance(Set<Id>)');
 			return bindingResolver.newInstance(records, domainSObjectType);

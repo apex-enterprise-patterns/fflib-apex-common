@@ -40,9 +40,9 @@ public interface fflib_SelectorBindingResolver
 	 * Replaces the linked implementation for the Apex interface.
 	 *
 	 * @param sObjectType The SObjectType for the new implementation
-	 * @param selectorImplementationType The replacement implementation type for the given SObjectType
+	 * @param mockType The replacement implementation name or Instance
 	 */
-	void replaceWith(Schema.SObjectType sObjectType, Type selectorImplementationType);
+	void replaceWith(Schema.SObjectType sObjectType, Object mockType);
 
 	/**
 	 * Helper method to query the given SObject records

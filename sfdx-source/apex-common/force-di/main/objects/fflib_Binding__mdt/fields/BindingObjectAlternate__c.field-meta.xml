@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>BindingObjectAlternate__c</fullName>
+    <description>Use this field to specify the SObject API name to bind to when the &quot;Binding Object&quot; field does not list that particular SObject.  Only specify the &quot;Binding Object&quot; field or this one; not both.</description>
+    <externalId>false</externalId>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <inlineHelpText>Use this field to specify the SObject API name to bind to when the &quot;Binding Object&quot; field does not list that particular SObject.  Only specify the &quot;Binding Object&quot; field or this one; not both.</inlineHelpText>
+    <label>Binding Object Alternate</label>
+    <length>255</length>
+    <required>false</required>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

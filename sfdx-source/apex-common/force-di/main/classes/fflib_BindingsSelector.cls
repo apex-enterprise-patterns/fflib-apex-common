@@ -1,6 +1,6 @@
 /**
- * File Name: fflib_BindingResolver
- * Description: Interface for resolving service class bindings
+ * File Name: fflib_BindingsSelector 
+ * Description: Selector for the Custom Metadata object fflib_Binding__mdt
  *
  * @author: architect ir. Wilhelmus G.J. Velzeboer
  *
@@ -25,29 +25,39 @@
  *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public interface fflib_BindingResolver
+public without sharing class fflib_BindingsSelector extends fflib_SObjectSelector
 {
-	/**
-	 * Returns a new instance of the Apex class associated with the given Apex interface
-	 *
-	 * @param serviceInterfaceType Apex interface type
-	 * @return Instance of the implementation bound to the given interface type
-	 **/
-	Object newInstance(Type serviceInterfaceType);
+	public List<Schema.SObjectField> getSObjectFieldList()
+	{
+		return new List<Schema.SObjectField>
+		{
+				fflib_Binding__mdt.Id,
+				fflib_Binding__mdt.AppName__c,
+				fflib_Binding__mdt.BindingObjectAlternate__c,
+				fflib_Binding__mdt.BindingObject__c,
+				fflib_Binding__mdt.DeveloperName,
+				fflib_Binding__mdt.NamespacePrefix,
+				fflib_Binding__mdt.QualifiedAPIName,
+				fflib_Binding__mdt.To__c,
+				fflib_Binding__mdt.Type__c
+		};
+	}
 
-	/**
-	 * Replaces the linked implementation for the Apex interface.
-	 *
-	 * @param serviceInterfaceType The interface type for this new implementation
-	 * @param MockType The replacement implementation or Type name for the replacement
-	 */
-	void replaceWith(Type serviceInterfaceType, Object MockType);
+	public Schema.SObjectType getSObjectType()
+	{
+		return fflib_Binding__mdt.SObjectType;
+	}
 
-	/**
-	 * Replaces the linked implementation for a mocked implementation, used in unit-test
-	 *
-	 * @param serviceInterfaceType The interface type for this new implementation
-	 * @param serviceInstance The mock instance for the given interface type
-	 */
-	void setMock(Type serviceInterfaceType, Object serviceInstance);
+	public List<fflib_Binding__mdt> selectById(Set<Id> idSet)
+	{
+		return (List<fflib_Binding__mdt>) selectSObjectsById(idSet);
+	}
+
+	public List<fflib_Binding__mdt> selectAll()
+	{
+		return (List<fflib_Binding__mdt>) Database.query(
+				newQueryFactory()
+				.toSOQL()
+		);
+	}
 }

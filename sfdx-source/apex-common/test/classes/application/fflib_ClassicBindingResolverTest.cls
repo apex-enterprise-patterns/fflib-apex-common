@@ -89,6 +89,24 @@ private class fflib_ClassicBindingResolverTest
 	}
 
 	@IsTest
+	static void itShouldReturnTheReplacedInstance()
+	{
+		// GIVEN a configured service binding resolver with an interface linked to an implementation
+		//   where the implementation is replaced for an alternative implementation instance
+		fflib_BindingResolver service = generateConfiguredServiceBindingResolver();
+		service.replaceWith(ServiceInterface.class, new AlternativeServiceImplementation());
+
+		// WHEN we request the implementation for the interface
+		ServiceInterface result = (ServiceInterface) service.newInstance(ServiceInterface.class);
+
+		// THEN it should return the alternative implementation
+		System.assert(
+				result instanceof AlternativeServiceImplementation,
+				'Incorrect implementation returned, expected the alternative implementation'
+		);
+	}
+
+	@IsTest
 	static void itShouldReturnTheReplacedImplementation()
 	{
 		// GIVEN a configured service binding resolver with an interface linked to an implementation

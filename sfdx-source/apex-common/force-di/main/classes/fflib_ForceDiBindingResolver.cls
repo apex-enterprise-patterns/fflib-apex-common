@@ -1,6 +1,6 @@
 /**
- * File Name: fflib_BindingResolver
- * Description: Interface for resolving service class bindings
+ * File Name: fflib_ForceDiBindingResolver
+ * Description: Application Binding Resolver using Force-DI
  *
  * @author: architect ir. Wilhelmus G.J. Velzeboer
  *
@@ -25,15 +25,24 @@
  *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public interface fflib_BindingResolver
+public with sharing class fflib_ForceDiBindingResolver
+		implements fflib_BindingResolver
 {
 	/**
 	 * Returns a new instance of the Apex class associated with the given Apex interface
+	 *   Will return any mock implementation of the interface provided via setMock
+	 *   Note that this method will not check the configured Apex class actually implements the interface
 	 *
 	 * @param serviceInterfaceType Apex interface type
+	 *
+	 * @exception Is thrown if there is no registered Apex class for the interface type
+	 *
 	 * @return Instance of the implementation bound to the given interface type
 	 **/
-	Object newInstance(Type serviceInterfaceType);
+	public Object newInstance(Type serviceInterfaceType)
+	{
+		return di_Injector.Org.getInstance(serviceInterfaceType);
+	}
 
 	/**
 	 * Replaces the linked implementation for the Apex interface.
@@ -41,13 +50,14 @@ public interface fflib_BindingResolver
 	 * @param serviceInterfaceType The interface type for this new implementation
 	 * @param MockType The replacement implementation or Type name for the replacement
 	 */
-	void replaceWith(Type serviceInterfaceType, Object MockType);
+	public void replaceWith(Type serviceInterfaceType, Object MockType)
+	{
+		di_Injector.Org.Bindings.byName(serviceInterfaceType.getName()).replaceBindingWith(MockType);
+	}
 
-	/**
-	 * Replaces the linked implementation for a mocked implementation, used in unit-test
-	 *
-	 * @param serviceInterfaceType The interface type for this new implementation
-	 * @param serviceInstance The mock instance for the given interface type
-	 */
-	void setMock(Type serviceInterfaceType, Object serviceInstance);
+	// DEPRECATED - only available for backwards compatibility
+	public void setMock(Type serviceInterfaceType, Object serviceImp)
+	{
+		replaceWith(serviceInterfaceType, serviceImp);
+	}
 }
