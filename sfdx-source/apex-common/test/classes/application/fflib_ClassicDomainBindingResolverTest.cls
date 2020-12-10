@@ -36,7 +36,7 @@ private class fflib_ClassicDomainBindingResolverTest
 		List<Account> records = generateAccounts();
 
 		// WHEN we request an instance for the SObjectType
-		fflib_ISObjectDomain result = domain.newInstance(records);
+		fflib_Domain result = domain.newInstance(records);
 
 		// THEN the result should be an instance of the Accounts domain class containing the records
 		System.assert(
@@ -44,7 +44,7 @@ private class fflib_ClassicDomainBindingResolverTest
 				'Incorrect implementation returned'
 		);
 		System.assert(
-				((List<Account>) result.getRecords()).equals(records),
+				((List<Account>) result.getObjects()).equals(records),
 				'Returned instance does not contain the right records'
 		);
 	}
@@ -61,7 +61,7 @@ private class fflib_ClassicDomainBindingResolverTest
 		Boolean exceptionThrown = false;
 		try
 		{
-			fflib_ISObjectDomain domain = bindingResolver.newInstance(records);
+			fflib_Domain domain = bindingResolver.newInstance(records);
 		}
 		catch (fflib_ClassicDomainBindingResolver.DeveloperException e)
 		{
@@ -89,7 +89,7 @@ private class fflib_ClassicDomainBindingResolverTest
 		Boolean exceptionThrown = false;
 		try
 		{
-			fflib_ISObjectDomain domain = bindingResolver.newInstance(contacts);
+			fflib_Domain domain = bindingResolver.newInstance(contacts);
 		}
 		catch (fflib_ClassicDomainBindingResolver.DeveloperException e)
 		{
@@ -114,7 +114,7 @@ private class fflib_ClassicDomainBindingResolverTest
 		bindingResolver.setMock(new AccountsMock(generateAccounts()));
 
 		// WHEN a domain is requested
-		fflib_ISObjectDomain result = bindingResolver.newInstance(generateAccounts());
+		fflib_Domain result = bindingResolver.newInstance(generateAccounts());
 
 		// THEN the mocked instance should be returned
 		System.assert(result instanceof AccountsMock, 'Expected mock instance');
@@ -162,7 +162,7 @@ private class fflib_ClassicDomainBindingResolverTest
 		}
 	}
 
-	private with sharing class AccountsMock extends fflib_SObjectDomain
+	private with sharing class AccountsMock extends fflib_SObjects
 	{
 		public AccountsMock(List<SObject> records)
 		{

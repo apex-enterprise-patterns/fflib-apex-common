@@ -88,6 +88,24 @@ public class fflib_ClassicSelectorBindingResolverTest
 	}
 
 	@IsTest
+	static void itShouldReturnTheReplacedInstance()
+	{
+		// GIVEN a configured service binding resolver with an interface linked to an implementation
+		//   where the implementation is replaced for an alternative implementation
+		fflib_SelectorBindingResolver selector = generateConfiguredSelectorBindingResolver();
+		selector.replaceWith(Schema.Account.SObjectType, new AccountsSelectorMock());
+
+		// WHEN we request the implementation for the interface
+		fflib_ISObjectSelector result = selector.newInstance(Schema.Account.SObjectType);
+
+		// THEN it should return the alternative implementation
+		System.assert(
+				result instanceof AccountsSelectorMock,
+				'Incorrect implementation returned, expected the alternative implementation'
+		);
+	}
+
+	@IsTest
 	static void itShouldReturnTheReplacedImplementation()
 	{
 		// GIVEN a configured service binding resolver with an interface linked to an implementation

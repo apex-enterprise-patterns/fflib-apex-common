@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>When no Namespace is used, provide here the name for the application/package</description>
+    <fullName>AppName__c</fullName>
+    <externalId>false</externalId>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <inlineHelpText>When no Namespace is used, provide here the name for the application/package</inlineHelpText>
+    <label>Application Name</label>
+    <length>40</length>
+    <required>false</required>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

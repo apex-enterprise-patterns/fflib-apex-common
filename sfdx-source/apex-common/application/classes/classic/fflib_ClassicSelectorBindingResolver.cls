@@ -68,11 +68,18 @@ public virtual class fflib_ClassicSelectorBindingResolver
 	 * Replaces the linked implementation for the Apex interface.
 	 *
 	 * @param sObjectType The SObjectType for the new implementation
-	 * @param selectorImplementationType The replacement implementation type for the given SObjectType
+	 * @param selectorOrImplementationType The replacement implementation instance for the given SObjectType
 	 */
-	public void replaceWith(Schema.SObjectType sObjectType, Type selectorImplementationType)
+	public void replaceWith(Schema.SObjectType sObjectType, Object selectorOrImplementationType)
 	{
-		this.selectorImplementationTypeBySObjectType.put(sObjectType, selectorImplementationType);
+		if (selectorOrImplementationType instanceof System.Type)
+		{
+			selectorImplementationTypeBySObjectType.put(sObjectType, (System.Type) selectorOrImplementationType);
+		}
+		else if (selectorOrImplementationType instanceof fflib_ISObjectSelector)
+		{
+			selectorMockBySObjectType.put(sObjectType, (fflib_ISObjectSelector) selectorOrImplementationType);
+		}
 	}
 
 	/**

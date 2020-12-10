@@ -71,11 +71,18 @@ public virtual class fflib_ClassicBindingResolver
 	 * Replaces the linked implementation for the Apex interface.
 	 *
 	 * @param serviceInterfaceType The interface type for this new implementation
-	 * @param serviceImplementationType The replacement implementation type for the given interface type
+	 * @param implementation An instance or class Type of the replacement implementation
 	 */
-	public virtual void replaceWith(Type serviceInterfaceType, Type serviceImplementationType)
+	public virtual void replaceWith(Type serviceInterfaceType, Object implementation)
 	{
-		implementationTypeByInterfaceType.put(serviceInterfaceType, serviceImplementationType);
+		if (implementation instanceof System.Type)
+		{
+			implementationTypeByInterfaceType.put(serviceInterfaceType, (System.Type) implementation);
+		}
+		else
+		{
+			mockImplementationByInterfaceType.put(serviceInterfaceType, implementation);
+		}
 	}
 
 	/**

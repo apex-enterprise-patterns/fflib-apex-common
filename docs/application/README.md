@@ -62,9 +62,9 @@ public with sharing class Application
                             Contact.SObjectType
                     });
 
-    // Configure and create the ServiceFactory for this Application
+    // Configure and create the Binding Resolver Factory for this Application
     public static final fflib_BindingResolver Service = 
-            new fflib_ForceDiResolver();
+            new fflib_ForceDiResolver(APP_NAME);
 
     // Configure and create the SelectorFactory for this Application
     public static final fflib_SelectorBindingResolver Selector = 
@@ -76,26 +76,18 @@ public with sharing class Application
 
 }
 ```
-The plugin required an `APP_NAME`, which is either the Namespace
-or another unique application identifier with a similar format as the Namespace.
+The plugin requires an `APP_NAME`, which is used in the binding name to identify the bindings belonging to the application.
 
-No changes were made to the UnitOfWork factory, so will stay the same.
+| AppName | DeveloperName | Binding Object Type | Type__c | To__c | Force-Di binding Pattern | Force-Di binding Example |
+|:---|:---|:---|:---|:---|:---|:---
+| MyApp | AccountsSelector | Account | Selector | AccountsSelectorImp | [AppName].[Type].[ObjectType] | MyApp.Selector.Account |
+| MyApp | AccountsDomain   | Account | Domain | AccountsImp | [AppName].[Type].[ObjectType] | MyApp.Domain.Account |
+| MyApp | MyDataTransferObjectDomain   | MyDataTransferObject | Domain | MyDataTransferObjectImp | [AppName].[Type].[ObjectType] | MyApp.Domain.MyDataTransferObject |
 
-Instead of defining a list with all the dependencies we just create three new factory instances,
-one for Service, Selector and Domain.
-Only the Selector and Domain need to know the Namespace or App_Name.
-These factories will connect with Force-Di to retrieve the dependencies.
+| MyApp | AccountsService  | Account | Service | AccountsServiceImp | [DeveloperName] | MyApp.AccountsService |
 
-The methods on the application factories are the same as the current fflib implementation,
-which makes implementing this plugin very easy.
-
-All the bindings are stored not in the standard force-di binding object but in
-the custom meta-data object 'Enterprise Pattern Binding' (`fflib_Binding__mdt`).
-This object is very similar to the one in force-di with the exception of the specific Type
-(Selector, Domain, Service).
-This object only supports Apex files. Any other dependency injection for e.g. Lightning Components
-still need to be registered in the force-di binding object.
-
+The SObjectType key prefix is used in the Force-Di binding name, 
+as there is a limitation (of the Developername field) of max 40 characters.
 
 ## Class & Method reference
 

@@ -33,18 +33,20 @@ public interface fflib_DomainBindingResolver
 	 *   dynamically constructed instance of the application Apex Domain class
 	 *
 	 * @param recordIds A list of Id's of the same type
-	 * @return Instance of fflib_ISObjectDomain containing the record with the provided Ids
+	 *
+	 * @return Instance of fflib_Domain containing the record with the provided Ids
 	 **/
-	fflib_ISObjectDomain newInstance(Set<Id> recordIds);
+	fflib_Domain newInstance(Set<Id> recordIds);
 
 	/**
 	 * Dynamically constructs an instance of the Domain class for the given records
 	 *   Will return a Mock implementation if one has been provided via setMock
 	 *
 	 * @param records A concrete list (e.g. List<Account> vs List<SObject>) of records
-	 * @return Instance of fflib_ISObjectDomain containing the provided records
+	 *
+	 * @return Instance of fflib_Domain containing the provided records
 	 **/
-	fflib_ISObjectDomain newInstance(List<SObject> records);
+	fflib_Domain newInstance(List<SObject> records);
 
 	/**
 	 * Dynamically constructs an instance of the Domain class for the given records and SObjectType
@@ -52,30 +54,43 @@ public interface fflib_DomainBindingResolver
 	 *
 	 * @param records A list records
 	 * @param domainSObjectType SObjectType for list of records
+	 *
+	 * @return Instance of fflib_Domain containing the provided records
 	 **/
-	fflib_ISObjectDomain newInstance(List<SObject> records, SObjectType domainSObjectType);
+	fflib_Domain newInstance(List<SObject> records, SObjectType domainSObjectType);
+
+	/**
+	 * Dynamically constructs an instance of the Domain class for the given records and SObjectType
+	 *   Will return a Mock implementation if one has been provided via setMock
+	 *
+	 * @param objects A list objects
+	 * @param objectType ObjectType for list of objects
+	 *
+	 * @return Instance of fflib_Domain containing the provided objects
+	 **/
+	fflib_Domain newInstance(List<Object> objects, Object objectType);
+
+	/**
+	 * Replaces the implementation of the given domain
+	 *
+	 * @param domainImplementation The replacement implementation for the given interface type
+	 *    this should be the domain Constructor which is an implementation of fflib_SObjectDomainConstructor
+	 */
+	void replaceWith(fflib_Domain domainImplementation);
 
 	/**
 	 * Replaces the linked implementation for the Apex interface.
 	 *
-	 * @param domainSObjectType The interface type for this new implementation
+	 * @param domainType The interface type for this new implementation
 	 * @param domainConstructorImplementationType The replacement implementation type for the given interface type
 	 *    this should be the domain Constructor which is an implementation of fflib_SObjectDomainConstructor
 	 */
-	void replaceWith(Schema.SObjectType domainSObjectType, Type domainConstructorImplementationType);
+	void replaceWith(Object domainType, Object domainConstructorImplementationType);
 
 	/**
 	 * Replaces the linked implementation for a mocked implementation, used in unit-test
 	 *
 	 * @param mockDomain The mock instance for the given interface type
 	 */
-	void setMock(fflib_ISObjectDomain mockDomain);
-
-	/**
-	 * Replaces the linked implementation for a mocked implementation, used in unit-test
-	 *
-	 * @param domainSObjectType The SObjectType to mock
-	 * @param mockDomain The mock instance for the given interface type
-	 */
-	void setMock(Schema.SObjectType domainSObjectType, fflib_ISObjectDomain mockDomain);
+	void setMock(fflib_Domain mockDomain);
 }
