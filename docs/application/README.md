@@ -1,5 +1,20 @@
 # Application 
 
+The Application class is redesigned compared to the original version. 
+It is 100% backwards compatible, but will send warning messages to the Debug log.
+
+Main intend to redesign the Application is to align the architecture more with the Liskov's Substitution principle 
+of the SOLID design principle. 
+The new interface structure allows multiple implementations of the Factories, which are renamed to BindingResolvers.
+
+There are two default implementations provided
+- [Classic based on maps](#classic-factories) <br/> 
+  Similar than the Factories in the original AEP
+- [Force-Di](#force-di-bindings) <br/>
+  A new dependency has been added to allow fflib to connect with all the features of force-di
+  If this dependency is not desired, simply remove the folder `sfdx-source/apex-common/force-di`.
+  
+
 ## Classic Factories
 Binding based on static maps in Apex
 
@@ -64,243 +79,21 @@ public with sharing class Application
 
     // Configure and create the Binding Resolver Factory for this Application
     public static final fflib_BindingResolver Service = 
-            new fflib_ForceDiResolver(APP_NAME);
+            new fflib_ForceDiBindingResolver();
 
     // Configure and create the SelectorFactory for this Application
     public static final fflib_SelectorBindingResolver Selector = 
-            new fflib_ForceDiSelectorResolver(APP_NAME);
+            new fflib_ForceDiSelectorBindingResolver(APP_NAME);
 
     // Configure and create the DomainFactory for this Application
     public static final fflib_DomainBindingResolver Domain = 
-            new fflib_ForceDiDomainResolver(APP_NAME, Application.Selector);
-
+            new fflib_ForceDiDomainBindingResolver(APP_NAME, Application.Selector);
 }
 ```
 The plugin requires an `APP_NAME`, which is used in the binding name to identify the bindings belonging to the application.
+The AEP 2.0 binding resolvers construct a force-di binding name based on
+  - AppName, 
+  - Type of binding (Domain, Selector, Service)
+  - Object type 
 
-| AppName | DeveloperName | Binding Object Type | Type__c | To__c | Force-Di binding Pattern | Force-Di binding Example |
-|:---|:---|:---|:---|:---|:---|:---
-| MyApp | AccountsSelector | Account | Selector | AccountsSelectorImp | [AppName].[Type].[ObjectType] | MyApp.Selector.Account |
-| MyApp | AccountsDomain   | Account | Domain | AccountsImp | [AppName].[Type].[ObjectType] | MyApp.Domain.Account |
-| MyApp | MyDataTransferObjectDomain   | MyDataTransferObject | Domain | MyDataTransferObjectImp | [AppName].[Type].[ObjectType] | MyApp.Domain.MyDataTransferObject |
-
-| MyApp | AccountsService  | Account | Service | AccountsServiceImp | [DeveloperName] | MyApp.AccountsService |
-
-The SObjectType key prefix is used in the Force-Di binding name, 
-as there is a limitation (of the Developername field) of max 40 characters.
-
-## Class & Method reference
-
-- di_Bindings,
-  <br/> domain class for Di Bindings
-- [di_Configurator](docs/di-Configurator.md), creates Di Bindings at runtime
-- fflib_Bindings, Domain class for fflib_Binding_mdt
-- fflib_BindingsSelector, Selector for the Custom Metadata object fflib_Binding__mdt
-- fflib_CustomMetaDataModule, Dependency Injection module to register the bindings for the SoC layers
-- fflib_DeveloperException, Generic exception class
-- [fflib_DomainFactory](docs/fflib_DomainFactory.md), Interface for the Domain factory to be able to dynamically instantiate domains
-- [fflib_SelectorFactory](),
-
-### Domain Factory
-
-#### newInstance(Set<Id> recordIds)
-```apex
-public  fflib_ISObjectDomain newInstance(Set<Id> recordIds);
-```
-Queries the records and constructs a new domain instance for the query result
-
-###### Example
-    public with sharing class MyAccountService
-    {
-        public void myMethod(Set<Id> idSet)
-        {
-            Accounts domain = (Accounts) Application.Domain.newInstance(idSet);
-            ...
-        }
-    }
-
-#### newInstance(List<SObject> records)
-```apex
-public fflib_ISObjectDomain newInstance(List<SObject> records);
-```
-Gets the SObjectType from the list of records and constructs a new instance of the domain with the records
-
-###### Example
-    public with sharing class MyAccountService
-    {
-        public void myMethod(List<Accounts> records)
-        {
-            Accounts domain = (Accounts) Application.Domain.newInstance(records);
-            ...
-        }
-    }
-
-#### newInstance(List<SObject> records, SObjectType domainSObjectType);
-```apex
-public fflib_ISObjectDomain newInstance(List<SObject> records, SObjectType domainSObjectType);
-```
-Gets the instance for the domain constructor from force-di and constructs a new domain
-
-###### Example
-    public with sharing class MyAccountService
-    {
-        public void myMethod(List<SObject> records)
-        {
-            Accounts domain = (Accounts) Application.Domain.newInstance(records, Account.SObjectType);
-            ...
-        }
-    }
-
-#### replaceWith(SObjectType sObjectType, Object domainImpl)
-```apex
-public void replaceWith(SObjectType sObjectType, Object domainImpl);
-```
-Dynamically replace a domain implementation at runtime.
-As this is a domain class and domain classes are constructed via the sub-class Constructor
-we need to replace the binding with the Constructor implementation and not the actual domain implementation.
-
-###### Example
-```apex
-    public with sharing class MyAccountService
-    {
-        public void myMethod(List<Account> records)
-        {
-            if (isUserInTestGroup())
-            {
-                Application.Domain.replaceWith(Schema.Account.SObjectType, new TestGroep_AccountsImp.Constructor());
-            }
-
-            // This domain will be different for the users in the TestGroup
-            Accounts domain = (Accounts) Application.Domain.newInstance(records);
-        }
-    }
-```
-
-```apex
-@IsTest
-static void itShouldRunMyTest()
-{
-    // GIVEN
-    fflib_ApexMocks mocks = new fflib_ApexMocks();
-    AccountsConstructor domainConstructorMock = (Accounts) mocks.mock(AccountsImp.class);
-    Application.Service.replaceWith(Schema.Account.SObjectType, domainMock)
-    
-    
-}
-```
-
-#### setMock(SObjectType sObjectType, Object mockImp)
-```apex
-void setMock(Schema.SObjectType sObjectType, Object domainImp);
-```
-
-
-### Selector Factory
-
-#### newInstance(Schema.SObjectType sObjectType)
-```apex
-public fflib_ISObjectSelector newInstance(Schema.SObjectType sObjectType);
-```
-
-###### Example
-    public with sharing class MyAccountService
-    {
-        public void myMethod(Set<Id> idSet)
-        {
-            List<Account> records = 
-                    ((AccountsSelector) Application.Selector.newInstance(Account.SObjectType))
-                            .selectById(idSet);
-            ...
-        }
-    }
-
-#### replaceWith(Schema.SObjectType sObjectType, Object selectorImpl);
-```apex
-public void replaceWith(Schema.SObjectType sObjectType, Object selectorImpl);
-```
-Used to replace the implementation for another, e.g. a mock
-
-
-#### selectById(Set<Id> recordIds);
-```apex
-List<SObject> selectById(Set<Id> recordIds);
-```
-Method to query the given SObject records and internally creates
-an instance of the registered Selector and calls its selectSObjectById method.
-
-###### Example
-    public with sharing class MyAccountService
-    {
-        public void myMethod(Set<Id> idSet)
-        {
-            List<Account> records = (List<Account>) Application.Selector.selectById(idSet);
-            ...
-        }
-    }
-
-#### selectByRelationship(List<SObject> relatedRecords, Schema.SObjectField relationshipField);
-```apex
-public 
-List<SObject> selectByRelationship(List<SObject> relatedRecords, Schema.SObjectField relationshipField);
-
-```
-Method to query related records to those provided,
-for example if passed a list of Opportunity records and the AccountId field will
-construct internally a list of Account Ids and call the registered
-Account selector to query the related Account records, e.g.
-
-###### Example
-     public with sharing class Opportunities
-     {
-        public List<Account> getRelatedAccountRecords()
-        {
-            return (List<Account>) Application.Selector.selectByRelationship(Records, Opportunity.AccountId);
-        }
-    }
-
-### Service Factory
-
-#### newInstance(Type serviceInterfaceType);
-```apex
-public Object newInstance(Type serviceInterfaceType);
-```
-Creates a new instance of a service class by referencing its binding type
-
-###### Example
-     public with sharing class MyController
-     {
-        public void myMethod()
-        {
-            ((MyService) Application.Service.newInstance(MyService.class))
-                    .myServiceMethod();
-        }
-    }
-    
-    public interface MyService
-    {
-        myServiceMethod();
-    }
-    
-    public with sharing MyServiceImp implements MyService
-    {
-        public void myServiceMethod()
-        {
-            ...
-        }
-    }
-
-#### replaceWith(Type serviceInterfaceType, Object serviceImpl);
-```apex
-public void replaceWith(Type serviceInterfaceType, Object serviceImpl);
-```
-Used to replace the implementation for another, e.g. a mock
-
-
-## Project Folders
-|Folder|Description|
-|:---|:---|
-|sfdx-source/force-app/main/default|Core of the application|
-|sfdx-source/force-app/examples|Examples|
-
-
-Have fflib use the force-di package to enable dependency injection 
+The bindings are stored in `fflib_Bindings__mdt` and imported into Force-Di via the module `fflib_CustomMetadataModule`.
