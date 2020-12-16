@@ -58,8 +58,8 @@ private class fflib_EventFeatureTest
 	// The Application class to test the feature
 	private class TestApplication
 	{
-		public fflib_Application.ServiceFactory EventListenerBindings =
-				new fflib_Application.ServiceFactory(
+		public fflib_BindingResolver EventListenerBindings =
+				new fflib_ClassicBindingResolver(
 						new Map<Type, Type>
 						{
 								OnChangedAccountSanitizer.class => OnChangedAccountSanitizerImp.class
