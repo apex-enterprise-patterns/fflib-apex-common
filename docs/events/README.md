@@ -141,11 +141,11 @@ This should output 'Hello World' in the debug-log.
 Running many event listeners in realtime can cause issues with limits. 
 Therefore, it can be useful to have listeners running in their own execution context.
  
-The same listener can be used as shown in the previous example.
+Almost the same listener can be used as shown in the previous example.
 ```apex
-public with sharing class MyEventListener implements fflib_QueueableEventListener
+public with sharing class MyEventListener extends fflib_QueueableEventListener
 {
-    public void handle(fflib_Event event)
+    public void run()
     {
         String eventData = String.valueOf(event.getData());
         System.debug(eventData);
