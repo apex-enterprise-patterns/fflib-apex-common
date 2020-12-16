@@ -27,16 +27,12 @@
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public abstract class fflib_SObjectEventListener
+		extends fflib_QueueableEventListener
 		implements fflib_EventListener
 {
 	protected List<SObject> records;
 
-	/**
-	 * Override this to perform processing during the before insert phase, this is called by the handleBeforeInsert method
-	 *
-	 * @param event The emitted event
-	 **/
-	public void handle(fflib_Event event)
+	public void run()
 	{
 		fflib_SObjectEvent sObjectEvent = (fflib_SObjectEvent) event;
 		records = sObjectEvent.getRecords();
