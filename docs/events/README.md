@@ -210,7 +210,7 @@ public class Application
                     fflib_MetadataEventListenerSelector.class,  
 
                     // The reference to the bindings to link interface and implementation 
-                    fflib_Application.EventListenerBindings     
+                    Application.EventListenerBindings     
             );
 }
 ```

@@ -29,7 +29,7 @@ public with sharing class fflib_ApplicationEventEmitterImp
 		extends fflib_EventEmitterImp
 		implements fflib_ApplicationEventEmitter
 {
-	private fflib_Application.ServiceFactory bindingResolver; // Todo - refactor to fflib_BindingResolver
+	private fflib_BindingResolver bindingResolver;
 	private Boolean disabled = false;
 	private String namespace;
 	private System.Type selectorType;
@@ -65,7 +65,7 @@ public with sharing class fflib_ApplicationEventEmitterImp
 	public fflib_ApplicationEventEmitterImp(
 			String namespace,
 			System.Type selectorClassType,
-			fflib_Application.ServiceFactory bindingResolver)
+			fflib_BindingResolver bindingResolver)
 	{
 		this.namespace = namespace;
 		this.selectorType = selectorClassType;
