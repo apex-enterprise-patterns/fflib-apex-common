@@ -29,4 +29,5 @@ public interface fflib_ApplicationEventEmitter
 		extends fflib_EventEmitter
 {
 	void disableAll();
+	void enableAll();
 }

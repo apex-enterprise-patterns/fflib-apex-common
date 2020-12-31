@@ -72,6 +72,15 @@ public with sharing class fflib_ApplicationEventEmitterImp
 		this.bindingResolver = bindingResolver;
 	}
 
+	/**
+	 * Disables the event resolver,
+	 * particular useful in the context of unit-test to avoid execution of the event listeners
+	 */
+	public void disableAll()
+	{
+		this.disabled = true;
+	}
+
 	public override void emit(fflib_Event event)
 	{
 		if (disabled) return;
@@ -85,6 +94,11 @@ public with sharing class fflib_ApplicationEventEmitterImp
 		super.emit(event);
 	}
 
+	public void enableAll()
+	{
+		this.disabled = false;
+	}
+
 	protected override Object getListenerInstance(fflib_EventListenerConfig listener)
 	{
 		return bindingResolver.newInstance(listener.getListenerType());
@@ -94,15 +108,6 @@ public with sharing class fflib_ApplicationEventEmitterImp
 	{
 		List<fflib_EventListenerConfig> eventListenerConfigs = selector.getEventListeners(namespace, eventName);
 		addListeners(eventName, eventListenerConfigs);
-	}
-
-	/**
-	 * Disables the event resolver,
-	 * particular useful in the context of unit-test to avoid execution of the event listeners
-	 */
-	public void disableAll()
-	{
-		this.disabled = true;
 	}
 
 	public class fflib_ApplicationEventEmitterException extends Exception {}
