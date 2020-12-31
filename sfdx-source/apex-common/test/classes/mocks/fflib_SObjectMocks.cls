@@ -97,6 +97,11 @@ public class fflib_SObjectMocks
 			mocks.mockVoidMethod(this, 'registerNew', new List<Type> {List<SObject>.class}, new List<Object> {records});
 		}
 
+		public void registerNew(fflib_ISObjectDomain domain)
+		{
+			mocks.mockVoidMethod(this, 'registerNew', new List<Type> {List<SObject>.class}, new List<Object> {domain});
+		}
+
 		public void registerNew(SObject record, Schema.sObjectField relatedToParentField, SObject relatedToParentRecord)
 		{
 			mocks.mockVoidMethod(this, 'registerNew', new List<Type> {SObject.class, Schema.sObjectField.class, SObject.class}, new List<Object> {record, relatedToParentField, relatedToParentRecord});
@@ -131,6 +136,15 @@ public class fflib_SObjectMocks
 			});
 		}
 
+		public void registerDirty(fflib_ISObjectDomain domain, List<SObjectField> dirtyFields)
+		{
+			mocks.mockVoidMethod(this, 'registerDirty', new List<Type> {
+					SObject.class, System.Type.forName('List<SObjectField>')
+			}, new List<Object> {
+					domain, dirtyFields
+			});
+		}
+
 		public void registerDirty(SObject record, List<SObjectField> dirtyFields)
 		{
 			mocks.mockVoidMethod(this, 'registerDirty', new List<Type> {
@@ -148,6 +162,11 @@ public class fflib_SObjectMocks
 		public void registerDirty(List<SObject> records)
 		{
 			mocks.mockVoidMethod(this, 'registerDirty', new List<Type> {List<SObject>.class}, new List<Object> {records});
+		}
+
+		public void registerDirty(fflib_ISObjectDomain domain)
+		{
+			mocks.mockVoidMethod(this, 'registerDirty', new List<Type> {List<SObject>.class}, new List<Object> {domain});
 		}
 
 		public void registerUpsert(SObject record)
@@ -180,6 +199,11 @@ public class fflib_SObjectMocks
 			mocks.mockVoidMethod(this, 'registerDeleted', new List<Type> {List<SObject>.class}, new List<Object> {records});
 		}
 
+		public void registerDeleted(fflib_ISObjectDomain domain)
+		{
+			mocks.mockVoidMethod(this, 'registerDeleted', new List<Type> {List<SObject>.class}, new List<Object> {domain});
+		}
+
 		public void registerPermanentlyDeleted(SObject record)
 		{
 			mocks.mockVoidMethod(this, 'registerPermanentlyDeleted', new List<Type> {SObject.class}, new List<Object> {record});
@@ -188,6 +212,11 @@ public class fflib_SObjectMocks
 		public void registerPermanentlyDeleted(List<SObject> records)
 		{
 			mocks.mockVoidMethod(this, 'registerPermanentlyDeleted', new List<Type> {SObject.class}, new List<Object> {records});
+		}
+
+		public void registerPermanentlyDeleted(fflib_ISObjectDomain domain)
+		{
+			mocks.mockVoidMethod(this, 'registerPermanentlyDeleted', new List<Type> {SObject.class}, new List<Object> {domain});
 		}
 
 		public void registerPublishBeforeTransaction(SObject record)

@@ -42,6 +42,12 @@ public interface fflib_ISObjectUnitOfWork
      **/
     void registerNew(List<SObject> records);
     /**
+     * Register a list of newly created SObject instances contained in a domain to be inserted when commitWork is called
+     *
+     * @param domain A domain containing newly created SObject instances to be inserted during commitWork
+     **/
+    void registerNew(fflib_ISObjectDomain domain);
+    /**
      * Register a newly created SObject instance to be inserted when commitWork is called,
      *   you may also provide a reference to the parent record instance (should also be registered as new separately)
      *
@@ -99,6 +105,16 @@ public interface fflib_ISObjectUnitOfWork
      **/
     void registerDirty(List<SObject> records, List<SObjectField> dirtyFields);
     /**
+     * Register specific fields on records to be updated when work is committed
+     *
+     * If the records are previously registered as dirty, the dirty fields on the records in this call will overwrite
+     * the values of the previously registered dirty records
+     *
+     * @param Domain A domain containing a list of existing records
+     * @param dirtyFields The fields to update if record is already registered
+     **/
+    void registerDirty(fflib_ISObjectDomain domain, List<SObjectField> dirtyFields);
+    /**
      * Register specific fields on record to be updated when work is committed
      *
      * If the record has previously been registered as dirty, the dirty fields on the record in this call will overwrite
@@ -123,6 +139,12 @@ public interface fflib_ISObjectUnitOfWork
      * @param records A list of existing records
      **/
     void registerDirty(List<SObject> records);
+    /**
+     * Register a list of existing records contained in a domain to be updated during the commitWork method
+     *
+     * @param domain A list of existing records
+     **/
+    void registerDirty(fflib_ISObjectDomain domain);
     /**
 	 * Register an deleted record to be removed from the recycle bin during the commitWork method
 	 *
@@ -160,11 +182,23 @@ public interface fflib_ISObjectUnitOfWork
      **/
     void registerDeleted(List<SObject> records);
     /**
+     * Register a domain containing a list of existing records to be deleted during the commitWork method
+     *
+     * @param domain A domain with existing records
+     **/
+    void registerDeleted(fflib_ISObjectDomain domain);
+    /**
      * Register a list of existing records to be deleted and removed from the recycle bin during the commitWork method
      *
      * @param records A list of existing records
      **/
     void registerPermanentlyDeleted(List<SObject> records);
+    /**
+     * Register a list of existing records to be deleted and removed from the recycle bin during the commitWork method
+     *
+     * @param domain A domain with existing records
+     **/
+    void registerPermanentlyDeleted(fflib_ISObjectDomain domain);
     /**
      * Register a list of existing records to be deleted and removed from the recycle bin during the commitWork method
      *
