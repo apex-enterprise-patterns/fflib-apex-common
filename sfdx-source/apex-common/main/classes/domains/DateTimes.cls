@@ -1,16 +1,18 @@
 /**
- * Copyright (c), FinancialForce.com, inc
- * All rights reserved.
+ * File Name: DateTimes 
+ * Description: Primitive domain for the object type DateTime
+ *
+ * @author: architect ir. Wilhelmus G.J. Velzeboer
  *
  * Redistribution and use in source and binary forms, with or without modification,
  *   are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice,
+ * - Redistributions of source code must retain the above author notice,
  *      this list of conditions and the following disclaimer.
  * - Redistributions in binary form must reproduce the above copyright notice,
  *      this list of conditions and the following disclaimer in the documentation
  *      and/or other materials provided with the distribution.
- * - Neither the name of the FinancialForce.com, inc nor the names of its contributors
+ * - Neither the name of the author nor the names of its contributors
  *      may be used to endorse or promote products derived from this software without
  *      specific prior written permission.
  *
@@ -22,16 +24,32 @@
  *  OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-**/
-public interface fflib_Domain
+ */
+public virtual with sharing class DateTimes
+		extends Objects
 {
-	/**
-	 * @return The object type of the Domain
-	 */
-	Object getType();
+	public DateTimes(Set<Datetime> dateTimes)
+	{
+		super(new List<Datetime>(dateTimes));
+	}
 
-	/**
-	 * @return Returns the objects contains in the domain
-	 */
-	List<Object> getObjects();
+	public DateTimes(List<Datetime> dateTimes)
+	{
+		super((List<Object>) dateTimes);
+	}
+
+	public DateTimes(List<Object> elements)
+	{
+		super(elements);
+	}
+
+	public Set<Datetime> getDateTimeSet()
+	{
+		return new Set<Datetime>(getDateTimes());
+	}
+
+	public List<Datetime> getDateTimes()
+	{
+		return (List<Datetime>) getObjects();
+	}
 }

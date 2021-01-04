@@ -162,7 +162,7 @@ private class fflib_ClassicDomainBindingResolverTest
 		}
 	}
 
-	private with sharing class AccountsMock extends fflib_SObjects
+	private with sharing class AccountsMock extends SObjects
 	{
 		public AccountsMock(List<SObject> records)
 		{

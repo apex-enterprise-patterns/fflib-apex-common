@@ -41,7 +41,7 @@
 
 // DEPRECATED
 public virtual with sharing class fflib_SObjectDomain
-		extends fflib_SObjects
+		extends SObjects
 	implements fflib_ISObjectDomain
 {
 	/**
