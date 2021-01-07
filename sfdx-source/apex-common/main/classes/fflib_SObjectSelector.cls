@@ -65,6 +65,21 @@ public abstract with sharing class fflib_SObjectSelector
     private String m_orderBy;
 
     /**
+     * Default Query Limit
+     */
+    private Integer m_limit;
+
+    /**
+     * Default Query Offset
+     */
+    private Integer m_offset;
+
+    /**
+     * Overwrites selector class level Ordering
+     */
+    private List<fflib_QueryFactory.Ordering> m_ordering;
+
+    /**
      * Sort the query fields in the select statement (defaults to true, at the expense of performance).
      * Switch this off if you need more performant queries.
      **/
@@ -427,6 +442,81 @@ public abstract with sharing class fflib_SObjectSelector
      }
 
     /**
+     * Sets the default limit for all queries executed by the selector
+     *
+     * @param queryLimit The limit used in the query
+     */
+    public void setLimit(Integer queryLimit)
+    {
+        this.m_limit = queryLimit;
+    }
+
+    /**
+     * Sets the default offset for all queries executed by the selector
+     *
+     * @param queryOffset The offset used in the query
+     */
+    public void setOffset(Integer queryOffset)
+    {
+        this.m_offset = queryOffset;
+    }
+
+    /**
+     * Overwrites the selector class level Ordering
+     * It overrides the return of the method getOrderBy
+     * Any additional ordering done in the selector method will added to (addOrdering)
+     * or override (setOrdering) this value
+     *
+     * @param ordering The ordering instance of {@link fflib_QueryFactory#Ordering}
+     *
+     * @example
+     *
+     * AccountsSelector selector =
+     *          (AccountsSelector) Application.Selector.newInstance(Accounts.SObjectType);
+     * List<Account> records = selector
+     *          .setOrdering(selector.largeAccountsFirst)
+     *          .selectById(idSet);
+     *
+     * The selector class should contain the property below,
+     * which can be also be used by the selector methods or any other method using the selector methods
+     * public fflib_QueryFactory.Ordering largeAccountsFirst =
+     *          new fflib_QueryFactory.Ordering(Account.NumberOfEmployees, fflib_QueryFactory.SortOrder.DESCENDING);
+     */
+    public void setOrdering(fflib_QueryFactory.Ordering ordering)
+    {
+        this.m_ordering = new List<fflib_QueryFactory.Ordering>{ ordering };
+    }
+
+    /**
+     * Overwrites the selector class level Ordering
+     * It overrides the return of the method getOrderBy
+     * Any additional ordering done in the selector method will added to (addOrdering)
+     * or override (setOrdering) this value
+     *
+     * @param ordering The ordering instance of {@link fflib_QueryFactory#Ordering}
+     *
+     * @example
+     *
+     * AccountsSelector selector =
+     *          (AccountsSelector) Application.Selector.newInstance(Accounts.SObjectType);
+     * List<Account> records = selector
+     *          .setOrdering(selector.largeAccountsFirst)
+     *          .selectById(idSet);
+     *
+     * The selector class should contain the property below,
+     * which can be also be used by the selector methods or any other method using the selector methods
+     * public List<fflib_QueryFactory.Ordering> largeAccountsFirst =
+     *          new List<fflib_QueryFactory.Ordering>
+     *          {
+     *                  new fflib_QueryFactory.Ordering(Account.NumberOfEmployees, fflib_QueryFactory.SortOrder.DESCENDING)
+     *          };
+     */
+    public void setOrdering(List<fflib_QueryFactory.Ordering> ordering)
+    {
+        this.m_ordering = ordering;
+    }
+
+    /**
      * Constructs the default SOQL query for this selector, see selectSObjectsById and queryLocatorById
      **/    
     protected String buildQuerySObjectById()
@@ -442,51 +532,95 @@ public abstract with sharing class fflib_SObjectSelector
         // CRUD and FLS security required?
         if (assertCRUD)
         {
-        	try { 
-        		// Leverage QueryFactory for CRUD checking 
-        		queryFactory.assertIsAccessible();
-        	} catch (fflib_SecurityUtils.CrudException e) {
-        		// Marshal exception into DomainException for backwards compatibility
-				throw new fflib_SObjectDomain.DomainException(
-	                'Permission to access an ' + getSObjectType().getDescribe().getName() + ' denied.');               		
-        	}
+        	assertAccessibility(queryFactory);
         }
         queryFactory.setEnforceFLS(enforceFLS);
-                
-        // Configure the QueryFactory with the Selector fields?        
-        if(includeSelectorFields)
-        {
-	        // select the Selector fields and Fieldsets and set order
-            queryFactory.selectFields(getSObjectFieldList());
 
-	        List<Schema.FieldSet> fieldSetList = getSObjectFieldSetList();
-	        if(m_includeFieldSetFields && fieldSetList != null)
-	            for(Schema.FieldSet fieldSet : fieldSetList)
-	                queryFactory.selectFieldSet(fieldSet);
-	
-	        // Automatically select the CurrencyIsoCode for MC orgs (unless the object is a known exception to the rule)
-	        if(UserInfo.isMultiCurrencyOrganization() && CURRENCY_ISO_CODE_ENABLED)
-	            queryFactory.selectField('CurrencyIsoCode');
+        if (includeSelectorFields)
+        {
+            configureSelectorFields(queryFactory);
         }
-        
-        // Parse the getOrderBy()
-        for(String orderBy : getOrderBy().split(','))
+        configureOrdering(queryFactory);
+
+        configureOffset(queryFactory, m_offset);
+        configureLimit(queryFactory, m_limit);
+
+        queryFactory.setSortSelectFields(m_sortSelectFields);
+
+        return queryFactory;
+    }
+
+    private void assertAccessibility(fflib_QueryFactory queryFactory)
+    {
+        try
+        {
+            // Leverage QueryFactory for CRUD checking
+            queryFactory.assertIsAccessible();
+        }
+        catch (fflib_SecurityUtils.CrudException e)
+        {
+            // Marshal exception into DomainException for backwards compatibility
+            throw new fflib_SObjectDomain.DomainException(
+                    'Permission to access an ' + getSObjectType().getDescribe().getName() + ' denied.');
+        }
+    }
+
+    private void configureSelectorFields(fflib_QueryFactory queryFactory)
+    {
+        // select the Selector fields and Fieldsets and set order
+        queryFactory.selectFields(getSObjectFieldList());
+
+        List<Schema.FieldSet> fieldSetList = getSObjectFieldSetList();
+        if (m_includeFieldSetFields && fieldSetList != null)
+            for (Schema.FieldSet fieldSet : fieldSetList)
+                queryFactory.selectFieldSet(fieldSet);
+
+        // Automatically select the CurrencyIsoCode for MC orgs (unless the object is a known exception to the rule)
+        if (UserInfo.isMultiCurrencyOrganization() && CURRENCY_ISO_CODE_ENABLED)
+            queryFactory.selectField('CurrencyIsoCode');
+    }
+
+    private void configureOrdering(fflib_QueryFactory queryFactory)
+    {
+        if (this.m_ordering == null)
+        {
+            parseOrderBy(queryFactory, getOrderBy());
+        }
+        else
+        {
+            queryFactory.setOrdering(this.m_ordering);
+        }
+    }
+
+    private void parseOrderBy(fflib_QueryFactory queryFactory, String orderbyString)
+    {
+        for (String orderBy : orderbyString.split(','))
         {
             List<String> orderByParts = orderBy.trim().split(' ');
             String fieldNamePart = orderByParts[0];
             String fieldSortOrderPart = orderByParts.size() > 1 ? orderByParts[1] : null;
             fflib_QueryFactory.SortOrder fieldSortOrder = fflib_QueryFactory.SortOrder.ASCENDING;
-            if(fieldSortOrderPart==null)
+            if (fieldSortOrderPart == null)
                 fieldSortOrder = fflib_QueryFactory.SortOrder.ASCENDING;
-            else if(fieldSortOrderPart.equalsIgnoreCase('DESC'))
+            else if (fieldSortOrderPart.equalsIgnoreCase('DESC'))
                 fieldSortOrder = fflib_QueryFactory.SortOrder.DESCENDING;
-            else if(fieldSortOrderPart.equalsIgnoreCase('ASC'))
+            else if (fieldSortOrderPart.equalsIgnoreCase('ASC'))
                 fieldSortOrder = fflib_QueryFactory.SortOrder.ASCENDING;
             queryFactory.addOrdering(fieldNamePart, fieldSortOrder, orderBy.containsIgnoreCase('NULLS LAST'));
-        }           
-        
-        queryFactory.setSortSelectFields(m_sortSelectFields);           
+        }
+    }
 
-        return queryFactory;    
-    }    
+    private void configureLimit(fflib_QueryFactory queryFactory, Integer queryLimit)
+    {
+        if (queryLimit == null) return;
+
+        queryFactory.setLimit(queryLimit);
+    }
+
+    private void configureOffset(fflib_QueryFactory queryFactory, Integer queryOffset)
+    {
+        if (queryOffset == null) return;
+
+        queryFactory.setOffset(queryOffset);
+    }
 }

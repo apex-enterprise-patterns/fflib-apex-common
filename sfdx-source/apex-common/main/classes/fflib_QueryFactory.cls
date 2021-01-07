@@ -346,6 +346,16 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		this.order = new List<Ordering>{ o };
 		return this;
 	}
+
+	/**
+	 * @param orderings an instance of {@link fflib_QueryFactory.Ordering} to remove all existing (for instance defaults) and be added to the query's ORDER BY clause.
+	 **/
+	public fflib_QueryFactory setOrdering(List<Ordering> orderings)
+	{
+		this.order = orderings;
+		return this;
+	}
+
 	/**
 	 * @returns the list of orderings that will be used as the query's ORDER BY clause. You may remove elements from the returned list, or otherwise mutate it, to remove previously added orderings.
 	**/
