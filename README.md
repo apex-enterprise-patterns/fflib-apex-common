@@ -23,6 +23,12 @@ This fork of fflib-apex-commons has some major changes to its architecture, whil
   Domain can now be constructed with generic Objects and not limited to SObjects.
   This allows the creation of compound domains, DTO's and more.
   Major improvement is the introduction of primitive domains.
+- [Selector Architecture](docs/selector/README.md) <br/>
+  Added feature:
+  - Fluent design for changing the following, directly from the calling method instead of in the selector class 
+    - ordering 
+    - limit
+    - offset
 - [Application factories redesigned and can use Force-DI](docs/application/README.md) <br/>
   Redesign of interface structure of the Application class factories, in order to easily replace their implementation.
   Now force-di is fully integrated into the application 
