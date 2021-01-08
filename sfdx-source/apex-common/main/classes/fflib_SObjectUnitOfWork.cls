@@ -107,7 +107,7 @@ public virtual class fflib_SObjectUnitOfWork
         {
             update objList;
         }
-        public void dmlUpsert(List<SObject> objList, Schema.SObjectField externalId) {
+        public virtual void dmlUpsert(List<SObject> objList, Schema.SObjectField externalId) {
             if (!objList.isEmpty()) {
 
                 Type objListType = Type.ForName('List<' + objList[0].getSObjectType() + '>');
@@ -117,7 +117,7 @@ public virtual class fflib_SObjectUnitOfWork
                 Database.upsert(typpedList, externalId);
             }
         }
-        public void dmlDelete(List<SObject> objList)
+        public virtual void dmlDelete(List<SObject> objList)
         {
             delete objList;
         }
