@@ -965,8 +965,7 @@ public virtual class fflib_SObjectUnitOfWork
 
         public void resolve()
         {
-            if (this.Record.get(this.RelatedToField) == null) 
-                this.Record.put( this.RelatedToField, this.RelatedTo.Id);
+            this.Record.put( this.RelatedToField, this.RelatedTo.Id);
         }
     }
 
