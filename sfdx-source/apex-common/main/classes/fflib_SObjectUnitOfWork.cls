@@ -874,8 +874,10 @@ public virtual class fflib_SObjectUnitOfWork
             // Resolve relationships
             for (IRelationship relationship : m_relationships)
             {
-                //relationship.Record.put(relationship.RelatedToField, relationship.RelatedTo.Id);
-                relationship.resolve();
+                if (!relationship.isResolved())
+                {
+                    relationship.resolve();
+                }
             }
 
         }
@@ -938,6 +940,7 @@ public virtual class fflib_SObjectUnitOfWork
     private interface IRelationship
     {
         void resolve();
+        Boolean isResolved();
     }
 
     private class RelationshipByExternalId implements IRelationship
@@ -955,6 +958,12 @@ public virtual class fflib_SObjectUnitOfWork
             relationshipObject.put( ExternalIdField.getDescribe().getName(), this.ExternalId );
             this.Record.putSObject( this.RelationshipName, relationshipObject );
         }
+
+
+        public Boolean isResolved()
+        {
+            return this.Record.getSObject( this.RelationshipName ) != null;
+        }
     }
 
     private class Relationship implements IRelationship
@@ -964,8 +973,16 @@ public virtual class fflib_SObjectUnitOfWork
         public SObject RelatedTo;
 
         public void resolve()
+        {   
+            if (String.isNotBlank(this.RelatedTo.Id)) 
+            {
+                this.Record.put( this.RelatedToField, this.RelatedTo.Id );
+            }
+        }
+
+        public Boolean isResolved()
         {
-            this.Record.put( this.RelatedToField, this.RelatedTo.Id);
+            return String.isNotBlank( this.RelatedTo.Id ) && this.Record.get( this.RelatedToField ) == this.RelatedTo.Id;
         }
     }
 
@@ -977,6 +994,11 @@ public virtual class fflib_SObjectUnitOfWork
         public void resolve()
         {
             this.email.setWhatId( this.relatedTo.Id );
+        }
+
+        public Boolean isResolved()
+        {
+            return String.isNotBlank( this.RelatedTo.Id ) && this.email.getWhatId() == this.RelatedTo.Id;
         }
     }
 
