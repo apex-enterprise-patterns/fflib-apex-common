@@ -59,6 +59,23 @@ public virtual class fflib_SObjects
 		return (List<SObject>) getObjects();
 	}
 
+	/**
+	 * @param criteria The condition
+	 *
+	 * @return Return the SObject records contained in the domain
+	 */
+	public virtual List<SObject> getRecords(fflib_Criteria criteria)
+	{
+		List<SObject> result = new List<SObject>();
+		for (SObject record : getRecords())
+		{
+			if (!criteria.evaluate(record)) continue;
+
+			result.add(record);
+		}
+		return result;
+	}
+
 	public virtual Set<Id> getRecordIds()
 	{
 		return new Map<Id, SObject>(getRecords()).keySet();

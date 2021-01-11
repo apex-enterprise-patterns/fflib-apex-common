@@ -23,25 +23,20 @@
  *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **/
-public interface fflib_ISObjects extends fflib_IObjects
+public enum fflib_Operator
 {
-	/**
-	 * @return Return the SObject records contained in the domain
-	 */
-	List<SObject> getRecords();
+	EQUALS,                   // =
+	NOT_EQUALS,               // !=
+	LESS_THAN,                // <
+	LESS_THAN_OR_EQUAL_TO,    // <=
+	GREATER_THAN,             // >
+	GREATER_THAN_OR_EQUAL_TO, // >=
+	LIKEx,                    // like
 
-	/**
-	 * @return Return the SObject records contained in the domain
-	*/
-	List<SObject> getRecords(fflib_Criteria criteria);
-
-	/**
-	 * @return Return the SObject records ids contained in the domain
-	 */
-	Set<Id> getRecordIds();
-
-	/**
-	 * @return Return the SObjectType of the SObjects contained in the domain
-	 */
-	SObjectType getSObjectType();
+	INCLUDES,                 // includes
+	EXCLUDES,                 // excludes
+	INx,                      // in
+	NOT_IN,                   // not in
+	ANDx,                     // AND
+	ORx                       // OR
 }
