@@ -299,6 +299,15 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		this.conditionExpression = conditionExpression;
 		return this;
 	}
+
+	/**
+	 * @param conditionCriteria Sets the WHERE clause to the provided criteria.
+	 */
+	public fflib_QueryFactory setCondition(fflib_Criteria conditionCriteria)
+	{
+		this.conditionExpression = conditionCriteria.toSOQL();
+		return this;
+	}
 	/**
 	 * @returns the current value of the WHERE clause, if any, as set by {@link #setCondition}
 	**/

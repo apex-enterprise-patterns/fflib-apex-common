@@ -298,6 +298,23 @@ public virtual with sharing class fflib_SObjectDomain
     {
     	return Records;
     }
+
+	/**
+	 * @param criteria The condition the returned record must meet
+	 *
+	 * @return Return the SObject records contained in the domain
+	 */
+	public virtual List<SObject> getRecords(fflib_Criteria criteria)
+	{
+		List<SObject> result = new List<SObject>();
+		for (SObject record : getRecords())
+		{
+			if (!criteria.evaluate(record)) continue;
+
+			result.add(record);
+		}
+		return result;
+	}
     
 	/**
 	 * Detects whether any values in context records have changed for given fields as strings
