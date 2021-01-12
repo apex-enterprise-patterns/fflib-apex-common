@@ -33,7 +33,7 @@ public virtual with sharing class fflib_Criteria
 	private List<Evaluator> evaluators;
 
 	// The type of comparator NONE | AND | OR
-	private String type;
+	private String comparatorType;
 
 
 	/**
@@ -42,7 +42,7 @@ public virtual with sharing class fflib_Criteria
 	public fflib_Criteria()
 	{
 		this.evaluators = new List<Evaluator>();
-		this.type = 'AND';
+		this.comparatorType = 'AND';
 	}
 
 	/**
@@ -61,7 +61,7 @@ public virtual with sharing class fflib_Criteria
 	 */
 	public fflib_Criteria orCriteria()
 	{
-		this.type = 'OR';
+		this.comparatorType = 'OR';
 		return this;
 	}
 
@@ -83,7 +83,7 @@ public virtual with sharing class fflib_Criteria
 	 */
 	public fflib_Criteria andCriteria()
 	{
-		this.type = 'AND';
+		this.comparatorType = 'AND';
 		return this;
 	}
 
@@ -193,15 +193,15 @@ public virtual with sharing class fflib_Criteria
 	{
 		if (this.evaluators.isEmpty()) return true;
 
-		Boolean result = !(this.type == 'OR');
+		Boolean result = !(this.comparatorType == 'OR');
 		for (Evaluator evaluator : evaluators)
 		{
 			Boolean evaluateResult = evaluator.evaluate(record);
-			if (evaluateResult && (this.type == 'OR' || this.type == 'NONE'))
+			if (evaluateResult && (this.comparatorType == 'OR' || this.comparatorType == 'NONE'))
 			{
 				return true;
 			}
-			else if (!evaluateResult && this.type == 'AND')
+			else if (!evaluateResult && this.comparatorType == 'AND')
 			{
 				return false;
 			}
@@ -426,7 +426,7 @@ public virtual with sharing class fflib_Criteria
 		{
 			if (result != '')
 			{
-				result += ' ' + this.type + ' ';
+				result += ' ' + this.comparatorType + ' ';
 			}
 			result += evaluator.toSOQL();
 		}
