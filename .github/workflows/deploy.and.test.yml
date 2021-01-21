@@ -2,9 +2,7 @@ name: Create a Scratch Org, Push Source and Run Apex Tests
 
 on:
   push:
-    branches:
-    - master
-  pull_request:
+  pull_request_target:
   
 jobs:
   build:
@@ -12,7 +10,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2 #Check out this repo
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{github.event.pull_request.head.ref}}
+          repository: ${{github.event.pull_request.head.repo.full_name}}
       - name: Install SFDX CLI and authorize DevHub
         uses: apex-enterprise-patterns/setup-sfdx@v1 #We're using a fork of https://github.com/sfdx-actions/setup-sfdx for safety
         with:
