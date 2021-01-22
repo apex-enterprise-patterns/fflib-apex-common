@@ -1,7 +1,8 @@
 FFLib Apex Common
 =================
 
-[![Build Status](https://travis-ci.org/apex-enterprise-patterns/fflib-apex-common.svg)](https://travis-ci.org/apex-enterprise-patterns/fflib-apex-common) 
+![Push Source and Run Apex Tests](https://github.com/apex-enterprise-patterns/fflib-apex-common/workflows/Create%20a%20Scratch%20Org,%20Push%20Source%20and%20Run%20Apex%20Tests/badge.svg)
+
 
 **Dependencies:** Must deploy [ApexMocks](https://github.com/apex-enterprise-patterns/fflib-apex-mocks) before deploying this library
 
