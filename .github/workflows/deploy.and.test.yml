@@ -1,0 +1,30 @@
+name: Create a Scratch Org, Push Source and Run Apex Tests
+
+on:
+  push:
+  pull_request_target:
+  
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{github.event.pull_request.head.ref}}
+          repository: ${{github.event.pull_request.head.repo.full_name}}
+      - name: Install SFDX CLI and authorize DevHub
+        uses: apex-enterprise-patterns/setup-sfdx@v1 #We're using a fork of https://github.com/sfdx-actions/setup-sfdx for safety
+        with:
+          sfdx-auth-url: ${{ secrets.DEVHUB_SFDXURL }}
+      - run: sfdx force:config:set defaultdevhubusername=SFDX-ENV -g #Even though the setup-sfdx action uses --setdefaultdevhubusername, it doesn't seem to stick since it uses --setdefaultusername so we brute force it here
+      - run: echo y | sfdx plugins:install shane-sfdx-plugins
+      - run: sfdx force:org:create -f config/project-scratch-def.json --setdefaultusername -d 1
+      - run: sfdx shane:github:src:install -c -g apex-enterprise-patterns -r fflib-apex-mocks -p sfdx-source/apex-mocks
+      - run: sfdx force:source:push
+      - run: sfdx force:apex:test:run -w 5
+      - name: Destroy scratch org
+        run: sfdx force:org:delete -p
+        if: always()
+
