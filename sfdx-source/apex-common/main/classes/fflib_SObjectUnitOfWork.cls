@@ -594,7 +594,7 @@ public virtual class fflib_SObjectUnitOfWork
     /**
      * Takes all the work that has been registered with the UnitOfWork and commits it to the database
      **/
-	public void commitWork()
+	public virtual void commitWork()
 	{
 		Savepoint sp = Database.setSavepoint();
 		Boolean wasSuccessful = false;
@@ -773,6 +773,20 @@ public virtual class fflib_SObjectUnitOfWork
 					)
 			);
 		}
+	}
+
+	/**
+	 * Clears the collections used by the class so that it can be used as if newly instantiated.
+	 */
+	public virtual void reset()
+	{
+		for (Schema.SObjectType sObjectType : m_sObjectTypes)
+		{
+			// register the type
+			handleRegisterType(sObjectType);
+		}
+
+		m_relationships.put(Messaging.SingleEmailMessage.class.getName(), new Relationships());
 	}
 
     private class Relationships

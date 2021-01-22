@@ -568,6 +568,22 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         System.assertEquals(2, [SELECT COUNT() FROM Opportunity WHERE StageName = 'Closed']);
     }
 
+    @IsTest
+    static void testReset() {
+        Account newAccount = new Account(Name = 'test');
+
+        fflib_SObjectUnitOfWork unitOfWork =
+                new fflib_SObjectUnitOfWork(new List<SObjectType> {Account.getSObjectType()});
+        unitOfWork.registerNew(newAccount);
+
+        Test.startTest();
+        unitOfWork.reset();
+        unitOfWork.commitWork();
+        Test.stopTest();
+
+        System.assert([SELECT Id FROM Account].isEmpty());
+    }
+
     /**
      * Assert that actual events exactly match expected events (size, order and name)
      * and types match expected types

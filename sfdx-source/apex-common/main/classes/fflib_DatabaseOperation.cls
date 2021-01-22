@@ -1,0 +1,10 @@
+public enum fflib_DatabaseOperation {
+
+	DATABASE_INSERT,
+
+	DATABASE_UPDATE,
+
+	DATABASE_DELETE,
+
+	DATABASE_UNDELETE
+}
