@@ -28,7 +28,7 @@
  */
 public abstract class fflib_SObjectEventListener
 		extends fflib_QueueableEventListener
-		implements fflib_EventListener
+		implements fflib_IEventListener
 {
 	protected List<SObject> records;
 

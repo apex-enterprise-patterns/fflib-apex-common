@@ -26,7 +26,7 @@
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public virtual class fflib_ClassicBindingResolver
-		implements fflib_BindingResolver
+		implements fflib_IBindingResolver
 {
 
 	protected Map<Type, Type> implementationTypeByInterfaceType;

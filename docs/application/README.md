@@ -21,39 +21,39 @@ Binding based on static maps in Apex
 ```apex
 public with sharing class Application
 {
-    public static final fflib_BindingResolver Service =
-            new fflib_ClassicBindingResolver(
-                    new Map<Type, Type>
-                    {
-                            AccountsService.class => AccountsServiceImp.class
-                    }
-            );
+  public static final fflib_IBindingResolver Service =
+          new fflib_ClassicBindingResolver(
+                  new Map<Type, Type>
+                  {
+                          AccountsService.class => AccountsServiceImp.class
+                  }
+          );
 
-    public static final fflib_SelectorBindingResolver Selector =
-            new fflib_ClassicSelectorBindingResolver(
-                    new Map<SObjectType, Type>
-                    {
-                            Account.SObjectType => AccountsSelector.class
-                    }
-            );
+  public static final fflib_ISelectorBindingResolver Selector =
+          new fflib_ClassicSelectorBindingResolver(
+                  new Map<SObjectType, Type>
+                  {
+                          Account.SObjectType => AccountsSelector.class
+                  }
+          );
 
-    public static final fflib_DomainBindingResolver Domain =
-            new fflib_ClassicDomainBindingResolver(
-                    Application.Selector,
-                    new Map<SObjectType, Type>
-                    {
-                            Schema.Account.SObjectType => Accounts.Constructor.class
-                    }
-            );
+  public static final fflib_IDomainBindingResolver Domain =
+          new fflib_ClassicDomainBindingResolver(
+                  Application.Selector,
+                  new Map<SObjectType, Type>
+                  {
+                          Schema.Account.SObjectType => Accounts.Constructor.class
+                  }
+          );
 
-    public static final fflib_Application.UnitOfWorkFactory UnitOfWork =
-            new fflib_Application.UnitOfWorkFactory(
-                    new List<SObjectType>
-                    {
-                            Account.SObjectType,
-                            Contact.SObjectType
-                    }
-            );
+  public static final fflib_Application.UnitOfWorkFactory UnitOfWork =
+          new fflib_Application.UnitOfWorkFactory(
+                  new List<SObjectType>
+                  {
+                          Account.SObjectType,
+                          Contact.SObjectType
+                  }
+          );
 }
 ```
 
@@ -63,31 +63,32 @@ The Application Force-DI bindings are designed to integrate force-di with the Ap
 
 
 ### Example:
+
 ```apex
 public with sharing class Application
 {
-    public static final String APP_NAME = 'MyForceApp';
+  public static final String APP_NAME = 'MyForceApp';
 
-    // Configure and create the UnitOfWorkFactory for this Application
-    public static final fflib_Application.UnitOfWorkFactory UnitOfWork =
-            new fflib_Application.UnitOfWorkFactory(
-                    new List<SObjectType>
-                    {
-                            Account.SObjectType,
-                            Contact.SObjectType
-                    });
+  // Configure and create the UnitOfWorkFactory for this Application
+  public static final fflib_Application.UnitOfWorkFactory UnitOfWork =
+          new fflib_Application.UnitOfWorkFactory(
+                  new List<SObjectType>
+                  {
+                          Account.SObjectType,
+                          Contact.SObjectType
+                  });
 
-    // Configure and create the Binding Resolver Factory for this Application
-    public static final fflib_BindingResolver Service = 
-            new fflib_ForceDiBindingResolver();
+  // Configure and create the Binding Resolver Factory for this Application
+  public static final fflib_IBindingResolver Service =
+          new fflib_ForceDiBindingResolver();
 
-    // Configure and create the SelectorFactory for this Application
-    public static final fflib_SelectorBindingResolver Selector = 
-            new fflib_ForceDiSelectorBindingResolver(APP_NAME);
+  // Configure and create the SelectorFactory for this Application
+  public static final fflib_ISelectorBindingResolver Selector =
+          new fflib_ForceDiSelectorBindingResolver(APP_NAME);
 
-    // Configure and create the DomainFactory for this Application
-    public static final fflib_DomainBindingResolver Domain = 
-            new fflib_ForceDiDomainBindingResolver(APP_NAME, Application.Selector);
+  // Configure and create the DomainFactory for this Application
+  public static final fflib_IDomainBindingResolver Domain =
+          new fflib_ForceDiDomainBindingResolver(APP_NAME, Application.Selector);
 }
 ```
 The plugin requires an `APP_NAME`, which is used in the binding name to identify the bindings belonging to the application.

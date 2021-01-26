@@ -26,7 +26,7 @@ OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGEN
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public virtual with sharing class fflib_ForceDiSelectorBindingResolver
-		implements fflib_SelectorBindingResolver
+		implements fflib_ISelectorBindingResolver
 {
 	private static final String BINDING_NAME_IDENTIFIER = '.selector.';
 

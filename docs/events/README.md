@@ -101,14 +101,15 @@ It utilises the fflib_SObjectEvent to generate a name for the event, based on th
 
 Let's create a very basic example of an event listener and emit an event.
 The example below will output the eventData to the debug-log.
+
 ```apex
-public with sharing class MyEventListener implements fflib_EventListener
+public with sharing class MyEventListener implements fflib_IEventListener
 {
-    public void handle(fflib_Event event)
-    {
-        String eventData = (String) event.getContext().getEventData();
-        System.debug(eventData);
-    }
+	public void handle(fflib_IEvent event)
+	{
+		String eventData = (String) event.getContext().getEventData();
+		System.debug(eventData);
+	}
 }
 ``` 
  
@@ -118,18 +119,18 @@ Then the event is published, and the listener will be invoked.
 ```apex
 public with sharing class MyController
 {
-    private fflib_EventEmitter eventEmitter;
+	private fflib_IEventEmitter eventEmitter;
 
-    public MyController()
-    {
-        eventEmitter = new fflib_EventEmitterImp();
-        eventEmitter.addListener('MyEvent', MyEventListener.class);    
-    }
+	public MyController()
+	{
+		eventEmitter = new fflib_EventEmitterImp();
+		eventEmitter.addListener('MyEvent', MyEventListener.class);
+	}
 
-    public void callEvent()
-    {
-        eventEmitter.emit('MyEvent', 'Hello World');
-    }
+	public void callEvent()
+	{
+		eventEmitter.emit('MyEvent', 'Hello World');
+	}
 }
 ```
 
@@ -158,18 +159,18 @@ Then in the controller the event listener is registered as queueable and the eve
 ```apex
 public with sharing class MyController
 {
-    private fflib_EventEmitter eventEmitter;
+	private fflib_IEventEmitter eventEmitter;
 
-    public MyController()
-    {
-        eventEmitter = new fflib_EventEmitterImp();
-        eventEmitter.addQueueableListener('MyEvent', MyEventListener.class);    
-    }
+	public MyController()
+	{
+		eventEmitter = new fflib_EventEmitterImp();
+		eventEmitter.addQueueableListener('MyEvent', MyEventListener.class);
+	}
 
-    public void callEvent()
-    {
-        eventEmitter.emit('MyEvent', 'Hello World');
-    }
+	public void callEvent()
+	{
+		eventEmitter.emit('MyEvent', 'Hello World');
+	}
 }
 ```
 After execution there should be a second debug-log containing the message 'Hello World'.
@@ -185,33 +186,34 @@ In some case there is a need to call listeners in a particular order.
 
 In the **Application class** we define the Application Event Emitter, 
 link the selector to the event listeners 
-and define the bindings of the event listener interface to its implementation. 
+and define the bindings of the event listener interface to its implementation.
+
 ```apex
 public class Application
 {
-    // This will bind the defined event listener interfaces to it implementation
-    public static final fflib_BindingResolver EventListenerBindings =
-            new fflib_ClassicBindingResolver(
-                    new Map<Type, Type>
-                    {
-                            OnChangedAccountSanitizer.class => OnChangedAccountSanitizerImp.class
-                    }    
-            );
+	// This will bind the defined event listener interfaces to it implementation
+	public static final fflib_IBindingResolver EventListenerBindings =
+			new fflib_ClassicBindingResolver(
+					new Map<Type, Type>
+					{
+							OnChangedAccountSanitizer.class => OnChangedAccountSanitizerImp.class
+					}
+			);
 
-    public static final fflib_ApplicationEventEmitter eventEmitter =
-            new fflib_ApplicationEventEmitterImp(
-            
-                    // The Namespace of the application to emit the event.
-                    'MyNameSpace',
+	public static final fflib_IApplicationEventEmitter eventEmitter =
+			new fflib_ApplicationEventEmitterImp(
 
-                    // The selector that queries the event listeners (List<fflib_EventListenerConfig>), 
-                    // The default is shown here but can be replaced with another selector
-                    // to retrieve the listeners from wherever they are stored        
-                    fflib_MetadataEventListenerSelector.class,  
+					// The Namespace of the application to emit the event.
+					'MyNameSpace',
 
-                    // The reference to the bindings to link interface and implementation 
-                    Application.EventListenerBindings     
-            );
+					// The selector that queries the event listeners (List<fflib_EventListenerConfig>), 
+					// The default is shown here but can be replaced with another selector
+					// to retrieve the listeners from wherever they are stored        
+					fflib_MetadataEventListenerSelector.class,
+
+					// The reference to the bindings to link interface and implementation 
+					Application.EventListenerBindings
+			);
 }
 ```
 

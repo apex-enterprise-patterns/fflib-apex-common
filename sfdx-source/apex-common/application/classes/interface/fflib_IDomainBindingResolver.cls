@@ -25,7 +25,7 @@
  *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public interface fflib_DomainBindingResolver
+public interface fflib_IDomainBindingResolver
 {
 	/**
 	 * Dynamically constructs an instance of a Domain class for the given record Ids
@@ -36,7 +36,7 @@ public interface fflib_DomainBindingResolver
 	 *
 	 * @return Instance of fflib_Domain containing the record with the provided Ids
 	 **/
-	fflib_Domain newInstance(Set<Id> recordIds);
+	fflib_IDomain newInstance(Set<Id> recordIds);
 
 	/**
 	 * Dynamically constructs an instance of the Domain class for the given records
@@ -46,7 +46,7 @@ public interface fflib_DomainBindingResolver
 	 *
 	 * @return Instance of fflib_Domain containing the provided records
 	 **/
-	fflib_Domain newInstance(List<SObject> records);
+	fflib_IDomain newInstance(List<SObject> records);
 
 	/**
 	 * Dynamically constructs an instance of the Domain class for the given records and SObjectType
@@ -57,7 +57,7 @@ public interface fflib_DomainBindingResolver
 	 *
 	 * @return Instance of fflib_Domain containing the provided records
 	 **/
-	fflib_Domain newInstance(List<SObject> records, SObjectType domainSObjectType);
+	fflib_IDomain newInstance(List<SObject> records, SObjectType domainSObjectType);
 
 	/**
 	 * Dynamically constructs an instance of the Domain class for the given records and SObjectType
@@ -68,7 +68,7 @@ public interface fflib_DomainBindingResolver
 	 *
 	 * @return Instance of fflib_Domain containing the provided objects
 	 **/
-	fflib_Domain newInstance(List<Object> objects, Object objectType);
+	fflib_IDomain newInstance(List<Object> objects, Object objectType);
 
 	/**
 	 * Replaces the implementation of the given domain
@@ -76,7 +76,7 @@ public interface fflib_DomainBindingResolver
 	 * @param domainImplementation The replacement implementation for the given interface type
 	 *    this should be the domain Constructor which is an implementation of fflib_SObjectDomainConstructor
 	 */
-	void replaceWith(fflib_Domain domainImplementation);
+	void replaceWith(fflib_IDomain domainImplementation);
 
 	/**
 	 * Replaces the linked implementation for the Apex interface.
@@ -92,5 +92,5 @@ public interface fflib_DomainBindingResolver
 	 *
 	 * @param mockDomain The mock instance for the given interface type
 	 */
-	void setMock(fflib_Domain mockDomain);
+	void setMock(fflib_IDomain mockDomain);
 }

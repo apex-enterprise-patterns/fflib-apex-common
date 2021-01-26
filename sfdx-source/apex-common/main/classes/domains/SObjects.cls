@@ -27,7 +27,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
  */
 public virtual class SObjects
 		extends Objects
-		implements fflib_SObjects
+		implements fflib_ISObjects
 {
 	protected Schema.DescribeSObjectResult SObjectDescribe { get; private set; }
 

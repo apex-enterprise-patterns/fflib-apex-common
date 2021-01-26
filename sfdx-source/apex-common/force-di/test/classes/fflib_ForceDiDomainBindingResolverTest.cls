@@ -33,7 +33,7 @@ private class fflib_ForceDiDomainBindingResolverTest
 
 		// WHEN we replace that binding in the injector
 		System.Test.startTest();
-		fflib_Domain domain = domainFactory.newInstance(new List<Account> {new Account()});
+		fflib_IDomain domain = domainFactory.newInstance(new List<Account> {new Account()});
 		System.Test.stopTest();
 
 		// THEN the injector should return the replacement
@@ -55,7 +55,7 @@ private class fflib_ForceDiDomainBindingResolverTest
 		// WHEN we replace the binding for a mocked class
 		System.Test.startTest();
 		domainFactory.setMock(domainMock);
-		fflib_Domain domain = domainFactory.newInstance(new List<Account> {new Account()});
+		fflib_IDomain domain = domainFactory.newInstance(new List<Account> {new Account()});
 		Object result = domain.getType();
 		System.Test.stopTest();
 
@@ -130,7 +130,7 @@ private class fflib_ForceDiDomainBindingResolverTest
 		// WHEN we try to get the binding for Accounts
 		System.Test.startTest();
 
-		fflib_Domain result = domainFactory.newInstance(new List<Account> {new Account()});
+		fflib_IDomain result = domainFactory.newInstance(new List<Account> {new Account()});
 		System.Test.stopTest();
 
 		// THEN
@@ -161,7 +161,7 @@ private class fflib_ForceDiDomainBindingResolverTest
 		mocks.stopStubbing();
 
 		// WHEN we construct the domain with just the Ids
-		fflib_Domain domain = domainFactory.newInstance(recordIds);
+		fflib_IDomain domain = domainFactory.newInstance(recordIds);
 
 		// THEN The constructed domain should contain the records
 		System.assert(domain instanceof fflib_TestAccounts, 'Incorrect instance of domain returned');

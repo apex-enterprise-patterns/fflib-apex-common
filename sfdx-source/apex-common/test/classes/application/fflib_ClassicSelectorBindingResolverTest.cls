@@ -73,7 +73,7 @@ public class fflib_ClassicSelectorBindingResolverTest
 	{
 		// GIVEN a configured service binding resolver with an interface linked to an implementation
 		//    where the linked implementation for the SObjectType has been replaced with a mock
-		fflib_SelectorBindingResolver selector = generateConfiguredSelectorBindingResolver();
+		fflib_ISelectorBindingResolver selector = generateConfiguredSelectorBindingResolver();
 
 		selector.setMock(new AccountsSelectorMock());
 
@@ -92,7 +92,7 @@ public class fflib_ClassicSelectorBindingResolverTest
 	{
 		// GIVEN a configured service binding resolver with an interface linked to an implementation
 		//   where the implementation is replaced for an alternative implementation
-		fflib_SelectorBindingResolver selector = generateConfiguredSelectorBindingResolver();
+		fflib_ISelectorBindingResolver selector = generateConfiguredSelectorBindingResolver();
 		selector.replaceWith(Schema.Account.SObjectType, new AccountsSelectorMock());
 
 		// WHEN we request the implementation for the interface
@@ -110,7 +110,7 @@ public class fflib_ClassicSelectorBindingResolverTest
 	{
 		// GIVEN a configured service binding resolver with an interface linked to an implementation
 		//   where the implementation is replaced for an alternative implementation
-		fflib_SelectorBindingResolver selector = generateConfiguredSelectorBindingResolver();
+		fflib_ISelectorBindingResolver selector = generateConfiguredSelectorBindingResolver();
 		selector.replaceWith(Schema.Account.SObjectType, AccountsSelectorMock.class);
 
 		// WHEN we request the implementation for the interface

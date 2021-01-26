@@ -26,7 +26,7 @@
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public with sharing class fflib_ForceDiBindingResolver
-		implements fflib_BindingResolver
+		implements fflib_IBindingResolver
 {
 	/**
 	 * Returns a new instance of the Apex class associated with the given Apex interface

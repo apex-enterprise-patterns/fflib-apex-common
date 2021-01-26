@@ -1,8 +1,28 @@
 /**
  * File Name: fflib_EventEmitterImpTest
- * Description:
  *
- * @author : architect ir. Wilhelmus G.J. Velzeboer | wvelzebo@its.jnj.com
+ * @author: architect ir. Wilhelmus G.J. Velzeboer
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ *   are permitted provided that the following conditions are met:
+ *
+ * - Redistributions of source code must retain the above author notice,
+ *      this list of conditions and the following disclaimer.
+ * - Redistributions in binary form must reproduce the above copyright notice,
+ *      this list of conditions and the following disclaimer in the documentation
+ *      and/or other materials provided with the distribution.
+ * - Neither the name of the author nor the names of its contributors
+ *      may be used to endorse or promote products derived from this software without
+ *      specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ *  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+ *  THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ *  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ *  OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 @IsTest(IsParallel=true)
 private class fflib_EventEmitterImpTest
@@ -11,7 +31,7 @@ private class fflib_EventEmitterImpTest
 
 	private static Boolean priorityEventExecutedFirst = false;
 
-	private static fflib_Event capturedEvent;
+	private static fflib_IEvent capturedEvent;
 
 	@IsTest
 	static void itShouldAddEventListeners()
@@ -35,7 +55,7 @@ private class fflib_EventEmitterImpTest
 	static void itShouldAddListenerForEventAndHandleIt()
 	{
 		// GIVEN an registered Event Listener
-		fflib_EventEmitter eventEmitter = new fflib_EventEmitterImp();
+		fflib_IEventEmitter eventEmitter = new fflib_EventEmitterImp();
 		eventEmitter.addListener(EVENT_NAME, EventListener.class);
 
 		// WHEN the event is emitted for the listener
@@ -50,7 +70,7 @@ private class fflib_EventEmitterImpTest
 	static void itShouldCallListenerWithTheEventData()
 	{
 		// GIVEN an registered Event Listener and some event data
-		fflib_EventEmitter eventEmitter = new fflib_EventEmitterImp();
+		fflib_IEventEmitter eventEmitter = new fflib_EventEmitterImp();
 		eventEmitter.addListener(EVENT_NAME, EventListener.class);
 		String eventData = 'Hello World';
 
@@ -67,7 +87,7 @@ private class fflib_EventEmitterImpTest
 	static void itShouldCallListenerWithHigherPriorityFirst()
 	{
 		// GIVEN two registered Event Listeners one with a higher priority
-		fflib_EventEmitter eventEmitter = new fflib_EventEmitterImp();
+		fflib_IEventEmitter eventEmitter = new fflib_EventEmitterImp();
 		eventEmitter.addListener(EVENT_NAME, EventListener.class);
 		eventEmitter.addListener(EVENT_NAME, EventListener.class).setPriority(5);
 		eventEmitter.addListener(EVENT_NAME, PriorityEventListener.class).setPriority(10);
@@ -83,7 +103,7 @@ private class fflib_EventEmitterImpTest
 	static void itShouldRemoveListenerFromEvent()
 	{
 		// GIVEN two registered Event Listeners
-		fflib_EventEmitter eventEmitter = new fflib_EventEmitterImp();
+		fflib_IEventEmitter eventEmitter = new fflib_EventEmitterImp();
 		eventEmitter.addListener(EVENT_NAME, EventListener.class);
 		eventEmitter.addListener(EVENT_NAME, PriorityEventListener.class).setPriority(10);
 
@@ -100,7 +120,7 @@ private class fflib_EventEmitterImpTest
 	static void itShouldRemoveAllListenersForEvent()
 	{
 		// GIVEN three registered Event Listeners, two of them are for the tested event.
-		fflib_EventEmitter eventEmitter = new fflib_EventEmitterImp();
+		fflib_IEventEmitter eventEmitter = new fflib_EventEmitterImp();
 		eventEmitter.addListener(EVENT_NAME, EventListener.class);
 		eventEmitter.addListener(EVENT_NAME, PriorityEventListener.class).setPriority(10);
 
@@ -116,7 +136,7 @@ private class fflib_EventEmitterImpTest
 	static void itShouldRunAListenerInQueue()
 	{
 		// GIVEN a registered Event Listeners to execute in a queue
-		fflib_EventEmitter eventEmitter = new fflib_EventEmitterImp();
+		fflib_IEventEmitter eventEmitter = new fflib_EventEmitterImp();
 		eventEmitter.addListener(EVENT_NAME, QueueableEventListener.class).setRunInQueue();
 
 		// WHEN the event is invoked (excluding Queueable Apex)
@@ -134,9 +154,9 @@ private class fflib_EventEmitterImpTest
 		System.assertNotEquals(null, capturedEvent, 'Here should not be an event listener');
 	}
 
-	private class EventListener implements fflib_EventListener
+	private class EventListener implements fflib_IEventListener
 	{
-		public void handle(fflib_Event event)
+		public void handle(fflib_IEvent event)
 		{
 			capturedEvent = event;
 		}
@@ -150,9 +170,9 @@ private class fflib_EventEmitterImpTest
 		}
 	}
 
-	private class PriorityEventListener implements fflib_EventListener
+	private class PriorityEventListener implements fflib_IEventListener
 	{
-		public void handle(fflib_Event event)
+		public void handle(fflib_IEvent event)
 		{
 			if (capturedEvent == null)
 			{

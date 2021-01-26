@@ -1,16 +1,18 @@
 /**
- * Copyright (c), FinancialForce.com, inc
- * All rights reserved.
+ * File Name: fflib_EventListener 
+ * Description: Interface for the event listener
+  *
+ * @author: architect ir. Wilhelmus G.J. Velzeboer
  *
  * Redistribution and use in source and binary forms, with or without modification,
  *   are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice,
+ * - Redistributions of source code must retain the above author notice,
  *      this list of conditions and the following disclaimer.
  * - Redistributions in binary form must reproduce the above copyright notice,
  *      this list of conditions and the following disclaimer in the documentation
  *      and/or other materials provided with the distribution.
- * - Neither the name of the FinancialForce.com, inc nor the names of its contributors
+ * - Neither the name of the author nor the names of its contributors
  *      may be used to endorse or promote products derived from this software without
  *      specific prior written permission.
  *
@@ -22,8 +24,13 @@
  *  OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-**/
-public interface fflib_DomainConstructor
+ */
+public interface fflib_IEventListener
 {
-	fflib_Domain construct(List<Object> objects);
+	/**
+	 * Handle the given event
+	 *
+	 * @param event The emitted event
+	 */
+	void handle(fflib_IEvent event);
 }

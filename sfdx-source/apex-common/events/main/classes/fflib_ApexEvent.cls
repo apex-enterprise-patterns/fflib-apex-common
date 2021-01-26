@@ -26,7 +26,7 @@
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public virtual with sharing class fflib_ApexEvent
-		implements fflib_Event
+		implements fflib_IEvent
 {
 	protected String eventName;
 	protected Object eventData;

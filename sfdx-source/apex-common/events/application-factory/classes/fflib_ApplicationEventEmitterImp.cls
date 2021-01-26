@@ -27,27 +27,27 @@
  */
 public with sharing class fflib_ApplicationEventEmitterImp
 		extends fflib_EventEmitterImp
-		implements fflib_ApplicationEventEmitter
+		implements fflib_IApplicationEventEmitter
 {
-	private fflib_BindingResolver bindingResolver;
+	private fflib_IBindingResolver bindingResolver;
 	private Boolean disabled = false;
 	private String namespace;
 	private System.Type selectorType;
 
-	private fflib_EventListenerSelector selector
+	private fflib_IEventListenerSelector selector
 	{
 		get
 		{
 			if (selector == null)
 			{
 				Object selectorInstance = selectorType.newInstance();
-				if (!(selectorInstance instanceof fflib_EventListenerSelector))
+				if (!(selectorInstance instanceof fflib_IEventListenerSelector))
 				{
 					throw new fflib_ApplicationEventEmitterException(
 							'Event Listener Selector should be an implementation of fflib_EventListenerSelector'
 					);
 				}
-				selector = (fflib_EventListenerSelector) selectorInstance;
+				selector = (fflib_IEventListenerSelector) selectorInstance;
 			}
 			return selector;
 		}
@@ -65,7 +65,7 @@ public with sharing class fflib_ApplicationEventEmitterImp
 	public fflib_ApplicationEventEmitterImp(
 			String namespace,
 			System.Type selectorClassType,
-			fflib_BindingResolver bindingResolver)
+			fflib_IBindingResolver bindingResolver)
 	{
 		this.namespace = namespace;
 		this.selectorType = selectorClassType;
@@ -81,7 +81,7 @@ public with sharing class fflib_ApplicationEventEmitterImp
 		this.disabled = true;
 	}
 
-	public override void emit(fflib_Event event)
+	public override void emit(fflib_IEvent event)
 	{
 		if (disabled) return;
 

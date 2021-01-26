@@ -1,7 +1,6 @@
 /**
- * File Name: fflib_EventListener 
- * Description: Interface for the event listener
-  *
+ * File Name: fflib_EventListenerSelector 
+ *
  * @author: architect ir. Wilhelmus G.J. Velzeboer
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -25,12 +24,7 @@
  *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public interface fflib_EventListener
+public interface fflib_IEventListenerSelector
 {
-	/**
-	 * Handle the given event
-	 *
-	 * @param event The emitted event
-	 */
-	void handle(fflib_Event event);
+	List<fflib_EventListenerConfig> getEventListeners(String namespace, String eventName);
 }

@@ -36,7 +36,7 @@ private class fflib_ClassicDomainBindingResolverTest
 		List<Account> records = generateAccounts();
 
 		// WHEN we request an instance for the SObjectType
-		fflib_Domain result = domain.newInstance(records);
+		fflib_IDomain result = domain.newInstance(records);
 
 		// THEN the result should be an instance of the Accounts domain class containing the records
 		System.assert(
@@ -61,7 +61,7 @@ private class fflib_ClassicDomainBindingResolverTest
 		Boolean exceptionThrown = false;
 		try
 		{
-			fflib_Domain domain = bindingResolver.newInstance(records);
+			fflib_IDomain domain = bindingResolver.newInstance(records);
 		}
 		catch (fflib_ClassicDomainBindingResolver.DeveloperException e)
 		{
@@ -89,7 +89,7 @@ private class fflib_ClassicDomainBindingResolverTest
 		Boolean exceptionThrown = false;
 		try
 		{
-			fflib_Domain domain = bindingResolver.newInstance(contacts);
+			fflib_IDomain domain = bindingResolver.newInstance(contacts);
 		}
 		catch (fflib_ClassicDomainBindingResolver.DeveloperException e)
 		{
@@ -114,7 +114,7 @@ private class fflib_ClassicDomainBindingResolverTest
 		bindingResolver.setMock(new AccountsMock(generateAccounts()));
 
 		// WHEN a domain is requested
-		fflib_Domain result = bindingResolver.newInstance(generateAccounts());
+		fflib_IDomain result = bindingResolver.newInstance(generateAccounts());
 
 		// THEN the mocked instance should be returned
 		System.assert(result instanceof AccountsMock, 'Expected mock instance');

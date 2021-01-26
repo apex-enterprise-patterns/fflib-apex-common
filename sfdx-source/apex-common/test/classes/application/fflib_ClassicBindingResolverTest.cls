@@ -32,7 +32,7 @@ private class fflib_ClassicBindingResolverTest
 	static void itShouldReturnTheServiceInstance()
 	{
 		// GIVEN a configured service binding resolver with an interface linked to an implementation
-		fflib_BindingResolver service = generateConfiguredServiceBindingResolver();
+		fflib_IBindingResolver service = generateConfiguredServiceBindingResolver();
 
 		// WHEN we request the implementation for the interface
 		Object result = service.newInstance(ServiceInterface.class);
@@ -48,7 +48,7 @@ private class fflib_ClassicBindingResolverTest
 	static void itShouldReturnTheInstance_NoImplementationRegisteredException()
 	{
 		// GIVEN an empty service binding resolver
-		fflib_BindingResolver service =
+		fflib_IBindingResolver service =
 				new fflib_ClassicBindingResolver(new Map<Type, Type> {});
 
 		// WHEN we request an instance of the implementation for the interface
@@ -73,7 +73,7 @@ private class fflib_ClassicBindingResolverTest
 	{
 		// GIVEN a configured service binding resolver with an interface linked to an implementation
 		//    where the interface has been replaced with a mock
-		fflib_BindingResolver service = generateConfiguredServiceBindingResolver();
+		fflib_IBindingResolver service = generateConfiguredServiceBindingResolver();
 
 
 		service.setMock(ServiceInterface.class, new AlternativeServiceImplementation());
@@ -93,7 +93,7 @@ private class fflib_ClassicBindingResolverTest
 	{
 		// GIVEN a configured service binding resolver with an interface linked to an implementation
 		//   where the implementation is replaced for an alternative implementation instance
-		fflib_BindingResolver service = generateConfiguredServiceBindingResolver();
+		fflib_IBindingResolver service = generateConfiguredServiceBindingResolver();
 		service.replaceWith(ServiceInterface.class, new AlternativeServiceImplementation());
 
 		// WHEN we request the implementation for the interface
@@ -111,7 +111,7 @@ private class fflib_ClassicBindingResolverTest
 	{
 		// GIVEN a configured service binding resolver with an interface linked to an implementation
 		//   where the implementation is replaced for an alternative implementation
-		fflib_BindingResolver service = generateConfiguredServiceBindingResolver();
+		fflib_IBindingResolver service = generateConfiguredServiceBindingResolver();
 		service.replaceWith(ServiceInterface.class, AlternativeServiceImplementation.class);
 
 		// WHEN we request the implementation for the interface

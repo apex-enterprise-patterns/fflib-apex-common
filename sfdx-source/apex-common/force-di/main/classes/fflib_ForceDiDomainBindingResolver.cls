@@ -2,17 +2,38 @@
  * File Name: fflib_DomainFactoryImp
  * Description:  Domain factory for Domains configured as bindings to the force-di
  *
- * @author : architect ir. Wilhelmus G.J. Velzeboer
+ * @author: architect ir. Wilhelmus G.J. Velzeboer
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ *   are permitted provided that the following conditions are met:
+ *
+ * - Redistributions of source code must retain the above author notice,
+ *      this list of conditions and the following disclaimer.
+ * - Redistributions in binary form must reproduce the above copyright notice,
+ *      this list of conditions and the following disclaimer in the documentation
+ *      and/or other materials provided with the distribution.
+ * - Neither the name of the author nor the names of its contributors
+ *      may be used to endorse or promote products derived from this software without
+ *      specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ *  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+ *  THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ *  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ *  OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public virtual with sharing class fflib_ForceDiDomainBindingResolver
-		implements fflib_DomainBindingResolver
+		implements fflib_IDomainBindingResolver
 {
 	protected String appName;
-	protected fflib_SelectorBindingResolver selectorResolver;
+	protected fflib_ISelectorBindingResolver selectorResolver;
 
 	public fflib_ForceDiDomainBindingResolver(
 			String appName,
-			fflib_SelectorBindingResolver selectorResolver)
+			fflib_ISelectorBindingResolver selectorResolver)
 	{
 		this.appName = appName.toLowerCase();
 		this.selectorResolver = selectorResolver;
@@ -27,7 +48,7 @@ public virtual with sharing class fflib_ForceDiDomainBindingResolver
 	 *
 	 * @return Instance of a SObjectDomain class
 	 */
-	public fflib_Domain newInstance(Set<Id> recordIds)
+	public fflib_IDomain newInstance(Set<Id> recordIds)
 	{
 		return newInstance(selectorResolver.selectById(recordIds));
 	}
@@ -41,7 +62,7 @@ public virtual with sharing class fflib_ForceDiDomainBindingResolver
 	 * @throws DeveloperException when the SObjectType could not be retrieved from the List<SObject>,
 	 * @throws DeveloperException when the implementation is null or its not an instance of fflib_SObjectDomain.IConstructable2
 	 */
-	public fflib_Domain newInstance(List<SObject> records)
+	public fflib_IDomain newInstance(List<SObject> records)
 	{
 		Schema.SObjectType sObjectType = records.getSObjectType();
 		assertForValidSObjectType(sObjectType);
@@ -58,7 +79,7 @@ public virtual with sharing class fflib_ForceDiDomainBindingResolver
 	 *
 	 * @return Domain instance or the mocked version
 	 */
-	public fflib_Domain newInstance(List<SObject> records, Schema.SObjectType sObjectType)
+	public fflib_IDomain newInstance(List<SObject> records, Schema.SObjectType sObjectType)
 	{
 		return newInstance(
 				(List<Object>) records,
@@ -76,13 +97,13 @@ public virtual with sharing class fflib_ForceDiDomainBindingResolver
 	 *
 	 * @return Domain instance or the mocked version
 	 */
-	public fflib_Domain newInstance(List<Object> objects, Object objectType)
+	public fflib_IDomain newInstance(List<Object> objects, Object objectType)
 	{
 		Object implementation = getImplementationFromInjector(objectType);
 
 		// Check if we are dealing with a mocked & stubbed domain here
-		if (System.Test.isRunningTest() && (implementation instanceof fflib_Domain))
-			return (fflib_Domain) implementation;
+		if (System.Test.isRunningTest() && (implementation instanceof fflib_IDomain))
+			return (fflib_IDomain) implementation;
 
 		assertForDomainConstructorImplementation(implementation);
 		return constructDomainInstance(implementation, objects, objectType);
@@ -93,7 +114,7 @@ public virtual with sharing class fflib_ForceDiDomainBindingResolver
 	 *
 	 * @param domainImpl The new implementation of the domain
 	 */
-	public void replaceWith(fflib_Domain domainImpl)
+	public void replaceWith(fflib_IDomain domainImpl)
 	{
 		replaceWith(domainImpl.getType(), (Object) domainImpl);
 	}
@@ -113,7 +134,7 @@ public virtual with sharing class fflib_ForceDiDomainBindingResolver
 				.replaceBindingWith(domainImplementationOrConstructorType);
 	}
 
-	public void setMock(fflib_Domain mockDomain)
+	public void setMock(fflib_IDomain mockDomain)
 	{
 		replaceWith(mockDomain);
 	}
@@ -131,13 +152,13 @@ public virtual with sharing class fflib_ForceDiDomainBindingResolver
 		System.debug('----------------------------');
 		System.debug('fflib_SObjectDomain.IConstructable2: '+(implementation instanceof fflib_SObjectDomain.IConstructable2));
 		System.debug('fflib_SObjectDomain.IConstructable: '+(implementation instanceof fflib_SObjectDomain.IConstructable));
-		System.debug('fflib_DomainConstructor: '+(implementation instanceof fflib_DomainConstructor));
+		System.debug('fflib_DomainConstructor: '+(implementation instanceof fflib_IDomainConstructor));
 		System.debug('Type: '+(implementation instanceof System.Type));
 		System.debug('----------------------------');
 
 		if ((implementation instanceof fflib_SObjectDomain.IConstructable2) ||
 				(implementation instanceof fflib_SObjectDomain.IConstructable) ||
-				(implementation instanceof fflib_DomainConstructor)) return;
+				(implementation instanceof fflib_IDomainConstructor)) return;
 		// todo - convert to label
 		throw new DeveloperException('Label.fflib_DomainConstructorMissing');
 	}
@@ -167,7 +188,7 @@ public virtual with sharing class fflib_ForceDiDomainBindingResolver
 	 *
 	 * @return instance of fflib_Domain
 	 */
-	private fflib_Domain constructDomainInstance(
+	private fflib_IDomain constructDomainInstance(
 			Object constructorImp,
 			List<Object> objects,
 			Object objectType)
@@ -189,7 +210,7 @@ public virtual with sharing class fflib_ForceDiDomainBindingResolver
 							.construct((List<SObject>) objects, (Schema.SObjectType) objectType));
 		}
 
-		return ((fflib_DomainConstructor) constructorImp)
+		return ((fflib_IDomainConstructor) constructorImp)
 				.construct(objects);
 	}
 

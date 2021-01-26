@@ -26,13 +26,13 @@
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public abstract with sharing class fflib_QueueableEventListener
-		implements fflib_EventListener, Queueable
+		implements fflib_IEventListener, Queueable
 {
 	private Boolean runAsQueueable = false;
 	private Queueable nextQueueableAction;
-	protected fflib_Event event;
+	protected fflib_IEvent event;
 
-	public void handle(fflib_Event event)
+	public void handle(fflib_IEvent event)
 	{
 		this.event = event;
 		if (runAsQueueable)

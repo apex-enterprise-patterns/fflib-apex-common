@@ -25,7 +25,7 @@
  *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public interface fflib_EventEmitter
+public interface fflib_IEventEmitter
 {
 	/**
 	 * Add a new listener for a given event name
@@ -80,5 +80,5 @@ public interface fflib_EventEmitter
 	 *
 	 * @param event The event to emit
 	 */
-	void emit(fflib_Event event);
+	void emit(fflib_IEvent event);
 }

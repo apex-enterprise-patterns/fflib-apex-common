@@ -25,7 +25,7 @@ OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CA
 OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public virtual with sharing class fflib_EventEmitterImp implements fflib_EventEmitter
+public virtual with sharing class fflib_EventEmitterImp implements fflib_IEventEmitter
 {
 	protected final Map<String, List<fflib_EventListenerConfig>> eventListenerMap =
 			new Map<String, List<fflib_EventListenerConfig>>();
@@ -129,7 +129,7 @@ public virtual with sharing class fflib_EventEmitterImp implements fflib_EventEm
 	 *
 	 * @throws EventEmitterException
 	 */
-	public virtual void emit(fflib_Event event)
+	public virtual void emit(fflib_IEvent event)
 	{
 		String eventName = event.getName();
 		System.debug(System.LoggingLevel.INFO, eventName + ' event emitted');
@@ -149,7 +149,7 @@ public virtual with sharing class fflib_EventEmitterImp implements fflib_EventEm
 			Object listenerInstance,
 			fflib_EventListenerConfig listenerConfig)
 	{
-		if (!(listenerInstance instanceof fflib_EventListener))
+		if (!(listenerInstance instanceof fflib_IEventListener))
 		{
 			throw new EventEmitterException(
 					String.format(
@@ -168,7 +168,7 @@ public virtual with sharing class fflib_EventEmitterImp implements fflib_EventEm
 	 *
 	 * @throws EventEmitterException
 	 */
-	protected void callListeners(List<fflib_EventListenerConfig> listeners, fflib_Event event)
+	protected void callListeners(List<fflib_EventListenerConfig> listeners, fflib_IEvent event)
 	{
 		for (fflib_EventListenerConfig listener : listeners)
 		{
@@ -184,7 +184,7 @@ public virtual with sharing class fflib_EventEmitterImp implements fflib_EventEm
 	 *
 	 * @throws EventEmitterException
 	 */
-	protected void callListener(fflib_EventListenerConfig listener, fflib_Event event)
+	protected void callListener(fflib_EventListenerConfig listener, fflib_IEvent event)
 	{
 		Object listenerInstance = getListenerInstance(listener);
 
@@ -192,7 +192,7 @@ public virtual with sharing class fflib_EventEmitterImp implements fflib_EventEm
 
 		configureListener(listener, listenerInstance);
 
-		((fflib_EventListener) listenerInstance)
+		((fflib_IEventListener) listenerInstance)
 				.handle(event);
 	}
 
