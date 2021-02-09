@@ -26,35 +26,105 @@
 
 @isTest
 private class fflib_SecurityUtilsTest {
-  static User setupTestUser(String profileName) {
-    //username global uniqueness is still enforced in tests
-    //make sure we get something unique to avoid issues with parallel tests
-    String uniqueness = DateTime.now() + ':' + Math.random();
-    try {
-      throw new NullPointerException();
-    } catch (Exception e) {
-      uniqueness += e.getStackTraceString(); //includes the top level test method name without having to pass it
-    }
-    Profile p = [SELECT id, Name FROM Profile WHERE Name = :profileName];
-    User result = new User(
-      username = UserInfo.getUserId() +
-        '.' +
-        uniqueness.HashCode() +
-        '@' +
-        UserInfo.getOrganizationId() +
-        '.sfdcOrg',
-      alias = 'testExec',
-      email = 'apextests@example.com',
-      emailencodingkey = 'UTF-8',
-      lastname = 'Testing',
-      languagelocalekey = 'en_US',
-      localesidkey = 'en_US',
-      profileid = p.Id,
-      timezonesidkey = 'America/Los_Angeles'
-    );
-    insert result;
-    return result;
-  }
+
+	@TestSetup
+	static void testSetup() {
+		// #315 Create a Permission Set that grants "Read" access to Account, Contact and Lead. We will use this in
+		// Spring '21 orgs that lack the "Read Only" Profile. See:
+		// https://help.salesforce.com/articleView?id=release-notes.rn_profiles_and_perms_read_only_new.htm&release=230&type=5).
+		PermissionSet ps = new PermissionSet(Label = 'Read Only Permission Set', Name = 'ReadOnlyPermissionSet');
+		insert ps;
+
+		// Grant Read access to the SObjects we use for CRUD tests
+		List<ObjectPermissions> objectPerms = new List<ObjectPermissions>();
+		objectPerms.add(createObjectPermissions(ps.Id, 'Account', false, true, false, false));
+		objectPerms.add(createObjectPermissions(ps.Id, 'Contact', false, true, false, false));
+		objectPerms.add(createObjectPermissions(ps.Id, 'Lead', false, true, false, false));
+		insert objectPerms;
+
+		// Grant Read/Edit access to the SObject fields we use for FLS tests
+		List<FieldPermissions> fieldPerms = new List<FieldPermissions>();
+		fieldPerms.add(createFieldPermissions(ps.Id, 'Contact', 'Birthdate', true, false));
+		fieldPerms.add(createFieldPermissions(ps.Id, 'Contact', 'Email', true, false));
+		insert fieldPerms;
+	}
+
+	static Profile getProfile(String profileName) {
+		return [SELECT Id, Name FROM Profile WHERE Name = :profileName];
+	}
+
+	static ObjectPermissions createObjectPermissions(
+		Id permSetId, String objectType, Boolean canCreate, Boolean canRead,  Boolean canUpdate, Boolean canDelete
+	) {
+		return new ObjectPermissions(
+			ParentId = permSetId,
+			SobjectType = objectType,
+			PermissionsCreate = canCreate,
+			PermissionsRead = canRead,
+			PermissionsEdit = canUpdate,
+			PermissionsDelete = canDelete
+		);
+	}
+
+	static FieldPermissions createFieldPermissions(
+		Id permSetId, String objectType, String fieldName, Boolean canRead, Boolean canEdit
+	) {
+		return new FieldPermissions(
+			ParentId = permSetId,
+			SobjectType = objectType,
+			Field = objectType + '.' + fieldName,
+			PermissionsRead = canRead,
+			PermissionsEdit = canEdit
+		);
+	}
+
+	static User setupTestUser(String profileName){
+		Profile p;
+		Boolean usedMinimumAccessProfile = false;
+		if (profileName == 'Read Only') {
+			try {
+				p = getProfile(profileName);
+			} catch (QueryException ex) {
+				if (ex.getMessage().contains('List has no rows for assignment to SObject')) {
+					// #315 If the "Read Only" Profile is absent, then assume it's a Spring '21 org and see if there's a
+					// "Minimum Access - Salesforce" Profile we can use instead.
+					p = getProfile('Minimum Access - Salesforce');
+					usedMinimumAccessProfile = true;
+				}
+			}
+		} else {
+			p = getProfile(profileName);
+		}
+
+		//username global uniqueness is still enforced in tests 
+		//make sure we get something unique to avoid issues with parallel tests
+		String uniqueness = DateTime.now()+':'+Math.random();
+		try{ 
+			throw new NullPointerException();
+		}catch(Exception e){
+			uniqueness += e.getStackTraceString(); //includes the top level test method name without having to pass it
+		}
+		User usr = new User(
+			username=UserInfo.getUserId()+'.'+uniqueness.HashCode()+'@'+UserInfo.getOrganizationId()+'.sfdcOrg',
+			alias = 'testExec',
+			email='apextests@example.com',
+			emailencodingkey='UTF-8',
+			lastname='Testing',
+			languagelocalekey='en_US',
+			localesidkey='en_US',
+			profileid = p.Id,
+			timezonesidkey='America/Los_Angeles'
+		);
+		insert usr;
+
+		if (usedMinimumAccessProfile) {
+			// #315 We need to assign the Perm Set to grant Account "Read" access
+			PermissionSet accountReadPS = [SELECT Id FROM PermissionSet WHERE Name = 'ReadOnlyPermissionSet'];
+			PermissionSetAssignment psa = new PermissionSetAssignment(AssigneeId = usr.Id, PermissionSetId = accountReadPS.Id);
+			insert psa;
+		}
+		return usr;
+	}
 
   @isTest
   static void readonly_field_access() {
@@ -182,54 +252,60 @@ private class fflib_SecurityUtilsTest {
     }
   }
 
-  @isTest
-  static void readonly_objectAndField_access() {
-    User testUser = setupTestUser('Read Only');
-    System.runAs(testUser) {
-      {
-        fflib_SecurityUtils.SecurityException ex;
-        try {
-          fflib_SecurityUtils.checkInsert(
-            Account.SObjectType,
-            new List<String>{ 'Name', 'ParentId', 'ownerId' }
-          );
-        } catch (fflib_SecurityUtils.SecurityException e) {
-          ex = e;
-        }
-        System.assertNotEquals(null, ex, 'Read only profile should not be able to insert Account');
-        System.assert(
-          ex instanceof fflib_SecurityUtils.CrudException,
-          'Expected an CrudException, got ' + ex.getTypeName()
-        );
-      }
-      {
-        fflib_SecurityUtils.SecurityException ex;
-        try {
-          fflib_SecurityUtils.checkRead(
-            Contact.SObjectType,
-            new List<String>{ 'LastName', 'accountId', 'ownerId' }
-          );
-        } catch (fflib_SecurityUtils.SecurityException e) {
-          ex = e;
-        }
-        System.assertEquals(null, ex, 'Read only profile should be able to read Contact');
-      }
-      {
-        fflib_SecurityUtils.SecurityException ex;
-        try {
-          fflib_SecurityUtils.checkUpdate(
-            Lead.SObjectType,
-            new List<String>{ 'LastName', 'FirstNAMe', 'cOMPANY' }
-          );
-        } catch (fflib_SecurityUtils.SecurityException e) {
-          ex = e;
-        }
-        System.assertNotEquals(null, ex, 'Read only profile should not be able to update Lead');
-        System.assert(
-          ex instanceof fflib_SecurityUtils.CrudException,
-          'Expected an CrudException, got ' + ex.getTypeName()
-        );
-      }
+	@isTest
+	static void readonly_objectAndField_access() {
+		User testUser = setupTestUser('Read Only');
+		System.runAs(testUser){
+			{
+				fflib_SecurityUtils.SecurityException ex;
+				try{
+					fflib_SecurityUtils.checkInsert(
+						Account.SObjectType,
+						new List<String>{
+							'Name',
+							'ParentId',
+							'ownerId'
+						}
+					);
+				}catch(fflib_SecurityUtils.SecurityException e){
+					ex = e;
+				}
+				System.assertNotEquals(null, ex, 'Read only profile should not be able to insert Account');
+				System.assert(ex instanceof fflib_SecurityUtils.CrudException, 'Expected an CrudException, got '+ex.getTypeName());
+			}
+			{
+				fflib_SecurityUtils.SecurityException ex;
+				try{
+					fflib_SecurityUtils.checkRead(
+						Contact.SObjectType,
+						new List<String>{
+							'LastName',
+							'eMaiL',
+							'BirthDATE'
+						}
+					);
+				}catch(fflib_SecurityUtils.SecurityException e){
+					ex = e;
+				}
+				System.assertEquals(null, ex, 'Read only profile should be able to read Contact');
+			}
+			{
+				fflib_SecurityUtils.SecurityException ex;
+				try{
+					fflib_SecurityUtils.checkUpdate(
+						Lead.SObjectType,
+						new List<String>{
+							'LastName',
+							'FirstNAMe',
+							'cOMPANY'
+						}
+					);
+				}catch(fflib_SecurityUtils.SecurityException e){
+					ex = e;
+				}
+				System.assertNotEquals(null, ex, 'Read only profile should not be able to update Lead');
+				System.assert(ex instanceof fflib_SecurityUtils.CrudException, 'Expected an CrudException, got '+ex.getTypeName());
+			}
 
       fflib_SecurityUtils.BYPASS_INTERNAL_FLS_AND_CRUD = true;
       {

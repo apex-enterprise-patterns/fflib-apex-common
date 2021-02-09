@@ -44,25 +44,21 @@ public abstract with sharing class fflib_SObjectSelector implements fflib_ISObje
     set;
   }
 
-  /**
-   * Should this selector automatically include the FieldSet fields when building queries?
-   **/
-  private Boolean m_includeFieldSetFields = false;
-
-  /**
-   * Enforce FLS Security
-   **/
-  private Boolean m_enforceFLS = false;
-
-  /**
-   * Enforce CRUD Security
-   **/
-  private Boolean m_enforceCRUD = true;
-
-  /**
-   * Order by field
-   **/
-  private String m_orderBy;
+    /**
+     * Constructs the Selector
+     *
+     * @param includeFieldSetFields Set to true if the Selector queries are to include Fieldset fields as well 
+     * @param enforceCRUD Enforce CRUD security
+     * @param enforceFLS Enforce Field Level Security
+     * @param sortSelectFields Set to false if selecting many columns to skip sorting select fields and improve performance
+     **/
+    public fflib_SObjectSelector(Boolean includeFieldSetFields, Boolean enforceCRUD, Boolean enforceFLS, Boolean sortSelectFields)
+    {
+        m_includeFieldSetFields = includeFieldSetFields;
+        m_enforceCRUD = enforceCRUD;
+        m_enforceFLS = enforceFLS;
+        m_sortSelectFields = sortSelectFields;
+    }
 
   /**
    * Sort the query fields in the select statement (defaults to true, at the expense of performance).
@@ -226,38 +222,117 @@ public abstract with sharing class fflib_SObjectSelector implements fflib_ISObje
     return m_enforceCRUD;
   }
 
-  /**
-   * Provides access to the builder containing the list of fields base queries are using, this is demand
-   *   created if one has not already been defined via setFieldListBuilder
-   *
-   * @depricated See newQueryFactory
-   **/
-  public fflib_StringBuilder.CommaDelimitedListBuilder getFieldListBuilder() {
-    return new fflib_StringBuilder.CommaDelimitedListBuilder(
-      new List<String>(newQueryFactory().getSelectedFields())
-    );
-  }
+    /**
+     * Use this method to override the default FieldListBuilder (created on demand via getFieldListBuilder) with a custom one, 
+     *   warning, this will bypass anything getSObjectFieldList or getSObjectFieldSetList returns
+     *
+     * @depricated See newQueryFactory
+     **/    
+    public void setFieldListBuilder(fflib_StringBuilder.FieldListBuilder fieldListBuilder)
+    {
+        // TODO: Consider if given the known use cases for this (dynamic selector optimisation) if it's OK to leave this as a null operation
+    }
 
-  /**
-   * Use this method to override the default FieldListBuilder (created on demand via getFieldListBuilder) with a custom one,
-   *   warning, this will bypass anything getSObjectFieldList or getSObjectFieldSetList returns
-   *
-   * @depricated See newQueryFactory
-   **/
+    /**
+     * Returns in string form a comma delimited list of fields as defined via getSObjectFieldList and optionally getSObjectFieldSetList
+     *
+     * @deprecated See newQueryFactory
+     **/    
+    public String getFieldListString()
+    {
+        return getFieldListBuilder().getStringValue();
+    }
+    
+    /**
+     * Returns in string form a comma delimited list of fields as defined via getSObjectFieldList and optionally getSObjectFieldSetList
+     * @param relation Will prefix fields with the given relation, e.g. MyLookupField__r
+     *
+     * @depricated See newQueryFactory
+     **/    
+    public String getRelatedFieldListString(String relation)
+    {
+        return getFieldListBuilder().getStringValue(relation + '.');
+    }
 
-  public void setFieldListBuilder(fflib_StringBuilder.FieldListBuilder fieldListBuilder) {
-    // TODO: Consider if given the known use cases for this (dynamic selector optomisation) if it's OK to leave this as a null operation
-  }
+    /**
+     * Returns the string representation of the SObject this selector represents
+     **/
+    public String getSObjectName()
+    {
+        return describeWrapper.getDescribe().getName();
+    }
+    
+    /**
+     * Performs a SOQL query, 
+     *   - Selecting the fields described via getSObjectFieldsList and getSObjectFieldSetList (if included) 
+     *   - From the SObject described by getSObjectType
+     *   - Where the Id's match those provided in the set
+     *   - Ordered by the fields returned via getOrderBy
+     * @returns A list of SObject's
+     **/
+    public virtual List<SObject> selectSObjectsById(Set<Id> idSet)
+    {
+        return Database.query(buildQuerySObjectById());
+    }
+        
+    /**
+     * Performs a SOQL query, 
+     *   - Selecting the fields described via getSObjectFieldsList and getSObjectFieldSetList (if included) 
+     *   - From the SObject described by getSObjectType
+     *   - Where the Id's match those provided in the set
+     *   - Ordered by the fields returned via getOrderBy
+     * @returns A QueryLocator (typically for use in a Batch Apex job)
+     **/
+    public virtual Database.QueryLocator queryLocatorById(Set<Id> idSet)
+    {
+        return Database.getQueryLocator(buildQuerySObjectById());
+    }
+    
+    /**
+     * Throws an exception if the SObject indicated by getSObjectType is not accessible to the current user (read access)
+     *
+     * @deprecated If you utilise the newQueryFactory method this is automatically done for you (unless disabled by the selector)
+     **/
+    public void assertIsAccessible()
+    {
+        if(!getSObjectType().getDescribe().isAccessible())
+           throw new fflib_SObjectDomain.DomainException(
+                'Permission to access an ' + getSObjectType().getDescribe().getName() + ' denied.');       
+    }
 
-  /**
-   * Returns in string form a comma delimted list of fields as defined via getSObjectFieldList and optionally getSObjectFieldSetList
-   *
-   * @depricated See newQueryFactory
-   **/
+    /**
+     * Public access for the getSObjectType during Mock registration
+     *   (adding public to the existing method broken base class API backwards compatibility)
+     **/
+    public SObjectType getSObjectType2()
+    {
+        return getSObjectType();
+    }
 
-  public String getFieldListString() {
-    return getFieldListBuilder().getStringValue();
-  }
+    /**
+     * Public access for the getSObjectType during Mock registration
+     *   (adding public to the existing method broken base class API backwards compatibility1)
+     **/
+    public SObjectType sObjectType()
+    {
+        return getSObjectType();
+    }
+    
+    /**
+     * Returns a QueryFactory configured with the Selectors object, fields, fieldsets and default order by
+     **/
+    public fflib_QueryFactory newQueryFactory()
+    {    
+        return newQueryFactory(m_enforceCRUD, m_enforceFLS, true);
+    }
+    
+    /**
+     * Returns a QueryFactory configured with the Selectors object, fields, fieldsets and default order by
+     **/
+    public fflib_QueryFactory newQueryFactory(Boolean includeSelectorFields)
+    {    
+        return newQueryFactory(m_enforceCRUD, m_enforceFLS, includeSelectorFields);
+    }
 
   /**
    * Returns in string form a comma delimted list of fields as defined via getSObjectFieldList and optionally getSObjectFieldSetList
@@ -380,87 +455,27 @@ public abstract with sharing class fflib_SObjectSelector implements fflib_ISObje
       queryFactory.selectField(relationshipFieldPath + '.CurrencyIsoCode');
   }
 
-  /**
-   * Adds a subselect QueryFactory based on this selector to the given QueryFactor, returns the parentQueryFactory
-   **/
-  public fflib_QueryFactory addQueryFactorySubselect(fflib_QueryFactory parentQueryFactory) {
-    return addQueryFactorySubselect(parentQueryFactory, true);
-  }
-
-  /**
-   * Adds a subselect QueryFactory based on this selector to the given QueryFactor
-   **/
-  public fflib_QueryFactory addQueryFactorySubselect(
-    fflib_QueryFactory parentQueryFactory,
-    Boolean includeSelectorFields
-  ) {
-    fflib_QueryFactory subSelectQueryFactory = parentQueryFactory.subselectQuery(getSObjectType2());
-    return configureQueryFactory(
-      subSelectQueryFactory,
-      m_enforceCRUD,
-      m_enforceFLS,
-      includeSelectorFields
-    );
-  }
-
-  /**
-   * Adds a subselect QueryFactory based on this selector to the given QueryFactor, returns the parentQueryFactory
-   **/
-  public fflib_QueryFactory addQueryFactorySubselect(
-    fflib_QueryFactory parentQueryFactory,
-    String relationshipName
-  ) {
-    return addQueryFactorySubselect(parentQueryFactory, relationshipName, true);
-  }
-
-  /**
-   * Adds a subselect QueryFactory based on this selector to the given QueryFactor
-   **/
-  public fflib_QueryFactory addQueryFactorySubselect(
-    fflib_QueryFactory parentQueryFactory,
-    String relationshipName,
-    Boolean includeSelectorFields
-  ) {
-    fflib_QueryFactory subSelectQueryFactory = parentQueryFactory.subselectQuery(relationshipName);
-    return configureQueryFactory(
-      subSelectQueryFactory,
-      m_enforceCRUD,
-      m_enforceFLS,
-      includeSelectorFields
-    );
-  }
-
-  /**
-   * Constructs the default SOQL query for this selector, see selectSObjectsById and queryLocatorById
-   **/
-
-  private String buildQuerySObjectById() {
-    return newQueryFactory().setCondition('id in :idSet').toSOQL();
-  }
-
-  /**
-   * Configures a QueryFactory instance according to the configuration of this selector
-   **/
-
-  private fflib_QueryFactory configureQueryFactory(
-    fflib_QueryFactory queryFactory,
-    Boolean assertCRUD,
-    Boolean enforceFLS,
-    Boolean includeSelectorFields
-  ) {
-    // CRUD and FLS security required?
-    if (assertCRUD) {
-      try {
-        // Leverage QueryFactory for CRUD checking
-        queryFactory.assertIsAccessible();
-      } catch (fflib_SecurityUtils.CrudException e) {
-        // Marshal exception into DomainException for backwards compatability
-        throw new fflib_SObjectDomain.DomainException(
-          'Permission to access an ' +
-          getSObjectType().getDescribe().getName() +
-          ' denied.'
-        );
-      }
+     /**
+      * Adds the selectors fields to the given QueryFactory using the given relationship path as a prefix
+      *
+      * // TODO: This should be consistent (ideally) with configureQueryFactory below
+      **/
+     public void configureQueryFactoryFields(fflib_QueryFactory queryFactory, String relationshipFieldPath)
+     {
+	// Add fields from selector prefixing the relationship path		
+	for(SObjectField field : getSObjectFieldList())		
+	queryFactory.selectField(relationshipFieldPath + '.' + field.getDescribe().getName());
+	// Automatically select the CurrencyIsoCode for MC orgs (unless the object is a known exception to the rule)
+        if(UserInfo.isMultiCurrencyOrganization() && CURRENCY_ISO_CODE_ENABLED)
+            queryFactory.selectField(relationshipFieldPath+'.CurrencyIsoCode');		
+     }
+    
+    /**
+     * Adds a subselect QueryFactory based on this selector to the given QueryFactor, returns the parentQueryFactory
+     **/
+    public fflib_QueryFactory addQueryFactorySubselect(fflib_QueryFactory parentQueryFactory)
+    {    
+    	return addQueryFactorySubselect(parentQueryFactory, true);
     }
     queryFactory.setEnforceFLS(enforceFLS);
 
@@ -497,9 +512,60 @@ public abstract with sharing class fflib_SObjectSelector implements fflib_ISObje
         orderBy.containsIgnoreCase('NULLS LAST')
       );
     }
+    	
+    /**
+     * Configures a QueryFactory instance according to the configuration of this selector
+     **/        
+    private fflib_QueryFactory configureQueryFactory(fflib_QueryFactory queryFactory, Boolean assertCRUD, Boolean enforceFLS, Boolean includeSelectorFields)
+    {
+        // CRUD and FLS security required?
+        if (assertCRUD)
+        {
+        	try { 
+        		// Leverage QueryFactory for CRUD checking 
+        		queryFactory.assertIsAccessible();
+        	} catch (fflib_SecurityUtils.CrudException e) {
+        		// Marshal exception into DomainException for backwards compatibility
+				throw new fflib_SObjectDomain.DomainException(
+	                'Permission to access an ' + getSObjectType().getDescribe().getName() + ' denied.');               		
+        	}
+        }
+        queryFactory.setEnforceFLS(enforceFLS);
+                
+        // Configure the QueryFactory with the Selector fields?        
+        if(includeSelectorFields)
+        {
+	        // select the Selector fields and Fieldsets and set order
+            queryFactory.selectFields(getSObjectFieldList());
 
-    queryFactory.setSortSelectFields(m_sortSelectFields);
+	        List<Schema.FieldSet> fieldSetList = getSObjectFieldSetList();
+	        if(m_includeFieldSetFields && fieldSetList != null)
+	            for(Schema.FieldSet fieldSet : fieldSetList)
+	                queryFactory.selectFieldSet(fieldSet);
+	
+	        // Automatically select the CurrencyIsoCode for MC orgs (unless the object is a known exception to the rule)
+	        if(UserInfo.isMultiCurrencyOrganization() && CURRENCY_ISO_CODE_ENABLED)
+	            queryFactory.selectField('CurrencyIsoCode');
+        }
+        
+        // Parse the getOrderBy()
+        for(String orderBy : getOrderBy().split(','))
+        {
+            List<String> orderByParts = orderBy.trim().split(' ');
+            String fieldNamePart = orderByParts[0];
+            String fieldSortOrderPart = orderByParts.size() > 1 ? orderByParts[1] : null;
+            fflib_QueryFactory.SortOrder fieldSortOrder = fflib_QueryFactory.SortOrder.ASCENDING;
+            if(fieldSortOrderPart==null)
+                fieldSortOrder = fflib_QueryFactory.SortOrder.ASCENDING;
+            else if(fieldSortOrderPart.equalsIgnoreCase('DESC'))
+                fieldSortOrder = fflib_QueryFactory.SortOrder.DESCENDING;
+            else if(fieldSortOrderPart.equalsIgnoreCase('ASC'))
+                fieldSortOrder = fflib_QueryFactory.SortOrder.ASCENDING;
+            queryFactory.addOrdering(fieldNamePart, fieldSortOrder, orderBy.containsIgnoreCase('NULLS LAST'));
+        }           
+        
+        queryFactory.setSortSelectFields(m_sortSelectFields);           
 
-    return queryFactory;
-  }
+        return queryFactory;    
+    }    
 }
