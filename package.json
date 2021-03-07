@@ -1,0 +1,19 @@
+{
+  "scripts": {
+    "scratch:push-from-git-to-org": "sfdx force:source:push -g -w 60 --forceoverwrite",
+    "scratch:pull-from-org-to-git": "sfdx force:source:pull -w 60 --forceoverwrite",
+    "work:new": "sfdx hardis:work:new",
+    "work:refresh": "sfdx hardis:work:refresh",
+    "work:resetselection": "sfdx hardis:work:resetselection",
+    "work:save": "sfdx hardis:work:save",
+    "org:open": "sfdx force:org:open",
+    "org:test:apex": "sfdx hardis:org:test:apex",
+    "org:select": "sfdx hardis:org:select",
+    "scratch:create": "sfdx hardis:scratch:create",
+    "login:reset": "sfdx auth:logout --noprompt || true && sfdx config:unset defaultusername defaultdevhubusername -g && sfdx config:unset defaultusername defaultdevhubusername || true",
+    "configure:auth:deployment": "sfdx hardis:project:configure:auth",
+    "configure:auth:devhub": "sfdx hardis:project:configure:auth --devhub",
+    "package:version:create": "sfdx force:package:version:create -p 0Ho1v0000008ON5CAM --installationkeybypass -w 60",
+    "package:version:list": "sfdx force:package:version:list"
+  }
+}
