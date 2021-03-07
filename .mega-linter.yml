@@ -1,0 +1,7 @@
+# Configuration file for Mega-Linter
+# See all available variables at https://nvuillam.github.io/mega-linter/configuration/ and in linters documentation
+
+# Extend from shared sfdx-hardis Mega-Linter configuration :)
+EXTENDS:
+  - https://raw.githubusercontent.com/hardisgroupcom/sfdx-hardis/main/config/sfdx-hardis.mega-linter-config.yml
+SALESFORCE_DIRECTORY: sfdx-source/apex-common

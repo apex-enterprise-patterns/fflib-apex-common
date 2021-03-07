@@ -13,7 +13,7 @@
     "login:reset": "sfdx auth:logout --noprompt || true && sfdx config:unset defaultusername defaultdevhubusername -g && sfdx config:unset defaultusername defaultdevhubusername || true",
     "configure:auth:deployment": "sfdx hardis:project:configure:auth",
     "configure:auth:devhub": "sfdx hardis:project:configure:auth --devhub",
-    "package:version:create": "sfdx force:package:version:create -p 0Ho1v0000008ON5CAM --installationkeybypass -w 60",
-    "package:version:list": "sfdx force:package:version:list"
+    "package:version:create": "sfdx hardis:package:version:create",
+    "package:version:list": "sfdx hardis:package:version:list"
   }
 }
