@@ -1,27 +1,25 @@
 {
+    "namespace": "",
+    "sfdcLoginUrl": "https://login.salesforce.com",
+    "sourceApiVersion": "51.0",
     "packageDirectories": [
         {
             "path": "sfdx-source/apex-common",
+            "package": "fflibApexCommonHardis",
+            "versionName": "ver 0.1",
+            "versionNumber": "0.1.0.NEXT",
             "default": true,
-            "package": "fflib-apexcommon",
-            "versionName": "0.2.0",
-            "versionNumber": "0.2.0.NEXT",
             "dependencies": [
                 {
-                    "package": "fflib-apex-mocks@0.1.0-2"
+                    "package": "fflibApexMocksHardis@0.1.0-1"
                 }
             ]
         }
     ],
-    "namespace": "",
-    "sfdcLoginUrl": "https://login.salesforce.com",
-    "sourceApiVersion": "51.0",
     "packageAliases": {
-        "fflib-apex-mocks": "0Ho1v0000008ON0CAM",
-        "fflib-apex-mocks@0.1.0-2": "04t1v0000025j6EAAQ",
-        "fflib-apexcommon": "0Ho1v0000008ON5CAM",
-        "fflib-apexcommon@0.1.0-1": "04t1v0000025j6JAAQ",
-        "fflib-apexcommon@0.1.0-2": "04t1v0000025j6nAAA",
-        "fflib-apexcommon@0.2.0-1": "04t1v0000025j72AAA"
+        "fflibApexMocksHardis": "0Ho1n000000blO9CAI",
+        "fflibApexMocksHardis@0.1.0-1": "04t1n000001pGjzAAE",
+        "fflibApexCommonHardis": "0Ho1n000000blOECAY",
+        "fflibApexCommonHardis@0.1.0-1": "04t1n000001pGk4AAE"
     }
 }

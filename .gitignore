@@ -54,3 +54,5 @@ hardis-report/
 tmp/
 metadatas/siteDotComSites/
 force-app/main/default/appMenus/AppSwitcher.appMenu-meta.xml
+
+**/siteDotComSites/*.site
