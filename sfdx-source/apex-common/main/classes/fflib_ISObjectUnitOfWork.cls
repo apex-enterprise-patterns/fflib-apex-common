@@ -64,7 +64,7 @@ public interface fflib_ISObjectUnitOfWork
      *  to the database.  This information will be
      *  used during the commitWork phase to make the references only when related records have been inserted to the database.
      *
-     * @param a single email message instance
+     * @param email a single email message instance
      * @param relatedTo A SObject instance (yet to be committed to the database)
      */
     void registerRelationship(Messaging.SingleEmailMessage email, SObject relatedTo);
