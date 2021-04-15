@@ -263,28 +263,29 @@ public class fflib_SObjectDescribe {
 		 *  
 		**/
 		protected virtual Object getObject(String name, Boolean implyNamespace){
-			if(name == null) //short-circuit lookup logic since null can't possibly be a valid field name, and it saves us null checking
-				return null;
-			String preferredValue = ((implyNamespace ? currentNamespace+'__' : '') + name).toLowerCase();
-			if(values.containsKey(preferredValue)){
-				return values.get(preferredValue);
-			}else if(implyNamespace){
-				return values.get(name.toLowerCase());
-			}else{
-				return null;
+			Object toReturn = null;
+			if(!String.isBlank(name))
+			{
+				String preferredValue = ((implyNamespace ? currentNamespace+'__' : '') + name).toLowerCase();
+				if(values.containsKey(preferredValue)){
+					toReturn = values.get(preferredValue);
+				}
+				else if(implyNamespace){
+					toReturn = values.get(name.toLowerCase());
+				}
 			}
+			return toReturn;
 		}
 		public virtual Boolean containsKey(String name){
 			return this.containsKey(name, true);
 		}
 		public virtual Boolean containsKey(String name, Boolean implyNamespace){
-			if(name == null) //short-circuit lookup logic since null can't possibly be a valid field name, and it saves us null checking
-				return null;
-			String preferredValue = ((implyNamespace ? currentNamespace+'__' : '') + name).toLowerCase();
-			return (
-				values.containsKey(preferredValue) ||
-				implyNamespace && values.containsKey(name.toLowerCase())
-			);
+			Boolean toReturn = false;
+			if(!String.isBlank(name)) {
+				String preferredValue = ((implyNamespace ? currentNamespace+'__' : '') + name).toLowerCase();
+				toReturn = values.containsKey(preferredValue) || implyNamespace && values.containsKey(name.toLowerCase())
+			}
+			return toReturn;
 		}
 		public virtual Integer size(){
 			return values.size();
