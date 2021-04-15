@@ -283,7 +283,7 @@ public class fflib_SObjectDescribe {
 			Boolean toReturn = false;
 			if(!String.isBlank(name)) {
 				String preferredValue = ((implyNamespace ? currentNamespace+'__' : '') + name).toLowerCase();
-				toReturn = values.containsKey(preferredValue) || implyNamespace && values.containsKey(name.toLowerCase())
+				toReturn = values.containsKey(preferredValue) || implyNamespace && values.containsKey(name.toLowerCase());
 			}
 			return toReturn;
 		}
