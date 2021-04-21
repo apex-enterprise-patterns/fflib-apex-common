@@ -75,6 +75,57 @@ public virtual class fflib_SObjects
 	}
 
 	/**
+	 * Adds an error message to the records in the domain
+	 *
+	 * @param message The error message to add to each record
+	 */
+	protected void addError(String message)
+	{
+		for (SObject record : getRecords())
+		{
+			record.addError(error(message, record));
+		}
+	}
+
+	/**
+	 * Adds an error message to the a field records in the domain
+	 *
+	 * @param sObjectField The field where the error should be reported
+	 * @param message The error message to add to the given field on each record
+	 */
+	protected void addError(Schema.SObjectField sObjectField, String message)
+	{
+		for (SObject record : getRecords())
+		{
+			record.addError(sObjectField, error(message, record, sObjectField));
+		}
+	}
+
+	/**
+	 * Clear the field value on all the records of the domain
+	 * @param sObjectField The field to nullify
+	 */
+	protected void clearField(Schema.SObjectField sObjectField)
+	{
+		clearFields(new Set<Schema.SObjectField>{ sObjectField });
+	}
+
+	/**
+	 * Clear the field values on all the records of the domain
+	 * @param sObjectFields The fields to nullify
+	 */
+	protected void clearFields(Set<Schema.SObjectField> sObjectFields)
+	{
+		for (SObject record : getRecords())
+		{
+			for (SObjectField sObjectField : sObjectFields)
+			{
+				record.put(sObjectField, null);
+			}
+		}
+	}
+
+	/**
 	 * Ensures logging of errors in the Domain context for later assertions in tests
 	 *
 	 * @param message
@@ -96,11 +147,49 @@ public virtual class fflib_SObjects
 	 *
 	 * @return Returns the Error message
 	 **/
-	protected virtual String error(String message, SObject record, SObjectField field)
+	protected virtual String error(String message, SObject record, Schema.SObjectField field)
 	{
 		return fflib_SObjects.Errors.error(this, message, record, field);
 	}
 
+	/**
+	 * @param sObjectField The SObjectField reference of the type Id
+	 *
+	 * @return Return a set with all the Id values of the given field
+	 */
+	@TestVisible
+	protected Set<Id> getIdFieldValues(Schema.SObjectField sObjectField)
+	{
+		Set<Id> result = new Set<Id>();
+		for (SObject record : getRecords())
+		{
+			result.add((Id) record.get(sObjectField));
+		}
+		return result;
+	}
+
+	/**
+	 * @param sObjectField The SObjectField reference of the type String
+	 *
+	 * @return Return a set with all the String values of the given field
+	 */
+	@TestVisible
+	protected Set<String> getStringFieldValues(Schema.SObjectField sObjectField)
+	{
+		Set<String> result = new Set<String>();
+		for (SObject record : getRecords())
+		{
+			result.add((String) record.get(sObjectField));
+		}
+		return result;
+	}
+
+	/**
+	 * @param sObjectField The SObjectField reference
+	 *
+	 * @return Return a set with all the values of the given field
+	 */
+	@TestVisible
 	protected virtual Set<Object> getFieldValues(Schema.SObjectField sObjectField)
 	{
 		Set<Object> result = new Set<Object>();
@@ -257,7 +346,12 @@ public virtual class fflib_SObjects
 		return result;
 	}
 
-
+	/**
+	 * Modifies a value of a field for all records in the domain
+	 *
+	 * @param sObjectField The reference to the SObjectField to be modified
+	 * @param value The value to store in the given SObjectField
+	 */
 	protected virtual void setFieldValue(Schema.SObjectField sObjectField, Object value)
 	{
 		for (SObject record : getRecords())
