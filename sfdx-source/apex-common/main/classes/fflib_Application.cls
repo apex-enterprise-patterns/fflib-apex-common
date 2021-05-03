@@ -41,6 +41,11 @@ public virtual class fflib_Application
 
 		/**
 		 * Constructs a Unit Of Work factory
+		 **/
+		public UnitOfWorkFactory() { }
+
+		/**
+		 * Constructs a Unit Of Work factory
 		 *
 		 * @param objectTypes List of SObjectTypes in dependency order
 		 **/
@@ -54,7 +59,7 @@ public virtual class fflib_Application
 		 *   SObjectType list provided in the constructor, returns a Mock implementation
 		 *   if set via the setMock method
 		 **/
-		public fflib_ISObjectUnitOfWork newInstance()
+		public virtual fflib_ISObjectUnitOfWork newInstance()
 		{
 			// Mock?
 			if(m_mockUow!=null)
@@ -62,20 +67,18 @@ public virtual class fflib_Application
 			return new fflib_SObjectUnitOfWork(m_objectTypes);
 		}
 
-
 		/**
 		 * Returns a new fflib_SObjectUnitOfWork configured with the
 		 *   SObjectType list provided in the constructor, returns a Mock implementation
 		 *   if set via the setMock method
 		 **/
-		public fflib_ISObjectUnitOfWork newInstance(fflib_SObjectUnitOfWork.IDML dml)
+		public virtual fflib_ISObjectUnitOfWork newInstance(fflib_SObjectUnitOfWork.IDML dml)
 		{
 			// Mock?
 			if(m_mockUow!=null)
 				return m_mockUow;
 			return new fflib_SObjectUnitOfWork(m_objectTypes, dml);
 		}
-
 
 		/**
 		 * Returns a new fflib_SObjectUnitOfWork configured with the
@@ -85,7 +88,7 @@ public virtual class fflib_Application
 		 * @remark If mock is set, the list of SObjectType in the mock could be different
 		 *         then the list of SObjectType specified in this method call
 		 **/
-		public fflib_ISObjectUnitOfWork newInstance(List<SObjectType> objectTypes)
+		public virtual fflib_ISObjectUnitOfWork newInstance(List<SObjectType> objectTypes)
 		{
 			// Mock?
 			if(m_mockUow!=null)
@@ -101,7 +104,7 @@ public virtual class fflib_Application
 		 * @remark If mock is set, the list of SObjectType in the mock could be different
 		 *         then the list of SObjectType specified in this method call
 		 **/
-		public fflib_ISObjectUnitOfWork newInstance(List<SObjectType> objectTypes, fflib_SObjectUnitOfWork.IDML dml)
+		public virtual fflib_ISObjectUnitOfWork newInstance(List<SObjectType> objectTypes, fflib_SObjectUnitOfWork.IDML dml)
 		{
 			// Mock?
 			if(m_mockUow!=null)
@@ -109,9 +112,8 @@ public virtual class fflib_Application
 			return new fflib_SObjectUnitOfWork(objectTypes, dml);
 		}
 
-
 		@TestVisible
-		private void setMock(fflib_ISObjectUnitOfWork mockUow)
+		protected virtual void setMock(fflib_ISObjectUnitOfWork mockUow)
 		{
 			m_mockUow = mockUow;
 		}
@@ -125,6 +127,11 @@ public virtual class fflib_Application
 		protected Map<Type, Type> m_serviceInterfaceTypeByServiceImplType;
 
 		protected Map<Type, Object> m_serviceInterfaceTypeByMockService;
+
+		/**
+		 * Constructs a simple Service Factory
+		 **/
+		public ServiceFactory() { }
 
 		/**
 		 * Constructs a simple Service Factory, 
@@ -162,7 +169,7 @@ public virtual class fflib_Application
 		}
 
 		@TestVisible
-		private virtual void setMock(Type serviceInterfaceType, Object serviceImpl)
+		protected virtual void setMock(Type serviceInterfaceType, Object serviceImpl)
 		{
 			m_serviceInterfaceTypeByMockService.put(serviceInterfaceType, serviceImpl);
 		}
@@ -175,6 +182,11 @@ public virtual class fflib_Application
 	{
 		protected Map<SObjectType, Type> m_sObjectBySelectorType;
 		protected Map<SObjectType, fflib_ISObjectSelector> m_sObjectByMockSelector;
+
+		/**
+		 * Constructs a simple Selector Factory
+		 **/
+		public SelectorFactory() { }
 
 		/**
 		 * Consturcts a Selector Factory linking SObjectType's with Apex Classes implement the fflib_ISObjectSelector interface
@@ -259,7 +271,7 @@ public virtual class fflib_Application
 		}
 
 		@TestVisible
-		private virtual void setMock(fflib_ISObjectSelector selectorInstance)
+		protected virtual void setMock(fflib_ISObjectSelector selectorInstance)
 		{
 			m_sObjectByMockSelector.put(selectorInstance.sObjectType(), selectorInstance);
 		} 
