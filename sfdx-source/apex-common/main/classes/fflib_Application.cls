@@ -230,7 +230,7 @@ public virtual class fflib_Application
 		 * @param recordIds The SObject record Ids, must be all the same SObjectType
 		 * @exception Is thrown if the record Ids are not all the same or the SObjectType is not registered
 		 **/
-		public List<SObject> selectById(Set<Id> recordIds)
+		public virtual List<SObject> selectById(Set<Id> recordIds)
 		{
 			// No point creating an empty Domain class, nor can we determine the SObjectType anyway
 			if(recordIds==null || recordIds.size()==0)
@@ -258,7 +258,7 @@ public virtual class fflib_Application
 		 * @param relatedRecords used to extract the related record Ids, e.g. Opportunity records
 		 * @param relationshipField field in the passed records that contains the relationship records to query, e.g. Opportunity.AccountId
 		 **/
-		public List<SObject> selectByRelationship(List<SObject> relatedRecords, SObjectField relationshipField)
+		public virtual List<SObject> selectByRelationship(List<SObject> relatedRecords, SObjectField relationshipField)
 		{
 			Set<Id> relatedIds = new Set<Id>();
 			for(SObject relatedRecord : relatedRecords)
@@ -287,6 +287,11 @@ public virtual class fflib_Application
 		protected Map<Object, Type> constructorTypeByObject;
 
 		protected Map<Object, fflib_IDomain> mockDomainByObject;
+
+        /**
+		 * Constructs a Domain factory
+		 **/
+		public DomainFactory() { }
 
 		/**
 		 * Constructs a Domain factory, using an instance of the Selector Factory
@@ -408,18 +413,18 @@ public virtual class fflib_Application
 		}
 
 		@TestVisible
-		private virtual void setMock(fflib_ISObjectDomain mockDomain)
+		protected virtual void setMock(fflib_ISObjectDomain mockDomain)
 		{
 			mockDomainByObject.put((Object) mockDomain.sObjectType(), (fflib_IDomain) mockDomain);
 		}
 
 		@TestVisible
-		private virtual void setMock(fflib_IDomain mockDomain)
+		protected virtual void setMock(fflib_IDomain mockDomain)
 		{
 			mockDomainByObject.put(mockDomain.getType(), mockDomain);
 		}
 
-		private Map<Object, Type> getConstructorTypeByObject(Map<SObjectType, Type> constructorTypeBySObjectType)
+		protected virtual Map<Object, Type> getConstructorTypeByObject(Map<SObjectType, Type> constructorTypeBySObjectType)
 		{
 			Map<Object, Type> result = new Map<Object, Type>();
 			for (SObjectType sObjectType : constructorTypeBySObjectType.keySet())
