@@ -34,7 +34,7 @@ public virtual class fflib_Application
 	/**
 	 * Class implements a Unit of Work factory
 	 **/
-	public virtual class UnitOfWorkFactory
+	public virtual class UnitOfWorkFactory implements fflib_IUnitOfWorkFactory
 	{
 		private List<SObjectType> m_objectTypes;
 		private fflib_ISObjectUnitOfWork m_mockUow;
@@ -122,7 +122,7 @@ public virtual class fflib_Application
 	/**
 	 * Simple Service Factory implementation
 	 **/
-	public virtual class ServiceFactory
+	public virtual class ServiceFactory implements fflib_IServiceFactory
 	{
 		protected Map<Type, Type> m_serviceInterfaceTypeByServiceImplType;
 
@@ -178,7 +178,7 @@ public virtual class fflib_Application
 	/**
 	 * Class implements a Selector class factory
 	 **/
-	public virtual class SelectorFactory
+	public virtual class SelectorFactory implements fflib_ISelectorFactory
 	{
 		protected Map<SObjectType, Type> m_sObjectBySelectorType;
 		protected Map<SObjectType, fflib_ISObjectSelector> m_sObjectByMockSelector;
@@ -280,7 +280,7 @@ public virtual class fflib_Application
 	/**
 	 * Class implements a Domain class factory
 	 **/
-	public virtual class DomainFactory
+	public virtual class DomainFactory implements fflib_IDomainFactory
 	{
 		protected fflib_Application.SelectorFactory m_selectorFactory;
 
