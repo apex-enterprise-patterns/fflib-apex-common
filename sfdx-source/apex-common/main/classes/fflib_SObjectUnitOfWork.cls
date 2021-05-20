@@ -259,6 +259,16 @@ public virtual class fflib_SObjectUnitOfWork
     }
 
     /**
+     * Register a list of newly created SObject instances contained in a domain to be inserted when commitWork is called
+     *
+     * @param domain A domain containing a list of newly created SObject instances to be inserted during commitWork
+     **/
+    public void registerNew(fflib_ISObjects domain)
+    {
+        registerNew(domain.getRecords());
+    }
+
+    /**
      * Register a newly created SObject instance to be inserted when commitWork is called,
      *   you may also provide a reference to the parent record instance (should also be registered as new separately)
      *
@@ -357,6 +367,17 @@ public virtual class fflib_SObjectUnitOfWork
 	    }
     }
 
+    /**
+     * Registers the entire records as dirty or just only the dirty fields if the record was already registered
+     *
+     * @param domain SObjects to register as dirty
+     * @param dirtyFields A list of modified fields
+     */
+    public void registerDirty(fflib_ISObjects domain, List<SObjectField> dirtyFields)
+    {
+        registerDirty(domain.getRecords(), dirtyFields);
+    }
+
 	/**
 	 * Registers the entire record as dirty or just only the dirty fields if the record was already registered
 	 *
@@ -427,6 +448,16 @@ public virtual class fflib_SObjectUnitOfWork
     }
 
     /**
+     * Register a list of existing records to be updated during the commitWork method
+     *
+     * @param domain A list of existing records
+     **/
+    public void registerDirty(fflib_ISObjects domain)
+    {
+        registerDirty(domain.getRecords());
+    }
+
+    /**
      * Register a new or existing record to be inserted/updated during the commitWork method
      *
      * @param record A new or existing record
@@ -486,6 +517,16 @@ public virtual class fflib_SObjectUnitOfWork
         }
     }
 
+    /**
+     * Register a domain containing a list of existing records to be deleted during the commitWork method
+     *
+     * @param domain A domain with existing records
+     **/
+    public void registerDeleted(fflib_ISObjects domain)
+    {
+        registerDeleted(domain.getRecords());
+    }
+
 	/**
      * Register a list of existing records to be deleted and removed from the recycle bin during the commitWork method
      *
@@ -495,6 +536,16 @@ public virtual class fflib_SObjectUnitOfWork
     {
 	    this.registerEmptyRecycleBin(records);
 	    this.registerDeleted(records);
+    }
+
+    /**
+     * Register a list of existing records to be deleted and removed from the recycle bin during the commitWork method
+     *
+     * @param domain A domain with existing records
+     **/
+    public void registerPermanentlyDeleted(fflib_ISObjects domain)
+    {
+        registerPermanentlyDeleted(domain.getRecords());
     }
 
 	/**
