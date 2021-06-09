@@ -74,7 +74,7 @@ private class fflib_SObjectsTest
 	{
 		DomainAccounts domain = generateDomain();
 
-		System.assert(domain.selectWithShippingCountry().size() == 3);
+		System.assert(domain.selectWithShippingCountry().size() == 4);
 	}
 
 	@IsTest
@@ -82,7 +82,7 @@ private class fflib_SObjectsTest
 	{
 		DomainAccounts domain = generateDomain();
 
-		System.assert(domain.selectPopulatedRecords().size() == 3);
+		System.assert(domain.selectPopulatedRecords().size() == 4);
 	}
 
 	@IsTest
@@ -92,7 +92,7 @@ private class fflib_SObjectsTest
 		String country = 'Holland';
 		domain.setShippingCountry(country);
 
-		System.assert(domain.selectByShippingCountry(country).size() == 6);
+		System.assert(domain.selectByShippingCountry(country).size() == 7);
 	}
 
 
@@ -135,7 +135,8 @@ private class fflib_SObjectsTest
 						new Account(Name = 'C', ShippingCountry = 'UK'),
 						new Account(Name = 'D', ShippingCountry = ''),
 						new Account(Name = 'E'),
-						new Account()
+						new Account(),
+						new Account(Name = 'G', ShippingCountry = 'Canada')
 				}
 		);
 		return domain;
