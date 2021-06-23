@@ -124,7 +124,7 @@ public virtual class fflib_SObjectUnitOfWork
     /**
      * Constructs a new UnitOfWork to support work against the given object list
      *
-     * @param sObjectList A list of objects given in dependency order (least dependent first)
+     * @param sObjectTypes A list of objects given in dependency order (least dependent first)
      */
     public fflib_SObjectUnitOfWork(List<Schema.SObjectType> sObjectTypes)
     {
@@ -288,7 +288,7 @@ public virtual class fflib_SObjectUnitOfWork
      * @param relatedToField A SObjectField reference to the lookup field that relates the two records together
      * @param relatedTo A SObject instance (yet to be committed to the database)
      */
-    public void registerRelationship(SObject record, Schema.sObjectField relatedToField, SObject relatedTo)
+    public void registerRelationship(SObject record, Schema.SObjectField relatedToField, SObject relatedTo)
     {
         String sObjectType = record.getSObjectType().getDescribe().getName();
 
@@ -303,7 +303,7 @@ public virtual class fflib_SObjectUnitOfWork
      *  to the database.  This information will be
      *  used during the commitWork phase to make the references only when related records have been inserted to the database.
      *
-     * @param a single email message instance
+     * @param email a single email message instance
      * @param relatedTo A SObject instance (yet to be committed to the database)
      */
     public void registerRelationship( Messaging.SingleEmailMessage email, SObject relatedTo )
@@ -493,7 +493,7 @@ public virtual class fflib_SObjectUnitOfWork
 	/**
      * Register a list of existing records to be deleted and removed from the recycle bin during the commitWork method
      *
-     * @param records A list of existing records
+     * @param record A list of existing records
      **/
     public void registerPermanentlyDeleted(SObject record)
     {
@@ -589,7 +589,7 @@ public virtual class fflib_SObjectUnitOfWork
      **/
 	public void commitWork()
 	{
-		Savepoint sp = Database.setSavePoint();
+		Savepoint sp = Database.setSavepoint();
 		Boolean wasSuccessful = false;
 		try
 		{
@@ -786,7 +786,7 @@ public virtual class fflib_SObjectUnitOfWork
 
         }
 
-        public void add(SObject record, Schema.sObjectField relatedToField, Schema.SObjectField externalIdField, Object externalId)
+        public void add(SObject record, Schema.SObjectField relatedToField, Schema.SObjectField externalIdField, Object externalId)
         {
             if (relatedToField == null) {
                 throw new UnitOfWorkException('Invalid argument: relatedToField.');
@@ -822,7 +822,7 @@ public virtual class fflib_SObjectUnitOfWork
             m_relationships.add(relationship);
         }
 
-        public void add(SObject record, Schema.sObjectField relatedToField, SObject relatedTo)
+        public void add(SObject record, Schema.SObjectField relatedToField, SObject relatedTo)
         {
             // Relationship to resolve
             Relationship relationship = new Relationship();
@@ -849,10 +849,10 @@ public virtual class fflib_SObjectUnitOfWork
     private class RelationshipByExternalId implements IRelationship
     {
         public SObject Record;
-        public Schema.sObjectField RelatedToField;
+        public Schema.SObjectField RelatedToField;
         public Schema.SObjectType RelatedTo;
         public String RelationshipName;
-        public Schema.sObjectField ExternalIdField;
+        public Schema.SObjectField ExternalIdField;
         public Object ExternalId;
 
         public void resolve()
@@ -866,7 +866,7 @@ public virtual class fflib_SObjectUnitOfWork
     private class Relationship implements IRelationship
     {
         public SObject Record;
-        public Schema.sObjectField RelatedToField;
+        public Schema.SObjectField RelatedToField;
         public SObject RelatedTo;
 
         public void resolve()
@@ -882,7 +882,7 @@ public virtual class fflib_SObjectUnitOfWork
 
         public void resolve()
         {
-            this.email.setWhatId( this.RelatedTo.Id );
+            this.email.setWhatId( this.relatedTo.Id );
         }
     }
 
