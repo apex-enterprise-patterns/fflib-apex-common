@@ -289,6 +289,10 @@ public virtual with sharing class fflib_SObjectDomain
 	 **/
 	public List<SObject> getChangedRecords(Set<String> fieldNames)
 	{
+		if(Trigger.isInsert) { // using trigger context variable because I couldn't find an alternative
+			return Records;
+		}
+
 		List<SObject> changedRecords = new List<SObject>();
 		for (SObject newRecord : Records)
 		{
@@ -317,6 +321,10 @@ public virtual with sharing class fflib_SObjectDomain
 	 **/
 	public List<SObject> getChangedRecords(Set<Schema.SObjectField> fieldTokens)
 	{
+		if(Trigger.isInsert) { // using trigger context variable because I couldn't find an alternative
+			return Records;
+		}
+
 		List<SObject> changedRecords = new List<SObject>();
 		for (SObject newRecord : Records)
 		{
