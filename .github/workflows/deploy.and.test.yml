@@ -3,6 +3,7 @@ name: Create a Scratch Org, Push Source and Run Apex Tests
 on:
   push:
   pull_request_target:
+  workflow_dispatch:
   
 jobs:
   build:
