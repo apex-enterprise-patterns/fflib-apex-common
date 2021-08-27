@@ -284,6 +284,15 @@ public virtual with sharing class fflib_SObjectDomain
     }
 
 	/**
+	 * Detects whether any values in context records have changed for given field as string
+	 * Returns list of SObject records that have changes in the specified field
+	 **/
+	public List<SObject> getChangedRecords(String fieldName)
+	{
+		return getChangedRecords(new Set<String>{ fieldName });
+	}
+
+	/**
 	 * Detects whether any values in context records have changed for given fields as strings
 	 * Returns list of SObject records that have changes in the specified fields
 	 **/
@@ -309,6 +318,15 @@ public virtual with sharing class fflib_SObjectDomain
 			}
 		}
 		return changedRecords;
+	}
+
+	/**
+	 * Detects whether any values in context records have changed for given field as token
+	 * Returns list of SObject records that have changes in the specified field
+	 **/
+	public List<SObject> getChangedRecords(Schema.SObjectField fieldToken)
+	{
+		return getChangedRecords(new Set<Schema.SObjectField>{ fieldToken });
 	}
 
 	/**
