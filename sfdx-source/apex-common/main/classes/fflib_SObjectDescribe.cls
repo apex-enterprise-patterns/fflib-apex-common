@@ -216,6 +216,19 @@ public class fflib_SObjectDescribe {
 		return getDescribe(instance.getSObjectType());
 	}
 
+	private Id getRecordTypeId(String recordTypeDeveloperName)
+	{
+		return getDescribe().getRecordTypeInfosByDeveloperName().get(recordTypeDeveloperName)?.getRecordTypeId();
+	}
+
+	public static Id getRecordTypeId(String sObjectName, String recordTypeDeveloperName){
+		return getDescribe(sObjectName).getRecordTypeId(recordTypeDeveloperName);
+	}
+
+	public static Id getRecordTypeId(Schema.SObjectType token, String recordTypeDeveloperName){
+		return getDescribe(token).getRecordTypeId(recordTypeDeveloperName);
+	}
+
 	//returns the same results as the native method, just with caching built in to avoid limits
 	public static Map<String,SObjectType> getRawGlobalDescribe(){
 		return rawGlobalDescribe;
