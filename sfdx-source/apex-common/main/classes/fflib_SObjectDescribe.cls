@@ -77,7 +77,7 @@ public class fflib_SObjectDescribe {
 	private fflib_SObjectDescribe(Schema.SObjectType token){	
 		if(token == null)
 			throw new InvalidDescribeException('Invalid SObject type: null');
-		if(instanceCache.containsKey( String.valueOf(token) ))
+		if(instanceCache.containsKey( String.valueOf(token).toLowerCase() ))
 			throw new DuplicateDescribeException(token + ' is already in the describe cache');
 		this.token = token;
 		instanceCache.put( String.valueOf(token).toLowerCase() , this);
