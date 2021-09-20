@@ -181,11 +181,11 @@ private class fflib_SObjectDescribeTest {
 	}
 
 	@IsTest
-	static void testGetRecordTypeId(){
+	static void getRecordTypeId(){
 		Id idString = fflib_SObjectDescribe.getRecordTypeId('Account', 'GUPA');
 		Id idStringInvalid = fflib_SObjectDescribe.getRecordTypeId('Account', 'InvalidInvalid');
 		Id idToken = fflib_SObjectDescribe.getRecordTypeId(Account.SObjectType, 'GUPA');
-		Id idTokenInvlid = fflib_SObjectDescribe.getRecordTypeId(Account.SObjectType, 'InvalidInvalid');
+		Id idTokenInvalid = fflib_SObjectDescribe.getRecordTypeId(Account.SObjectType, 'InvalidInvalid');
 		List<RecordType> listRecordTypes = [
 				SELECT Id, DeveloperName
 				FROM RecordType
@@ -197,10 +197,8 @@ private class fflib_SObjectDescribeTest {
 			System.assertEquals(1, listRecordTypes.size());
 			System.assertEquals(idString, listRecordTypes[0].Id);
 			System.assertEquals(idToken, listRecordTypes[0].Id);
-		} else {
-			System.assertEquals(0, listRecordTypes.size());
 		}
 		System.assertEquals(null, idStringInvalid);
-		System.assertEquals(null, idTokenInvlid);
+		System.assertEquals(null, idTokenInvalid);
 	}
 }
