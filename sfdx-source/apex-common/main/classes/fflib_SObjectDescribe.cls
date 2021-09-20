@@ -216,8 +216,7 @@ public class fflib_SObjectDescribe {
 		return getDescribe(instance.getSObjectType());
 	}
 
-	private Id getRecordTypeId(String recordTypeDeveloperName)
-	{
+	private Id getRecordTypeId(String recordTypeDeveloperName){
 		return getDescribe().getRecordTypeInfosByDeveloperName().get(recordTypeDeveloperName)?.getRecordTypeId();
 	}
 
