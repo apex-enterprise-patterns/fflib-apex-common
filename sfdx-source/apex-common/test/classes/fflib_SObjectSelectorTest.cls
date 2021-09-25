@@ -159,6 +159,18 @@ private with sharing class fflib_SObjectSelectorTest
 		assertFieldListString(fieldListString, null);
 	}
 	
+	static testMethod void testSOQL_defaultSorting()
+	{
+		Testfflib_SObjectSelectorDefaultSorting selector = new Testfflib_SObjectSelectorDefaultSorting(false);
+		String soql = selector.newQueryFactory().toSOQL();
+		Pattern p = Pattern.compile('SELECT (.*) FROM Account ORDER BY Name ASC NULLS FIRST ');
+		Matcher m = p.matcher(soql);
+		System.assert(m.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
+		System.assertEquals(1, m.groupCount(), 'Unexpected number of groups captured.');
+		String fieldListString = m.group(1);
+		assertFieldListString(fieldListString, null);
+	}
+
 	static testMethod void testDefaultConfig()
 	{
 		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
@@ -239,7 +251,122 @@ private with sharing class fflib_SObjectSelectorTest
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
 		system.assert(soqlMatcher.matches(), 'The SOQL should have that expected.');
 	}
-	
+
+	@IsTest
+	static void testConfigureQueryFactoryFields() {
+		//Given
+		Testfflib_UserSObjectSelector selector = new Testfflib_UserSObjectSelector();
+		fflib_QueryFactory qf = new fflib_QueryFactory(Account.SObjectType);
+
+		Set<String> expectedSelectFields = new Set<String>{ 'Owner.Name', 'Owner.Id', 'Owner.Username', 'Owner.LastLoginDate' };
+		if (UserInfo.isMultiCurrencyOrganization())
+		{
+			expectedSelectFields.add('Owner.CurrencyIsoCode');
+		}
+
+		//When
+		selector.configureQueryFactoryFields(qf, 'Owner');
+
+		//Then
+		String soql = qf.toSOQL();
+		Pattern soqlPattern = Pattern.compile('SELECT (.*) FROM Account');
+		Matcher soqlMatcher = soqlPattern.matcher(soql);
+		System.assert(soqlMatcher.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
+
+		List<String> actualSelectFields = soqlMatcher.group(1).deleteWhiteSpace().split(',');
+		System.assertEquals(expectedSelectFields, new Set<String>(actualSelectFields));
+	}
+
+	@IsTest
+	static void testAddQueryFactorySubselect() {
+		//Given
+		Testfflib_UserSObjectSelector selector = new Testfflib_UserSObjectSelector();
+		fflib_QueryFactory qf = new fflib_QueryFactory(Account.SObjectType);
+
+		Set<String> expectedSelectFields = new Set<String>{ 'Name', 'Id', 'Username', 'LastLoginDate' };
+		if (UserInfo.isMultiCurrencyOrganization())
+		{
+			expectedSelectFields.add('CurrencyIsoCode');
+		}
+
+		//When
+		selector.addQueryFactorySubselect(qf);
+
+		//Then
+		String soql = qf.toSOQL();
+		Pattern soqlPattern = Pattern.compile('SELECT Id, \\(SELECT (.*) FROM Users ORDER BY Name ASC NULLS FIRST \\) +FROM Account');
+		Matcher soqlMatcher = soqlPattern.matcher(soql);
+		System.assert(soqlMatcher.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
+
+		List<String> actualSelectFields = soqlMatcher.group(1).deleteWhiteSpace().split(',');
+		System.assertEquals(expectedSelectFields, new Set<String>(actualSelectFields));
+	}
+
+	@IsTest
+	static void testAddQueryFactorySubselect2() {
+		//Given
+		Testfflib_UserSObjectSelector selector = new Testfflib_UserSObjectSelector();
+		fflib_QueryFactory qf = new fflib_QueryFactory(Account.SObjectType);
+
+		Set<String> expectedSelectFields = new Set<String>{ 'Name', 'Id', 'Username', 'LastLoginDate' };
+		if (UserInfo.isMultiCurrencyOrganization())
+		{
+			expectedSelectFields.add('CurrencyIsoCode');
+		}
+
+		//When
+		selector.addQueryFactorySubselect(qf, 'Users');
+
+		//Then
+		String soql = qf.toSOQL();
+		Pattern soqlPattern = Pattern.compile('SELECT Id, \\(SELECT (.*) FROM Users ORDER BY Name ASC NULLS FIRST \\) +FROM Account');
+		Matcher soqlMatcher = soqlPattern.matcher(soql);
+		System.assert(soqlMatcher.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
+
+		List<String> actualSelectFields = soqlMatcher.group(1).deleteWhiteSpace().split(',');
+		System.assertEquals(expectedSelectFields, new Set<String>(actualSelectFields));
+	}
+
+	@IsTest
+	static void testGetFieldListString() {
+		//Given
+		Testfflib_UserSObjectSelector selector = new Testfflib_UserSObjectSelector();
+		fflib_QueryFactory qf = new fflib_QueryFactory(Account.SObjectType);
+
+		Set<String> expectedSelectFields = new Set<String>{ 'Name', 'Id', 'Username', 'LastLoginDate' };
+		if (UserInfo.isMultiCurrencyOrganization())
+		{
+			expectedSelectFields.add('CurrencyIsoCode');
+		}
+
+		//When
+		String fieldListString = selector.getFieldListString();
+
+		//Then
+		List<String> actualSelectFields = fieldListString.deleteWhiteSpace().split(',');
+		System.assertEquals(expectedSelectFields, new Set<String>(actualSelectFields));
+	}
+
+	@IsTest
+	static void testGetRelatedFieldListString() {
+		//Given
+		Testfflib_UserSObjectSelector selector = new Testfflib_UserSObjectSelector();
+
+		Set<String> expectedSelectFields = new Set<String>{ 'Owner.Name', 'Owner.Id', 'Owner.Username', 'Owner.LastLoginDate' };
+		if (UserInfo.isMultiCurrencyOrganization())
+		{
+			expectedSelectFields.add('Owner.CurrencyIsoCode');
+		}
+
+		//When
+		String fieldListString = selector.getRelatedFieldListString('Owner');
+
+		//Then
+		List<String> actualSelectFields = fieldListString.deleteWhiteSpace().split(',');
+		System.assertEquals(expectedSelectFields, new Set<String>(actualSelectFields));
+
+	}
+
 	private static void assertEqualsSelectFields(String expectedSelectFields, String actualSelectFields)
 	{
 		Set<String> expected = new Set<String>(expectedSelectFields.deleteWhiteSpace().split(','));
@@ -281,6 +408,53 @@ private with sharing class fflib_SObjectSelectorTest
 		}
 	}
 	
+	private class Testfflib_UserSObjectSelector extends fflib_SObjectSelector
+	{
+		public Testfflib_UserSObjectSelector()
+		{
+			super();
+		}
+
+		public List<Schema.SObjectField> getSObjectFieldList()
+		{
+			return new List<Schema.SObjectField> {
+				User.Name,
+				User.Id,
+				User.Username,
+				User.LastLoginDate
+			};
+		}
+
+		public Schema.SObjectType getSObjectType()
+		{
+			return User.SObjectType;
+		}
+
+	}
+
+	private class Testfflib_SObjectSelectorDefaultSorting extends fflib_SObjectSelector
+	{
+		public Testfflib_SObjectSelectorDefaultSorting(Boolean includeFieldSetFields)
+		{
+			super(includeFieldSetFields);
+		}
+
+		public List<Schema.SObjectField> getSObjectFieldList()
+		{
+			return new List<Schema.SObjectField> {
+				Account.Name,
+				Account.Id,
+				Account.AccountNumber,
+				Account.AnnualRevenue
+			};
+		}
+
+		public Schema.SObjectType getSObjectType()
+		{
+			return Account.sObjectType;
+		}
+	}
+
 	/**
 	 * Create test user
 	 **/
