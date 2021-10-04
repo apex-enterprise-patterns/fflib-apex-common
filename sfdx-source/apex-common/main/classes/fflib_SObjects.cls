@@ -315,7 +315,7 @@ public virtual class fflib_SObjects
 		{
 			for (SObjectField sObjectField : sObjectFields)
 			{
-				if (String.isBlank((String) record.get(sObjectField)))
+				if (String.isNotBlank((String) record.get(sObjectField)))
 				{
 					result.add(record);
 					break;
