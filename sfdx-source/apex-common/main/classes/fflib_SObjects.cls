@@ -93,7 +93,8 @@ public virtual class fflib_SObjects
 	 * @param sObjectField The field where the error should be reported
 	 * @param message The error message to add to the given field on each record
 	 */
-	protected void addError(Schema.SObjectField sObjectField, String message)
+	@TestVisible
+	protected virtual void addError(Schema.SObjectField sObjectField, String message)
 	{
 		for (SObject record : getRecords())
 		{
@@ -105,7 +106,8 @@ public virtual class fflib_SObjects
 	 * Clear the field value on all the records of the domain
 	 * @param sObjectField The field to nullify
 	 */
-	protected void clearField(Schema.SObjectField sObjectField)
+	@TestVisible
+	protected virtual void clearField(Schema.SObjectField sObjectField)
 	{
 		clearFields(new Set<Schema.SObjectField>{ sObjectField });
 	}
@@ -114,7 +116,8 @@ public virtual class fflib_SObjects
 	 * Clear the field values on all the records of the domain
 	 * @param sObjectFields The fields to nullify
 	 */
-	protected void clearFields(Set<Schema.SObjectField> sObjectFields)
+	@TestVisible
+	protected virtual void clearFields(Set<Schema.SObjectField> sObjectFields)
 	{
 		for (SObject record : getRecords())
 		{
