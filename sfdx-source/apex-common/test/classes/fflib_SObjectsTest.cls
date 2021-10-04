@@ -100,7 +100,7 @@ private class fflib_SObjectsTest
 	{
 		DomainAccounts domain = generateDomain();
 
-		System.assert(domain.selectWithoutShippingCountry().size() == 3);
+		System.assert(domain.selectWithoutShippingCountry().size() == 4);
 	}
 
 	@IsTest
