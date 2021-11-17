@@ -301,7 +301,7 @@ public virtual with sharing class fflib_SObjectDomain
 			SObject oldRecord = this.ExistingRecords.get(recordId);
 			for (String fieldName : fieldNames)
 			{
-				if (oldRecord.get(fieldName) != newRecord.get(fieldName))
+				if (oldRecord.get(fieldName) !== newRecord.get(fieldName))
 				{
 					changedRecords.add(newRecord);
 					break;  // prevents the records from being added multiple times
@@ -328,7 +328,7 @@ public virtual with sharing class fflib_SObjectDomain
 			SObject oldRecord = this.ExistingRecords.get(recordId);
 			for (Schema.SObjectField fieldToken : fieldTokens)
 			{
-				if (oldRecord.get(fieldToken) != newRecord.get(fieldToken))
+				if (oldRecord.get(fieldToken) !== newRecord.get(fieldToken))
 				{
 					changedRecords.add(newRecord);
 					break;  // prevents the records from being added multiple times
