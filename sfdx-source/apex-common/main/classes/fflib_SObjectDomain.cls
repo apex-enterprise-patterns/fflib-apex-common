@@ -301,7 +301,10 @@ public virtual with sharing class fflib_SObjectDomain
 			SObject oldRecord = this.ExistingRecords.get(recordId);
 			for (String fieldName : fieldNames)
 			{
-				if (oldRecord.get(fieldName) != newRecord.get(fieldName))
+				Object oldValue = oldRecord.get(fieldName);
+				Object newValue = newRecord.get(fieldName);
+				if (((oldValue instanceof String || newValue instanceof String)	&& oldValue !== newValue)
+						||	oldValue != newValue)
 				{
 					changedRecords.add(newRecord);
 					break;  // prevents the records from being added multiple times
@@ -328,7 +331,10 @@ public virtual with sharing class fflib_SObjectDomain
 			SObject oldRecord = this.ExistingRecords.get(recordId);
 			for (Schema.SObjectField fieldToken : fieldTokens)
 			{
-				if (oldRecord.get(fieldToken) != newRecord.get(fieldToken))
+				Object oldValue = oldRecord.get(fieldToken);
+				Object newValue = newRecord.get(fieldToken);
+				if (((oldValue instanceof String || newValue instanceof String)	&& oldValue !== newValue)
+						||	oldValue != newValue)
 				{
 					changedRecords.add(newRecord);
 					break;  // prevents the records from being added multiple times
