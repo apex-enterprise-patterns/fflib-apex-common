@@ -5,22 +5,22 @@ public with sharing class fflib_SObjectHierarchy {
 	private final Set<SObjectField> queryFields;
 
 	/**
-	* This constructor takes in all the necessary information to create a hierarchy. The following components are needed.
-	* First, the type of record that comprises the hierarchy must be given. A hierarchy may only 
-	* contain one type of object within it. So for example, a hierarchy cannot contain Accounts and Cases,
-	* only one or the other.
-	* Second, the lookup field that connects the records must be given.
-	* For example, in order to construct an Account hierarchy, one would give the Account.ParentId lookup field.
-	* Third, but optional, any additional fields that you want to query during the construction of the hierarchy must be given.
-	*
-	* @param sobjType SObjectType The object type within the hierarchy 
-	* @param lookupField SObjectField The lookup field used to build the hierarchy. This field must be a lookup FROM the 
-	*    given SObjectType TO the given SObjectType.
-	* @param queryFields Set<SObjectField> The list of fields that will be added to the records when the hierarchy is traversed
-	* @exception IllegalArgumentException will be thrown if any of the arguments are null
-	* @exception IllegalArgumentException will be thrown if the lookup field is not a lookup
-	* @exception IllegalArgumentException will be thrown if the lookup does not point FROM sobjType TO the sobjType
-	**/
+	 * This constructor takes in all the necessary information to create a hierarchy. The following components are needed.
+	 * First, the type of record that comprises the hierarchy must be given. A hierarchy may only 
+	 * contain one type of object within it. So for example, a hierarchy cannot contain Accounts and Cases,
+	 * only one or the other.
+	 * Second, the lookup field that connects the records must be given.
+	 * For example, in order to construct an Account hierarchy, one would give the Account.ParentId lookup field.
+	 * Third, but optional, any additional fields that you want to query during the construction of the hierarchy must be given.
+	 *
+	 * @param sobjType SObjectType The object type within the hierarchy 
+	 * @param lookupField SObjectField The lookup field used to build the hierarchy. This field must be a lookup FROM the 
+	 *    given SObjectType TO the given SObjectType.
+	 * @param queryFields Set<SObjectField> The list of fields that will be added to the records when the hierarchy is traversed
+	 * @exception IllegalArgumentException will be thrown if any of the arguments are null
+	 * @exception IllegalArgumentException will be thrown if the lookup field is not a lookup
+	 * @exception IllegalArgumentException will be thrown if the lookup does not point FROM sobjType TO the sobjType
+	*/
 	public fflib_SObjectHierarchy(SObjectType sobjType, SObjectField lookupField, Set<SObjectField> queryFields) {
 
 		this.assertValidConstructorParams(sobjType, lookupField, queryFields);
@@ -69,25 +69,25 @@ public with sharing class fflib_SObjectHierarchy {
 	}
 
 	/**
-	* This function will start from each given Id, and make a list of all SObjects 
-	* until the top of the hierarchy is found. 
-	* The hierarchy is traversed by using the lookup field given in the constructor. 
-	* For each record, the set of query fields will be queried while going up the hierarchy.
-	* Thus, every record in the hierarchy will have all fields queried that were given in queryFields.
-	* 
-	* For example, say that you have an account, A. A has a parent, B. B has a parent, C. 
-	* This function will return the following if the Id for account A is given in the set of ids.
-	*
-	*	A Map of Id to SObjects, where
-	*	A -> [A, B, C]
-	*
-	* 	Each record (A, B, and C) will have all query fields queried. If the set of query fields is empty,
-	* 	it will only have the lookup field queried.
-	* @param ids Set<Id> a non-null set of ids. These ids will each represent a key in the map, whose value is the 
-	* 	list of records until the top of the hierarchy
-	* @exception IllegalArgumentException if the given set of ids is null
-	* @exception IllegalArgumentException if the given set of ids contains a cycle somewhere in its hierarchy.
-	* @return Map<Id, List<SObject>> a map of the given id to a list of SObjects representing its hierarchy 
+	 * This function will start from each given Id, and make a list of all SObjects 
+	 * until the top of the hierarchy is found. 
+	 * The hierarchy is traversed by using the lookup field given in the constructor. 
+	 * For each record, the set of query fields will be queried while going up the hierarchy.
+	 * Thus, every record in the hierarchy will have all fields queried that were given in queryFields.
+	 * 
+	 * For example, say that you have an account, A. A has a parent, B. B has a parent, C. 
+	 * This function will return the following if the Id for account A is given in the set of ids.
+	 *
+	 *	A Map of Id to SObjects, where
+	 *	A -> [A, B, C]
+	 *
+	 * 	Each record (A, B, and C) will have all query fields queried. If the set of query fields is empty,
+	 * 	it will only have the lookup field queried.
+	 * @param ids Set<Id> a non-null set of ids. These ids will each represent a key in the map, whose value is the 
+	 * 	list of records until the top of the hierarchy
+	 * @exception IllegalArgumentException if the given set of ids is null
+	 * @exception IllegalArgumentException if the given set of ids contains a cycle somewhere in its hierarchy.
+	 * @return Map<Id, List<SObject>> a map of the given id to a list of SObjects representing its hierarchy 
 	*/
 	public Map<Id, List<SObject>> getUntilTopOfHierarchy(Set<Id> ids) {
 		/** 
@@ -131,7 +131,7 @@ public with sharing class fflib_SObjectHierarchy {
 		 *
 		 *	and the algorithm terminates once there are no more hierarchies to view.
 		 *  This algorithm has no limit on how deep the hierarchy can go. The only limits is that of salesforce and the number of SOQLs to be performed.
-		**/
+		*/
 
 		if (ids == null) {
 			IllegalArgumentException iae = new IllegalArgumentException();
@@ -315,20 +315,10 @@ public with sharing class fflib_SObjectHierarchy {
 	private String getMultiLookupPrefix(String fieldName, Integer numRepeats) {
 		String prefix = '';
 		if (fieldName.endsWith('Id')) {
-			prefix = repeatString(fieldName.removeEnd('Id') + '.', numRepeats);
+			prefix = fieldName.removeEnd('Id').repeat('.', numRepeats) + '.';
 		} else {
-			prefix = repeatString(fieldName.replace('__c', '__r') + '.', numRepeats);
+			prefix = fieldName.replace('__c', '__r').repeat('.', numRepeats) + '.';
 		}
 		return prefix;
-	}
-
-	private String repeatString(String toRepeat, Integer numTimes) {
-
-		String repeatingString = '';
-		for (Integer i = 0; i < numTimes; i++) {
-			repeatingString = repeatingString + toRepeat;
-		}
-
-		return repeatingString;
 	}
 }
