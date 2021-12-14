@@ -287,6 +287,26 @@ public virtual class fflib_SObjects
 	}
 
 	/**
+	 * @param sObjectFieldToCheck The SObjectField to match the key against in the provided map
+	 * @param sObjectFieldToUpdate The SObjectField to store the mapped value when the key matches the value in the sObjectFieldToUpdate field
+	 * @param values Map of values to store by the sObjectFieldToCheck fields value
+	 */
+	protected virtual void setFieldValueByMap(
+			Schema.SObjectField sObjectFieldToCheck,
+			Schema.SObjectField sObjectFieldToUpdate,
+			Map<Id, Id> values)
+	{
+		for (SObject record : getRecords())
+		{
+			Id keyValue = (Id) record.get(sObjectFieldToCheck);
+			if (values?.get(keyValue) != null)
+			{
+				record.put(sObjectFieldToUpdate, values.get(keyValue));
+			}
+		}
+	}
+
+	/**
      * Ensures logging of errors in the Domain context for later assertions in tests
      **/
 	public virtual class ErrorFactory
