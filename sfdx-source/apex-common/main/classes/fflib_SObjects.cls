@@ -154,7 +154,7 @@ public virtual class fflib_SObjects
 	}
 
 	/**
-	 * @param sObjectFields The Schema.SObjectField's to check their value for a Blank value
+	 * @param sObjectFields The Schema.SObjectFields to check their value for a Blank value
 	 *
 	 * @return A list with only the SObjects where the at least one given sObjectField value is either null or '')
 	 */
@@ -176,9 +176,9 @@ public virtual class fflib_SObjects
 	}
 
 	/**
-	 * @param sObjectFields The Schema.SObjectField's to check their value for a Blank value
+	 * @param sObjectFields The Schema.SObjectFields to check their value for a Blank value
 	 *
-	 * @return A list with only the SObjects where the at least one given sObjectField value is either null or ''
+	 * @return A list with only the SObjects where all given sObjectField values are either null or ''
 	 */
 	protected virtual List<SObject> getRecordsWithAllBlankFieldValues(Set<Schema.SObjectField> sObjectFields)
 	{
@@ -212,7 +212,7 @@ public virtual class fflib_SObjects
 	}
 
 	/**
-	 * @param sObjectFields The Schema.SObjectField's to check their value for a Non-Blank value
+	 * @param sObjectFields The Schema.SObjectFields to check their value for a Non-Blank value
 	 *
 	 * @return A list with only the SObjects where the at least one given sObjectField value not null or ''
 	 */
@@ -234,9 +234,9 @@ public virtual class fflib_SObjects
 	}
 
 	/**
-	 * @param sObjectFields The Schema.SObjectField's to check their value for a Non-Blank value
+	 * @param sObjectFields The Schema.SObjectFields to check their value for a Non-Blank value
 	 *
-	 * @return A list with only the SObjects where the at least one given sObjectField value is not null or ''
+	 * @return A list with only the SObjects where all given sObjectField values are not null or ''
 	 */
 	protected virtual List<SObject> getRecordsWithAllNotBlankFieldValues(Set<Schema.SObjectField> sObjectFields)
 	{
