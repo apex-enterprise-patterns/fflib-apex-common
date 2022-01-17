@@ -26,8 +26,8 @@
 
 /**
  * QueryFactory provides an object-oriented way of building SOQL queries without resorting to string manipulation.
- * This class is not meant to be used as a replacement for all SOQL queries, and due to the relativley high overhead in both CPU and describe calls 
- * should be used in places where highly dynamic queries, such as those that include field sets or are mutated heavilly
+ * This class is not meant to be used as a replacement for all SOQL queries, and due to the relatively high overhead in both CPU and describe calls
+ * should be used in places where highly dynamic queries, such as those that include field sets or are mutated heavily
  * in multiple locations are a good fit for use with fflib_QueryFactory.
  * 
  * To use call construct a new instance for each query you intend to make.
@@ -49,7 +49,7 @@
  * - Cross-object references currently require using String argument(s) to selectField(s).
  * - The behavior of serializing and deserializing an fflib_QueryFactory instance is currently untested and undefined.
  *
- * There is a google doc providing additional guideance on the use of this class with field sets at
+ * There is a google doc providing additional guidance on the use of this class with field sets at
  * https://docs.google.com/a/financialforce.com/document/d/1I4cxN4xHT4UJj_3Oi0YBL_MJ5chm-KG8kMN1D1un8-g/edit?usp=sharing
 **/
 public class fflib_QueryFactory { //No explicit sharing declaration - inherit from caller
@@ -60,7 +60,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * The {@link Schema.SObjectType} token of the SObject that will be used in the FROM clause of the resultant query.
 	**/
 	public Schema.SObjectType table {get; private set;}
-	@testVisible
+	@TestVisible
 	private Set<String> fields; 
 	private String conditionExpression;
 	private Integer limitCount;
@@ -96,7 +96,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 
 		//traversing FK relationship(s)
 		List<String> fieldPath = new List<String>();
-		Schema.sObjectType lastSObjectType = table;
+		Schema.SObjectType lastSObjectType = table;
 		Iterator<String> i = fieldName.split('\\.').iterator();
 		while(i.hasNext()){
 			String field = i.next();
@@ -107,7 +107,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 				fflib_SecurityUtils.checkFieldIsReadable(lastSObjectType, token);
 			}
 
-			if(token != null && i.hasNext() && tokenDescribe.getSOAPType() == Schema.SOAPType.ID){
+			if(token != null && i.hasNext() && tokenDescribe.getSoapType() == Schema.SoapType.ID){
 				lastSObjectType = tokenDescribe.getReferenceTo()[0]; //if it's polymorphic doesn't matter which one we get
 				fieldPath.add(tokenDescribe.getRelationshipName());
 			}else if(token != null && !i.hasNext()){
@@ -137,14 +137,14 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * This method will never return true if the provided object is not an instance of fflib_QueryFactory. 
 	 * @param obj the object to check equality of.
 	**/
-	public boolean equals(Object obj){
+	public Boolean equals(Object obj){
 		if( !(obj instanceof fflib_QueryFactory) || ((fflib_QueryFactory)obj).table != this.table || ((fflib_QueryFactory)obj).fields.size() != this.fields.size() )
 			return false;
 		return ((fflib_QueryFactory)obj).toSOQL() == this.toSOQL();
 	}
 
 	/**
-	 * Construct a new fflib_QueryFactory instance with no options other than the FROM caluse. 
+	 * Construct a new fflib_QueryFactory instance with no options other than the FROM clause.
 	 * You *must* call selectField(s) before {@link #toSOQL} will return a valid, runnable query.
 	 * @param table	the SObject to be used in the FROM clause of the resultant query. This sets the value of {@link #table}.
 	**/
@@ -191,7 +191,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * Sets a flag to indicate that this query should have ordered
 	 * query fields in the select statement (this at a small cost to performance).
 	 * If you are processing large query sets, you should switch this off.
-	 * @param whether or not select fields should be sorted in the soql statement.
+	 * @param doSort whether or not select fields should be sorted in the soql statement.
 	 **/
 	public fflib_QueryFactory setSortSelectFields(Boolean doSort){
 		this.sortSelectFields = doSort;
@@ -208,7 +208,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		return this;
 	} 
 	/**
-	 * Selects a field, avoiding the possible ambiguitiy of String API names.
+	 * Selects a field, avoiding the possible ambiguity of String API names.
 	 * @see #selectField(String)
 	 * @param field the {@link Schema.SObjectField} to select with this query.
 	 * @exception InvalidFieldException If the field is null {@code field}.
@@ -242,7 +242,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	}
 	/**
 	 * Selects multiple fields. This acts the same as calling {@link #selectField(Schema.SObjectField)} multiple times.
-	 * @param fieldNames the set of {@link Schema.SObjectField}s to select.
+	 * @param fields the set of {@link Schema.SObjectField}s to select.
 	 * @exception InvalidFieldException if the fields are null {@code fields}.
 	**/
 	public fflib_QueryFactory selectFields(Set<Schema.SObjectField> fields){
@@ -257,7 +257,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	}
 	/**
 	 * Selects multiple fields. This acts the same as calling {@link #selectField(Schema.SObjectField)} multiple times.
-	 * @param fieldNames the set of {@link Schema.SObjectField}s to select.
+	 * @param fields the set of {@link Schema.SObjectField}s to select.
 	 * @exception InvalidFieldException if the fields are null {@code fields}.	 
 	**/
 	public fflib_QueryFactory selectFields(List<Schema.SObjectField> fields){
@@ -277,7 +277,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		return selectFieldSet(fieldSet,true);
 	}
 	/**
-	 * This is equivielent to iterating the fields in the field set and calling {@link #selectField(String)} on each.
+	 * This is equivalent to iterating the fields in the field set and calling {@link #selectField(String)} on each.
 	 * @param fieldSet Select all fields included in the field set. 
 	 * @param allowCrossObject if false this method will throw an exception if any fields in the field set reference fields on a related record.
 	 * @exception InvalidFieldSetException if the fieldset is invalid for table {@code fields}.	 
@@ -306,7 +306,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		return this.conditionExpression;
 	}
 	/**
-	 * @param limitCount if not null causes a LIMIT caluse to be added to the resulting query.
+	 * @param limitCount if not null causes a LIMIT clause to be added to the resulting query.
 	**/
 	public fflib_QueryFactory setLimit(Integer limitCount){
 		this.limitCount = limitCount;
@@ -319,7 +319,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		return this.limitCount;
 	}
 	/**
-	 * @param offsetCount if not null causes a OFFSET caluse to be added to the resulting query.
+	 * @param offsetCount if not null causes a OFFSET clause to be added to the resulting query.
 	**/
 	public fflib_QueryFactory setOffset(Integer offsetCount){
 		this.offsetCount = offsetCount;
@@ -448,7 +448,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			return subselectQueryMap.get(relationship);
 		}
 		
-		fflib_QueryFactory subselectQuery = new fflib_QueryFactory(relationship);
+		fflib_QueryFactory subSelectQuery = new fflib_QueryFactory(relationship);
 		
 		//The child queryFactory should be configured in the same way as the parent by default - can override after if required
 		subSelectQuery.setSortSelectFields(sortSelectFields);
@@ -474,7 +474,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * Get the ChildRelationship from the Table for the object type passed in.
 	 * @param objType The object type of the child relationship to get
 	**/
- 	private Schema.ChildRelationship getChildRelationship(sObjectType objType){
+ 	private Schema.ChildRelationship getChildRelationship(SObjectType objType){
         for (Schema.ChildRelationship childRow : table.getDescribe().getChildRelationships()){
         	//occasionally on some standard objects (Like Contact child of Contact) do not have a relationship name.  
         	//if there is no relationship name, we cannot query on it, so throw an exception.
@@ -506,7 +506,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * so that they are applied to the SOQL in the same order that they
 	 * were added in. 
 	 * @param fieldName The string value of the field to be sorted on
-	 * @param SortOrder the direction to be sorted on (ASCENDING or DESCENDING)
+	 * @param direction the direction to be sorted on (ASCENDING or DESCENDING)
 	 * @param nullsLast whether to sort null values last (NULLS LAST keyword included).
 	**/  
     public fflib_QueryFactory addOrdering(String fieldName, SortOrder direction, Boolean nullsLast){
@@ -523,8 +523,8 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * by the same field one time.  The sort expressions are stored in a list
 	 * so that they are applied to the SOQL in the same order that they
 	 * were added in. 
-	 * @param field The SObjectfield to sort.  This can only be a direct reference.
-	 * @param SortOrder the direction to be sorted on (ASCENDING or DESCENDING)
+	 * @param field The SObjectField to sort.  This can only be a direct reference.
+	 * @param direction the direction to be sorted on (ASCENDING or DESCENDING)
 	 * @param nullsLast whether to sort null values last (NULLS LAST keyword included).
 	**/
     public fflib_QueryFactory addOrdering(SObjectField field, SortOrder direction, Boolean nullsLast){
@@ -544,7 +544,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * The "NULLS FIRST" keywords will be included by default.  If "NULLS LAST" 
 	 * is required, use one of the overloaded addOrdering methods which include this parameter.
 	 * @param fieldName The string value of the field to be sorted on
-	 * @param SortOrder the direction to be sorted on (ASCENDING or DESCENDING)
+	 * @param direction the direction to be sorted on (ASCENDING or DESCENDING)
 	**/  
     public fflib_QueryFactory addOrdering(String fieldName, SortOrder direction){
 		order.add(
@@ -562,8 +562,8 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * were added in. 
 	 * The "NULLS FIRST" keywords will be included by default.  If "NULLS LAST" 
 	 * is required, use one of the overloaded addOrdering methods which include this parameter.
-	 * @param field The SObjectfield to sort.  This can only be a direct reference.
-	 * @param SortOrder the direction to be sorted on (ASCENDING or DESCENDING)
+	 * @param field The SObjectField to sort.  This can only be a direct reference.
+	 * @param direction the direction to be sorted on (ASCENDING or DESCENDING)
 	**/
     public fflib_QueryFactory addOrdering(SObjectField field, SortOrder direction){
 		order.add(
@@ -580,7 +580,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * so that they are applied to the SOQL in the same order that they
 	 * were added in.
 	 * @param fieldName The string value of the field to be sorted on
-	 * @param SortOrder the direction to be sorted on (ASCENDING or DESCENDING)
+	 * @param direction the direction to be sorted on (ASCENDING or DESCENDING)
 	 * @param nullsLast whether to sort null values last (NULLS LAST keyword included).
 	**/
 	public fflib_QueryFactory setOrdering(String fieldName, SortOrder direction, Boolean nullsLast){
@@ -590,13 +590,13 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 
 	/**
 	 * Remove existing ordering and set a field to be sorted on.  This may be a direct field or a field
-	 * related through an object lookup or masterdetail relationship.
+	 * related through an object lookup or master-detail relationship.
 	 * Use the set to store unique field names, since we only want to sort
 	 * by the same field one time.  The sort expressions are stored in a list
 	 * so that they are applied to the SOQL in the same order that they
 	 * were added in.
-	 * @param field The SObjectfield to sort.  This can only be a direct reference.
-	 * @param SortOrder the direction to be sorted on (ASCENDING or DESCENDING)
+	 * @param field The SObjectField to sort.  This can only be a direct reference.
+	 * @param direction the direction to be sorted on (ASCENDING or DESCENDING)
 	 * @param nullsLast whether to sort null values last (NULLS LAST keyword included).
 	**/
 	public fflib_QueryFactory setOrdering(SObjectField field, SortOrder direction, Boolean nullsLast){
@@ -612,7 +612,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * so that they are applied to the SOQL in the same order that they
 	 * were added in.
 	 * @param fieldName The string value of the field to be sorted on
-	 * @param SortOrder the direction to be sorted on (ASCENDING or DESCENDING)
+	 * @param direction the direction to be sorted on (ASCENDING or DESCENDING)
 	**/
 	public fflib_QueryFactory setOrdering(String fieldName, SortOrder direction){
 		Ordering ordr = new Ordering(getFieldPath(fieldName), direction);
@@ -621,13 +621,13 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 
 	/**
 	 * Remove existing ordering and set a field to be sorted on.  This may be a direct field or a field
-	 * related through an object lookup or masterdetail relationship.
+	 * related through an object lookup or master-detail relationship.
 	 * Use the set to store unique field names, since we only want to sort
 	 * by the same field one time.  The sort expressions are stored in a list
 	 * so that they are applied to the SOQL in the same order that they
 	 * were added in.
-	 * @param field The SObjectfield to sort.  This can only be a direct reference.
-	 * @param SortOrder the direction to be sorted on (ASCENDING or DESCENDING)
+	 * @param field The SObjectField to sort.  This can only be a direct reference.
+	 * @param direction the direction to be sorted on (ASCENDING or DESCENDING)
 	**/
 	public fflib_QueryFactory setOrdering(SObjectField field, SortOrder direction){
 		Ordering ordr = new Ordering(getFieldTokenPath(field), direction);
@@ -728,11 +728,11 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		public Ordering(Schema.SObjectField field, SortOrder direction, Boolean nullsLast){
 			this(fflib_QueryFactory.getFieldTokenPath(field), direction, nullsLast);
 		}
-		@testVisible
+		@TestVisible
 		private Ordering(String field, SortOrder direction){
 			this(field, direction, false);
 		}
-		@testVisible
+		@TestVisible
 		private Ordering(String field, SortOrder direction, Boolean nullsLast){
 			this.direction = direction;
 			this.field = field;
@@ -754,7 +754,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	public class InvalidFieldException extends Exception{
 		private String fieldName;
 		private Schema.SObjectType objectType;
-		public InvalidFieldException(String fieldname, Schema.SObjectType objectType){
+		public InvalidFieldException(String fieldName, Schema.SObjectType objectType){
 			this.objectType = objectType;
 			this.fieldName = fieldName;
 			this.setMessage( 'Invalid field \''+fieldName+'\' for object \''+objectType+'\'' );

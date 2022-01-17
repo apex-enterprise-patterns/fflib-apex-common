@@ -40,7 +40,7 @@ public class fflib_SObjectDescribe {
 	//internal implementation details
 	private Schema.SObjectType token;
 	private Schema.SObjectField nameField;
-	private Schema.DescribeSObjectResult describe { //lazy load - keep this leightweight until we need more data
+	private Schema.DescribeSObjectResult describe { //lazy load - keep this lightweight until we need more data
 		get{
 			if(describe == null)
 				describe = token.getDescribe();
@@ -77,8 +77,6 @@ public class fflib_SObjectDescribe {
 	private fflib_SObjectDescribe(Schema.SObjectType token){	
 		if(token == null)
 			throw new InvalidDescribeException('Invalid SObject type: null');
-		if(instanceCache.containsKey( String.valueOf(token) ))
-			throw new DuplicateDescribeException(token + ' is already in the describe cache');
 		this.token = token;
 		instanceCache.put( String.valueOf(token).toLowerCase() , this);
 	}
@@ -101,7 +99,7 @@ public class fflib_SObjectDescribe {
 	 * Additionally it handles finding the correct SObjectField for relationship notation,
 	 * e.g. getting the Account field on Contact would fail without being referenced as AccountId - both work here.
 	**/
-	public Schema.SObjectField getField(String fieldName, boolean implyNamespace){
+	public Schema.SObjectField getField(String fieldName, Boolean implyNamespace){
 		Schema.SObjectField result = wrappedFields.get( 
 			(fieldName.endsWithIgnoreCase('__r') ? //resolve custom field cross-object (__r) syntax
 			(fieldName.removeEndIgnoreCase('__r')+'__c') :
@@ -170,7 +168,7 @@ public class fflib_SObjectDescribe {
 		set;
 	}
 	/**
-	 * This is used to cache fflib_SObjectDescribe instances as they're consutrcted
+	 * This is used to cache fflib_SObjectDescribe instances as they're constructed
 	 * to prevent repeatedly re-constructing the same type.
 	 * These instances are not guaranteed to be, but typically will be, unique per sObject type due to the presence of flushCache.
 	**/
@@ -207,13 +205,13 @@ public class fflib_SObjectDescribe {
 			return null;
 		fflib_SObjectDescribe result = instanceCache.get(nativeDescribe.getName().toLowerCase());
 		if(result == null)
-			result = new fflib_SObjectDescribe(nativeDescribe.getSobjectType());		
+			result = new fflib_SObjectDescribe(nativeDescribe.getSObjectType());
 		return result;
 	}
 	public static fflib_SObjectDescribe getDescribe(SObject instance){
 		if(instance == null)
 			return null;
-		return getDescribe(instance.getSobjectType());
+		return getDescribe(instance.getSObjectType());
 	}
 
 	//returns the same results as the native method, just with caching built in to avoid limits
@@ -236,20 +234,20 @@ public class fflib_SObjectDescribe {
 	 * handling implicit namespace behavior like pre-APIv29 did, while also allowing fully qualified references.
 	 * Note that this requires the API version of fflib_SObjectDescribe to be 29 or higher to function properly.
  	 *
-	 * Due to the lack of language support for covariant return types sublasses are responsible for implementing the get methods.
+	 * Due to the lack of language support for covariant return types subclasses are responsible for implementing the get methods.
 	 * A minimal implementation of these would be a cast and returning getObject's result.
 	**/
 	private abstract class NamespacedAttributeMap{
-		@testVisible
+		@TestVisible
 		protected String currentNamespace;
 		protected Map<String,Object> values;
 
 		protected NamespacedAttributeMap(Map<String,Object> values){
-			//namespace detection courtesey http://salesforce.stackexchange.com/a/28977/60
+			//namespace detection courtesy http://salesforce.stackexchange.com/a/28977/60
 			currentNamespace = fflib_SObjectDescribe.class.getName().substringBefore('fflib_SObjectDescribe').removeEnd('.').toLowerCase();
 			this.values = values;
 		}
-		//A no-args constructor to allow subclasses with different contructor signatures
+		//A no-args constructor to allow subclasses with different constructor signatures
 		protected NamespacedAttributeMap(){
 			this(new Map<String,Object>());
 		}
@@ -316,7 +314,7 @@ public class fflib_SObjectDescribe {
 	**/
 	public class FieldsMap extends NamespacedAttributeMap{
 
-		@testVisible
+		@TestVisible
 		private FieldsMap(Map<String,Schema.SObjectField> values){
 			super(values);
 		}
@@ -336,7 +334,7 @@ public class fflib_SObjectDescribe {
 	 * A subclass of NamespacedAttributeMap for handling the data returned by #Schema.getGlobalDescribe
 	**/
 	public class GlobalDescribeMap extends NamespacedAttributeMap{
-		@testVisible
+		@TestVisible
 		private GlobalDescribeMap(Map<String,Schema.SObjectType> values){
 			super(values);
 		}
@@ -354,6 +352,6 @@ public class fflib_SObjectDescribe {
 
 
 	public abstract class DescribeException extends Exception{}
-	public class DuplicateDescribeException extends DescribeException{} //Test coverage for this requires APIv28's @testVisbile annotation to force exception cases.
+	public class DuplicateDescribeException extends DescribeException{} //Test coverage for this requires APIv28's @testVisible annotation to force exception cases.
 	public class InvalidDescribeException extends DescribeException{}
 }

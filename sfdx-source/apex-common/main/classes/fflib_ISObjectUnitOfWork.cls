@@ -43,29 +43,29 @@ public interface fflib_ISObjectUnitOfWork
     void registerNew(List<SObject> records);
     /**
      * Register a newly created SObject instance to be inserted when commitWork is called,
-     *   you may also provide a reference to the parent record instance (should also be registered as new separatly)
+     *   you may also provide a reference to the parent record instance (should also be registered as new separately)
      *
      * @param record A newly created SObject instance to be inserted during commitWork
      * @param relatedToParentField A SObjectField reference to the child field that associates the child record with its parent
-     * @param relatedToParentRecord A SObject instance of the parent record (should also be registered as new separatly)
+     * @param relatedToParentRecord A SObject instance of the parent record (should also be registered as new separately)
      **/
-    void registerNew(SObject record, Schema.sObjectField relatedToParentField, SObject relatedToParentRecord);
+    void registerNew(SObject record, Schema.SObjectField relatedToParentField, SObject relatedToParentRecord);
     /**
      * Register a relationship between two records that have yet to be inserted to the database. This information will be
      *  used during the commitWork phase to make the references only when related records have been inserted to the database.
      *
      * @param record An existing or newly created record
-     * @param relatedToField A SObjectField referene to the lookup field that relates the two records together
-     * @param relatedTo A SOBject instance (yet to be commited to the database)
+     * @param relatedToField A SObjectField reference to the lookup field that relates the two records together
+     * @param relatedTo A SObject instance (yet to be committed to the database)
      */
-    void registerRelationship(SObject record, Schema.sObjectField relatedToField, SObject relatedTo);
+    void registerRelationship(SObject record, Schema.SObjectField relatedToField, SObject relatedTo);
     /**
      * Registers a relationship between a record and a Messaging.Email where the record has yet to be inserted
      *  to the database.  This information will be
      *  used during the commitWork phase to make the references only when related records have been inserted to the database.
      *
-     * @param a single email message instance
-     * @param relatedTo A SOBject instance (yet to be commited to the database)
+     * @param email a single email message instance
+     * @param relatedTo A SObject instance (yet to be committed to the database)
      */
     void registerRelationship(Messaging.SingleEmailMessage email, SObject relatedTo);
     /**
@@ -75,13 +75,13 @@ public interface fflib_ISObjectUnitOfWork
      * @param record An existing or newly created record
      * @param relatedToField A SObjectField reference to the lookup field that relates the two records together
      * @param externalIdField A SObjectField reference to a field on the target SObject that is marked as isExternalId
-     * @param externalId A Object representing the targetted value of the externalIdField in said lookup
+     * @param externalId A Object representing the targeted value of the externalIdField in said lookup
      *
      * Usage Example: uow.registerRelationship(recordSObject, record_sobject__c.relationship_field__c, lookup_sobject__c.external_id__c, 'abc123');
      *
      * Wraps putSObject, creating a new instance of the lookup sobject using the external id field and value.
      */
-     void registerRelationship(SObject record, Schema.sObjectField relatedToField, Schema.sObjectField externalIdField, Object externalId);
+     void registerRelationship(SObject record, Schema.SObjectField relatedToField, Schema.SObjectField externalIdField, Object externalId);
     /**
      * Register an existing record to be updated during the commitWork method
      *
@@ -89,7 +89,17 @@ public interface fflib_ISObjectUnitOfWork
      **/
     void registerDirty(SObject record);
     /**
-     * Register specific fields on record to be updated when work is commited
+     * Register specific fields on records to be updated when work is committed
+     *
+     * If the records are previously registered as dirty, the dirty fields on the records in this call will overwrite
+     * the values of the previously registered dirty records
+     *
+     * @param records A list of existing records
+     * @param dirtyFields The fields to update if record is already registered
+     **/
+    void registerDirty(List<SObject> records, List<SObjectField> dirtyFields);
+    /**
+     * Register specific fields on record to be updated when work is committed
      *
      * If the record has previously been registered as dirty, the dirty fields on the record in this call will overwrite
      * the values of the previously registered dirty record
@@ -100,13 +110,13 @@ public interface fflib_ISObjectUnitOfWork
     void registerDirty(SObject record, List<SObjectField> dirtyFields);
     /**
      * Register an existing record to be updated when commitWork is called,
-     *   you may also provide a reference to the parent record instance (should also be registered as new separatly)
+     *   you may also provide a reference to the parent record instance (should also be registered as new separately)
      *
      * @param record A newly created SObject instance to be inserted during commitWork
      * @param relatedToParentField A SObjectField reference to the child field that associates the child record with its parent
-     * @param relatedToParentRecord A SObject instance of the parent record (should also be registered as new separatly)
+     * @param relatedToParentRecord A SObject instance of the parent record (should also be registered as new separately)
      **/
-    void registerDirty(SObject record, Schema.sObjectField relatedToParentField, SObject relatedToParentRecord);
+    void registerDirty(SObject record, Schema.SObjectField relatedToParentField, SObject relatedToParentRecord);
     /**
      * Register a list of existing records to be updated during the commitWork method
      *
@@ -158,7 +168,7 @@ public interface fflib_ISObjectUnitOfWork
     /**
      * Register a list of existing records to be deleted and removed from the recycle bin during the commitWork method
      *
-     * @param records A list of existing records
+     * @param record A list of existing records
      **/
     void registerPermanentlyDeleted(SObject record);
     /**
