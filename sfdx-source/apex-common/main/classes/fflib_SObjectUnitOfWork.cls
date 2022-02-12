@@ -401,14 +401,7 @@ public virtual class fflib_SObjectUnitOfWork
      **/
     public void registerDirty(SObject record, Schema.SObjectField relatedToParentField, SObject relatedToParentRecord)
     {
-        if (record.Id == null)
-            throw new UnitOfWorkException('New records cannot be registered as dirty');
-        String sObjectType = record.getSObjectType().getDescribe().getName();
-
-		assertForNonEventSObjectType(sObjectType);
-		assertForSupportedSObjectType(m_dirtyMapByType, sObjectType);
-
-        m_dirtyMapByType.get(sObjectType).put(record.Id, record);
+	    registerDirty(record);
         if (relatedToParentRecord!=null && relatedToParentField!=null)
             registerRelationship(record, relatedToParentField, relatedToParentRecord);
     }
@@ -735,6 +728,7 @@ public virtual class fflib_SObjectUnitOfWork
 		}
 	}
 
+	@TestVisible
 	private void assertForNonEventSObjectType(String sObjectType)
 	{
 		if (sObjectType.length() > 3 && sObjectType.right(3)  == '__e')
@@ -749,6 +743,7 @@ public virtual class fflib_SObjectUnitOfWork
 		}
 	}
 
+	@TestVisible
 	private void assertForEventSObjectType(String sObjectType)
 	{
 		if (sObjectType.length() > 3 && sObjectType.right(3) != '__e')
@@ -762,6 +757,7 @@ public virtual class fflib_SObjectUnitOfWork
 		}
 	}
 
+	@TestVisible
 	private void assertForSupportedSObjectType(Map<String, Object> theMap, String sObjectType)
 	{
 		if (!theMap.containsKey(sObjectType))
