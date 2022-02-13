@@ -36,8 +36,8 @@ public virtual class fflib_Application
 	 **/
 	public virtual class UnitOfWorkFactory
 	{
-		private List<SObjectType> m_objectTypes;
-		private fflib_ISObjectUnitOfWork m_mockUow;
+		protected List<SObjectType> m_objectTypes;
+		protected fflib_ISObjectUnitOfWork m_mockUow;
 
 		/**
 		 * Constructs a Unit Of Work factory
