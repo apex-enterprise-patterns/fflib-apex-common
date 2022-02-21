@@ -122,6 +122,41 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     }
 
     @IsTest
+    private static void testRegisterDeleted()
+    {
+        // GIVEN - two existing records
+        Opportunity opportunity = new Opportunity(Id = fflib_IDGenerator.generate(Schema.Opportunity.SObjectType));
+        Product2 product = new Product2(Id = fflib_IDGenerator.generate(Schema.Product2.SObjectType));
+        MockDML mockDML = new MockDML();
+        fflib_SObjectUnitOfWork unitOfWork = new fflib_SObjectUnitOfWork(MY_SOBJECTS, mockDML);
+
+        // WHEN - we mark the records as deleted
+        unitOfWork.registerDeleted(new List<SObject> { opportunity, product });
+        unitOfWork.commitWork();
+
+        // THEN - the dmlDelete action should be invoked
+        System.assertEquals(new List<SObject> { opportunity, product }, mockDML.recordsForDelete);
+    }
+
+    @IsTest
+    private static void testRegisterPermanentlyDeleted()
+    {
+        // GIVEN - two existing records
+        Opportunity opportunity = new Opportunity(Id = fflib_IDGenerator.generate(Schema.Opportunity.SObjectType));
+        Product2 product = new Product2(Id = fflib_IDGenerator.generate(Schema.Product2.SObjectType));
+        MockDML mockDML = new MockDML();
+        fflib_SObjectUnitOfWork unitOfWork = new fflib_SObjectUnitOfWork(MY_SOBJECTS, mockDML);
+
+        // WHEN - we mark the records as deleted
+        unitOfWork.registerPermanentlyDeleted(new List<SObject> { opportunity, product });
+        unitOfWork.commitWork();
+
+        // THEN - the dmlDelete and emptyRecycleBin actions should be invoked
+        System.assertEquals(new List<SObject> { opportunity, product }, mockDML.recordsForDelete);
+        System.assertEquals(new List<SObject> { opportunity, product }, mockDML.recordsForRecycleBin);
+    }
+
+    @IsTest
     private static void testRegisterEmptyRecycleBin()
     {
         // GIVEN - an existing record of the recycle bin
