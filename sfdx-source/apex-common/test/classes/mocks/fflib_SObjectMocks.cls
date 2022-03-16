@@ -66,6 +66,46 @@ public class fflib_SObjectMocks
 		{
 			return (List<SObject>) mocks.mockNonVoidMethod(this, 'selectSObjectsById', new List<Type> {Set<Id>.class}, new List<Object> {idSet});
 		}
+
+		public fflib_ISObjectSelector enforceFLS()
+		{
+			return null;
+		}
+
+		public fflib_ISObjectSelector ignoreCRUD()
+		{
+			return null;
+		}
+
+		public fflib_ISObjectSelector includeFieldSetFields()
+		{
+			return null;
+		}
+
+		public fflib_ISObjectSelector setOffset(Integer queryOffset)
+		{
+			return null;
+		}
+
+		public fflib_ISObjectSelector unsortedSelectFields()
+		{
+			return null;
+		}
+
+		public fflib_ISObjectSelector setOrdering(fflib_QueryFactory.Ordering ordering)
+		{
+			return null;
+		}
+
+		public fflib_ISObjectSelector setOrdering(List<fflib_QueryFactory.Ordering> ordering)
+		{
+			return null;
+		}
+
+		public fflib_ISObjectSelector setLimit(Integer queryLimit)
+		{
+			return null;
+		}
 	}
 
 	public virtual class SObjectUnitOfWork implements fflib_ISObjectUnitOfWork

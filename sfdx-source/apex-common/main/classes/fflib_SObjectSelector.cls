@@ -195,7 +195,7 @@ public abstract with sharing class fflib_SObjectSelector
     /**
      * @description Set the selector to enforce FLS Security
      **/
-    public fflib_SObjectSelector enforceFLS()
+    public fflib_ISObjectSelector enforceFLS()
     {
         m_enforceFLS = true;
         return this;
@@ -204,7 +204,7 @@ public abstract with sharing class fflib_SObjectSelector
     /**
      * @description Set the selector to automatically include the FieldSet fields when building queries
      **/
-    public fflib_SObjectSelector includeFieldSetFields()
+    public fflib_ISObjectSelector includeFieldSetFields()
     {
         this.m_includeFieldSetFields = true;
         return this;
@@ -214,13 +214,13 @@ public abstract with sharing class fflib_SObjectSelector
      * @description Set the selector to ignore CRUD security
      * @return
      */
-    public fflib_SObjectSelector ignoreCRUD()
+    public fflib_ISObjectSelector ignoreCRUD()
     {
         this.m_enforceCRUD = false;
         return this;
     }
 
-    public fflib_SObjectSelector unsortedSelectFields()
+    public fflib_ISObjectSelector unsortedSelectFields()
     {
         this.m_sortSelectFields = false;
         return this;
@@ -446,9 +446,10 @@ public abstract with sharing class fflib_SObjectSelector
      *
      * @param queryLimit The limit used in the query
      */
-    public void setLimit(Integer queryLimit)
+    public fflib_ISObjectSelector setLimit(Integer queryLimit)
     {
         this.m_limit = queryLimit;
+        return this;
     }
 
     /**
@@ -456,9 +457,10 @@ public abstract with sharing class fflib_SObjectSelector
      *
      * @param queryOffset The offset used in the query
      */
-    public void setOffset(Integer queryOffset)
+    public fflib_ISObjectSelector setOffset(Integer queryOffset)
     {
         this.m_offset = queryOffset;
+        return this;
     }
 
     /**
@@ -482,9 +484,10 @@ public abstract with sharing class fflib_SObjectSelector
      * public fflib_QueryFactory.Ordering largeAccountsFirst =
      *          new fflib_QueryFactory.Ordering(Account.NumberOfEmployees, fflib_QueryFactory.SortOrder.DESCENDING);
      */
-    public void setOrdering(fflib_QueryFactory.Ordering ordering)
+    public fflib_ISObjectSelector setOrdering(fflib_QueryFactory.Ordering ordering)
     {
         this.m_ordering = new List<fflib_QueryFactory.Ordering>{ ordering };
+        return this;
     }
 
     /**
@@ -511,9 +514,10 @@ public abstract with sharing class fflib_SObjectSelector
      *                  new fflib_QueryFactory.Ordering(Account.NumberOfEmployees, fflib_QueryFactory.SortOrder.DESCENDING)
      *          };
      */
-    public void setOrdering(List<fflib_QueryFactory.Ordering> ordering)
+    public fflib_ISObjectSelector setOrdering(List<fflib_QueryFactory.Ordering> ordering)
     {
         this.m_ordering = ordering;
+        return this;
     }
 
     /**

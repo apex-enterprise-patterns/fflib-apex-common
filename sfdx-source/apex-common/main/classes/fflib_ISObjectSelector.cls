@@ -27,6 +27,21 @@
 public interface fflib_ISObjectSelector
 {
 	/**
+	 * Set the selector to enforce FLS Security
+	 */
+	fflib_ISObjectSelector enforceFLS();
+
+	/**
+	 * Set the selector to ignore CRUD security
+	 */
+	fflib_ISObjectSelector ignoreCRUD();
+
+	/**
+     * Set the selector to automatically include the FieldSet fields when building queries
+    **/
+	fflib_ISObjectSelector includeFieldSetFields();
+
+	/**
 	 * Provides the SObjectType for the object the given Selector is providing query logic for
 	 **/
 	Schema.SObjectType sObjectType();
@@ -34,5 +49,26 @@ public interface fflib_ISObjectSelector
 	/**
 	 * Selects by Id records using the fields defined by the Selector configuration
 	 **/
-	List<SObject> selectSObjectsById(Set<Id> idSet);	
+	List<SObject> selectSObjectsById(Set<Id> idSet);
+
+	/**
+     * Sets the default limit for all queries executed by the selector
+     */
+	fflib_ISObjectSelector setLimit(Integer queryLimit);
+
+	/**
+     * Sets the default offset for all queries executed by the selector
+	 */
+	fflib_ISObjectSelector setOffset(Integer queryOffset);
+
+	/**
+	 * Prevents the fields from being sorted
+	 */
+	fflib_ISObjectSelector unsortedSelectFields();
+
+	/**
+	 * Overwrites the selector class level Ordering
+    */
+	fflib_ISObjectSelector setOrdering(fflib_QueryFactory.Ordering ordering);
+	fflib_ISObjectSelector setOrdering(List<fflib_QueryFactory.Ordering> ordering);
 }
