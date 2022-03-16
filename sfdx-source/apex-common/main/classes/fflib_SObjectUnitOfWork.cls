@@ -290,6 +290,37 @@ public virtual class fflib_SObjectUnitOfWork
             registerRelationship(record, relatedToParentField, relatedToParentRecord);
     }
 
+	/**
+	 * Register newly created records to be inserted when commitWork is called,
+	 * it also provides a reference to the single parent record instance (should also be registered as new separately)
+	 *
+	 * @param records newly created records of the same SObjectType to be inserted during commitWork
+	 * @param relatedToParentField A SObjectField reference to the child field that associates the child record with its parent
+	 * @param relatedToParentRecord A SObject instance of the parent record (should also be registered as new separately)
+	 **/
+	public void registerNew(List<SObject> records, Schema.SObjectField relatedToParentField, SObject relatedToParentRecord)
+	{
+		if (records.isEmpty()) return;
+
+		// Only validate the first record, by definition of the method signature all records should be new and of the same type.
+		Schema.SObjectType sObjectType = records.get(0).getSObjectType();
+		String sObjectName = sObjectType.getDescribe().getName();
+		assertForNonEventSObjectType(sObjectName);
+		assertForSupportedSObjectType(m_newListByType, sObjectName);
+
+		for (SObject record : records)
+		{
+			if (record.getSObjectType() != sObjectType)
+				throw new UnitOfWorkException('All records should be of the same SObjectType');
+			if (record.Id != null)
+				throw new UnitOfWorkException('Only new records can be registered as new');
+
+			m_newListByType.get(sObjectName).add(record);
+			if (relatedToParentRecord != null && relatedToParentField != null)
+				registerRelationship(record, relatedToParentField, relatedToParentRecord);
+		}
+	}
+
     /**
      * Register a relationship between two records that have yet to be inserted to the database. This information will be
      *  used during the commitWork phase to make the references only when related records have been inserted to the database.
@@ -416,7 +447,7 @@ public virtual class fflib_SObjectUnitOfWork
      * Register an existing record to be updated when commitWork is called,
      *   you may also provide a reference to the parent record instance (should also be registered as new separately)
      *
-     * @param record A newly created SObject instance to be inserted during commitWork
+     * @param record An existing SObject instance to be updated during commitWork
      * @param relatedToParentField A SObjectField reference to the child field that associates the child record with its parent
      * @param relatedToParentRecord A SObject instance of the parent record (should also be registered as new separately)
      **/
@@ -426,6 +457,37 @@ public virtual class fflib_SObjectUnitOfWork
         if (relatedToParentRecord!=null && relatedToParentField!=null)
             registerRelationship(record, relatedToParentField, relatedToParentRecord);
     }
+
+	/**
+	 * Register existing records to be updated when commitWork is called,
+	 * it provide a reference to the parent record instance (should also be registered as new separately)
+	 *
+	 * @param records Existing records to be updated during commitWork
+	 * @param relatedToParentField A SObjectField reference to the child field that associates the child record with its parent
+	 * @param relatedToParentRecord A SObject instance of the parent record (should also be registered as new separately)
+	 **/
+	public void registerDirty(List<SObject> records, Schema.SObjectField relatedToParentField, SObject relatedToParentRecord)
+	{
+		if (records.isEmpty()) return;
+
+		// Only validate the first record, by definition of the method signature all records should be new and of the same type.
+		Schema.SObjectType sObjectType = records.get(0).getSObjectType();
+		String sObjectName = sObjectType.getDescribe().getName();
+		assertForNonEventSObjectType(sObjectName);
+		assertForSupportedSObjectType(m_dirtyMapByType, sObjectName);
+
+		for (SObject record : records)
+		{
+			if (record.getSObjectType() != sObjectType)
+				throw new UnitOfWorkException('All records should be of the same SObjectType');
+			if (record.Id == null)
+				throw new UnitOfWorkException('New records cannot be registered as dirty');
+
+			m_dirtyMapByType.get(sObjectName).put(record.Id, record);
+			if (relatedToParentRecord != null && relatedToParentField != null)
+				registerRelationship(record, relatedToParentField, relatedToParentRecord);
+		}
+	}
 
     /**
      * Register a list of existing records to be updated during the commitWork method
