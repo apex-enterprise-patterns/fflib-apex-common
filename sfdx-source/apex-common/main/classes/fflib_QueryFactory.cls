@@ -84,7 +84,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	private Schema.ChildRelationship relationship;
 	private Map<Schema.ChildRelationship, fflib_QueryFactory> subselectQueryMap;
 
-	private String getFieldPath(String fieldName){
+	private String getFieldPath(String fieldName, Schema.sObjectType relatedSObjectType){
 		if(!fieldName.contains('.')){ //single field
 			Schema.SObjectField token = fflib_SObjectDescribe.getDescribe(table).getField(fieldName.toLowerCase());
 			if(token == null)
@@ -107,8 +107,21 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 				fflib_SecurityUtils.checkFieldIsReadable(lastSObjectType, token);
 			}
 
-			if(token != null && i.hasNext() && tokenDescribe.getSoapType() == Schema.SoapType.ID){
-				lastSObjectType = tokenDescribe.getReferenceTo()[0]; //if it's polymorphic doesn't matter which one we get
+			if (token != null && i.hasNext() && tokenDescribe.getSoapType() == Schema.SoapType.ID) {
+				List<Schema.sObjectType> relatedObjs = tokenDescribe.getReferenceTo(); //if it's polymorphic, it matters which one we use - i.e. Lead.Owner is GROUP|USER and each has different fields.
+
+				if (relatedObjs.size() == 1 || relatedSObjectType == null) {
+					lastSObjectType = relatedObjs[0]; //caller did not specify the one to use or there's only one so use the first one
+				}
+				else{
+					for (Schema.sObjectType sot : relatedObjs) {
+						if (fflib_SObjectDescribe.getDescribe(sot).getDescribe().getSObjectType() == relatedSObjectType) {
+							lastSObjectType = sot;
+							break;
+						}
+					}
+				}
+
 				fieldPath.add(tokenDescribe.getRelationshipName());
 			}else if(token != null && !i.hasNext()){
 				fieldPath.add(tokenDescribe.getName());
@@ -121,6 +134,10 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		}
 
 		return String.join(fieldPath,'.');
+	}
+	
+	private String getFieldPath(String fieldName) {
+		return this.getFieldPath(fieldName, null);
 	}
 
 	@TestVisible
@@ -197,16 +214,27 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		this.sortSelectFields = doSort;
 		return this;
 	}
-	
 	/**
 	 * Selects a single field from the SObject specified in {@link #table}.
 	 * Selecting fields is idempotent, if this field is already selected calling this method will have no additional impact.
 	 * @param fieldName the API name of the field to add to the query's SELECT clause.
 	 **/
 	public fflib_QueryFactory selectField(String fieldName){ 		
-		fields.add( getFieldPath(fieldName) );
+		fields.add( getFieldPath(fieldName, null) );
 		return this;
-	} 
+	}
+
+	/**
+		* Selects a single field from the SObject specified in {@link #table}.
+		* Selecting fields is idempotent, if this field is already selected calling this method will have no additional impact.
+		* @param fieldName the API name of the field to add to the query's SELECT clause.
+		* @param relatedSObjectType the related sObjectType to resolve polymorphic object fields.
+	 **/
+	public fflib_QueryFactory selectField(String fieldName, Schema.sOBjectType relatedObjectType) {
+		fields.add(getFieldPath(fieldName, relatedObjectType));
+		return this;
+	}
+	
 	/**
 	 * Selects a field, avoiding the possible ambiguity of String API names.
 	 * @see #selectField(String)
@@ -760,6 +788,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			this.setMessage( 'Invalid field \''+fieldName+'\' for object \''+objectType+'\'' );
 		}
 	}
+
 	public class InvalidFieldSetException extends Exception{}
 	public class NonReferenceFieldException extends Exception{}
 	public class InvalidSubqueryRelationshipException extends Exception{}	
