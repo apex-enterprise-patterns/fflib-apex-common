@@ -429,7 +429,7 @@ public abstract with sharing class fflib_SObjectSelector
     /**
      * Constructs the default SOQL query for this selector, see selectSObjectsById and queryLocatorById
      **/    
-    private String buildQuerySObjectById()
+    protected String buildQuerySObjectById()
     {   
         return newQueryFactory().setCondition('id in :idSet').toSOQL();
     }
