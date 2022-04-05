@@ -46,6 +46,16 @@ public class fflib_SObjectMocks
 		{
 			return (List<SObject>) mocks.mockNonVoidMethod(this, 'getRecords', new List<Type> {}, new List<Object> {});
 		}
+
+		public Object getType()
+		{
+			return sObjectType();
+		}
+
+		public List<Object> getObjects()
+		{
+			return getRecords();
+		}
 	}
 
 	public virtual class SObjectSelector implements fflib_ISObjectSelector
