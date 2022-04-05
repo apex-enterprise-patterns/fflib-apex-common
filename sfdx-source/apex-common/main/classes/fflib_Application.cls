@@ -168,6 +168,20 @@ public virtual class fflib_Application
 			return serviceImpl.newInstance();
 		}
 
+		/**
+		 * Creates or replaces an existing binding for another
+		 *
+		 * @param serviceInterfaceType The Interface type to replace its implementation
+		 * @param replacementImplType The implementation type of the replacement
+		 */
+		public virtual void replaceWith(Type serviceInterfaceType, Type replacementImplType)
+		{
+			this.m_serviceInterfaceTypeByServiceImplType.put(
+					serviceInterfaceType,
+					replacementImplType
+			);
+		}
+
 		@TestVisible
 		protected virtual void setMock(Type serviceInterfaceType, Object serviceImpl)
 		{
@@ -268,6 +282,17 @@ public virtual class fflib_Application
 					relatedIds.add(relatedId);
 			}
 			return selectById(relatedIds);
+		}
+
+		/**
+		 * Creates or replaces an existing binding for another
+		 *
+		 * @param sObjectType The SObjectType of the selector to replace
+		 * @param replacementImplType The implementation type of the replacement
+		 */
+		public virtual void replaceWith(SObjectType sObjectType, Type replacementImplType)
+		{
+			this.m_sObjectBySelectorType.put(sObjectType, replacementImplType);
 		}
 
 		@TestVisible
@@ -410,6 +435,28 @@ public virtual class fflib_Application
 					(List<Object>) records,
 					(Object) domainSObjectType
 			);
+		}
+
+		/**
+		 * Creates or replaces an existing binding for another
+		 *
+		 * @param sObjectType The SObjectType of the domain to replace
+		 * @param replacementImplType The implementation type of the replacement
+		 */
+		public virtual void replaceWith(SObjectType sObjectType, Type replacementImplType)
+		{
+			replaceWith((Object) sObjectType, replacementImplType);
+		}
+
+		/**
+		 * Creates or replaces an existing binding for another
+		 *
+		 * @param objectType The objectType of the domain to replace
+		 * @param replacementImplType The implementation type of the replacement
+		 */
+		public virtual void replaceWith(Object objectType, Type replacementImplType)
+		{
+			this.constructorTypeByObject.put( objectType, replacementImplType);
 		}
 
 		@TestVisible
