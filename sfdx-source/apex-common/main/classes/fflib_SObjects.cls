@@ -257,11 +257,10 @@ public virtual class fflib_SObjects
 		{
 			for (SObjectField sObjectField : sObjectFields)
 			{
-				if (String.isNotBlank((String) record.get(sObjectField)))
-				{
-					result.add(record);
-					break;
-				}
+				if (String.isNotBlank((String) record.get(sObjectField))) continue;
+
+				result.add(record);
+				break;
 			}
 		}
 		return result;
