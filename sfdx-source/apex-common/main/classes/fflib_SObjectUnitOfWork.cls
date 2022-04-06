@@ -196,7 +196,7 @@ public virtual class fflib_SObjectUnitOfWork
     /**
      * Register a generic piece of work to be invoked during the commitWork phase
      **/
-    public void registerWork(IDoWork work)
+    public virtual void registerWork(IDoWork work)
     {
         m_workList.add(work);
     }
@@ -204,7 +204,7 @@ public virtual class fflib_SObjectUnitOfWork
     /**
      * Registers the given email to be sent during the commitWork
      **/
-    public void registerEmail(Messaging.Email email)
+    public virtual void registerEmail(Messaging.Email email)
     {
         m_emailWork.registerEmail(email);
     }
@@ -214,7 +214,7 @@ public virtual class fflib_SObjectUnitOfWork
 	 *
 	 * @param record An deleted record
 	 **/
-	public void registerEmptyRecycleBin(SObject record)
+	public virtual void registerEmptyRecycleBin(SObject record)
 	{
 		String sObjectType = record.getSObjectType().getDescribe().getName();
 		assertForSupportedSObjectType(m_emptyRecycleBinMapByType, sObjectType);
@@ -227,7 +227,7 @@ public virtual class fflib_SObjectUnitOfWork
 	 *
 	 * @param records Deleted records
 	 **/
-	public void registerEmptyRecycleBin(List<SObject> records)
+	public virtual void registerEmptyRecycleBin(List<SObject> records)
 	{
 		for (SObject record : records)
 		{
@@ -240,7 +240,7 @@ public virtual class fflib_SObjectUnitOfWork
      *
      * @param record A newly created SObject instance to be inserted during commitWork
      **/
-    public void registerNew(SObject record)
+    public virtual void registerNew(SObject record)
     {
         registerNew(record, null, null);
     }
@@ -250,7 +250,7 @@ public virtual class fflib_SObjectUnitOfWork
      *
      * @param records A list of newly created SObject instances to be inserted during commitWork
      **/
-    public void registerNew(List<SObject> records)
+    public virtual void registerNew(List<SObject> records)
     {
         for (SObject record : records)
         {
@@ -266,7 +266,7 @@ public virtual class fflib_SObjectUnitOfWork
      * @param relatedToParentField A SObjectField reference to the child field that associates the child record with its parent
      * @param relatedToParentRecord A SObject instance of the parent record (should also be registered as new separately)
      **/
-    public void registerNew(SObject record, Schema.SObjectField relatedToParentField, SObject relatedToParentRecord)
+    public virtual void registerNew(SObject record, Schema.SObjectField relatedToParentField, SObject relatedToParentRecord)
     {
         if (record.Id != null)
             throw new UnitOfWorkException('Only new records can be registered as new');
@@ -288,7 +288,7 @@ public virtual class fflib_SObjectUnitOfWork
      * @param relatedToField A SObjectField reference to the lookup field that relates the two records together
      * @param relatedTo A SObject instance (yet to be committed to the database)
      */
-    public void registerRelationship(SObject record, Schema.SObjectField relatedToField, SObject relatedTo)
+    public virtual void registerRelationship(SObject record, Schema.SObjectField relatedToField, SObject relatedTo)
     {
         String sObjectType = record.getSObjectType().getDescribe().getName();
 
@@ -306,7 +306,7 @@ public virtual class fflib_SObjectUnitOfWork
      * @param email a single email message instance
      * @param relatedTo A SObject instance (yet to be committed to the database)
      */
-    public void registerRelationship( Messaging.SingleEmailMessage email, SObject relatedTo )
+    public virtual void registerRelationship( Messaging.SingleEmailMessage email, SObject relatedTo )
     {
         m_relationships.get( Messaging.SingleEmailMessage.class.getName() ).add(email, relatedTo);
     }
@@ -324,7 +324,7 @@ public virtual class fflib_SObjectUnitOfWork
      *
      * Wraps putSObject, creating a new instance of the lookup sobject using the external id field and value.
      */
-    public void registerRelationship(SObject record, Schema.SObjectField relatedToField, Schema.SObjectField externalIdField, Object externalId)
+    public virtual void registerRelationship(SObject record, Schema.SObjectField relatedToField, Schema.SObjectField externalIdField, Object externalId)
     {
         // NOTE: Due to the lack of ExternalID references on Standard Objects, this method can not be provided a standardized Unit Test. - Rick Parker
         String sObjectType = record.getSObjectType().getDescribe().getName();
@@ -338,7 +338,7 @@ public virtual class fflib_SObjectUnitOfWork
      *
      * @param record An existing record
      **/
-    public void registerDirty(SObject record)
+    public virtual void registerDirty(SObject record)
     {
         registerDirty(record, new List<SObjectField>());
     }
@@ -349,7 +349,7 @@ public virtual class fflib_SObjectUnitOfWork
      * @param records SObjects to register as dirty
      * @param dirtyFields A list of modified fields
      */
-    public void registerDirty(List<SObject> records, List<SObjectField> dirtyFields)
+    public virtual void registerDirty(List<SObject> records, List<SObjectField> dirtyFields)
     {
 	    for (SObject record : records)
 	    {
@@ -363,7 +363,7 @@ public virtual class fflib_SObjectUnitOfWork
 	 * @param record SObject to register as dirty
 	 * @param dirtyFields A list of modified fields
 	 */
-    public void registerDirty(SObject record, List<SObjectField> dirtyFields)
+    public virtual void registerDirty(SObject record, List<SObjectField> dirtyFields)
     {
         if (record.Id == null)
             throw new UnitOfWorkException('New records cannot be registered as dirty');
@@ -399,7 +399,7 @@ public virtual class fflib_SObjectUnitOfWork
      * @param relatedToParentField A SObjectField reference to the child field that associates the child record with its parent
      * @param relatedToParentRecord A SObject instance of the parent record (should also be registered as new separately)
      **/
-    public void registerDirty(SObject record, Schema.SObjectField relatedToParentField, SObject relatedToParentRecord)
+    public virtual void registerDirty(SObject record, Schema.SObjectField relatedToParentField, SObject relatedToParentRecord)
     {
 	    registerDirty(record);
         if (relatedToParentRecord!=null && relatedToParentField!=null)
@@ -411,7 +411,7 @@ public virtual class fflib_SObjectUnitOfWork
      *
      * @param records A list of existing records
      **/
-    public void registerDirty(List<SObject> records)
+    public virtual void registerDirty(List<SObject> records)
     {
         for (SObject record : records)
         {
@@ -424,7 +424,7 @@ public virtual class fflib_SObjectUnitOfWork
      *
      * @param record A new or existing record
      **/
-    public void registerUpsert(SObject record)
+    public virtual void registerUpsert(SObject record)
     {
         if (record.Id == null) 
         {
@@ -441,7 +441,7 @@ public virtual class fflib_SObjectUnitOfWork
      *
      * @param records A list of mix of new and existing records
      **/
-    public void registerUpsert(List<SObject> records)
+    public virtual void registerUpsert(List<SObject> records)
     {
         for (SObject record : records)
         {
@@ -454,7 +454,7 @@ public virtual class fflib_SObjectUnitOfWork
      *
      * @param record An existing record
      **/
-    public void registerDeleted(SObject record)
+    public virtual void registerDeleted(SObject record)
     {
         if (record.Id == null)
             throw new UnitOfWorkException('New records cannot be registered for deletion');
@@ -471,7 +471,7 @@ public virtual class fflib_SObjectUnitOfWork
      *
      * @param records A list of existing records
      **/
-    public void registerDeleted(List<SObject> records)
+    public virtual void registerDeleted(List<SObject> records)
     {
         for (SObject record : records)
         {
@@ -484,7 +484,7 @@ public virtual class fflib_SObjectUnitOfWork
      *
      * @param records A list of existing records
      **/
-    public void registerPermanentlyDeleted(List<SObject> records)
+    public virtual void registerPermanentlyDeleted(List<SObject> records)
     {
 	    this.registerEmptyRecycleBin(records);
 	    this.registerDeleted(records);
@@ -495,7 +495,7 @@ public virtual class fflib_SObjectUnitOfWork
      *
      * @param record A list of existing records
      **/
-    public void registerPermanentlyDeleted(SObject record)
+    public virtual void registerPermanentlyDeleted(SObject record)
     {
 	    this.registerEmptyRecycleBin(record);
         this.registerDeleted(record);
@@ -506,7 +506,7 @@ public virtual class fflib_SObjectUnitOfWork
      *
      * @param record A newly created SObject (Platform Event) instance to be inserted during commitWork
      **/
-    public void registerPublishBeforeTransaction(SObject record)
+    public virtual void registerPublishBeforeTransaction(SObject record)
     {
         String sObjectType = record.getSObjectType().getDescribe().getName();
 
@@ -521,7 +521,7 @@ public virtual class fflib_SObjectUnitOfWork
      *
      * @param records A list of existing records
      **/
-    public void registerPublishBeforeTransaction(List<SObject> records)
+    public virtual void registerPublishBeforeTransaction(List<SObject> records)
     {
         for (SObject record : records)
         {
@@ -534,7 +534,7 @@ public virtual class fflib_SObjectUnitOfWork
      *
      * @param record A newly created SObject (Platform Event) instance to be inserted during commitWork
      **/
-    public void registerPublishAfterSuccessTransaction(SObject record)
+    public virtual void registerPublishAfterSuccessTransaction(SObject record)
     {
         String sObjectType = record.getSObjectType().getDescribe().getName();
 
@@ -549,7 +549,7 @@ public virtual class fflib_SObjectUnitOfWork
      *
      * @param records A list of existing records
      **/
-    public void registerPublishAfterSuccessTransaction(List<SObject> records)
+    public virtual void registerPublishAfterSuccessTransaction(List<SObject> records)
     {
         for (SObject record : records)
         {
@@ -561,7 +561,7 @@ public virtual class fflib_SObjectUnitOfWork
      *
      * @param record A newly created SObject (Platform Event) instance to be inserted during commitWork
      **/
-    public void registerPublishAfterFailureTransaction(SObject record)
+    public virtual void registerPublishAfterFailureTransaction(SObject record)
     {
         String sObjectType = record.getSObjectType().getDescribe().getName();
 
@@ -576,7 +576,7 @@ public virtual class fflib_SObjectUnitOfWork
      *
      * @param records A list of existing records
      **/
-    public void registerPublishAfterFailureTransaction(List<SObject> records)
+    public virtual void registerPublishAfterFailureTransaction(List<SObject> records)
     {
         for (SObject record : records)
         {
@@ -587,7 +587,7 @@ public virtual class fflib_SObjectUnitOfWork
     /**
      * Takes all the work that has been registered with the UnitOfWork and commits it to the database
      **/
-	public void commitWork()
+	public virtual void commitWork()
 	{
 		Savepoint sp = Database.setSavepoint();
 		Boolean wasSuccessful = false;
