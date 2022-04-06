@@ -252,10 +252,7 @@ public virtual class fflib_SObjectUnitOfWork
      **/
     public void registerNew(List<SObject> records)
     {
-        for (SObject record : records)
-        {
-            registerNew(record, null, null);
-        }
+	    registerNew(records, null, null);
     }
 
     /**
@@ -268,16 +265,7 @@ public virtual class fflib_SObjectUnitOfWork
      **/
     public void registerNew(SObject record, Schema.SObjectField relatedToParentField, SObject relatedToParentRecord)
     {
-        if (record.Id != null)
-            throw new UnitOfWorkException('Only new records can be registered as new');
-        String sObjectType = record.getSObjectType().getDescribe().getName();
-
-		assertForNonEventSObjectType(sObjectType);
-		assertForSupportedSObjectType(m_newListByType, sObjectType);
-
-        m_newListByType.get(sObjectType).add(record);
-        if (relatedToParentRecord!=null && relatedToParentField!=null)
-            registerRelationship(record, relatedToParentField, relatedToParentRecord);
+	    registerNew(new List<SObject> {record}, relatedToParentField, relatedToParentRecord);
     }
 
 	/**
