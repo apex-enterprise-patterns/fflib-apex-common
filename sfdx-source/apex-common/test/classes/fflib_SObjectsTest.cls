@@ -111,6 +111,46 @@ private class fflib_SObjectsTest
 	}
 
 	@IsTest
+	static void itShouldSetFieldByIdField()
+	{
+		final Id accountId = fflib_IDGenerator.generate(Account.SObjectType);
+		Account record = new Account(Id = accountId, Name = '');
+		fflib_SObjects domain = new fflib_SObjects(new List<SObject>{ record });
+
+		final String accountName = 'Hello';
+		domain.setFieldValue(
+				Schema.Account.Id,
+				Schema.Account.Name,
+				new Map<Id, String>
+				{
+						accountId => accountName
+				}
+		);
+
+		System.assertEquals(accountName, domain.getRecords().get(0).get(Schema.Account.Name));
+	}
+
+	@IsTest
+	static void itShouldSetFieldByStringField()
+	{
+		Account record = new Account(Name = 'Hello', Rating = 'Cold');
+		fflib_SObjects domain = new fflib_SObjects(new List<SObject>{ record });
+
+		final String accountName = 'Hello';
+		final String accountRating = 'Warm';
+		domain.setFieldValue(
+				Schema.Account.Name,
+				Schema.Account.Rating,
+				new Map<String, String>
+				{
+						accountName => accountRating
+				}
+		);
+
+		System.assertEquals(accountRating, domain.getRecords().get(0).get(Schema.Account.Rating));
+	}
+
+	@IsTest
 	static void testErrorLogging()
 	{
 		// Test static helpers for raise none domain object instance errors
