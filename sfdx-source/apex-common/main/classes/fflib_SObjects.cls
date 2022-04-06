@@ -54,6 +54,61 @@ public virtual class fflib_SObjects
 		SObjectDescribe = sObjectType.getDescribe();
 	}
 
+	/**
+	 * @param id Domain containing primary key (Id field) values
+	 *
+	 * @return Returns only the SObjects from the domain matching the given Ids.
+	 */
+	public virtual SObject getRecord(Id id)
+	{
+		List<SObject> result = getRecords(new Set<Id> {id});
+
+		return (result.size() == 0) ? null : result.get(0);
+	}
+
+	/**
+	 * @return Returns the contents of the Domain by their primary Key ('Id' field)
+	 */
+	public virtual Map<Id, SObject> getRecordsById()
+	{
+		return new Map<Id, SObject>(getRecords());
+	}
+
+	/**
+	 * @param ids A Set containing primary key (Id field) values
+	 *
+	 * @return Returns only the SObjects from the domain matching the given Ids.
+	 */
+	public virtual List<SObject> getRecords(Set<Id> ids)
+	{
+		Map<Id, SObject> sObjectsByIds = getRecordsById();
+		List<SObject> result = new List<SObject>();
+		for (Id id : ids)
+		{
+			if (sObjectsByIds.containsKey(id) == false) continue;
+
+			result.add(sObjectsByIds.get(id));
+		}
+		return result;
+	}
+
+	/**
+	 * @param ids A Set containing primary key (Id field) values
+	 *
+	 * @return Returns the SObjects from the domain which are not part of the given Ids.
+	 */
+	public virtual List<SObject> getRecordsNotIn(Set<Id> ids)
+	{
+		List<SObject> result = new List<SObject>();
+		for (SObject record : getRecords())
+		{
+			if (ids.contains(record.Id)) continue;
+
+			result.add(record);
+		}
+		return result;
+	}
+
 	public virtual List<SObject> getRecords()
 	{
 		return (List<SObject>) getObjects();
@@ -136,6 +191,66 @@ public virtual class fflib_SObjects
 			if (values?.contains(record.get(sObjectField)))
 			{
 				result.add(record);
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Get a map with the record mapped to the given Id field value
+	 * Key fields containing null values are omitted
+	 * This method is primarily intended for Id fields with a unique value.
+	 * If duplicate Id values exists the maps value will be overwritten.
+	 *
+	 * @param sObjectField The field to use as key for the map
+	 *
+	 * @return Returns a map with the record mapped to the given Id field value
+	 *
+	 * @example
+	 * Account account = Account.newInstance(records);
+	 * Map<Id, SObject> accountById = account.getRecordByIdField(Account.Id);
+	 */
+	@TestVisible
+	protected virtual Map<Id, SObject> getRecordByIdField(Schema.SObjectField sObjectField)
+	{
+		Map<Id, SObject> result = new Map<Id, SObject>();
+		for (SObject record : getRecords())
+		{
+			if (record.get(sObjectField) == null) continue;
+
+			result.put((Id) record.get(sObjectField), record);
+		}
+		return result;
+	}
+
+	/**
+	 * Get a map with the records mapped to the given Id field value
+	 * Key fields containing null values are omitted
+	 *
+	 * @param sObjectField The field to use as key for the map
+	 *
+	 * @return Returns a map with the records mapped to the given Id field value
+	 *
+	 * @example
+	 * Contacts contacts = Contacts.newInstance(records);
+	 * Map<Id, List<SObject>> contactsByAccountId = contacts.getRecordsByIdField(Contact.AccountId);
+	 */
+	@TestVisible
+	protected virtual Map<Id, List<SObject>> getRecordsByIdField(Schema.SObjectField sObjectField)
+	{
+		Map<Id, List<SObject>> result = new Map<Id, List<SObject>>();
+		for (SObject record : getRecords())
+		{
+			Id fieldId = (Id) record.get(sObjectField);
+			if (fieldId == null) continue;
+
+			if (result.containsKey(fieldId))
+			{
+				result.get(fieldId).add(record);
+			}
+			else
+			{
+				result.put(fieldId, new List<SObject> {record});
 			}
 		}
 		return result;
