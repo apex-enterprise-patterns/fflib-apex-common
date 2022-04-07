@@ -83,15 +83,61 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         catch (Exception e)
         {
             exceptionThrown = true;
-            System.assertEquals(
-                    'Only new records can be registered as new',
-                    e.getMessage(),
+            System.assert(
+                    e.getMessage().contains(Label.fflib_SObjectUnitOfWork_only_new_records_supported),
                     'Incorrect exception message thrown'
             );
         }
 
         // THEN it should have thrown an exception
         System.assert(exceptionThrown);
+    }
+
+    @IsTest
+    private static void testRegisterNew_Bulk()
+    {
+        List<Opportunity> records = new List<Opportunity>
+        {
+                new Opportunity(Name = 'A'),
+                new Opportunity(Name = 'B'),
+                new Opportunity(Name = 'C')
+        };
+
+        Test.startTest();
+        MockDML mockDML = new MockDML();
+        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS, mockDML);
+        uow.registerNew(records);
+        uow.commitWork();
+        Test.stopTest();
+
+        System.assertEquals(3, mockDML.recordsForInsert.size());
+    }
+    
+    @IsTest
+    private static void testRegisterNew_Bulk_ThrowExceptionOnMixedSObjectTypes()
+    {
+        List<SObject> records = new List<SObject>
+        {
+                new Opportunity(Name = 'A'),
+                new Opportunity(Name = 'B'),
+                new Product2(Name = 'A')
+        };
+
+        Boolean exceptionThrown = false;
+        try
+        {
+            Test.startTest();
+            fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
+            uow.registerNew(records);
+            uow.commitWork();
+            Test.stopTest();
+        }
+        catch (fflib_SObjectUnitOfWork.UnitOfWorkException e)
+        {
+            exceptionThrown = true;
+            System.assert(e.getMessage().contains(Label.fflib_SObjectUnitOfWork_require_same_SObjectType));
+        }
+        System.assert(exceptionThrown, 'Expected an exception but did not occur');
     }
 
     @IsTest
@@ -111,7 +157,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         {
             exceptionThrown = true;
             System.assertEquals(
-                    'New records cannot be registered as dirty',
+                    Label.fflib_SObjectUnitOfWork_new_records_not_supported_for_update,
                     e.getMessage(),
                     'Incorrect exception message thrown'
             );
@@ -212,15 +258,21 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     {
         Boolean exceptionThrown = false;
         fflib_SObjectUnitOfWork unitOfWork = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
+        final String customObjectName = 'CustomObject__c';
         try
         {
-            unitOfWork.assertForEventSObjectType('CustomObject__c');
+            unitOfWork.assertForEventSObjectType(customObjectName);
         }
         catch (Exception e)
         {
             exceptionThrown = true;
-            System.assert(
-                    e.getMessage().contains('invalid for publishing'),
+            final String errorMessage =
+                   String.format(
+                           Label.fflib_SObjectUnitOfWork_non_event_SObjectType_used_with_publish,
+                           new List<String> {customObjectName});
+            System.assertEquals(
+                    errorMessage,
+                    e.getMessage(),
                     'Incorrect exception message thrown'
             );
         }
@@ -240,8 +292,13 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         catch (Exception e)
         {
             exceptionThrown = true;
-            System.assert(
-                    e.getMessage().contains('not supported by this unit of work'),
+            final String errorMessage =
+                    String.format(
+                            Label.fflib_SObjectUnitOfWork_not_supported_SObjectType,
+                            new List<String> {'Account'});
+            System.assertEquals(
+                    errorMessage,
+                    e.getMessage(),
                     'Incorrect exception message thrown'
             );
         }
@@ -358,7 +415,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
      *		- Correct events are fired when commitWork fails during DoWork processing
      *
      */
-    @isTest
+    @IsTest
     private static void testDerivedUnitOfWork_CommitDoWorkFail()
     {
         // Insert Opportunities with UnitOfWork
@@ -458,6 +515,46 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         System.assertEquals(1, mockDML.recordsForUpdate.size());
         System.assertEquals(nameUpdate.Name, mockDML.recordsForUpdate.get(0).get(Schema.Opportunity.Name));
         System.assertEquals(amountUpdate.Amount, mockDML.recordsForUpdate.get(0).get(Schema.Opportunity.Amount));
+    }
+
+    @IsTest
+    private static void testRegisterDirtyRecordsWithRelationShip()
+    {
+        final Id parentId = fflib_IDGenerator.generate(Account.SObjectType);
+        final Id opportunityIdA = fflib_IDGenerator.generate(Opportunity.SObjectType);
+        final Id opportunityIdB = fflib_IDGenerator.generate(Opportunity.SObjectType);
+        final Account parentRecord = new Account(Id = parentId);
+
+        Opportunity opportunityA = new Opportunity(Id = opportunityIdA);
+        Opportunity opportunityB = new Opportunity(Id = opportunityIdB);
+
+        MockDML mockDML = new MockDML();
+        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS, mockDML);
+        uow.registerDirty(
+                new List<Opportunity>{ opportunityA, opportunityB },
+                Schema.Opportunity.AccountId,
+                parentRecord);
+        uow.commitWork();
+
+        System.assertEquals(2, mockDML.recordsForUpdate.size());
+        System.assert(
+                new fflib_MatcherDefinitions.SObjectsWith(
+                        new List<Map<SObjectField, Object>>{
+                                new Map<SObjectField, Object>
+                                {
+                                        Opportunity.Id => opportunityIdA,
+                                        Opportunity.AccountId => parentId
+                                },
+                                new Map<SObjectField, Object>
+                                {
+                                        Opportunity.Id => opportunityIdB,
+                                        Opportunity.AccountId => parentId
+                                }
+                        }
+                )
+                        .matches(mockDML.recordsForUpdate),
+                'Records not registered with the correct values'
+        );
     }
 
     /**
