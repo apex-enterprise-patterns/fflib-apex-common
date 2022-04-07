@@ -112,33 +112,6 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 
         System.assertEquals(3, mockDML.recordsForInsert.size());
     }
-    
-    @IsTest
-    private static void testRegisterNew_Bulk_ThrowExceptionOnMixedSObjectTypes()
-    {
-        List<SObject> records = new List<SObject>
-        {
-                new Opportunity(Name = 'A'),
-                new Opportunity(Name = 'B'),
-                new Product2(Name = 'A')
-        };
-
-        Boolean exceptionThrown = false;
-        try
-        {
-            Test.startTest();
-            fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
-            uow.registerNew(records);
-            uow.commitWork();
-            Test.stopTest();
-        }
-        catch (fflib_SObjectUnitOfWork.UnitOfWorkException e)
-        {
-            exceptionThrown = true;
-            System.assert(e.getMessage().contains(Label.fflib_SObjectUnitOfWork_require_same_SObjectType));
-        }
-        System.assert(exceptionThrown, 'Expected an exception but did not occur');
-    }
 
     @IsTest
     private static void testRegisterDirty_ThrowExceptionOnNewRecord()
@@ -157,7 +130,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         {
             exceptionThrown = true;
             System.assertEquals(
-                    Label.fflib_SObjectUnitOfWork_new_records_not_supported_for_update,
+                    Label.fflib_SObjectUnitOfWork_new_records_not_supported,
                     e.getMessage(),
                     'Incorrect exception message thrown'
             );

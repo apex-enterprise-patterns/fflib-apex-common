@@ -36,18 +36,11 @@
         <value>Invalid argument: relatedToField. Field supplied is not a relationship field.</value>
     </labels>
     <labels>
-        <fullName>fflib_SObjectUnitOfWork_new_records_not_supported_for_deletion</fullName>
+        <fullName>fflib_SObjectUnitOfWork_new_records_not_supported</fullName>
         <language>en_US</language>
         <protected>false</protected>
-        <shortDescription>Error when trying to add new records for deletion.</shortDescription>
-        <value>New records cannot be registered for deletion</value>
-    </labels>
-    <labels>
-        <fullName>fflib_SObjectUnitOfWork_new_records_not_supported_for_update</fullName>
-        <language>en_US</language>
-        <protected>false</protected>
-        <shortDescription>Error when trying to add new records as dirty.</shortDescription>
-        <value>New records cannot be registered as dirty</value>
+        <shortDescription>Error when trying to add new records as dirty or deleted.</shortDescription>
+        <value>New records cannot be registered</value>
     </labels>
     <labels>
         <fullName>fflib_SObjectUnitOfWork_non_event_SObjectType_used_with_publish</fullName>
