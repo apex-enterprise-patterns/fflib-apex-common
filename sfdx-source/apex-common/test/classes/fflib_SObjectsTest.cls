@@ -77,12 +77,12 @@ private class fflib_SObjectsTest
 
 		Set<Id> recordIds = new Set<Id> {idA, idB, idC};
 		System.assert(
-				domain.getRecordIds().containsAll(recordIds),
+				domain.getRecordIds().equals(recordIds),
 				'The domain should return all the record Ids'
 		);
 
 		System.assert(
-				domain.getIdFieldValues(Schema.Account.Id).containsAll(recordIds),
+				domain.getIdFieldValues(Schema.Account.Id).equals(recordIds),
 				'The domain should return all the record Ids'
 		);
 	}
@@ -132,28 +132,22 @@ private class fflib_SObjectsTest
 	{
 		DomainAccounts domain = generateDomain();
 
+		final Set<String> expected = new Set<String>
+		{
+				null,
+				'',
+				'Canada',
+				'Ireland',
+				'UK',
+				'USA'
+		};
 		System.assert(
-				domain.getStringFieldValues(Schema.Account.ShippingCountry)
-						.containsAll(
-						new Set<String>{
-								'USA',
-								'Ireland',
-								'UK',
-								''
-						}
-				)
+				domain.getStringFieldValues(Schema.Account.ShippingCountry).equals(expected)
 		);
 
 		System.assert(
 				domain.getFieldValues(Schema.Account.ShippingCountry)
-						.containsAll(
-						new Set<Object>{
-								'USA',
-								'Ireland',
-								'UK',
-								''
-						}
-				)
+						.equals(expected)
 		);
 	}
 
