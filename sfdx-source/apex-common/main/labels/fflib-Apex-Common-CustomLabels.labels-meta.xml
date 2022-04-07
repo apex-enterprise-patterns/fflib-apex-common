@@ -1,6 +1,83 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
     <labels>
+        <fullName>fflib_SObjectUnitOfWork_event_SObjectType_must_use_publish</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Error when trying use non-publish method on Event SObjectTypes.</shortDescription>
+        <value>SObject type {0} must use registerPublishBeforeTransaction or registerPublishAfterTransaction methods to be used within this unit of work</value>
+    </labels>
+    <labels>
+        <fullName>fflib_SObjectUnitOfWork_invalid_argument_externalIdField_invalid</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Error when the provided externalIdField is not an external Id.</shortDescription>
+        <value>Invalid argument: externalIdField. Field supplied is not a marked as an External Identifier.</value>
+    </labels>
+    <labels>
+        <fullName>fflib_SObjectUnitOfWork_invalid_argument_externalIdField_unknown</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Error when the provided externalIdField is not available on the SObjectType.</shortDescription>
+        <value>Invalid argument: externalIdField. Field supplied is not a known field on the target sObject.</value>
+    </labels>
+    <labels>
+        <fullName>fflib_SObjectUnitOfWork_invalid_argument_relatedToField_null</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Error when relatedToField argument is null.</shortDescription>
+        <value>Invalid argument: relatedToField.</value>
+    </labels>
+    <labels>
+        <fullName>fflib_SObjectUnitOfWork_invalid_argument_relatedToField_invalid</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Error when relatedToField argument is not a relationship field.</shortDescription>
+        <value>Invalid argument: relatedToField. Field supplied is not a relationship field.</value>
+    </labels>
+    <labels>
+        <fullName>fflib_SObjectUnitOfWork_new_records_not_supported_for_deletion</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Error when trying to add new records for deletion.</shortDescription>
+        <value>New records cannot be registered for deletion</value>
+    </labels>
+    <labels>
+        <fullName>fflib_SObjectUnitOfWork_new_records_not_supported_for_update</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Error when trying to add new records as dirty.</shortDescription>
+        <value>New records cannot be registered as dirty</value>
+    </labels>
+    <labels>
+        <fullName>fflib_SObjectUnitOfWork_non_event_SObjectType_used_with_publish</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Error when trying use publish method with a non-Event SObjectType.</shortDescription>
+        <value>SObject type {0} is invalid for publishing within this unit of work</value>
+    </labels>
+    <labels>
+        <fullName>fflib_SObjectUnitOfWork_not_supported_SObjectType</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Error when adding records of a not supported SObjectType to the UnitOfWork.</shortDescription>
+        <value>SObject type {0} is not supported by this unit of work</value>
+    </labels>
+    <labels>
+        <fullName>fflib_SObjectUnitOfWork_only_new_records_supported</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Error when adding existing records as new.</shortDescription>
+        <value>Only new records can be registered</value>
+    </labels>
+    <labels>
+        <fullName>fflib_SObjectUnitOfWork_require_same_SObjectType</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Error when adding records of different SObjectTypes.</shortDescription>
+        <value>All records should be of the same SObjectType</value>
+    </labels>
+    <labels>
         <fullName>fflib_QueryFactory_crossobject_fieldsets_not_allowed_error</fullName>
         <language>en_US</language>
         <protected>false</protected>
