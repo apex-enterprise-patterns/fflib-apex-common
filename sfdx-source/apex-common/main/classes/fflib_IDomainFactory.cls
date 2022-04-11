@@ -25,8 +25,82 @@
 **/
 public interface fflib_IDomainFactory
 {
+	/**
+	 * Dynamically constructs an instance of a Domain class for the given record Ids
+	 *   Internally uses the Selector Factory to query the records before passing to a
+	 *   dynamically constructed instance of the application Apex Domain class
+	 *
+	 * @param recordIds A list of Id's of the same type
+	 * @exception Throws an exception via the Selector Factory if the Ids are not all of the same SObjectType
+	 *
+	 * @return Instance of the Domain
+	 **/
 	fflib_IDomain newInstance(Set<Id> recordIds);
+
+	/**
+	 * Dynamically constructs an instance of a Domain class for the given record Ids
+	 *   Internally uses the Selector Factory to query the records before passing to a
+	 *   dynamically constructed instance of the application Apex Domain class
+	 *
+	 * @param recordIds A list of Id's of the same type
+	 * @param sObjectType The Schema.SObjectType of the record Ids,
+	 *                    Providing this parameter will omit the framework from checking if the Id's are all the same
+	 *                    and of which SObjectType they are.
+	 *
+	 * @exception Throws an exception via the Selector Factory if the Ids are not all of the same SObjectType
+	 *
+	 * @return Instance of the Domain
+	 **/
+	fflib_IDomain newInstance(Set<Id> recordIds, Schema.SObjectType sObjectType);
+
+	/**
+	 * Dynamically constructs an instance of the Domain class for the given records
+	 *   Will return a Mock implementation if one has been provided via setMock
+	 *
+	 * @param records A concrete list of records, e.g.; `List<Account>` or `List<SObject>`)
+	 *
+	 * @exception Throws an exception if the SObjectType cannot be determined from the list
+	 *              or the constructor for Domain class was not registered for the SObjectType
+	 *
+	 * @return Instance of the Domain containing the given records
+	 **/
 	fflib_IDomain newInstance(List<SObject> records);
+
+	/**
+	 * Dynamically constructs an instance of the Domain class for the given records
+	 *   Will return a Mock implementation if one has been provided via setMock
+	 *
+	 * @param objects A concrete list of Objects, e.g.; `List<Account>` or `List<SObject>`)
+	 * @param objectType
+	 *
+	 * @exception Throws an exception if the SObjectType cannot be determined from the list
+	 *              or the constructor for Domain class was not registered for the SObjectType
+	 *
+	 * @return Instance of the Domain containing the given Objects
+	 **/
 	fflib_IDomain newInstance(List<Object> objects, Object objectType);
+
+	/**
+	 * Dynamically constructs an instance of the Domain class for the given records and SObjectType
+	 *   Will return a Mock implementation if one has been provided via setMock
+	 *
+	 * @param records A list records
+	 * @param domainSObjectType SObjectType for list of records
+	 *
+	 * @exception Throws an exception if the SObjectType is not specified or if constructor for Domain class was not registered for the SObjectType
+	 *
+	 * @remark Will support List<SObject> but all records in the list will be assumed to be of
+	 *         the type specified in sObjectType
+	 *
+	 * @return Instance of the Domain containing the given records
+	 **/
 	fflib_IDomain newInstance(List<SObject> records, SObjectType domainSObjectType);
+
+	/**
+	 * Creates or replaces an existing binding for another
+	 *
+	 * @param sObjectType The SObjectType of the domain to replace
+	 * @param replacementImplType The implementation type of the replacement
+	 */
+	void replaceWith(Schema.SObjectType sObjectType, Type replacementImplType);
 }

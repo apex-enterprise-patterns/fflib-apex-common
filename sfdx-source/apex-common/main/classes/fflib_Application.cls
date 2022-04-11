@@ -112,6 +112,9 @@ public virtual class fflib_Application
 			return new fflib_SObjectUnitOfWork(objectTypes, dml);
 		}
 
+		/**
+		 * @param mockUow A mock implementation for the unitOfWork factory
+		 */
 		@TestVisible
 		protected virtual void setMock(fflib_ISObjectUnitOfWork mockUow)
 		{
@@ -168,6 +171,24 @@ public virtual class fflib_Application
 			return serviceImpl.newInstance();
 		}
 
+		/**
+		 * Creates or replaces an existing binding for another
+		 *
+		 * @param serviceInterfaceType The Interface type to replace its implementation
+		 * @param replacementImplType The implementation type of the replacement
+		 */
+		public virtual void replaceWith(Type serviceInterfaceType, Type replacementImplType)
+		{
+			this.m_serviceInterfaceTypeByServiceImplType.put(
+					serviceInterfaceType,
+					replacementImplType
+			);
+		}
+
+		/**
+		 * @param serviceInterfaceType The interface type to mock
+		 * @param serviceImpl The mock implementation
+		 */
 		@TestVisible
 		protected virtual void setMock(Type serviceInterfaceType, Object serviceImpl)
 		{
@@ -247,6 +268,27 @@ public virtual class fflib_Application
 		}
 
 		/**
+		 * Helper method to query the given SObject records
+		 *   Internally creates an instance of the registered Selector and calls its
+		 *   selectSObjectById method.
+		 *   It assumes that all Ids are of the given SObjectType, no additional validation is done.
+		 *
+		 * @param recordIds The recordIds to query
+		 * @param sObjectType The SObjectType of the Ids
+		 *
+		 * @return The queried records
+		 * @exception fflib_Application.DeveloperException is thrown if the Ids set is empty
+		 */
+		public virtual List<SObject> selectById(Set<Id> recordIds, SObjectType sObjectType)
+		{
+			if (recordIds == null || recordIds.size() == 0)
+				throw new fflib_Application.DeveloperException('Invalid record Id\'s set');
+
+			return newInstance(sObjectType)
+					.selectSObjectsById(recordIds);
+		}
+
+		/**
 		 * Helper method to query related records to those provided, for example
 		 *   if passed a list of Opportunity records and the Account Id field will
 		 *   construct internally a list of Account Ids and call the registered 
@@ -270,11 +312,36 @@ public virtual class fflib_Application
 			return selectById(relatedIds);
 		}
 
+		/**
+		 * Creates or replaces an existing binding for another
+		 *
+		 * @param sObjectType The SObjectType of the selector to replace
+		 * @param replacementImplType The implementation type of the replacement
+		 */
+		public virtual void replaceWith(SObjectType sObjectType, Type replacementImplType)
+		{
+			this.m_sObjectBySelectorType.put(sObjectType, replacementImplType);
+		}
+
+		/**
+		 * @param selectorInstance The instance of the mocked selector
+		 */
 		@TestVisible
 		protected virtual void setMock(fflib_ISObjectSelector selectorInstance)
 		{
 			m_sObjectByMockSelector.put(selectorInstance.sObjectType(), selectorInstance);
-		} 
+		}
+
+		/**
+		 * @param sObjectType The SObjectType of the selector mock,
+		 *                    avoids the need to stub the mock to return its SObjectType
+		 * @param selectorInstance The instance of the mocked selector
+		 */
+		@TestVisible
+		protected virtual void setMock(SObjectType sObjectType, fflib_ISObjectSelector selectorInstance)
+		{
+			this.m_sObjectByMockSelector.put(sObjectType, selectorInstance);
+		}
 	}
 
 	/**
@@ -282,7 +349,7 @@ public virtual class fflib_Application
 	 **/
 	public virtual class DomainFactory implements fflib_IDomainFactory
 	{
-		protected fflib_Application.SelectorFactory m_selectorFactory;
+		protected fflib_ISelectorFactory m_selectorFactory;
 
 		protected Map<Object, Type> constructorTypeByObject;
 
@@ -302,10 +369,10 @@ public virtual class fflib_Application
 		 * @param selectorFactory , e.g. Application.Selector
 		 * @param constructorTypeByObject Map of Domain classes by ObjectType
 		 **/
-		public DomainFactory(fflib_Application.SelectorFactory selectorFactory,
+		public DomainFactory(fflib_ISelectorFactory selectorFactory,
 			Map<Object, Type> constructorTypeByObject)
 		{
-			m_selectorFactory = selectorFactory;
+			this.m_selectorFactory = selectorFactory;
 			this.constructorTypeByObject = constructorTypeByObject;
 			this.mockDomainByObject = new Map<Object, fflib_IDomain>();
 		}
@@ -319,10 +386,10 @@ public virtual class fflib_Application
 		 * @param selectorFactory, e.g. Application.Selector
 		 * @param sObjectByDomainConstructorType Map of Apex classes by SObjectType
 		 **/
-		public DomainFactory(fflib_Application.SelectorFactory selectorFactory,
+		public DomainFactory(fflib_ISelectorFactory selectorFactory,
 			Map<SObjectType, Type> sObjectByDomainConstructorType)
 		{
-			m_selectorFactory = selectorFactory;
+			this.m_selectorFactory = selectorFactory;
 			this.constructorTypeByObject = getConstructorTypeByObject(sObjectByDomainConstructorType);
 			this.mockDomainByObject = new Map<Object, fflib_IDomain>();
 		}
@@ -338,7 +405,22 @@ public virtual class fflib_Application
 		public virtual fflib_IDomain newInstance(Set<Id> recordIds)
 		{
 			return newInstance(m_selectorFactory.selectById(recordIds));
+		}
 
+		/**
+		 * Dynamically constructs an instance of a Domain class for the given record Ids
+		 *   Internally uses the Selector Factory to query the records before passing to a
+		 *   dynamically constructed instance of the application Apex Domain class
+		 *
+		 * @param recordIds A list of Id's of the same type
+		 * @param sObjectType The SObjectType of the given record Ids
+		 *
+		 * @return Instance of a Domain containing the queried records
+		 * @exception Throws an exception via the Selector Factory if the Ids are not all of the same SObjectType
+		 **/
+		public virtual fflib_IDomain newInstance(Set<Id> recordIds, Schema.SObjectType sObjectType)
+		{
+			return newInstance(m_selectorFactory.selectById(recordIds, sObjectType), sObjectType);
 		}
 
 		/**
@@ -412,16 +494,58 @@ public virtual class fflib_Application
 			);
 		}
 
+		/**
+		 * Creates or replaces an existing binding for another
+		 *
+		 * @param sObjectType The SObjectType of the selector to replace
+		 * @param replacementImplType The implementation type of the replacement
+		 */
+		public virtual void replaceWith(Schema.SObjectType sObjectType, Type replacementImplType)
+		{
+			this.constructorTypeByObject.put(
+					(Object) sObjectType,
+					replacementImplType
+			);
+		}
+
+		/**
+		 * @param mockDomain The instance of the Domain mock
+		 */
 		@TestVisible
 		protected virtual void setMock(fflib_ISObjectDomain mockDomain)
 		{
 			mockDomainByObject.put((Object) mockDomain.sObjectType(), (fflib_IDomain) mockDomain);
 		}
 
+		/**
+		 * @param mockDomain The instance of the Domain mock
+		 */
 		@TestVisible
 		protected virtual void setMock(fflib_IDomain mockDomain)
 		{
 			mockDomainByObject.put(mockDomain.getType(), mockDomain);
+		}
+
+		/**
+		 * @param sObjectType The SObjectType of the Domain mock,
+		 *                    avoids the need to stub the mock to return its SObjectType
+		 * @param mockDomain The instance of the Domain mock
+		 */
+		@TestVisible
+		protected virtual void setMock(Schema.SObjectType sObjectType, fflib_ISObjectDomain mockDomain)
+		{
+			mockDomainByObject.put((Object) sObjectType, mockDomain);
+		}
+
+		/**
+		 * @param domainType The ObjectType of the Domain mock,
+		 *                    avoids the need to stub the mock to return its ObjectType
+		 * @param mockDomain The instance of the Domain mock
+		 */
+		@TestVisible
+		protected virtual void setMock(Object domainType, fflib_IDomain mockDomain)
+		{
+			mockDomainByObject.put(domainType, mockDomain);
 		}
 
 		protected virtual Map<Object, Type> getConstructorTypeByObject(Map<SObjectType, Type> constructorTypeBySObjectType)
