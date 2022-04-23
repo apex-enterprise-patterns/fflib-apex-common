@@ -152,13 +152,6 @@ private class fflib_ObjectsTest
 	}
 
 	@IsTest
-	static void itShouldGetTheFirstObject()
-	{
-		fflib_ObjectsTest.Domain dtoDomain = generateDomain();
-		System.assertEquals(TRANSFER_OBJECT_A, dtoDomain.getFirstObject(), 'Incorrect object returned, expected first');
-	}
-
-	@IsTest
 	static void itShouldGetTheObjectType()
 	{
 		fflib_Objects domain = new fflib_Objects(new List<Object>());
