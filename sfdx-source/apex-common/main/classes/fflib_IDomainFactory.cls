@@ -38,22 +38,6 @@ public interface fflib_IDomainFactory
 	fflib_IDomain newInstance(Set<Id> recordIds);
 
 	/**
-	 * Dynamically constructs an instance of a Domain class for the given record Ids
-	 *   Internally uses the Selector Factory to query the records before passing to a
-	 *   dynamically constructed instance of the application Apex Domain class
-	 *
-	 * @param recordIds A list of Id's of the same type
-	 * @param sObjectType The Schema.SObjectType of the record Ids,
-	 *                    Providing this parameter will omit the framework from checking if the Id's are all the same
-	 *                    and of which SObjectType they are.
-	 *
-	 * @exception Throws an exception via the Selector Factory if the Ids are not all of the same SObjectType
-	 *
-	 * @return Instance of the Domain
-	 **/
-	fflib_IDomain newInstance(Set<Id> recordIds, Schema.SObjectType sObjectType);
-
-	/**
 	 * Dynamically constructs an instance of the Domain class for the given records
 	 *   Will return a Mock implementation if one has been provided via setMock
 	 *

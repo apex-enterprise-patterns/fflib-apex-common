@@ -408,22 +408,6 @@ public virtual class fflib_Application
 		}
 
 		/**
-		 * Dynamically constructs an instance of a Domain class for the given record Ids
-		 *   Internally uses the Selector Factory to query the records before passing to a
-		 *   dynamically constructed instance of the application Apex Domain class
-		 *
-		 * @param recordIds A list of Id's of the same type
-		 * @param sObjectType The SObjectType of the given record Ids
-		 *
-		 * @return Instance of a Domain containing the queried records
-		 * @exception Throws an exception via the Selector Factory if the Ids are not all of the same SObjectType
-		 **/
-		public virtual fflib_IDomain newInstance(Set<Id> recordIds, Schema.SObjectType sObjectType)
-		{
-			return newInstance(m_selectorFactory.selectById(recordIds, sObjectType), sObjectType);
-		}
-
-		/**
 		 * Dynamically constructs an instance of the Domain class for the given records
 		 *   Will return a Mock implementation if one has been provided via setMock
 		 *
