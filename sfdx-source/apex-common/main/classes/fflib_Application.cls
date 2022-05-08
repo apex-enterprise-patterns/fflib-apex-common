@@ -41,11 +41,6 @@ public virtual class fflib_Application
 
 		/**
 		 * Constructs a Unit Of Work factory
-		 **/
-		public UnitOfWorkFactory() { }
-
-		/**
-		 * Constructs a Unit Of Work factory
 		 *
 		 * @param objectTypes List of SObjectTypes in dependency order
 		 **/
@@ -61,10 +56,7 @@ public virtual class fflib_Application
 		 **/
 		public virtual fflib_ISObjectUnitOfWork newInstance()
 		{
-			// Mock?
-			if(m_mockUow!=null)
-				return m_mockUow;
-			return new fflib_SObjectUnitOfWork(m_objectTypes);
+			return m_mockUow!=null ? m_mockUow : new fflib_SObjectUnitOfWork(m_objectTypes);
 		}
 
 		/**
@@ -74,10 +66,7 @@ public virtual class fflib_Application
 		 **/
 		public virtual fflib_ISObjectUnitOfWork newInstance(fflib_SObjectUnitOfWork.IDML dml)
 		{
-			// Mock?
-			if(m_mockUow!=null)
-				return m_mockUow;
-			return new fflib_SObjectUnitOfWork(m_objectTypes, dml);
+			return m_mockUow!=null ? m_mockUow : new fflib_SObjectUnitOfWork(m_objectTypes, dml);
 		}
 
 		/**
@@ -90,10 +79,7 @@ public virtual class fflib_Application
 		 **/
 		public virtual fflib_ISObjectUnitOfWork newInstance(List<SObjectType> objectTypes)
 		{
-			// Mock?
-			if(m_mockUow!=null)
-				return m_mockUow;
-			return new fflib_SObjectUnitOfWork(objectTypes);
+			return m_mockUow!=null ? m_mockUow : new fflib_SObjectUnitOfWork(objectTypes);
 		}		
 
 		/**
@@ -106,10 +92,7 @@ public virtual class fflib_Application
 		 **/
 		public virtual fflib_ISObjectUnitOfWork newInstance(List<SObjectType> objectTypes, fflib_SObjectUnitOfWork.IDML dml)
 		{
-			// Mock?
-			if(m_mockUow!=null)
-				return m_mockUow;
-			return new fflib_SObjectUnitOfWork(objectTypes, dml);
+			return m_mockUow!=null ? m_mockUow : new fflib_SObjectUnitOfWork(objectTypes, dml);
 		}
 
 		@TestVisible
@@ -127,11 +110,6 @@ public virtual class fflib_Application
 		protected Map<Type, Type> m_serviceInterfaceTypeByServiceImplType;
 
 		protected Map<Type, Object> m_serviceInterfaceTypeByMockService;
-
-		/**
-		 * Constructs a simple Service Factory
-		 **/
-		public ServiceFactory() { }
 
 		/**
 		 * Constructs a simple Service Factory, 
@@ -184,11 +162,6 @@ public virtual class fflib_Application
 		protected Map<SObjectType, fflib_ISObjectSelector> m_sObjectByMockSelector;
 
 		/**
-		 * Constructs a simple Selector Factory
-		 **/
-		public SelectorFactory() { }
-
-		/**
 		 * Consturcts a Selector Factory linking SObjectType's with Apex Classes implement the fflib_ISObjectSelector interface
 		 *   Note that the factory does not check the given Apex Classes implement the interface
 		 *     currently this is not possible in Apex.
@@ -215,7 +188,7 @@ public virtual class fflib_Application
 
 			// Determine Apex class for Selector class			
 			Type selectorClass = m_sObjectBySelectorType.get(sObjectType);
-			if(selectorClass==null)
+			if( selectorClass == null )
 				throw new DeveloperException('Selector class not found for SObjectType ' + sObjectType);
 
 			// Construct Selector class and query by Id for the records
@@ -287,11 +260,6 @@ public virtual class fflib_Application
 		protected Map<Object, Type> constructorTypeByObject;
 
 		protected Map<Object, fflib_IDomain> mockDomainByObject;
-
-        /**
-		 * Constructs a Domain factory
-		 **/
-		public DomainFactory() { }
 
 		/**
 		 * Constructs a Domain factory, using an instance of the Selector Factory
@@ -413,15 +381,19 @@ public virtual class fflib_Application
 		}
 
 		@TestVisible
-		protected virtual void setMock(fflib_ISObjectDomain mockDomain)
-		{
-			mockDomainByObject.put((Object) mockDomain.sObjectType(), (fflib_IDomain) mockDomain);
-		}
-
-		@TestVisible
 		protected virtual void setMock(fflib_IDomain mockDomain)
 		{
-			mockDomainByObject.put(mockDomain.getType(), mockDomain);
+			if ( mockDomain != null )
+			{
+				if ( mockDomain instanceof fflib_ISObjectDomain )
+				{
+					mockDomainByObject.put(((fflib_ISObjectDomain) mockDomain).sObjectType(), (fflib_IDomain) mockDomain);
+				}
+				else
+				{
+					mockDomainByObject.put(mockDomain.getType(), mockDomain);
+				}
+			}
 		}
 
 		protected virtual Map<Object, Type> getConstructorTypeByObject(Map<SObjectType, Type> constructorTypeBySObjectType)
