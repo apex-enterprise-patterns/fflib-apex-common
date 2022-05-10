@@ -74,6 +74,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	private Boolean enforceFLS;
 	
 	private Boolean sortSelectFields = true;
+	private Boolean allRows = false;
 	
 	/**
 	 * The relationship and  subselectQueryMap variables are used to support subselect queries.  Subselects can be added to 
@@ -663,6 +664,14 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	}
 
 	/**
+	 * @param addAllRows whether an ALL ROWS clause will be added to the resulting query.
+	**/
+	public fflib_QueryFactory setAllRows(Boolean addAllRows){
+		this.allRows = addAllRows;
+		return this;
+	}
+
+	/**
 	 * Convert the values provided to this instance into a full SOQL string for use with Database.query
 	 * Check to see if subqueries queries need to be added after the field list.
 	**/
@@ -703,6 +712,9 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 
 		if(offsetCount != null)
 			result += ' OFFSET '+offsetCount;
+		
+		if(allRows)
+			result += ' ALL ROWS';
 
 		return result;
 	}
@@ -716,6 +728,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		fflib_QueryFactory clone = new fflib_QueryFactory(this.table)
 			.setLimit(this.limitCount)
 			.setOffset(this.offsetCount)
+			.setAllRows(this.allRows)
 			.setCondition(this.conditionExpression)
 			.setEnforceFLS(this.enforceFLS);
 

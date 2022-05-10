@@ -564,6 +564,7 @@ private class fflib_QueryFactoryTest {
 		.selectField('Description')
 		.addOrdering(new fflib_QueryFactory.Ordering('Contact','name',fflib_QueryFactory.SortOrder.ASCENDING) )
 		.addOrdering( new fflib_QueryFactory.Ordering('Contact','CreatedDATE',fflib_QueryFactory.SortOrder.DESCENDING))
+		.setAllRows(true)
 		.setEnforceFLS(true);
 
 		fflib_QueryFactory qf2 = qf.deepClone();
@@ -584,6 +585,7 @@ private class fflib_QueryFactoryTest {
 		.selectField('Description')
 		.addOrdering(new fflib_QueryFactory.Ordering('Account','Name',fflib_QueryFactory.SortOrder.ASCENDING) )
 		.addOrdering( new fflib_QueryFactory.Ordering('Account','Description',fflib_QueryFactory.SortOrder.DESCENDING))
+		.setAllRows(true)
 		.setEnforceFLS(true);
 
 		qf.subselectQuery('Contacts', true);	
@@ -607,6 +609,7 @@ private class fflib_QueryFactoryTest {
 		.selectField('Description')
 		.addOrdering(new fflib_QueryFactory.Ordering('Contact','name',fflib_QueryFactory.SortOrder.ASCENDING) )
 		.addOrdering( new fflib_QueryFactory.Ordering('Contact','CreatedDATE',fflib_QueryFactory.SortOrder.DESCENDING))
+		.setAllRows(true)
 		.setEnforceFLS(true);
 
 
@@ -693,6 +696,24 @@ private class fflib_QueryFactoryTest {
 		System.assertNotEquals(orderedQuery, actualSoql);
 	}
 
+	@isTest
+	static void testSoql_allRows(){
+		//Given
+		fflib_QueryFactory qf = new fflib_QueryFactory(User.SObjectType);
+		qf.selectField('Id');
+		qf.setAllRows(true);
+
+		String allRowsQuery =
+			'SELECT Id '
+			+'FROM User '
+			+'ALL ROWS';
+
+		//When
+		String actualSoql = qf.toSOQL();
+
+		//Then		
+		System.assertEquals(allRowsQuery, actualSoql);
+	}
 
 	public static User createTestUser_noAccess(){
 		User usr;
