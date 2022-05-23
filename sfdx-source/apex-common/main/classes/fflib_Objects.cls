@@ -101,6 +101,11 @@ public virtual class fflib_Objects implements fflib_IObjects
 		return !isEmpty();
 	}
 
+	public Integer size()
+	{
+		return getObjects().size();
+	}
+
 	protected void setObjects(List<Object> objects)
 	{
 		this.objects = objects;
