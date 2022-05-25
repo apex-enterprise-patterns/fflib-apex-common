@@ -664,7 +664,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	}
 
 	/**
-	 * @param addAllRows whether an ALL ROWS clause will be added to the resulting query.
+	 * whether an ALL ROWS clause will be added to the resulting query
 	**/
 	public fflib_QueryFactory setAllRows(){
 		this.allRows = true;
