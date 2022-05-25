@@ -666,8 +666,8 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	/**
 	 * @param addAllRows whether an ALL ROWS clause will be added to the resulting query.
 	**/
-	public fflib_QueryFactory setAllRows(Boolean addAllRows){
-		this.allRows = addAllRows;
+	public fflib_QueryFactory setAllRows(){
+		this.allRows = true;
 		return this;
 	}
 
@@ -713,8 +713,9 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		if(offsetCount != null)
 			result += ' OFFSET '+offsetCount;
 		
-		if(allRows)
+		if(allRows) {
 			result += ' ALL ROWS';
+		}
 
 		return result;
 	}
@@ -728,7 +729,6 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		fflib_QueryFactory clone = new fflib_QueryFactory(this.table)
 			.setLimit(this.limitCount)
 			.setOffset(this.offsetCount)
-			.setAllRows(this.allRows)
 			.setCondition(this.conditionExpression)
 			.setEnforceFLS(this.enforceFLS);
 
