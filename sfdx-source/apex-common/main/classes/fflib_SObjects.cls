@@ -161,11 +161,16 @@ public virtual class fflib_SObjects
 	 * @return Return a set with all the Id values of the given field
 	 */
 	@TestVisible
-	protected Set<Id> getIdFieldValues(Schema.SObjectField field)
+	protected virtual Set<Id> getIdFieldValues(Schema.SObjectField field)
 	{
 		Set<Id> result = new Set<Id>();
 		for (SObject record : getRecords())
 		{
+			if (record.get(field) == null)
+			{
+				continue;
+			}
+
 			result.add((Id) record.get(field));
 		}
 		return result;
@@ -177,11 +182,16 @@ public virtual class fflib_SObjects
 	 * @return Return a set with all the String values of the given field
 	 */
 	@TestVisible
-	protected Set<String> getStringFieldValues(Schema.SObjectField field)
+	protected virtual Set<String> getStringFieldValues(Schema.SObjectField field)
 	{
 		Set<String> result = new Set<String>();
 		for (SObject record : getRecords())
 		{
+			if (String.isBlank((String) record.get(field)))
+			{
+				continue;
+			}
+
 			result.add((String) record.get(field));
 		}
 		return result;

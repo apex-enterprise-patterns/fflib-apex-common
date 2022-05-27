@@ -134,8 +134,6 @@ private class fflib_SObjectsTest
 
 		final Set<String> expected = new Set<String>
 		{
-				null,
-				'',
 				'Canada',
 				'Ireland',
 				'UK',
