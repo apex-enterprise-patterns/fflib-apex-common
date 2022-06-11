@@ -454,6 +454,24 @@ private class fflib_QueryFactoryBaseTest {
 	}
 
 	@IsTest
+	static void equals_When_ObjectIsNotInterface_Expect_NotEqual()
+	{
+		fflib_IQueryFactoryBase qf = fflib_QueryFactoryBase.newInstance(Account.SObjectType.getDescribe().getName());
+		List<String> someOtherObject = new List<String> { 'hello', 'world'};
+
+		System.assert(!qf.equals(someOtherObject));
+	}
+
+	@IsTest
+	static void equals_When_ObjectRelatedToDifferentTable_Expect_NotEqual()
+	{
+		fflib_IQueryFactoryBase qf = fflib_QueryFactoryBase.newInstance(Account.SObjectType.getDescribe().getName());
+		fflib_IQueryFactoryBase other = fflib_QueryFactoryBase.newInstance(Contact.SObjectType.getDescribe().getName());
+
+		System.assert(!qf.equals(other));
+	}
+
+	@IsTest
 	static void setMock_When_MockIsProvided_Expect_MockFunctionality()
 	{
 		fflib_ApexMocks mocks = new fflib_ApexMocks();
