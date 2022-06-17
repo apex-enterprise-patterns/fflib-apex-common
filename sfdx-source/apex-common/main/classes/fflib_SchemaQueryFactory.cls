@@ -1,20 +1,20 @@
-public inherited sharing class fflib_QueryFactory_New
-	implements fflib_IQueryFactory_New
+public inherited sharing class fflib_SchemaQueryFactory
+	implements fflib_ISchemaQueryFactory
 {
     // ========== fflib_IQueryFactoryBase implementation ==========================================
 
-	public fflib_IQueryFactory_New addOrdering(fflib_QueryFactory_New.Ordering ordering)
+	public fflib_ISchemaQueryFactory addOrdering(fflib_SchemaQueryFactory.Ordering ordering)
 	{
 		orderingsList.add(ordering);
 		return this;
 	}
 
-	public fflib_IQueryFactory_New addOrdering(String fieldName, SortOrder direction)
+	public fflib_ISchemaQueryFactory addOrdering(String fieldName, SortOrder direction)
 	{
 		return addOrdering(fieldName, direction, false);
 	}
 
-	public fflib_IQueryFactory_New addOrdering(String fieldName, SortOrder direction, Boolean nullsLast)
+	public fflib_ISchemaQueryFactory addOrdering(String fieldName, SortOrder direction, Boolean nullsLast)
 	{
 		orderingsList.add(new Ordering(fieldName, direction, nullsLast));
 		return this;
@@ -45,7 +45,7 @@ public inherited sharing class fflib_QueryFactory_New
 		return stringBasedQueryFactory.getOrderingClause();
 	}
 
-	public List<fflib_QueryFactory_New.Ordering> getOrderings()
+	public List<fflib_SchemaQueryFactory.Ordering> getOrderings()
 	{
 		return orderingsList;
 	}
@@ -61,7 +61,7 @@ public inherited sharing class fflib_QueryFactory_New
 		return out;
 	}
 
-	public List<fflib_IQueryFactory_New> getSubselectQueries()
+	public List<fflib_ISchemaQueryFactory> getSubselectQueries()
 	{
 		return this.subselectQueryMap.values();
 	}
@@ -76,13 +76,13 @@ public inherited sharing class fflib_QueryFactory_New
 		return stringBasedQueryFactory.getWhereClause();
 	}
 
-	public fflib_IQueryFactory_New selectField(String fieldName)
+	public fflib_ISchemaQueryFactory selectField(String fieldName)
 	{
 		this.stringBasedQueryFactory.selectField(getFieldPath(fieldName));
 		return this;
 	}
 
-	public fflib_IQueryFactory_New selectFields(List<String> fieldNameList)
+	public fflib_ISchemaQueryFactory selectFields(List<String> fieldNameList)
 	{
 		List<String> validatedFieldList = new List<String>();
 
@@ -95,7 +95,7 @@ public inherited sharing class fflib_QueryFactory_New
 		return this;
 	}
 
-	public fflib_IQueryFactory_New selectFields(Set<String> fieldNameSet)
+	public fflib_ISchemaQueryFactory selectFields(Set<String> fieldNameSet)
 	{
 		List<String> validatedFieldList = new List<String>();
 
@@ -108,48 +108,48 @@ public inherited sharing class fflib_QueryFactory_New
 		return this;
 	}
 
-	public fflib_IQueryFactory_New setCondition(String clause)
+	public fflib_ISchemaQueryFactory setCondition(String clause)
 	{
 		this.stringBasedQueryFactory.setCondition(clause);
 		return this;
 	}
 
-	public fflib_IQueryFactory_New setLimit(Integer value)
+	public fflib_ISchemaQueryFactory setLimit(Integer value)
 	{
 		this.stringBasedQueryFactory.setLimit(value);
 		return this;
 	}
 
-	public fflib_IQueryFactory_New setOffset(Integer value)
+	public fflib_ISchemaQueryFactory setOffset(Integer value)
 	{
 		this.stringBasedQueryFactory.setOffset(value);
 		return this;
 	}
 
-	public fflib_IQueryFactory_New setOrdering(fflib_QueryFactory_New.Ordering ordering)
+	public fflib_ISchemaQueryFactory setOrdering(fflib_SchemaQueryFactory.Ordering ordering)
 	{
 		orderingsList.clear();
 		orderingsList.add(ordering);
 		return this;
 	}
 
-	public fflib_IQueryFactory_New setOrdering(String fieldName, SortOrder direction)
+	public fflib_ISchemaQueryFactory setOrdering(String fieldName, SortOrder direction)
 	{
 		return setOrdering(fieldName, direction, false);
 	}
 
-	public fflib_IQueryFactory_New setOrdering(String fieldName, SortOrder direction, Boolean nullsLast)
+	public fflib_ISchemaQueryFactory setOrdering(String fieldName, SortOrder direction, Boolean nullsLast)
 	{
 		return setOrdering(new Ordering(fieldName, direction, nullsLast));
 	}
 
-	public fflib_IQueryFactory_New setSortSelectFields(Boolean value)
+	public fflib_ISchemaQueryFactory setSortSelectFields(Boolean value)
 	{
 		this.stringBasedQueryFactory.setSortSelectFields(value);
 		return this;
 	}
 
-	public fflib_IQueryFactory_New subselectQuery(String relationshipName)
+	public fflib_ISchemaQueryFactory subselectQuery(String relationshipName)
 	{
 		return subselectQuery(relationshipName, false);
 	}
@@ -160,7 +160,7 @@ public inherited sharing class fflib_QueryFactory_New
 
 		List<String> fieldsSb = getSelectedFields();
 
-		for (fflib_IQueryFactory_New subQf : subselectQueryMap.values())
+		for (fflib_ISchemaQueryFactory subQf : subselectQueryMap.values())
 		{
 			fieldsSb.add('(' + subQf.toSOQL() + ')');
 		}
@@ -201,35 +201,35 @@ public inherited sharing class fflib_QueryFactory_New
 	}
 
 	// ========== fflib_IQueryFactory_New implementation ==========================================
-	public fflib_IQueryFactory_New addOrdering(SObjectField field, SortOrder direction, Boolean nullsLast)
+	public fflib_ISchemaQueryFactory addOrdering(SObjectField field, SortOrder direction, Boolean nullsLast)
 	{
 		stringBasedQueryFactory.addOrdering(getFieldTokenPath(field), fflib_Ordering.SortOrder.valueOf(direction.name()), nullsLast);
 		return this;
 	}
 
-	public fflib_IQueryFactory_New addOrdering(SObjectField field, SortOrder direction)
+	public fflib_ISchemaQueryFactory addOrdering(SObjectField field, SortOrder direction)
 	{
 		stringBasedQueryFactory.addOrdering(getFieldTokenPath(field), fflib_Ordering.SortOrder.valueOf(direction.name()));
 		return this;
 	}
 
-	public fflib_IQueryFactory_New assertIsAccessible()
+	public fflib_ISchemaQueryFactory assertIsAccessible()
 	{
 		fflib_SecurityUtils.checkObjectIsReadable(table);
 		return this;
 	}
 
-	public fflib_IQueryFactory_New deepClone()
+	public fflib_ISchemaQueryFactory deepClone()
 	{
-		fflib_QueryFactory_New clone = new fflib_QueryFactory_New(this.table, null);
+		fflib_SchemaQueryFactory clone = new fflib_SchemaQueryFactory(this.table, null);
 		clone.setLimit(getLimit());
 		clone.setOffset(getOffset());
 		clone.setCondition(getCondition());
 		clone.setEnforceFLS(this.enforceFLS);
 
-		Map<String, fflib_IQueryFactory_New> subqueries = this.subselectQueryMap;
+		Map<String, fflib_ISchemaQueryFactory> subqueries = this.subselectQueryMap;
 		if(subqueries != null) {
-			Map<String, fflib_IQueryFactory_New> clonedSubqueries = new Map<String, fflib_IQueryFactory_New>();
+			Map<String, fflib_ISchemaQueryFactory> clonedSubqueries = new Map<String, fflib_ISchemaQueryFactory>();
 			for(String key : subqueries.keySet()) {
 				clonedSubqueries.put(key, subqueries.get(key).deepClone());
 			}
@@ -238,7 +238,7 @@ public inherited sharing class fflib_QueryFactory_New
 
 		clone.setRelationship(this.relationship);
 
-		for (fflib_QueryFactory_New.Ordering o : getOrderings())
+		for (fflib_SchemaQueryFactory.Ordering o : getOrderings())
 		{
 			clone.addOrdering(o);
 		}
@@ -251,12 +251,12 @@ public inherited sharing class fflib_QueryFactory_New
 
 	public Boolean equals(Object obj)
 	{
-		if (!(obj instanceof fflib_IQueryFactory_New))
+		if (!(obj instanceof fflib_ISchemaQueryFactory))
 		{
 			return false;
 		}
 
-		fflib_IQueryFactory_New intfaceObj = (fflib_IQueryFactory_New) obj;
+		fflib_ISchemaQueryFactory intfaceObj = (fflib_ISchemaQueryFactory) obj;
 
 		if (intfaceObj.getTable() != this.getTable())
 		{
@@ -271,13 +271,13 @@ public inherited sharing class fflib_QueryFactory_New
 		return intfaceObj.toSOQL() == this.toSOQL();
 	}
 
-	public fflib_IQueryFactory_New selectField(String fieldName, SObjectType relatedSObjectType)
+	public fflib_ISchemaQueryFactory selectField(String fieldName, SObjectType relatedSObjectType)
 	{
 		stringBasedQueryFactory.selectField(getFieldPath(fieldName, relatedSObjectType));
 		return this;
 	}
 
-	public fflib_IQueryFactory_New selectField(SObjectField field)
+	public fflib_ISchemaQueryFactory selectField(SObjectField field)
 	{
 		if(field == null)
 		{
@@ -293,7 +293,7 @@ public inherited sharing class fflib_QueryFactory_New
 		return this;
 	}
 
-	public fflib_IQueryFactory_New selectFields(List<SObjectField> fields)
+	public fflib_ISchemaQueryFactory selectFields(List<SObjectField> fields)
 	{
 		for(Schema.SObjectField token:fields)
 		{
@@ -312,19 +312,19 @@ public inherited sharing class fflib_QueryFactory_New
 		return this;
 	}
 
-	public fflib_IQueryFactory_New selectFields(Set<SObjectField> fields)
+	public fflib_ISchemaQueryFactory selectFields(Set<SObjectField> fields)
 	{
 		selectFields(new List<SObjectField>(fields));
 		return this;
 	}
 
-	public fflib_IQueryFactory_New selectFieldSet(FieldSet fieldSet)
+	public fflib_ISchemaQueryFactory selectFieldSet(FieldSet fieldSet)
 	{
 		selectFieldSet(fieldSet, true);
 		return this;
 	}
 
-	public fflib_IQueryFactory_New selectFieldSet(FieldSet fieldSet, Boolean allowCrossObject)
+	public fflib_ISchemaQueryFactory selectFieldSet(FieldSet fieldSet, Boolean allowCrossObject)
 	{
 		if (fieldSet.getSObjectType() != table)
 		{
@@ -343,57 +343,57 @@ public inherited sharing class fflib_QueryFactory_New
 		return this;
 	}
 
-	public fflib_IQueryFactory_New setEnforceFLS(Boolean enforce)
+	public fflib_ISchemaQueryFactory setEnforceFLS(Boolean enforce)
 	{
 		enforceFLS = enforce;
 		return this;
 	}
 
-	public fflib_IQueryFactory_New setOrdering(SObjectField field, SortOrder direction)
+	public fflib_ISchemaQueryFactory setOrdering(SObjectField field, SortOrder direction)
 	{
 		setOrdering(field, direction, false);
 		return this;
 	}
 
-	public fflib_IQueryFactory_New setOrdering(SObjectField field, SortOrder direction, Boolean nullsLast)
+	public fflib_ISchemaQueryFactory setOrdering(SObjectField field, SortOrder direction, Boolean nullsLast)
 	{
 		setOrdering(new Ordering(getFieldTokenPath(field), direction, nullsLast));
 		return this;
 	}
 
-	public fflib_IQueryFactory_New subselectQuery(SObjectType related)
+	public fflib_ISchemaQueryFactory subselectQuery(SObjectType related)
 	{
 		return subselectQuery(related, false);
 	}
 
-	public fflib_IQueryFactory_New subselectQuery(SObjectType related, Boolean assertIsAccessible)
+	public fflib_ISchemaQueryFactory subselectQuery(SObjectType related, Boolean assertIsAccessible)
 	{
 		return setupSubselectQuery(related, assertIsAccessible);
 	}
 
-	public fflib_IQueryFactory_New subselectQuery(ChildRelationship relationship)
+	public fflib_ISchemaQueryFactory subselectQuery(ChildRelationship relationship)
 	{
 		return subselectQuery(relationship, false);
 	}
 
-	public fflib_IQueryFactory_New subselectQuery(ChildRelationship relationship, Boolean assertIsAccessible)
+	public fflib_ISchemaQueryFactory subselectQuery(ChildRelationship relationship, Boolean assertIsAccessible)
 	{
 		return setupSubselectQuery(relationship, assertIsAccessible);
 	}
 
-	public fflib_IQueryFactory_New subselectQuery(String relationshipName, Boolean assertIsAccessible)
+	public fflib_ISchemaQueryFactory subselectQuery(String relationshipName, Boolean assertIsAccessible)
 	{
 		return setupSubselectQuery(relationshipName, assertIsAccessible);
 	}
 
 	// ========== Private Construction Logic ======================================================
-	private fflib_QueryFactory_New(SObjectType table, fflib_IQueryFactoryBase stringBasedQueryFactory)
+	private fflib_SchemaQueryFactory(SObjectType table, fflib_IStringQueryFactory stringBasedQueryFactory)
 	{
 		this.table = table;
 
 		if (stringBasedQueryFactory == null)
 		{
-			this.stringBasedQueryFactory = fflib_QueryFactoryBase.newInstance(table.getDescribe().getName());
+			this.stringBasedQueryFactory = fflib_StringQueryFactory.newInstance(table.getDescribe().getName());
 		}
 		else
 		{
@@ -401,24 +401,24 @@ public inherited sharing class fflib_QueryFactory_New
 		}
 	}
 
-	private fflib_QueryFactory_New(ChildRelationship relationship)
+	private fflib_SchemaQueryFactory(ChildRelationship relationship)
 	{
-		this.stringBasedQueryFactory = fflib_QueryFactoryBase.newInstance(relationship.childSObject.getDescribe().getName());
+		this.stringBasedQueryFactory = fflib_StringQueryFactory.newInstance(relationship.childSObject.getDescribe().getName());
 		this.table = relationship.childSObject;
 		this.relationship = relationship;
 	}
 
 	// ========== Private Instance Logic ==========================================================
-	private fflib_IQueryFactoryBase stringBasedQueryFactory;
+	private fflib_IStringQueryFactory stringBasedQueryFactory;
 	private Boolean assertIsAccessible = false;
 	private Boolean enforceFLS = false;
 	private SObjectType table;
 	private Set<SObjectField> selectSObjectFields = new Set<SObjectField>();
-	private List<Ordering> orderingsList = new List<fflib_QueryFactory_New.Ordering>();
+	private List<Ordering> orderingsList = new List<fflib_SchemaQueryFactory.Ordering>();
 
 	// Subselect query fields
 	private ChildRelationship relationship;
-	private Map<String, fflib_IQueryFactory_New> subselectQueryMap = new Map<String, fflib_IQueryFactory_New>();
+	private Map<String, fflib_ISchemaQueryFactory> subselectQueryMap = new Map<String, fflib_ISchemaQueryFactory>();
 
 	private ChildRelationship getChildRelationship(SObjectType objType)
 	{
@@ -444,7 +444,7 @@ public inherited sharing class fflib_QueryFactory_New
 	{
 		if(!fieldName.contains('.'))
 		{
-			Schema.SObjectField token = fflib_SObjectDescribe.getDescribe(this.table).getField(fflib_QueryFactory_New.keyify(fieldName));
+			Schema.SObjectField token = fflib_SObjectDescribe.getDescribe(this.table).getField(fflib_SchemaQueryFactory.keyify(fieldName));
 			if (token == null)
 			{
 				throw new InvalidFieldException(fieldName, this.table);
@@ -462,7 +462,7 @@ public inherited sharing class fflib_QueryFactory_New
 		while(i.hasNext())
 		{
 			String field = i.next();
-			Schema.SObjectField token = fflib_SObjectDescribe.getDescribe(lastSObjectType).getField(fflib_QueryFactory_New.keyify(field));
+			Schema.SObjectField token = fflib_SObjectDescribe.getDescribe(lastSObjectType).getField(fflib_SchemaQueryFactory.keyify(field));
 			DescribeFieldResult tokenDescribe = token != null ? token.getDescribe() : null;
 
 			if (token == null)
@@ -510,7 +510,7 @@ public inherited sharing class fflib_QueryFactory_New
 		return String.join(fieldPath,'.');
 	}
 
-	private fflib_IQueryFactoryBase getStringBasedQueryFactory()
+	private fflib_IStringQueryFactory getStringBasedQueryFactory()
 	{
 		return stringBasedQueryFactory;
 	}
@@ -525,7 +525,7 @@ public inherited sharing class fflib_QueryFactory_New
 		this.selectSObjectFields = sobjFields;
 	}
 
-	private fflib_IQueryFactory_New setupSubselectQuery(String relationshipName, Boolean assertIsAccessible)
+	private fflib_ISchemaQueryFactory setupSubselectQuery(String relationshipName, Boolean assertIsAccessible)
 	{
 		ChildRelationship cr = findChildRelationshipByRelationshipName(getTable(), relationshipName);
 
@@ -537,7 +537,7 @@ public inherited sharing class fflib_QueryFactory_New
 		return setupSubselectQuery(cr, assertIsAccessible);
 	}
 
-	private fflib_IQueryFactory_New setupSubselectQuery(ChildRelationship childRelationship, Boolean assertIsAccessible)
+	private fflib_ISchemaQueryFactory setupSubselectQuery(ChildRelationship childRelationship, Boolean assertIsAccessible)
 	{
 		if (subselectQueryMap.containsKey(childRelationship.relationshipName))
 		{
@@ -551,7 +551,7 @@ public inherited sharing class fflib_QueryFactory_New
 			throw new InvalidSubqueryRelationshipException('Salesforce SOQL limits subqueries to a depth of 1 level.');
 		}
 
-		fflib_IQueryFactory_New newSubselectQuery = fflib_QueryFactory_New.newInstance(childRelationship);
+		fflib_ISchemaQueryFactory newSubselectQuery = fflib_SchemaQueryFactory.newInstance(childRelationship);
 
 		if (assertIsAccessible)
 		{
@@ -562,7 +562,7 @@ public inherited sharing class fflib_QueryFactory_New
 		return newSubselectQuery;
 	}
 
-	private fflib_IQueryFactory_New setupSubselectQuery(SObjectType sobjType, Boolean assertIsAccessible)
+	private fflib_ISchemaQueryFactory setupSubselectQuery(SObjectType sobjType, Boolean assertIsAccessible)
 	{
 		ChildRelationship cr = findChildRelationshipBySObjectType(getTable(), sobjType);
 
@@ -570,15 +570,15 @@ public inherited sharing class fflib_QueryFactory_New
 	}
 
 	// ========== Static Instancing Logic =========================================================
-	private static Map<SObjectType, fflib_IQueryFactory_New> mockInstanceMap = new Map<SObjectType, fflib_IQueryFactory_New>();
+	private static Map<SObjectType, fflib_ISchemaQueryFactory> mockInstanceMap = new Map<SObjectType, fflib_ISchemaQueryFactory>();
 
 	@TestVisible
-	private static void setMock(SObjectType table, fflib_IQueryFactory_New mock)
+	private static void setMock(SObjectType table, fflib_ISchemaQueryFactory mock)
 	{
 		mockInstanceMap.put(table, mock);
 	}
 
-	public static fflib_IQueryFactory_New newInstance(SObjectType table)
+	public static fflib_ISchemaQueryFactory newInstance(SObjectType table)
 	{
 		if (table == null)
 		{
@@ -587,11 +587,11 @@ public inherited sharing class fflib_QueryFactory_New
 
 		return
 			!mockInstanceMap.containsKey(table)
-			? new fflib_QueryFactory_New(table, null)
+			? new fflib_SchemaQueryFactory(table, null)
 			: mockInstanceMap.get(table);
 	}
 
-	public static fflib_IQueryFactory_New newInstance(SObjectType table, fflib_IQueryFactoryBase stringBasedQueryFactory)
+	public static fflib_ISchemaQueryFactory newInstance(SObjectType table, fflib_IStringQueryFactory stringBasedQueryFactory)
 	{
 		if (table == null)
 		{
@@ -600,13 +600,13 @@ public inherited sharing class fflib_QueryFactory_New
 
 		return
 				!mockInstanceMap.containsKey(table)
-						? new fflib_QueryFactory_New(table, stringBasedQueryFactory)
+						? new fflib_SchemaQueryFactory(table, stringBasedQueryFactory)
 						: mockInstanceMap.get(table);
 	}
 
-	private static fflib_IQueryFactory_New newInstance(ChildRelationship relationship)
+	private static fflib_ISchemaQueryFactory newInstance(ChildRelationship relationship)
 	{
-		return new fflib_QueryFactory_New(relationship);
+		return new fflib_SchemaQueryFactory(relationship);
 	}
 
 	// ========== Private Static Logic ============================================================
@@ -701,22 +701,22 @@ public inherited sharing class fflib_QueryFactory_New
 	public class Ordering
 		extends fflib_Ordering
 	{
-		public Ordering(SObjectField field, fflib_QueryFactory_New.SortOrder direction)
+		public Ordering(SObjectField field, fflib_SchemaQueryFactory.SortOrder direction)
 		{
 			super(field, fflib_Ordering.SortOrder.valueOf(direction.name()));
 		}
 
-		public Ordering(String fieldName, fflib_QueryFactory_New.SortOrder direction, Boolean nullsLast)
+		public Ordering(String fieldName, fflib_SchemaQueryFactory.SortOrder direction, Boolean nullsLast)
 		{
 			super(fieldName, fflib_Ordering.SortOrder.valueOf(direction.name()), nullsLast);
 		}
 
-		public Ordering(String tableName, String fieldName, fflib_QueryFactory_New.SortOrder direction)
+		public Ordering(String tableName, String fieldName, fflib_SchemaQueryFactory.SortOrder direction)
 		{
 			super(tableName, fieldName, fflib_Ordering.SortOrder.valueOf(direction.name()));
 		}
 
-		public Ordering(String tableName, String fieldName, fflib_QueryFactory_New.SortOrder direction, Boolean assertSchema)
+		public Ordering(String tableName, String fieldName, fflib_SchemaQueryFactory.SortOrder direction, Boolean assertSchema)
 		{
 			super(tableName, fieldName, fflib_Ordering.SortOrder.valueOf(direction.name()), assertSchema);
 		}

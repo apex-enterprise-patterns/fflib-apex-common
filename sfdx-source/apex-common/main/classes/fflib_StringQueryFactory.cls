@@ -1,35 +1,35 @@
-public virtual inherited sharing class fflib_QueryFactoryBase
-		implements fflib_IQueryFactoryBase
+public virtual inherited sharing class fflib_StringQueryFactory
+		implements fflib_IStringQueryFactory
 {
 	// ========== fflib_IQueryFactoryBase implementation ==========================================
-	public virtual fflib_IQueryFactoryBase addOrdering(fflib_Ordering ordering)
+	public virtual fflib_IStringQueryFactory addOrdering(fflib_Ordering ordering)
 	{
 		orderingList.add(ordering);
 		return this;
 	}
 
-	public virtual fflib_IQueryFactoryBase addOrdering(String fieldName, fflib_Ordering.SortOrder direction)
+	public virtual fflib_IStringQueryFactory addOrdering(String fieldName, fflib_Ordering.SortOrder direction)
 	{
 		return addOrdering(new fflib_Ordering(fieldName, direction, false));
 	}
 
-	public virtual fflib_IQueryFactoryBase addOrdering(String fieldName, fflib_Ordering.SortOrder direction, Boolean nullsLast)
+	public virtual fflib_IStringQueryFactory addOrdering(String fieldName, fflib_Ordering.SortOrder direction, Boolean nullsLast)
 	{
 		return addOrdering(new fflib_Ordering(fieldName, direction, nullsLast));
 	}
 
-	public virtual fflib_IQueryFactoryBase deepClone()
+	public virtual fflib_IStringQueryFactory deepClone()
 	{
-		fflib_QueryFactoryBase clone =
-				(fflib_QueryFactoryBase)
-						fflib_QueryFactoryBase.newInstance(this.table)
+		fflib_StringQueryFactory clone =
+				(fflib_StringQueryFactory)
+						fflib_StringQueryFactory.newInstance(this.table)
 								.setLimit(this.limitValue)
 								.setOffset(this.offsetValue)
 								.setCondition(this.whereClause);
 
-		Map<String, fflib_IQueryFactoryBase> subqueries = this.subselectQueryMap;
+		Map<String, fflib_IStringQueryFactory> subqueries = this.subselectQueryMap;
 		if(subqueries != null) {
-			Map<String, fflib_IQueryFactoryBase> clonedSubqueries = new Map<String, fflib_IQueryFactoryBase>();
+			Map<String, fflib_IStringQueryFactory> clonedSubqueries = new Map<String, fflib_IStringQueryFactory>();
 			for(String key : subqueries.keySet()) {
 				clonedSubqueries.put(key, subqueries.get(key).deepClone());
 			}
@@ -45,22 +45,22 @@ public virtual inherited sharing class fflib_QueryFactoryBase
 
 	public virtual Boolean equals(Object obj)
 	{
-		if (!(obj instanceof fflib_IQueryFactoryBase))
+		if (!(obj instanceof fflib_IStringQueryFactory))
 		{
 			return false;
 		}
 
-		if ( (((fflib_IQueryFactoryBase)obj).getTable() != this.getTable()) )
+		if ( (((fflib_IStringQueryFactory)obj).getTable() != this.getTable()) )
 		{
 			return false;
 		}
 
-		if ( (((fflib_IQueryFactoryBase)obj).getFields().size() != this.getFields().size()) )
+		if ( (((fflib_IStringQueryFactory)obj).getFields().size() != this.getFields().size()) )
 		{
 			return false;
 		}
 
-		return ((fflib_IQueryFactoryBase)obj).toSOQL() == this.toSOQL();
+		return ((fflib_IStringQueryFactory)obj).toSOQL() == this.toSOQL();
 	}
 
 	public virtual String getCondition()
@@ -122,7 +122,7 @@ public virtual inherited sharing class fflib_QueryFactoryBase
 		return out;
 	}
 
-	public virtual List<fflib_IQueryFactoryBase> getSubselectQueries()
+	public virtual List<fflib_IStringQueryFactory> getSubselectQueries()
 	{
 		return subselectQueryMap.values();
 	}
@@ -141,7 +141,7 @@ public virtual inherited sharing class fflib_QueryFactoryBase
 		return '';
 	}
 
-	public virtual fflib_IQueryFactoryBase selectField(String fieldName)
+	public virtual fflib_IStringQueryFactory selectField(String fieldName)
 	{
 		String key = keyify(fieldName);
 		ensureKeyifiedFieldname(key);
@@ -149,7 +149,7 @@ public virtual inherited sharing class fflib_QueryFactoryBase
 		return this;
 	}
 
-	public virtual fflib_IQueryFactoryBase selectFields(List<String> fieldNameList)
+	public virtual fflib_IStringQueryFactory selectFields(List<String> fieldNameList)
 	{
 		for (String fn : fieldNameList)
 		{
@@ -158,54 +158,54 @@ public virtual inherited sharing class fflib_QueryFactoryBase
 		return this;
 	}
 
-	public virtual fflib_IQueryFactoryBase selectFields(Set<String> fieldNameSet)
+	public virtual fflib_IStringQueryFactory selectFields(Set<String> fieldNameSet)
 	{
 		selectFields(new List<String>(fieldNameSet));
 		return this;
 	}
 
-	public virtual fflib_IQueryFactoryBase setCondition(String clause)
+	public virtual fflib_IStringQueryFactory setCondition(String clause)
 	{
 		this.whereClause = clause;
 		return this;
 	}
 
-	public virtual fflib_IQueryFactoryBase setLimit(Integer value)
+	public virtual fflib_IStringQueryFactory setLimit(Integer value)
 	{
 		this.limitValue = value;
 		return this;
 	}
 
-	public virtual fflib_IQueryFactoryBase setOffset(Integer value)
+	public virtual fflib_IStringQueryFactory setOffset(Integer value)
 	{
 		this.offsetValue = value;
 		return this;
 	}
 
-	public virtual fflib_IQueryFactoryBase setOrdering(fflib_Ordering ordering)
+	public virtual fflib_IStringQueryFactory setOrdering(fflib_Ordering ordering)
 	{
 		orderingList.clear();
 		orderingList.add(ordering);
 		return this;
 	}
 
-	public virtual fflib_IQueryFactoryBase setOrdering(String fieldName, fflib_Ordering.SortOrder direction)
+	public virtual fflib_IStringQueryFactory setOrdering(String fieldName, fflib_Ordering.SortOrder direction)
 	{
 		return setOrdering(fieldName, direction, false);
 	}
 
-	public virtual fflib_IQueryFactoryBase setOrdering(String fieldName, fflib_Ordering.SortOrder direction, Boolean nullsLast)
+	public virtual fflib_IStringQueryFactory setOrdering(String fieldName, fflib_Ordering.SortOrder direction, Boolean nullsLast)
 	{
 		return setOrdering(new fflib_Ordering(fieldName, direction, nullsLast));
 	}
 
-	public virtual fflib_IQueryFactoryBase setSortSelectFields(Boolean value)
+	public virtual fflib_IStringQueryFactory setSortSelectFields(Boolean value)
 	{
 		this.sortSelectFields = !!value;
 		return this;
 	}
 
-	public virtual fflib_IQueryFactoryBase subselectQuery(String relationshipName)
+	public virtual fflib_IStringQueryFactory subselectQuery(String relationshipName)
 	{
 		return ensureSubselectQuery(relationshipName);
 	}
@@ -216,7 +216,7 @@ public virtual inherited sharing class fflib_QueryFactoryBase
 
 		List<String> fieldsSb = getSelectedFields();
 
-		for (fflib_IQueryFactoryBase subQf : subselectQueryMap.values())
+		for (fflib_IStringQueryFactory subQf : subselectQueryMap.values())
 		{
 			fieldsSb.add('(' + subQf.toSOQL() + ')');
 		}
@@ -249,11 +249,11 @@ public virtual inherited sharing class fflib_QueryFactoryBase
 	}
 
 	// ========== Construction Logic ==============================================================
-	public fflib_QueryFactoryBase()
+	public fflib_StringQueryFactory()
 	{
 
 	}
-	private fflib_QueryFactoryBase(String table)
+	private fflib_StringQueryFactory(String table)
 	{
 		this.table = table;
 	}
@@ -264,18 +264,18 @@ public virtual inherited sharing class fflib_QueryFactoryBase
 	private Integer offsetValue = 0;
 	private List<fflib_Ordering> orderingList = new List<fflib_Ordering>();
 	private Boolean sortSelectFields = true;
-	private Map<String, fflib_IQueryFactoryBase> subselectQueryMap = new Map<String, fflib_IQueryFactoryBase>();
+	private Map<String, fflib_IStringQueryFactory> subselectQueryMap = new Map<String, fflib_IStringQueryFactory>();
 	private String table;
 	private String whereClause;
 
-	private fflib_IQueryFactoryBase ensureSubselectQuery(String relationshipName)
+	private fflib_IStringQueryFactory ensureSubselectQuery(String relationshipName)
 	{
 		if (subselectQueryMap.containsKey(relationshipName))
 		{
 			return subselectQueryMap.get(relationshipName);
 		}
 
-		fflib_IQueryFactoryBase subSelectQuery = fflib_QueryFactoryBase.newInstance(relationshipName);
+		fflib_IStringQueryFactory subSelectQuery = fflib_StringQueryFactory.newInstance(relationshipName);
 		subSelectQuery.setSortSelectFields(sortSelectFields);
 		subselectQueryMap.put(relationshipName, subSelectQuery);
 
@@ -283,9 +283,9 @@ public virtual inherited sharing class fflib_QueryFactoryBase
 	}
 
 	// ========== Static Mocking Logic ============================================================
-	private static Map<String, fflib_IQueryFactoryBase> mockInstanceMap = new Map<String, fflib_IQueryFactoryBase>();
+	private static Map<String, fflib_IStringQueryFactory> mockInstanceMap = new Map<String, fflib_IStringQueryFactory>();
 
-	public static fflib_IQueryFactoryBase newInstance(String table)
+	public static fflib_IStringQueryFactory newInstance(String table)
 	{
 		String tableName = keyify(table);
 
@@ -296,12 +296,12 @@ public virtual inherited sharing class fflib_QueryFactoryBase
 
 		return
 				!mockInstanceMap.containsKey(table)
-						? new fflib_QueryFactoryBase(table)
+						? new fflib_StringQueryFactory(table)
 						: mockInstanceMap.get(table);
 	}
 
 	@TestVisible
-	private static void setMock(String table, fflib_IQueryFactoryBase mock)
+	private static void setMock(String table, fflib_IStringQueryFactory mock)
 	{
 		mockInstanceMap.put(table, mock);
 	}
