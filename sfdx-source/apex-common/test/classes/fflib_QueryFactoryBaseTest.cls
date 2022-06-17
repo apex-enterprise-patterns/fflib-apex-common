@@ -92,12 +92,12 @@ private class fflib_QueryFactoryBaseTest {
 		qf.selectField('name');
 		qf.selectField('email');
 		qf.setCondition( 'name = \'test\'' );
-		qf.addOrdering(new fflib_QueryFactoryBase.Ordering('name',fflib_QueryFactoryBase.SortOrder.ASCENDING) ).addOrdering(new fflib_QueryFactoryBase.Ordering('CreatedDATE',fflib_QueryFactoryBase.SortOrder.DESCENDING) );
+		qf.addOrdering(new fflib_Ordering('name',fflib_Ordering.SortOrder.ASCENDING) ).addOrdering(new fflib_Ordering('CreatedDATE',fflib_Ordering.SortOrder.DESCENDING) );
 		String query = qf.toSOQL();
 
 		System.assertEquals(2,qf.getOrderings().size());
 		System.assertEquals('name',qf.getOrderings()[0].getField().toLowerCase() );
-		System.assertEquals(fflib_QueryFactoryBase.SortOrder.DESCENDING,qf.getOrderings()[1].getDirection() );
+		System.assertEquals(fflib_Ordering.SortOrder.DESCENDING,qf.getOrderings()[1].getDirection() );
 
 		
 		System.assert( Pattern.matches('(?i)SELECT.*Name.*FROM.*',query), 'Expected Name field in query, got '+query);
@@ -112,44 +112,44 @@ private class fflib_QueryFactoryBaseTest {
 		qf.setCondition( 'name = \'test\'' );
 
 		//test base method with ordeting by OwnerId Descending
-		qf.setOrdering(new fflib_QueryFactoryBase.Ordering('OwnerId',fflib_QueryFactoryBase.SortOrder.DESCENDING) );
+		qf.setOrdering(new fflib_Ordering('OwnerId',fflib_Ordering.SortOrder.DESCENDING) );
 
 		System.assertEquals(1, qf.getOrderings().size(), 'Unexpected order size - setOrder should replace default Orderings');
 		System.assertEquals(Contact.OwnerId.getDescribe().getName(), qf.getOrderings()[0].getField(), 'Unexpected order field - should have been resolved from the field OwnerId');
-		System.assertEquals(fflib_QueryFactoryBase.SortOrder.DESCENDING, qf.getOrderings()[0].getDirection(), 'Unexpected order direction.');
+		System.assertEquals(fflib_Ordering.SortOrder.DESCENDING, qf.getOrderings()[0].getDirection(), 'Unexpected order direction.');
 
 		//test method overload with ordering by LastModifiedDate Ascending
-		qf.setOrdering('LastModifiedDate', fflib_QueryFactoryBase.SortOrder.ASCENDING, true);
+		qf.setOrdering('LastModifiedDate', fflib_Ordering.SortOrder.ASCENDING, true);
 
 		System.assertEquals(1, qf.getOrderings().size(), 'Unexpected order size - setOrder should replace previous Orderings');
 		System.assertEquals(Contact.LastModifiedDate.getDescribe().getName(), qf.getOrderings()[0].getField(), 'Unexpected order field - should have been resolved from the field LastModifiedDate');
-		System.assertEquals(fflib_QueryFactoryBase.SortOrder.ASCENDING, qf.getOrderings()[0].getDirection(), 'Unexpected order direction.');
+		System.assertEquals(fflib_Ordering.SortOrder.ASCENDING, qf.getOrderings()[0].getDirection(), 'Unexpected order direction.');
 
 		//test method overload with ordering by CreatedDate Descending
-		qf.setOrdering('CreatedDate', fflib_QueryFactoryBase.SortOrder.DESCENDING, true);
+		qf.setOrdering('CreatedDate', fflib_Ordering.SortOrder.DESCENDING, true);
 
 		System.assertEquals(1, qf.getOrderings().size(), 'Unexpected order size - setOrder should replace previous Orderings');
 		System.assertEquals(Contact.CreatedDate.getDescribe().getName(), qf.getOrderings()[0].getField(), 'Unexpected order field - should have been resolved from the field CreatedDate');
-		System.assertEquals(fflib_QueryFactoryBase.SortOrder.DESCENDING, qf.getOrderings()[0].getDirection(), 'Unexpected order direction.');
+		System.assertEquals(fflib_Ordering.SortOrder.DESCENDING, qf.getOrderings()[0].getDirection(), 'Unexpected order direction.');
 
 		//test method overload with ordering by CreatedBy.Name Descending
-		qf.setOrdering('CreatedBy.Name', fflib_QueryFactoryBase.SortOrder.DESCENDING);
+		qf.setOrdering('CreatedBy.Name', fflib_Ordering.SortOrder.DESCENDING);
 
 		System.assertEquals(1, qf.getOrderings().size(), 'Unexpected order size - setOrder should replace previous Orderings');
-		System.assertEquals(fflib_QueryFactoryBase.SortOrder.DESCENDING, qf.getOrderings()[0].getDirection(), 'Unexpected order direction.');
+		System.assertEquals(fflib_Ordering.SortOrder.DESCENDING, qf.getOrderings()[0].getDirection(), 'Unexpected order direction.');
 
 		//test method overload with ordering by Birthdate Ascending
-		qf.setOrdering('Birthdate', fflib_QueryFactoryBase.SortOrder.ASCENDING);
+		qf.setOrdering('Birthdate', fflib_Ordering.SortOrder.ASCENDING);
 
 		System.assertEquals(1, qf.getOrderings().size(), 'Unexpected order size - setOrder should replace previous Orderings');
 		System.assertEquals(Contact.Birthdate.getDescribe().getName(), qf.getOrderings()[0].getField(), 'Unexpected order field - should have been resolved from the field Birthdate');
-		System.assertEquals(fflib_QueryFactoryBase.SortOrder.ASCENDING, qf.getOrderings()[0].getDirection(), 'Unexpected order direction.');
+		System.assertEquals(fflib_Ordering.SortOrder.ASCENDING, qf.getOrderings()[0].getDirection(), 'Unexpected order direction.');
 	}
 
 	@IsTest
 	static void addChildQueriesWithChildRelationship_success(){
 		fflib_IQueryFactoryBase qf = fflib_QueryFactoryBase.newInstance('Contact');
-		qf.selectField('name').selectField('Id').setCondition('name=\'test\'').addOrdering('CreatedDate', fflib_QueryFactoryBase.SortOrder.DESCENDING, true);
+		qf.selectField('name').selectField('Id').setCondition('name=\'test\'').addOrdering('CreatedDate', fflib_Ordering.SortOrder.DESCENDING, true);
 		//explicitly assert object accessibility when creating the subselect
 		qf.subselectQuery('Tasks').selectField('Id').selectField('Subject').setCondition(' IsDeleted = false ');
 		List<fflib_IQueryFactoryBase> queries = qf.getSubselectQueries();
@@ -163,7 +163,7 @@ private class fflib_QueryFactoryBaseTest {
 	@IsTest
 	static void addChildQueriesWithChildRelationshipNoAccessibleCheck_success(){
 		fflib_IQueryFactoryBase qf = fflib_QueryFactoryBase.newInstance('Contact');
-		qf.selectField('name').selectField('Id').setCondition('name=\'test\'').addOrdering('CreatedDate', fflib_QueryFactoryBase.SortOrder.DESCENDING, true);
+		qf.selectField('name').selectField('Id').setCondition('name=\'test\'').addOrdering('CreatedDate', fflib_Ordering.SortOrder.DESCENDING, true);
 		//explicitly assert object accessibility when creating the subselect
 		qf.subselectQuery('Tasks').selectField('Id').selectField('Subject').setCondition(' IsDeleted = false ');
 		List<fflib_IQueryFactoryBase> queries = qf.getSubselectQueries();
@@ -177,7 +177,7 @@ private class fflib_QueryFactoryBaseTest {
 	@IsTest
 	static void addChildQueriesWithChildRelationshipObjCheckIsAccessible_success(){
 		fflib_IQueryFactoryBase qf = fflib_QueryFactoryBase.newInstance('Contact');
-		qf.selectField('name').selectField('Id').setCondition('name=\'test\'').addOrdering('CreatedDate', fflib_QueryFactoryBase.SortOrder.DESCENDING, true);
+		qf.selectField('name').selectField('Id').setCondition('name=\'test\'').addOrdering('CreatedDate', fflib_Ordering.SortOrder.DESCENDING, true);
 		Schema.DescribeSObjectResult descResult = Contact.SObjectType.getDescribe();
 		Schema.ChildRelationship relationship;
 		for (Schema.ChildRelationship childRow : descResult.getChildRelationships()){
@@ -200,7 +200,7 @@ private class fflib_QueryFactoryBaseTest {
 	@IsTest
 	static void addChildQueriesWithChildRelationshipObj_success(){
 		fflib_IQueryFactoryBase qf = fflib_QueryFactoryBase.newInstance('Contact');
-		qf.selectField('name').selectField('Id').setCondition( 'name=\'%test%\'' ).addOrdering('CreatedDate',fflib_QueryFactoryBase.SortOrder.DESCENDING, true);
+		qf.selectField('name').selectField('Id').setCondition( 'name=\'%test%\'' ).addOrdering('CreatedDate',fflib_Ordering.SortOrder.DESCENDING, true);
 		Schema.DescribeSObjectResult descResult = Contact.SObjectType.getDescribe();
 		Schema.ChildRelationship relationship;
 		for (Schema.ChildRelationship childRow : descResult.getChildRelationships()){
@@ -223,7 +223,7 @@ private class fflib_QueryFactoryBaseTest {
 	@IsTest
 	static void addChildQueries_success(){
 		fflib_IQueryFactoryBase qf = fflib_QueryFactoryBase.newInstance('Contact');
-		qf.selectField('name').selectField('Id').setCondition( 'name like \'%test%\'' ).addOrdering('CreatedDate',fflib_QueryFactoryBase.SortOrder.DESCENDING, true);
+		qf.selectField('name').selectField('Id').setCondition( 'name like \'%test%\'' ).addOrdering('CreatedDate',fflib_Ordering.SortOrder.DESCENDING, true);
 		//explicitly assert object accessibility when creating the subselect
 		qf.subselectQuery('Tasks').selectField('Id').selectField('Subject').setCondition('IsDeleted = false');
 		List<fflib_IQueryFactoryBase> queries = qf.getSubselectQueries();
@@ -240,7 +240,7 @@ private class fflib_QueryFactoryBaseTest {
 		qf.selectField('name');
 		qf.selectField('Id');
 		qf.setCondition( 'name like \'%test%\'' );
-		qf.addOrdering(new fflib_QueryFactoryBase.Ordering('name',fflib_QueryFactoryBase.SortOrder.ASCENDING) ).addOrdering('CreatedBy.Name',fflib_QueryFactoryBase.SortOrder.DESCENDING);
+		qf.addOrdering(new fflib_Ordering('name',fflib_Ordering.SortOrder.ASCENDING) ).addOrdering('CreatedBy.Name',fflib_Ordering.SortOrder.DESCENDING);
 		Schema.DescribeSObjectResult descResult = Contact.SObjectType.getDescribe();
        	Schema.ChildRelationship relationship;
         for (Schema.ChildRelationship childRow : descResult.getChildRelationships()) {
@@ -267,11 +267,11 @@ private class fflib_QueryFactoryBaseTest {
 		  .selectFields(new List<String>{'Id'})
 		  .setCondition( 'name like \'%test%\'' )
 		  .selectFields(new Set<String>{'FirstName'})
-		  .addOrdering(new fflib_QueryFactoryBase.Ordering('name',fflib_QueryFactoryBase.SortOrder.ASCENDING) )
-		  .addOrdering('LastModifiedDate',fflib_QueryFactoryBase.SortOrder.DESCENDING)
-		  .addOrdering('CreatedDate',fflib_QueryFactoryBase.SortOrder.DESCENDING, true);
+		  .addOrdering(new fflib_Ordering('name',fflib_Ordering.SortOrder.ASCENDING) )
+		  .addOrdering('LastModifiedDate',fflib_Ordering.SortOrder.DESCENDING)
+		  .addOrdering('CreatedDate',fflib_Ordering.SortOrder.DESCENDING, true);
 		Set<String> fields = new Set<String>(qf.getSelectedFields());
-		fflib_QueryFactoryBase.Ordering ordering = new fflib_QueryFactoryBase.Ordering('name',fflib_QueryFactoryBase.SortOrder.ASCENDING);
+		fflib_Ordering ordering = new fflib_Ordering('name',fflib_Ordering.SortOrder.ASCENDING);
 		System.assertEquals('name',ordering.getField());
 
 		System.assertEquals(new Set<String>{
@@ -289,7 +289,7 @@ private class fflib_QueryFactoryBaseTest {
 	@IsTest
 	static void queryWith_noFields(){
 		fflib_IQueryFactoryBase qf = fflib_QueryFactoryBase.newInstance('Contact');
-		qf.setCondition( 'name like \'%test%\'' ).addOrdering('CreatedDate',fflib_QueryFactoryBase.SortOrder.DESCENDING);
+		qf.setCondition( 'name like \'%test%\'' ).addOrdering('CreatedDate',fflib_Ordering.SortOrder.DESCENDING);
 		String query = qf.toSOQL();
 		System.assert(query.containsIgnoreCase('SELECT Id FROM Contact'),'Expected \'SELECT Id FROM Contact\' in the SOQL, found: ' + query);
 	}  
@@ -326,8 +326,8 @@ private class fflib_QueryFactoryBaseTest {
 		.setLimit(10)
 		.setCondition('id=12345')
 		.selectField('Description')
-		.addOrdering(new fflib_QueryFactoryBase.Ordering('name',fflib_QueryFactoryBase.SortOrder.ASCENDING) )
-		.addOrdering(new fflib_QueryFactoryBase.Ordering('CreatedDATE',fflib_QueryFactoryBase.SortOrder.DESCENDING));
+		.addOrdering(new fflib_Ordering('name',fflib_Ordering.SortOrder.ASCENDING) )
+		.addOrdering(new fflib_Ordering('CreatedDATE',fflib_Ordering.SortOrder.DESCENDING));
 
 		fflib_IQueryFactoryBase qf2 = qf.deepClone();
 
@@ -345,8 +345,8 @@ private class fflib_QueryFactoryBaseTest {
 		.setLimit(10)
 		.setCondition('id=12345')
 		.selectField('Description')
-		.addOrdering(new fflib_QueryFactoryBase.Ordering('Name',fflib_QueryFactoryBase.SortOrder.ASCENDING) )
-		.addOrdering(new fflib_QueryFactoryBase.Ordering('Description',fflib_QueryFactoryBase.SortOrder.DESCENDING));
+		.addOrdering(new fflib_Ordering('Name',fflib_Ordering.SortOrder.ASCENDING) )
+		.addOrdering(new fflib_Ordering('Description',fflib_Ordering.SortOrder.DESCENDING));
 
 		qf.subselectQuery('Contacts');
 
@@ -367,15 +367,15 @@ private class fflib_QueryFactoryBaseTest {
 		.setLimit(10)
 		.setCondition('id=12345')
 		.selectField('Description')
-		.addOrdering(new fflib_QueryFactoryBase.Ordering('name',fflib_QueryFactoryBase.SortOrder.ASCENDING) )
-		.addOrdering(new fflib_QueryFactoryBase.Ordering('CreatedDATE',fflib_QueryFactoryBase.SortOrder.DESCENDING));
+		.addOrdering(new fflib_Ordering('name',fflib_Ordering.SortOrder.ASCENDING) )
+		.addOrdering(new fflib_Ordering('CreatedDATE',fflib_Ordering.SortOrder.DESCENDING));
 
 
 		fflib_IQueryFactoryBase qf2 = qf.deepClone()
 			.setLimit(200)
 			.setCondition('id=54321')
 			.selectField('Fax')
-			.addOrdering(new fflib_QueryFactoryBase.Ordering('Fax',fflib_QueryFactoryBase.SortOrder.ASCENDING));
+			.addOrdering(new fflib_Ordering('Fax',fflib_Ordering.SortOrder.ASCENDING));
 
 		qf2.getOrderings().remove(0);
 
@@ -395,11 +395,11 @@ private class fflib_QueryFactoryBaseTest {
 
 		System.assertEquals(2, qf.getOrderings().size());
 		System.assertEquals('name', qf.getOrderings()[0].getField() );
-		System.assertEquals(fflib_QueryFactoryBase.SortOrder.DESCENDING, qf.getOrderings()[1].getDirection());
+		System.assertEquals(fflib_Ordering.SortOrder.DESCENDING, qf.getOrderings()[1].getDirection());
 
 		System.assertEquals(2, qf2.getOrderings().size());
 		System.assertEquals('Fax', qf2.getOrderings()[1].getField());
-		System.assertEquals(fflib_QueryFactoryBase.SortOrder.ASCENDING, qf2.getOrderings()[1].getDirection());
+		System.assertEquals(fflib_Ordering.SortOrder.ASCENDING, qf2.getOrderings()[1].getDirection());
 
 	}
 
@@ -469,6 +469,34 @@ private class fflib_QueryFactoryBaseTest {
 		fflib_IQueryFactoryBase other = fflib_QueryFactoryBase.newInstance(Contact.SObjectType.getDescribe().getName());
 
 		System.assert(!qf.equals(other));
+	}
+
+	@IsTest
+	static void equals_When_ObjectHasDifferentNumberOfFields_Expect_NotEqual()
+	{
+		fflib_IQueryFactoryBase qf =
+			fflib_QueryFactoryBase.newInstance(Contact.SObjectType.getDescribe().getName())
+			.selectFields(new List<String> {'Id', 'FirstName', 'LastName'});
+
+		fflib_IQueryFactoryBase other =
+			fflib_QueryFactoryBase.newInstance(Contact.SObjectType.getDescribe().getName())
+			.selectFields(new List<String> {'Id', 'LastName'});
+
+		System.assert(!qf.equals(other));
+	}
+
+	@IsTest
+	static void equals_When_ObjectsIsTheSameAs_Expect_Equal()
+	{
+		fflib_IQueryFactoryBase qf =
+				fflib_QueryFactoryBase.newInstance(Contact.SObjectType.getDescribe().getName())
+						.selectFields(new List<String> {'Id', 'FirstName', 'LastName'});
+
+		fflib_IQueryFactoryBase other =
+				fflib_QueryFactoryBase.newInstance(Contact.SObjectType.getDescribe().getName())
+						.selectFields(new List<String> {'Id', 'LastName', 'FirstName'});
+
+		System.assert(qf.equals(other));
 	}
 
 	@IsTest
