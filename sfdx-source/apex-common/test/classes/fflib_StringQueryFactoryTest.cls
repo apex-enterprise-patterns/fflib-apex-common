@@ -541,4 +541,15 @@ private class fflib_StringQueryFactoryTest {
 
 		System.assertEquals('hello world', fflib_StringQueryFactory.newInstance('Contact').toSOQL());
 	}
+
+	@IsTest
+	static void testSoql_allRows(){
+		//Given
+		fflib_IStringQueryFactory qf = fflib_StringQueryFactory.newInstance('User');
+		qf.selectField('Id');
+		qf.setAllRows();
+
+		//Then
+		System.assertEquals('SELECT Id FROM User ALL ROWS', qf.toSOQL());
+	}
 }

@@ -117,6 +117,11 @@ public virtual inherited sharing class fflib_StringQueryFactory
 		return ((fflib_IStringQueryFactory)obj).toSOQL() == this.toSOQL();
 	}
 
+	public virtual Boolean getAllRows()
+	{
+		return this.allRows;
+	}
+
 	public virtual String getCondition()
 	{
 		return whereClause;
@@ -218,6 +223,12 @@ public virtual inherited sharing class fflib_StringQueryFactory
 		return this;
 	}
 
+	public virtual fflib_IStringQueryFactory setAllRows()
+	{
+		this.allRows = true;
+		return this;
+	}
+
 	public virtual fflib_IStringQueryFactory setCondition(String clause)
 	{
 		this.whereClause = clause;
@@ -299,6 +310,11 @@ public virtual inherited sharing class fflib_StringQueryFactory
 			sb.add('OFFSET ' + offsetValue);
 		}
 
+		if (allRows)
+		{
+			sb.add('ALL ROWS');
+		}
+
 		return String.join(sb, ' ');
 	}
 
@@ -313,6 +329,7 @@ public virtual inherited sharing class fflib_StringQueryFactory
 	}
 
 	// ========== Private Instance Logic ==========================================================
+	private Boolean allRows = false;
 	private Map<String, String> fieldsMap = new Map<String, String>();
 	private Integer limitValue = 0;
 	private Integer offsetValue = 0;

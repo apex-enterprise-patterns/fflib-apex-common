@@ -59,6 +59,7 @@ public interface fflib_IStringQueryFactory
 	fflib_IStringQueryFactory addOrdering(String fieldName, fflib_Ordering.SortOrder direction, Boolean nullsLast);
 	fflib_IStringQueryFactory deepClone();
 	Boolean equals(Object obj);
+	Boolean getAllRows();
 	String getCondition();
 	Set<String> getFields();
 	Integer getLimit();
@@ -72,6 +73,7 @@ public interface fflib_IStringQueryFactory
 	fflib_IStringQueryFactory selectField(String fieldName);
 	fflib_IStringQueryFactory selectFields(List<String> fieldNameList);
 	fflib_IStringQueryFactory selectFields(Set<String> fieldNameSet);
+	fflib_IStringQueryFactory setAllRows();
 	fflib_IStringQueryFactory setCondition(String clause);
 	fflib_IStringQueryFactory setLimit(Integer value);
 	fflib_IStringQueryFactory setOffset(Integer value);

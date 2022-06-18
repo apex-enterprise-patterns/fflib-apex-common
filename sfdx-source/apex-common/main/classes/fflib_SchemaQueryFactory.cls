@@ -74,6 +74,11 @@ public inherited sharing class fflib_SchemaQueryFactory
 		return this;
 	}
 
+	public Boolean getAllRows()
+	{
+		return this.stringBasedQueryFactory.getAllRows();
+	}
+
 	public String getCondition()
 	{
 		return this.stringBasedQueryFactory.getCondition();
@@ -159,6 +164,12 @@ public inherited sharing class fflib_SchemaQueryFactory
 		}
 
 		this.stringBasedQueryFactory.selectFields(validatedFieldList);
+		return this;
+	}
+
+	public fflib_ISchemaQueryFactory setAllRows()
+	{
+		this.stringBasedQueryFactory.setAllRows();
 		return this;
 	}
 
@@ -249,6 +260,11 @@ public inherited sharing class fflib_SchemaQueryFactory
 		if (0 < getOffset())
 		{
 			sb.add('OFFSET ' + getOffset());
+		}
+
+		if (getAllRows())
+		{
+			sb.add('ALL ROWS');
 		}
 
 		return String.join(sb, ' ');
@@ -460,6 +476,12 @@ public inherited sharing class fflib_SchemaQueryFactory
 		this.stringBasedQueryFactory = fflib_StringQueryFactory.newInstance(relationship.childSObject.getDescribe().getName());
 		this.table = relationship.childSObject;
 		this.relationship = relationship;
+	}
+
+	// --- For backward compatibility ---
+	public fflib_SchemaQueryFactory(SObjectType table)
+	{
+		this(table, null);
 	}
 
 	// ========== Private Instance Logic ==========================================================

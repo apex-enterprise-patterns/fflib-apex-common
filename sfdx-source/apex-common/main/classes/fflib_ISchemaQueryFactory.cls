@@ -58,6 +58,7 @@ public interface fflib_ISchemaQueryFactory
 	fflib_ISchemaQueryFactory addOrdering(fflib_SchemaQueryFactory.Ordering ordering);
 	fflib_ISchemaQueryFactory addOrdering(String fieldName, fflib_SchemaQueryFactory.SortOrder direction);
 	fflib_ISchemaQueryFactory addOrdering(String fieldName, fflib_SchemaQueryFactory.SortOrder direction, Boolean nullsLast);
+	Boolean getAllRows();
 	String getCondition();
 	Set<String> getFields();
 	Integer getLimit();
@@ -71,6 +72,7 @@ public interface fflib_ISchemaQueryFactory
 	fflib_ISchemaQueryFactory selectField(String fieldName);
 	fflib_ISchemaQueryFactory selectFields(List<String> fieldNameList);
 	fflib_ISchemaQueryFactory selectFields(Set<String> fieldNameSet);
+	fflib_ISchemaQueryFactory setAllRows();
 	fflib_ISchemaQueryFactory setCondition(String clause);
 	fflib_ISchemaQueryFactory setLimit(Integer value);
 	fflib_ISchemaQueryFactory setOffset(Integer value);

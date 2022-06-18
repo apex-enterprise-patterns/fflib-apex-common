@@ -724,6 +724,17 @@ private class fflib_SchemaQueryFactoryTest {
 		System.assertNotEquals(orderedQuery, actualSoql);
 	}
 
+	@IsTest
+	static void testSoql_allRows(){
+		//Given
+		fflib_ISchemaQueryFactory qf = fflib_SchemaQueryFactory.newInstance(User.SObjectType);
+		qf.selectField('Id');
+		qf.setAllRows();
+
+		//Then
+		System.assertEquals('SELECT Id FROM User ALL ROWS', qf.toSOQL());
+	}
+
 	public static User createTestUser_noAccess(){
 		User usr;
 		try {
