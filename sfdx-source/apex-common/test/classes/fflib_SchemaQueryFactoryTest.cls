@@ -24,6 +24,34 @@
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **/
 
+/**
+ * QueryFactory provides an object-oriented way of building SOQL queries without resorting to string manipulation.
+ * This class is not meant to be used as a replacement for all SOQL queries, and due to the relatively high overhead in both CPU and describe calls
+ * should be used in places where highly dynamic queries, such as those that include field sets or are mutated heavily
+ * in multiple locations are a good fit for use with fflib_QueryFactory.
+ *
+ * To use call construct a new instance for each query you intend to make.
+ * To add additional fields to the query make use of the selectField(s) methods.
+ *
+ * Currently the WHERE clause of the query is manipulated as a single string, and is decidedly less OO-styled than other methods.
+ * This is expected to be expanded upon in the future.
+ *
+ * To include one or more ORDER BY clause(s), use one of the addOrdering methods.  If not specified, the "NULLS FIRST" keywords
+ * will be included by default. Constructing Ordering instances manually is discouraged.
+ *
+ * Subselect Queries are supported with the subselectQuery methods.
+ * More than one sub-query can be added to a single query, but sub-queries can only be 1 level deep.
+ * An exception will thrown from the subselectQuery method when there is an attempt to add a subquery to a sub-query
+ * or to add a subquery to a query with an invalid relationship.
+ *
+ * Current limitations:
+ * - Aggregate functions are not currently supported.
+ * - Cross-object references currently require using String argument(s) to selectField(s).
+ * - The behavior of serializing and deserializing an fflib_QueryFactory instance is currently untested and undefined.
+ *
+ * There is a google doc providing additional guidance on the use of this class with field sets at
+ * https://docs.google.com/a/financialforce.com/document/d/1I4cxN4xHT4UJj_3Oi0YBL_MJ5chm-KG8kMN1D1un8-g/edit?usp=sharing
+**/
 @IsTest
 private class fflib_SchemaQueryFactoryTest {
 
