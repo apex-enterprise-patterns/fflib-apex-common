@@ -266,7 +266,7 @@ public virtual inherited sharing class fflib_StringQueryFactory
 
 	public virtual fflib_IStringQueryFactory setSortSelectFields(Boolean value)
 	{
-		this.sortSelectFields = !!value;
+		this.sortSelectFields = value == true;
 		return this;
 	}
 
@@ -397,22 +397,6 @@ public virtual inherited sharing class fflib_StringQueryFactory
 		{
 			throw new InvalidFieldNameException('fieldName is required');
 		}
-	}
-
-	private static List<String> reduceListToUniqueLowerCaseValues(List<String> valueList)
-	{
-		Map<String, String> returnMap = new Map<String, String>();
-
-		for (String value : valueList)
-		{
-			String valueString = keyify(value);
-			if (String.isNotBlank(valueString))
-			{
-				returnMap.put(valueString, value);
-			}
-		}
-
-		return returnMap.values();
 	}
 
 	// ========== Exception Classes ===============================================================

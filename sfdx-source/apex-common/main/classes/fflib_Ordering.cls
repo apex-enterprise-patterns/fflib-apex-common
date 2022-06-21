@@ -76,13 +76,13 @@ public virtual inherited sharing class fflib_Ordering
 
 	public fflib_Ordering(SObjectType table, String fieldName, SortOrder direction)
 	{
-		this(table, fieldName, direction, false);
+		this(table, fieldName, direction, true);
 	}
 
 	public fflib_Ordering(SObjectType table, String fieldName, SortOrder direction, Boolean assertSchema)
 	{
 		String fldName = fieldName;
-		if (!!assertSchema)
+		if (assertSchema == true)
 		{
 			AssertSchemaResponse asr = assertSchema(table.getDescribe().getName(), fieldName);
 			fldName = asr.fieldName;
@@ -96,8 +96,9 @@ public virtual inherited sharing class fflib_Ordering
 	public fflib_Ordering(SObjectField field, SortOrder direction, Boolean nullsLast)
 	{
 		this.field = field;
+		this.fieldName = field.getDescribe().getName();
 		this.direction = direction;
-		this.nullsLast = false;
+		this.nullsLast = nullsLast == true;
 	}
 
 	public fflib_Ordering(String fieldName, SortOrder direction)
@@ -114,32 +115,30 @@ public virtual inherited sharing class fflib_Ordering
 
 		this.fieldName = fieldName;
 		this.direction = direction;
-		this.nullsLast = !!nullsLast;
+		this.nullsLast = nullsLast == true;
 	}
 
+	// These constructors having the String tablename parameter, implicitly perform Schema assertion
+	// since otherwise, the tablename has no usage within the order-by clause.
 	public fflib_Ordering(String tableName, String fieldName, SortOrder direction)
 	{
-		this(tableName, fieldName, direction, false);
+		this(tableName, fieldName, direction, true);
 	}
 
 	public fflib_Ordering(String tableName, String fieldName, SortOrder direction, Boolean nullsLast)
 	{
-		this(tableName, fieldName, direction, nullsLast, false);
+		this(tableName, fieldName, direction, nullsLast, true);
 	}
 
 	public fflib_Ordering(String tableName, String fieldName, SortOrder direction, Boolean nullsLast, Boolean assertSchema)
 	{
-		String fldName = fieldName;
-
-		if (!!assertSchema)
+		if (assertSchema == true)
 		{
 			AssertSchemaResponse asr = assertSchema(tableName, fieldName);
-
-			fldName = asr.fieldName;
 			this.field = asr.field;
 		}
 
-		this.fieldName = fldName;
+		this.fieldName = fieldName;
 		this.direction = direction;
 		this.nullsLast = false;
 	}
@@ -151,28 +150,14 @@ public virtual inherited sharing class fflib_Ordering
 
 	public virtual String getField()
 	{
-		if (field != null)
-		{
-			return field.getDescribe().getName();
-		}
-		else
-		{
-			return fieldName;
-		}
+		return fieldName;
 	}
 
 	public virtual String getOrdering()
 	{
 		List<String> sb = new List<String>();
 
-		if (field != null)
-		{
-			sb.add(field.getDescribe().getName());
-		}
-		else
-		{
-			sb.add(fieldName);
-		}
+		sb.add(getField());
 
 		sb.add(
 				direction == SortOrder.ASCENDING
@@ -194,31 +179,12 @@ public virtual inherited sharing class fflib_Ordering
 		return 'ORDER BY ' + getOrdering();
 	}
 
-	public static SortOrder sortOrderFromString(String value)
-	{
-		switch on value.toLowerCase()
-		{
-			when 'ascending', 'asc'
-			{
-				return SortOrder.ASCENDING;
-			}
-			when 'descending', 'desc'
-			{
-				return SortOrder.DESCENDING;
-			}
-			when else
-			{
-				throw new InvalidSortOrderStringException('Specified value is not');
-			}
-		}
-	}
-
 	private class AssertSchemaResponse
 	{
 		public SObjectField field;
 		public String fieldName;
 
-		public AssertSchemaResponse(SObjectType table, SObjectField field)
+		public AssertSchemaResponse(SObjectField field)
 		{
 			this.field = field;
 			this.fieldName = field.getDescribe().getName();
@@ -241,7 +207,7 @@ public virtual inherited sharing class fflib_Ordering
 			throw new InvalidSchemaException('Specified field name, "' + fieldName + '", does not exist for table, "' + tableName + '"');
 		}
 
-		return new AssertSchemaResponse(tbl, fld);
+		return new AssertSchemaResponse(fld);
 	}
 
 	public class InvalidSchemaException

@@ -56,7 +56,58 @@
 private class fflib_OrderingTest
 {
 	@IsTest
-	static void testBehavior()
+	static void construction_When_StringFieldsArePassed_Expect_ProperResult()
 	{
+		// A typical String usage.  String cases are retained as provided, since actual schema context is NOT accessed.
+		fflib_Ordering o = new fflib_Ordering('name', fflib_Ordering.SortOrder.ASCENDING);
+		System.assertEquals('ORDER BY name ASC NULLS FIRST', o.getOrderingClause());
+
+		// Let's test an invalid field name just to ensure Schema functionality IS NOT executed in this path.
+		o = new fflib_Ordering('YouGottaBeKiddingMe', fflib_Ordering.SortOrder.DESCENDING);
+		System.assertEquals('ORDER BY YouGottaBeKiddingMe DESC NULLS FIRST', o.getOrderingClause());
+	}
+
+	@IsTest
+	static void construction_When_StringTableAndFieldsArePassed_Expect_ProperResult()
+	{
+		// A typical String usage.  String cases are retained as provided, since actual schema context is NOT accessed.
+		fflib_Ordering o = new fflib_Ordering('Contact', 'name', fflib_Ordering.SortOrder.ASCENDING);
+		System.assertEquals('ORDER BY name ASC NULLS FIRST', o.getOrderingClause());
+
+		// Let's test an invalid field name just to ensure Schema functionality IS NOT executed in this path.
+		try
+		{
+			o = new fflib_Ordering('Contact', 'YouGottaBeKiddingMe',fflib_Ordering.SortOrder.DESCENDING);
+			System.assert(false, 'Order construction should\'ve resulted in an exception but succeeded.');
+		}
+		catch (fflib_Ordering.InvalidSchemaException exc)
+		{
+			// This is the expected exception
+		}
+		catch (Exception exc)
+		{
+			System.assert(false, 'Unexpected exception, being: ' + JSON.serialize(exc));
+		}
+	}
+
+	@IsTest
+	static void construction_When_SchemaFieldsArePassed_Expect_ProperResult()
+	{
+		fflib_Ordering o = new fflib_Ordering(Contact.Name, fflib_Ordering.SortOrder.ASCENDING);
+		System.assertEquals('ORDER BY Name ASC NULLS FIRST', o.getOrderingClause());
+
+		try
+		{
+			o = new fflib_Ordering(Contact.SObjectType, 'YouGottaBeKiddingMe',fflib_Ordering.SortOrder.DESCENDING);
+			System.assert(false, 'Order construction should\'ve resulted in an exception but succeeded.');
+		}
+		catch (fflib_Ordering.InvalidSchemaException exc)
+		{
+			// This is the expected exception
+		}
+		catch (Exception exc)
+		{
+			System.assert(false, 'Unexpected exception, being: ' + JSON.serialize(exc));
+		}
 	}
 }
