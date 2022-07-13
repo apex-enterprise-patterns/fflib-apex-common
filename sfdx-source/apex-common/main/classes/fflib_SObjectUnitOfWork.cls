@@ -121,6 +121,20 @@ public virtual class fflib_SObjectUnitOfWork
 			Database.emptyRecycleBin(objList);
 		}
     }
+
+	public virtual class UserModeDML extends SimpleDML{
+		public virtual override void dmlInsert(List<SObject> objList){
+			Database.insert(objList,AccessLevel.USER_MODE);
+		}
+		public virtual override void dmlUpdate(List<SObject> objList){
+			Database.update(objList,AccessLevel.USER_MODE);
+		}
+		public virtual override void dmlDelete(List<SObject> objList){
+			Database.delete(objList,AccessLevel.USER_MODE);
+		}
+	}
+
+
     /**
      * Constructs a new UnitOfWork to support work against the given object list
      *

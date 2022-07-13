@@ -64,6 +64,8 @@ public abstract with sharing class fflib_SObjectSelector
      **/
     private String m_orderBy;
 
+    private Boolean m_userMode = false;
+
     /**
      * Sort the query fields in the select statement (defaults to true, at the expense of performance).
      * Switch this off if you need more performant queries.
@@ -111,11 +113,17 @@ public abstract with sharing class fflib_SObjectSelector
     {
         this(includeFieldSetFields, true, false);
     }
-    
+
+    public fflib_SObjectSelector(Boolean includeFieldSetFields, Boolean userMode)
+    {
+        this(includeFieldSetFields, false, false, false, true);
+    }
+
     /**
      * Constructs the Selector
      *
-     * @param includeFieldSetFields Set to true if the Selector queries are to include Fieldset fields as well 
+     * @param includeFieldSetFields Set to true if the Selector queries are to include Fieldset fields as well
+     * @deprecated - consider using userMode for native platform enforcement of CRUD and FLS
      **/
     public fflib_SObjectSelector(Boolean includeFieldSetFields, Boolean enforceCRUD, Boolean enforceFLS)
     {
@@ -129,14 +137,22 @@ public abstract with sharing class fflib_SObjectSelector
      * @param enforceCRUD Enforce CRUD security
      * @param enforceFLS Enforce Field Level Security
      * @param sortSelectFields Set to false if selecting many columns to skip sorting select fields and improve performance
+     * @deprecated - consider using userMode for native platform enforcement of CRUD and FLS
      **/
     public fflib_SObjectSelector(Boolean includeFieldSetFields, Boolean enforceCRUD, Boolean enforceFLS, Boolean sortSelectFields)
+    {
+        this(includeFieldSetFields,enforceCRUD,enforceFLS,sortSelectFields,false);
+    }
+
+    private fflib_SObjectSelector(Boolean includeFieldSetFields, Boolean enforceCRUD, Boolean enforceFLS, Boolean sortSelectFields, Boolean userMode)
     {
         m_includeFieldSetFields = includeFieldSetFields;
         m_enforceCRUD = enforceCRUD;
         m_enforceFLS = enforceFLS;
         m_sortSelectFields = sortSelectFields;
+        m_userMode = userMode;
     }
+
 
     /**
      * Override this method to provide a list of Fieldsets that can optionally drive inclusion of additional fields in the base queries
@@ -179,6 +195,7 @@ public abstract with sharing class fflib_SObjectSelector
 
     /**
      * @description Set the selector to enforce FLS Security
+     * @deprecated -- consider using setUserMode to enforce native Apex User Mode Operations instead
      **/
     public fflib_SObjectSelector enforceFLS()
     {
@@ -211,6 +228,11 @@ public abstract with sharing class fflib_SObjectSelector
         return this;
     }
 
+    public fflib_SObjectSelector setUserMode(Boolean userMode){
+        this.m_userMode = userMode;
+        return this;
+    }
+
     /**
      * Returns True if this Selector instance has been instructed by the caller to include Field Set fields
      **/
@@ -233,6 +255,10 @@ public abstract with sharing class fflib_SObjectSelector
     public Boolean isEnforcingCRUD()
     {
     	return m_enforceCRUD;
+    }
+
+    public Boolean isUserMode(){
+        return m_userMode;
     }
 
     /**
@@ -349,7 +375,7 @@ public abstract with sharing class fflib_SObjectSelector
      **/
     public fflib_QueryFactory newQueryFactory()
     {    
-        return newQueryFactory(m_enforceCRUD, m_enforceFLS, true);
+        return newQueryFactory(m_enforceCRUD, m_enforceFLS, true, m_userMode);
     }
     
     /**
@@ -357,7 +383,7 @@ public abstract with sharing class fflib_SObjectSelector
      **/
     public fflib_QueryFactory newQueryFactory(Boolean includeSelectorFields)
     {    
-        return newQueryFactory(m_enforceCRUD, m_enforceFLS, includeSelectorFields);
+        return newQueryFactory(m_enforceCRUD, m_enforceFLS, includeSelectorFields, m_userMode);
     }
 
     /**
@@ -367,9 +393,22 @@ public abstract with sharing class fflib_SObjectSelector
     public fflib_QueryFactory newQueryFactory(Boolean assertCRUD, Boolean enforceFLS, Boolean includeSelectorFields)
     {
     	// Construct QueryFactory around the given SObject
+        return newQueryFactory(
+        		assertCRUD,
+                enforceFLS,
+                includeSelectorFields,
+                false);
+    }
+
+    public fflib_QueryFactory newQueryFactory(Boolean assertCRUD, Boolean enforceFLS, Boolean includeSelectorFields, Boolean userMode)
+    {
+        // Construct QueryFactory around the given SObject
         return configureQueryFactory(
-        	new fflib_QueryFactory(getSObjectType2()), 
-        		assertCRUD, enforceFLS, includeSelectorFields);
+                new fflib_QueryFactory(getSObjectType2()),
+                assertCRUD,
+                enforceFLS,
+                includeSelectorFields,
+                userMode);
     }
 
      /**
@@ -408,7 +447,8 @@ public abstract with sharing class fflib_SObjectSelector
     		subSelectQueryFactory, 
     		m_enforceCRUD, 
     		m_enforceFLS,
-    		includeSelectorFields);
+    		includeSelectorFields,
+            m_userMode);
     }
         
      /**
@@ -424,8 +464,8 @@ public abstract with sharing class fflib_SObjectSelector
        **/
      public fflib_QueryFactory addQueryFactorySubselect(fflib_QueryFactory parentQueryFactory, String relationshipName, Boolean includeSelectorFields)
      {
-	fflib_QueryFactory subSelectQueryFactory = parentQueryFactory.subselectQuery(relationshipName);
-	return configureQueryFactory(subSelectQueryFactory, m_enforceCRUD, m_enforceFLS, includeSelectorFields);
+        fflib_QueryFactory subSelectQueryFactory = parentQueryFactory.subselectQuery(relationshipName);
+        return configureQueryFactory(subSelectQueryFactory, m_enforceCRUD, m_enforceFLS, includeSelectorFields, m_userMode);
      }
 
     /**
@@ -439,7 +479,11 @@ public abstract with sharing class fflib_SObjectSelector
     /**
      * Configures a QueryFactory instance according to the configuration of this selector
      **/        
-    private fflib_QueryFactory configureQueryFactory(fflib_QueryFactory queryFactory, Boolean assertCRUD, Boolean enforceFLS, Boolean includeSelectorFields)
+    private fflib_QueryFactory configureQueryFactory(fflib_QueryFactory queryFactory,
+            Boolean assertCRUD,
+            Boolean enforceFLS,
+            Boolean includeSelectorFields,
+            Boolean userMode)
     {
         // CRUD and FLS security required?
         if (assertCRUD)
@@ -453,7 +497,16 @@ public abstract with sharing class fflib_SObjectSelector
 	                'Permission to access an ' + getSObjectType().getDescribe().getName() + ' denied.');               		
         	}
         }
-        queryFactory.setEnforceFLS(enforceFLS);
+
+        fflib_QueryFactory.FLSEnforcement fls = fflib_QueryFactory.FLSEnforcement.NONE;
+        if(userMode){
+            fls = fflib_QueryFactory.FLSEnforcement.USER_MODE;
+        }
+        else if(enforceFLS){
+            fls = fflib_QueryFactory.FLSEnforcement.LEGACY;
+        }
+
+        queryFactory.setEnforceFLS(fls);
                 
         // Configure the QueryFactory with the Selector fields?        
         if(includeSelectorFields)

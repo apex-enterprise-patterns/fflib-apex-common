@@ -54,6 +54,7 @@
 **/
 public class fflib_QueryFactory { //No explicit sharing declaration - inherit from caller
 	public enum SortOrder {ASCENDING, DESCENDING}
+	public enum FLSEnforcement{NONE, LEGACY, USER_MODE}
 
 	/**
 	 * This property is read-only and may not be set after instantiation.
@@ -71,8 +72,8 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * This can optionally be enforced (or not) by calling the setEnforceFLS method prior to calling 
 	 * one of the selectField or selectFieldset methods.
 	**/
-	private Boolean enforceFLS;
-	
+	private FLSEnforcement mFlsEnforcement;
+
 	private Boolean sortSelectFields = true;
 	private Boolean allRows = false;
 	
@@ -86,12 +87,25 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	private Map<Schema.ChildRelationship, fflib_QueryFactory> subselectQueryMap;
 
 	private String getFieldPath(String fieldName, Schema.sObjectType relatedSObjectType){
+
+		//Enforcing FLS using the legacy heuristic requires resolving the full field path to its respective
+		//Describe result to test for isAccessible on the DescribeFieldResult
+		//This is computationally expensive and should be bypassed if the QueryFactory instance is not
+		//enforcing FLS
+		//Starting in Summer '22, Apex can natively enforce CRUD and FLS with User Mode Operations
+		//Someday, the LEGACY FLSEnforcement heuristic will be removed
+		if(mFlsEnforcement != FLSEnforcement.LEGACY){
+			return fieldName;
+		}
+
 		if(!fieldName.contains('.')){ //single field
 			Schema.SObjectField token = fflib_SObjectDescribe.getDescribe(table).getField(fieldName.toLowerCase());
-			if(token == null)
-				throw new InvalidFieldException(fieldName,this.table);
-			if (enforceFLS) 
-				fflib_SecurityUtils.checkFieldIsReadable(this.table, token);	
+			if(token == null) {
+				throw new InvalidFieldException(fieldName, this.table);
+			}
+
+			fflib_SecurityUtils.checkFieldIsReadable(this.table, token);
+
 			return token.getDescribe().getName();
 		}
 
@@ -104,7 +118,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			Schema.SObjectField token = fflib_SObjectDescribe.getDescribe(lastSObjectType).getField(field.toLowerCase());
 			DescribeFieldResult tokenDescribe = token != null ? token.getDescribe() : null;
 			
-			if (token != null && enforceFLS) {
+			if (token != null) {
 				fflib_SecurityUtils.checkFieldIsReadable(lastSObjectType, token);
 			}
 
@@ -170,7 +184,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		this.table = table;
 		fields = new Set<String>();
 		order = new List<Ordering>();
-		enforceFLS = false;
+		mFlsEnforcement = FLSEnforcement.NONE;
 	}
 
 	/**
@@ -199,11 +213,17 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * permission enforced.  If this method is not called, the default behavior
 	 * is that FLS read permission will not be checked.
 	 * @param enforce whether to enforce field level security (read)
+	 * @deprecated - use the setEnforceFLS overload that specifies Legacy or Native FLS enforcement
 	 **/
 	public fflib_QueryFactory setEnforceFLS(Boolean enforce){
-		this.enforceFLS = enforce;
+		return setEnforceFLS(enforce ? FLSEnforcement.LEGACY : FLSEnforcement.NONE);
+	}
+
+	public fflib_QueryFactory setEnforceFLS(FLSEnforcement enforcement){
+		this.mFlsEnforcement = enforcement;
 		return this;
 	}
+
 
 	/**
 	 * Sets a flag to indicate that this query should have ordered
@@ -243,10 +263,12 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @exception InvalidFieldException If the field is null {@code field}.
 	**/
 	public fflib_QueryFactory selectField(Schema.SObjectField field){
-		if(field == null)
-			throw new InvalidFieldException(null,this.table);
-		if (enforceFLS) 
+		if(field == null) {
+			throw new InvalidFieldException(null, this.table);
+		}
+		if (mFlsEnforcement == FLSEnforcement.LEGACY) {
 			fflib_SecurityUtils.checkFieldIsReadable(table, field);
+		}
 		fields.add( getFieldTokenPath(field) );
 		return this;
 	}
@@ -276,10 +298,12 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	**/
 	public fflib_QueryFactory selectFields(Set<Schema.SObjectField> fields){
 		for(Schema.SObjectField token:fields){
-			if(token == null)
-				throw new InvalidFieldException();	
-			if (enforceFLS) 
-				fflib_SecurityUtils.checkFieldIsReadable(table, token);	
+			if(token == null) {
+				throw new InvalidFieldException();
+			}
+			if (mFlsEnforcement == FLSEnforcement.LEGACY) {
+				fflib_SecurityUtils.checkFieldIsReadable(table, token);
+			}
 			this.fields.add( getFieldTokenPath(token) );
 		}
 		return this;
@@ -290,11 +314,13 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @exception InvalidFieldException if the fields are null {@code fields}.	 
 	**/
 	public fflib_QueryFactory selectFields(List<Schema.SObjectField> fields){
-		for(Schema.SObjectField token:fields){
-			if(token == null)
+		for(Schema.SObjectField token : fields){
+			if(token == null) {
 				throw new InvalidFieldException();
-			if (enforceFLS) 
-				fflib_SecurityUtils.checkFieldIsReadable(table, token);		
+			}
+			if (mFlsEnforcement == FLSEnforcement.LEGACY) {
+				fflib_SecurityUtils.checkFieldIsReadable(table, token);
+			}
 			this.fields.add( getFieldTokenPath(token) );
 		}
 		return this;
@@ -679,7 +705,9 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		String result = 'SELECT ';
 		//if no fields have been added, just add the Id field so that the query or subquery will not just fail
 		if (fields.size() == 0){
-			if (enforceFLS) fflib_SecurityUtils.checkFieldIsReadable(table, 'Id');
+			if (mFlsEnforcement == FLSEnforcement.LEGACY){
+				fflib_SecurityUtils.checkFieldIsReadable(table, 'Id');
+			}
 			result += 'Id';
 		}else {
 			List<String> fieldsToQuery = new List<String>(fields);
@@ -717,6 +745,10 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			result += ' ALL ROWS';
 		}
 
+		if(mFlsEnforcement == FLSEnforcement.USER_MODE){
+			result += ' WITH USER_MODE';
+		}
+
 		return result;
 	}
 
@@ -730,7 +762,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			.setLimit(this.limitCount)
 			.setOffset(this.offsetCount)
 			.setCondition(this.conditionExpression)
-			.setEnforceFLS(this.enforceFLS);
+			.setEnforceFLS(this.mFlsEnforcement);
 
 		Map<Schema.ChildRelationship, fflib_QueryFactory> subqueries = this.subselectQueryMap;
 		if(subqueries != null) {
