@@ -50,3 +50,21 @@ package-lock.json
 
 sfdx-source/group*
 research/
+
+# IntelliJ with Illuminated Cloud
+*.iml
+.idea/
+IlluminatedCloud/
+Referenced\ Packages/*
+out/
+
+# PMD
+pmd-report.csv
+*pmd-report.xlsx
+
+# Draw.io
+*.drawio.bkp
+*.drawio.dtmp
+
+# Node
+package-lock.json

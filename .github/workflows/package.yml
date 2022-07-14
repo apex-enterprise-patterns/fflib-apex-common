@@ -1,0 +1,46 @@
+name: 'Package'
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      -   uses: actions/checkout@master
+      -   name: Set git username and email
+          run: |
+            #
+            git config user.email "${GH_USERNAME}@users.noreply.github.com"
+            git config user.name "${GH_USERNAME}"
+          env:
+            GH_USERNAME: ${{github.actor}}
+      -   name: Write the token into a file
+          run: 'echo ${{secrets.DEVHUB_TOKEN}} > devhub_token.txt'
+      -   name: Install Salesforce CLI
+          run: |
+            wget https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz
+            mkdir sfdx-cli
+            tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
+            ./sfdx-cli/install
+      -   name: Auth with the DevHub
+          run: 'sfdx force:auth:sfdxurl:store -f devhub_token.txt -a DevHub -d'
+      -   name: Create package and install into lowers
+          run: |
+            sfdx force:package:version:create -a APEX-COMMON -e "FFLIB Apex Common." -p apex-common --codecoverage -k keaper -c -w 20
+            version=$(sfdx force:package:version:list -p apex-common --createdlastdays 1 | tail -1 | tr -s ' ' | cut -d ' ' -f3)
+            packageid=$(sfdx force:package:version:list -p apex-common --createdlastdays 1 | tail -1 | tr -s ' ' | cut -d ' ' -f4)
+            echo Created package version $version
+            echo Tagging and committing to branch
+            git add .
+            git commit -am /packaging/installPackage.apexp?p0=$packageid
+            git tag $version
+            git push --tags
+            echo ${{secrets.DEV_TOKEN}} > dev_token.txt
+            sfdx force:auth:sfdxurl:store -f dev_token.txt -a Dev -d
+            sfdx force:package:install -p $packageid --targetusername jeff.watson@keap.com.dev -k keaper -a package -w 20
+
