@@ -29,7 +29,7 @@ jobs:
             ./sfdx-cli/install
       -   name: Auth with the DevHub
           run: 'sfdx force:auth:sfdxurl:store -f devhub_token.txt -a DevHub -d'
-      -   name: Create package and install into lowers
+      -   name: Create package
           run: |
             sfdx force:package:version:create -a APEX-COMMON -e "FFLIB Apex Common." -p apex-common --codecoverage -k keaper -c -w 20
             version=$(sfdx force:package:version:list -p apex-common --createdlastdays 1 | tail -1 | tr -s ' ' | cut -d ' ' -f3)
