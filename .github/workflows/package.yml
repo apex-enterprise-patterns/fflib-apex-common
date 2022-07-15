@@ -43,3 +43,6 @@ jobs:
             echo ${{secrets.DEV_TOKEN}} > dev_token.txt
             sfdx force:auth:sfdxurl:store -f dev_token.txt -a Dev -d
             sfdx force:package:install -p $packageid --targetusername jeff.watson@keap.com.dev -k keaper -a package -w 20
+            echo ${{secrets.INT_TOKEN}} > int_token.txt
+            sfdx force:auth:sfdxurl:store -f int_token.txt -a Int -d
+            sfdx force:package:install -p $packageid --targetusername jeff.watson@keap.com.int -k keaper -a package -w 20
