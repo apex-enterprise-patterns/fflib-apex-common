@@ -43,6 +43,9 @@ public virtual class fflib_SObjects
 	/**
 	 * Class constructor
 	 */
+	public fflib_SObjects() {
+
+	}
 	public fflib_SObjects(List<SObject> records)
 	{
 		super(records);
