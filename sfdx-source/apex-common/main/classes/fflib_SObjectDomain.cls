@@ -121,6 +121,9 @@ public virtual with sharing class fflib_SObjectDomain
 	 * @param sObjectList A concrete list (e.g. List<Account> vs List<SObject>) of records
 
 	 **/
+	public fflib_SObjectDomain() {
+	}
+
 	public fflib_SObjectDomain(List<SObject> sObjectList)
 	{
 		this(sObjectList, sObjectList.getSObjectType());
