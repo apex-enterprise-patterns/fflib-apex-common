@@ -30,6 +30,8 @@ public virtual class fflib_Objects implements fflib_IObjects
 	/**
 	 * Class constructor
 	 */
+	public fflib_Objects() {
+	}
 	public fflib_Objects(List<Object> objects)
 	{
 		this.objects = objects.clone();
