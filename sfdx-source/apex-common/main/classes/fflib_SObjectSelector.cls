@@ -507,4 +507,15 @@ public abstract with sharing class fflib_SObjectSelector
 
         return queryFactory;
     }
+
+    @TestVisible
+    protected String addConditionToQuery(String conditionString, String conditionToAdd) {
+        if (String.isNotBlank(conditionString) && String.isNotBlank(conditionToAdd)) {
+            conditionString = conditionString + ' AND ' + conditionToAdd + ' ';
+        } else if (String.isBlank(conditionString) && String.isNotBlank(conditionToAdd)) {
+            conditionString = conditionString + conditionToAdd + ' ';
+        }
+
+        return conditionString;
+    }
 }
