@@ -132,20 +132,29 @@ private class fflib_SObjectsTest
 	{
 		DomainAccounts domain = generateDomain();
 
-		final Set<String> expected = new Set<String>
-		{
-				'Canada',
-				'Ireland',
-				'UK',
-				'USA'
-		};
-		System.assert(
-				domain.getStringFieldValues(Schema.Account.ShippingCountry).equals(expected)
-		);
+		// Return only string, omitting nulls and blanks
+		System.assertEquals(
+				new Set<String>
+				{
+						'Canada',
+						'Ireland',
+						'UK',
+						'USA'
+				},
+				domain.getStringFieldValues(Schema.Account.ShippingCountry));
 
+		// Return all the values, including nulls and blanks
 		System.assert(
 				domain.getFieldValues(Schema.Account.ShippingCountry)
-						.equals(expected)
+						.equals(new Set<String>
+						{
+								'Canada',
+								'Ireland',
+								'UK',
+								'USA',
+								'',
+								null
+						})
 		);
 	}
 
