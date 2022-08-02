@@ -166,12 +166,10 @@ public virtual class fflib_SObjects
 		Set<Id> result = new Set<Id>();
 		for (SObject record : getRecords())
 		{
-			if (record.get(field) == null)
+			if (record.isSet(field))
 			{
-				continue;
+				result.add((Id) record.get(field));
 			}
-
-			result.add((Id) record.get(field));
 		}
 		return result;
 	}
