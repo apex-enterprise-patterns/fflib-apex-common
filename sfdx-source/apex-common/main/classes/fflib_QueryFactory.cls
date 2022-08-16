@@ -54,6 +54,7 @@
 **/
 public class fflib_QueryFactory { //No explicit sharing declaration - inherit from caller
 	public enum SortOrder {ASCENDING, DESCENDING}
+	public enum ConditionJoiner {AND_CONDITION, OR_CONDITION}
 
 	/**
 	 * This property is read-only and may not be set after instantiation.
@@ -334,6 +335,35 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	public String getCondition(){
 		return this.conditionExpression;
 	}
+
+	/*******************************************************************************************************************
+    * @description      a method to add additional condition to the where clause of the query
+    * @param            conditionExpression (String): where clause condition to add
+    * @param            joiner (ConditionJoiner): enum value that indicates whether the condition should be included
+    *                   with AND or OR joiner.
+    * @return           fflib_QueryFactory
+    *******************************************************************************************************************/
+	public fflib_QueryFactory addCondition(String conditionExpression, ConditionJoiner joiner) {
+		if(conditionExpression == null || joiner == null) {
+			return this;
+		}
+
+		String joinCondition    = joiner == ConditionJoiner.AND_CONDITION
+								? 'AND'
+								: 'OR';
+
+		String addedCondition   = conditionExpression.startsWith(' ')
+								? conditionExpression
+								: ' ' + conditionExpression;
+
+		this.conditionExpression    = String.isNotBlank(this.conditionExpression)
+									? this.conditionExpression + ' ' + joinCondition + addedCondition
+									: addedCondition;
+		this.conditionExpression = this.conditionExpression.trim();
+
+		return this;
+	}
+
 	/**
 	 * @param limitCount if not null causes a LIMIT clause to be added to the resulting query.
 	**/
