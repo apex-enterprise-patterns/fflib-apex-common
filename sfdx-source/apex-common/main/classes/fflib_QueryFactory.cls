@@ -94,8 +94,8 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		//enforcing FLS
 		//Starting in Summer '22, Apex can natively enforce CRUD and FLS with User Mode Operations
 		//Someday, the LEGACY FLSEnforcement heuristic will be removed
-		if(mFlsEnforcement != FLSEnforcement.LEGACY){
-			return fieldName;
+		if(mFlsEnforcement == FLSEnforcement.USER_MODE){
+			return fieldName.toLowerCase();
 		}
 
 		if(!fieldName.contains('.')){ //single field
