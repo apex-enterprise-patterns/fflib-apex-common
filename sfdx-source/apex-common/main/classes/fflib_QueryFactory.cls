@@ -103,8 +103,9 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			if(token == null) {
 				throw new InvalidFieldException(fieldName, this.table);
 			}
-
-			fflib_SecurityUtils.checkFieldIsReadable(this.table, token);
+			if(mFlsEnforcement == FLSEnforcement.LEGACY) {
+				fflib_SecurityUtils.checkFieldIsReadable(this.table, token);
+			}
 
 			return token.getDescribe().getName();
 		}

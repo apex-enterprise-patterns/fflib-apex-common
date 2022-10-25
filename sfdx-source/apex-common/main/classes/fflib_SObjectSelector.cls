@@ -116,7 +116,7 @@ public abstract with sharing class fflib_SObjectSelector
 
     public fflib_SObjectSelector(Boolean includeFieldSetFields, Boolean userMode)
     {
-        this(includeFieldSetFields, false, false, false, true);
+        this(includeFieldSetFields, false, false, false, userMode);
     }
 
     /**
