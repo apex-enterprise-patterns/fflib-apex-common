@@ -24,10 +24,10 @@
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **/
 
-@isTest
+@isTest @TestVisible
 private class fflib_SecurityUtilsTest {
 
-	@TestSetup
+	@TestSetup @TestVisible
 	static void testSetup() {
 		// #315 Create a Permission Set that grants "Read" access to Account, Contact and Lead. We will use this in
 		// Spring '21 orgs that lack the "Read Only" Profile. See:
@@ -78,6 +78,7 @@ private class fflib_SecurityUtilsTest {
 		);
 	}
 
+	@TestVisible
 	static User setupTestUser(String profileName){
 		Profile p;
 		Boolean applyReadOnlyPermissionSet = false;

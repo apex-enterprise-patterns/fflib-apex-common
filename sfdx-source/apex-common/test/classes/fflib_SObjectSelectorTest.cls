@@ -27,6 +27,10 @@
 @IsTest
 private with sharing class fflib_SObjectSelectorTest 
 {
+	@TestSetup
+	static void testSetup(){
+		fflib_SecurityUtilsTest.testSetup();
+	}
 	
 	static testMethod void testGetSObjectName()
 	{
@@ -177,6 +181,7 @@ private with sharing class fflib_SObjectSelectorTest
 		System.assertEquals(false, selector.isEnforcingFLS());
 		System.assertEquals(true, selector.isEnforcingCRUD());
 		System.assertEquals(false, selector.isIncludeFieldSetFields());
+		System.assertEquals(fflib_SObjectSelector.DataAccess.LEGACY, selector.getDataAccess());
 		
 		System.assertEquals('Account', selector.getSObjectName());
 		System.assertEquals(Account.SObjectType, selector.getSObjectType2());
@@ -367,14 +372,72 @@ private with sharing class fflib_SObjectSelectorTest
 
 	}
 
-	private static void assertEqualsSelectFields(String expectedSelectFields, String actualSelectFields)
-	{
-		Set<String> expected = new Set<String>(expectedSelectFields.deleteWhiteSpace().split(','));
-		Set<String> actual = new Set<String>(actualSelectFields.deleteWhiteSpace().split(','));
+	@IsTest
+	static void toSoql_When_UserModeAndUserCannnotReadObject_Expect_QueryException(){
+		AccessLevelOpportunitySelector sel = new AccessLevelOpportunitySelector();
 
-		System.assertEquals(expected, actual);
+		User u = getLimitedReadOnlyUser();
+		System.runAs(u){
+			try{
+				System.debug(sel.newQueryFactory().toSOQL());
+				sel.selectSObjectsById(new Set<Id>{fflib_IDGenerator.generate(Opportunity.SObjectType)});
+				Assert.fail('Expected a QueryException due to read only user not having access to Opportunity');
+			}
+			catch(QueryException qe){
+				//If you don't have Read access to the Lead object, the Name field is inaccessible -- so that's what we're verifying
+				Assert.isNotNull(qe.getInaccessibleFields(),'Expected a Map of inaccessible objects; got null');
+				Set<String> inaccessibleFields = qe.getInaccessibleFields().get('Opportunity');
+				Assert.isNotNull(inaccessibleFields,'Expected a Set of inaccessible fields on the Opportunity object; got null');
+				Assert.isTrue(inaccessibleFields.contains('Name'),'Expected Name to be an inaccessible field on Opportunity');
+			}
+		}
 	}
-	
+
+	@IsTest
+	static void toSoql_When_SystemModeAndUserCannnotReadObject_Expect_Success(){
+		AccessLevelOpportunitySelector sel = new AccessLevelOpportunitySelector(fflib_SObjectSelector.DataAccess.SYSTEM_MODE);
+
+		User u = getLimitedReadOnlyUser();
+		System.runAs(u){
+			sel.selectSObjectsById(new Set<Id>{fflib_IDGenerator.generate(Opportunity.SObjectType)});
+		}
+	}
+
+	@IsTest
+	static void toSoql_When_UserModeAndUserCannnotReadField_Expect_QueryException(){
+		AccessLevelAccountSelector sel = new AccessLevelAccountSelector();
+
+		//Account has Read access by the limited read only user but no FLS access
+		User u = getLimitedReadOnlyUser();
+		System.runAs(u){
+			try{
+				System.debug(sel.newQueryFactory().toSOQL());
+				sel.selectSObjectsById(new Set<Id>{fflib_IDGenerator.generate(Account.SObjectType)});
+				Assert.fail('Expected a QueryException due to read only user not having access to AnnualRevenue');
+			}
+			catch(QueryException qe){
+				//If you don't have Read access to the Lead object, the Name field is inaccessible -- so that's what we're verifying
+				Assert.isNotNull(qe.getInaccessibleFields(),'Expected a Map of inaccessible objects; got null');
+				Set<String> inaccessibleFields = qe.getInaccessibleFields().get('Account');
+				Assert.isNotNull(inaccessibleFields,'Expected a Set of inaccessible fields on the Account object; got null');
+				Assert.isFalse(inaccessibleFields.contains('Name'),'Expected Name to be an accessible field on Account');
+				Assert.isTrue(inaccessibleFields.contains('AnnualRevenue'),'Expected AnnualRevenue to be an inaccessible field on Account');
+			}
+		}
+	}
+
+	@IsTest
+	static void toSoql_When_SystemModeAndUserCannnotReadField_Expect_Success(){
+		AccessLevelAccountSelector sel = new AccessLevelAccountSelector(fflib_SObjectSelector.DataAccess.SYSTEM_MODE);
+
+		//Account has Read access by the limited read only user but no FLS access
+		User u = getLimitedReadOnlyUser();
+		System.runAs(u){
+			sel.selectSObjectsById(new Set<Id>{fflib_IDGenerator.generate(Account.SObjectType)});
+		}
+	}
+
+
 	private class Testfflib_SObjectSelector extends fflib_SObjectSelector
 	{
 		public Testfflib_SObjectSelector()
@@ -455,6 +518,53 @@ private with sharing class fflib_SObjectSelectorTest
 		}
 	}
 
+	private class AccessLevelOpportunitySelector extends fflib_SObjectSelector{
+		public AccessLevelOpportunitySelector(){
+			this(DataAccess.USER_MODE);
+		}
+
+		public AccessLevelOpportunitySelector(DataAccess access){
+			super(false, access);
+		}
+
+		public Schema.SObjectType getSObjectType(){
+			return Opportunity.sObjectType;
+		}
+
+		public List<Schema.SObjectField> getSObjectFieldList(){
+			return new List<Schema.SObjectField> {
+					Opportunity.Name,
+					Opportunity.Id,
+					Opportunity.Amount,
+					Opportunity.CloseDate
+			};
+		}
+	}
+
+	private class AccessLevelAccountSelector extends fflib_SObjectSelector{
+		public AccessLevelAccountSelector(){
+			this(DataAccess.USER_MODE);
+		}
+
+		public AccessLevelAccountSelector(DataAccess access){
+			super(false, access);
+		}
+
+		public Schema.SObjectType getSObjectType(){
+			return Account.sObjectType;
+		}
+
+		public List<Schema.SObjectField> getSObjectFieldList(){
+			return new List<Schema.SObjectField> {
+					Account.Name,
+					Account.Id,
+					Account.AnnualRevenue,
+					Account.AccountNumber
+			};
+		}
+	}
+
+
 	/**
 	 * Create test user
 	 **/
@@ -474,6 +584,10 @@ private with sharing class fflib_SObjectSelectorTest
 			return null;
 		}		
 		return testUser;
+	}
+
+	private static User getLimitedReadOnlyUser(){
+		return fflib_SecurityUtilsTest.setupTestUser('Read Only');
 	}
 
 	@isTest

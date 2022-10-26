@@ -30,6 +30,8 @@
 public abstract with sharing class fflib_SObjectSelector
 	implements fflib_ISObjectSelector
 {
+    public enum DataAccess{LEGACY, USER_MODE, SYSTEM_MODE}
+
     /**
      * Indicates whether the sObject has the currency ISO code field for organisations which have multi-currency
      * enabled. 
@@ -64,7 +66,7 @@ public abstract with sharing class fflib_SObjectSelector
      **/
     private String m_orderBy;
 
-    private Boolean m_userMode = false;
+    private DataAccess m_dataAccess = DataAccess.LEGACY;
 
     /**
      * Sort the query fields in the select statement (defaults to true, at the expense of performance).
@@ -114,9 +116,9 @@ public abstract with sharing class fflib_SObjectSelector
         this(includeFieldSetFields, true, false);
     }
 
-    public fflib_SObjectSelector(Boolean includeFieldSetFields, Boolean userMode)
+    public fflib_SObjectSelector(Boolean includeFieldSetFields, DataAccess dataAccess)
     {
-        this(includeFieldSetFields, false, false, false, userMode);
+        this(includeFieldSetFields, false, false, false, dataAccess);
     }
 
     /**
@@ -137,20 +139,20 @@ public abstract with sharing class fflib_SObjectSelector
      * @param enforceCRUD Enforce CRUD security
      * @param enforceFLS Enforce Field Level Security
      * @param sortSelectFields Set to false if selecting many columns to skip sorting select fields and improve performance
-     * @deprecated - consider using userMode for native platform enforcement of CRUD and FLS
+     * @deprecated - consider using dataAccess for native platform enforcement of CRUD and FLS
      **/
     public fflib_SObjectSelector(Boolean includeFieldSetFields, Boolean enforceCRUD, Boolean enforceFLS, Boolean sortSelectFields)
     {
-        this(includeFieldSetFields,enforceCRUD,enforceFLS,sortSelectFields,false);
+        this(includeFieldSetFields,enforceCRUD,enforceFLS,sortSelectFields,DataAccess.LEGACY);
     }
 
-    private fflib_SObjectSelector(Boolean includeFieldSetFields, Boolean enforceCRUD, Boolean enforceFLS, Boolean sortSelectFields, Boolean userMode)
+    private fflib_SObjectSelector(Boolean includeFieldSetFields, Boolean enforceCRUD, Boolean enforceFLS, Boolean sortSelectFields, DataAccess dataAccess)
     {
         m_includeFieldSetFields = includeFieldSetFields;
         m_enforceCRUD = enforceCRUD;
         m_enforceFLS = enforceFLS;
         m_sortSelectFields = sortSelectFields;
-        m_userMode = userMode;
+        m_DataAccess = dataAccess;
     }
 
 
@@ -195,7 +197,7 @@ public abstract with sharing class fflib_SObjectSelector
 
     /**
      * @description Set the selector to enforce FLS Security
-     * @deprecated -- consider using setUserMode to enforce native Apex User Mode Operations instead
+     * @deprecated -- consider using setDataAccess to enforce native Apex User Mode Operations instead
      **/
     public fflib_SObjectSelector enforceFLS()
     {
@@ -228,8 +230,15 @@ public abstract with sharing class fflib_SObjectSelector
         return this;
     }
 
-    public fflib_SObjectSelector setUserMode(Boolean userMode){
-        this.m_userMode = userMode;
+    public fflib_SObjectSelector setDataAccess(DataAccess access){
+        this.m_dataAccess = access;
+
+        //You can't mix and match the legacy enforceFls and assertCRUD with the SYSTEM_MODE or USER_MODE
+        if(this.m_dataAccess != DataAccess.LEGACY){
+            ignoreCRUD();
+            m_enforceFLS = false;
+        }
+
         return this;
     }
 
@@ -257,8 +266,8 @@ public abstract with sharing class fflib_SObjectSelector
     	return m_enforceCRUD;
     }
 
-    public Boolean isUserMode(){
-        return m_userMode;
+    public DataAccess getDataAccess(){
+        return m_dataAccess;
     }
 
     /**
@@ -375,7 +384,7 @@ public abstract with sharing class fflib_SObjectSelector
      **/
     public fflib_QueryFactory newQueryFactory()
     {    
-        return newQueryFactory(m_enforceCRUD, m_enforceFLS, true, m_userMode);
+        return newQueryFactory(m_enforceCRUD, m_enforceFLS, true, m_DataAccess);
     }
     
     /**
@@ -383,7 +392,7 @@ public abstract with sharing class fflib_SObjectSelector
      **/
     public fflib_QueryFactory newQueryFactory(Boolean includeSelectorFields)
     {    
-        return newQueryFactory(m_enforceCRUD, m_enforceFLS, includeSelectorFields, m_userMode);
+        return newQueryFactory(m_enforceCRUD, m_enforceFLS, includeSelectorFields, m_DataAccess);
     }
 
     /**
@@ -397,10 +406,10 @@ public abstract with sharing class fflib_SObjectSelector
         		assertCRUD,
                 enforceFLS,
                 includeSelectorFields,
-                false);
+                DataAccess.LEGACY);
     }
 
-    public fflib_QueryFactory newQueryFactory(Boolean assertCRUD, Boolean enforceFLS, Boolean includeSelectorFields, Boolean userMode)
+    private fflib_QueryFactory newQueryFactory(Boolean assertCRUD, Boolean enforceFLS, Boolean includeSelectorFields, DataAccess dataAccess)
     {
         // Construct QueryFactory around the given SObject
         return configureQueryFactory(
@@ -408,7 +417,7 @@ public abstract with sharing class fflib_SObjectSelector
                 assertCRUD,
                 enforceFLS,
                 includeSelectorFields,
-                userMode);
+                dataAccess);
     }
 
      /**
@@ -448,7 +457,7 @@ public abstract with sharing class fflib_SObjectSelector
     		m_enforceCRUD, 
     		m_enforceFLS,
     		includeSelectorFields,
-            m_userMode);
+            m_dataAccess);
     }
         
      /**
@@ -465,7 +474,7 @@ public abstract with sharing class fflib_SObjectSelector
      public fflib_QueryFactory addQueryFactorySubselect(fflib_QueryFactory parentQueryFactory, String relationshipName, Boolean includeSelectorFields)
      {
         fflib_QueryFactory subSelectQueryFactory = parentQueryFactory.subselectQuery(relationshipName);
-        return configureQueryFactory(subSelectQueryFactory, m_enforceCRUD, m_enforceFLS, includeSelectorFields, m_userMode);
+        return configureQueryFactory(subSelectQueryFactory, m_enforceCRUD, m_enforceFLS, includeSelectorFields, m_dataAccess);
      }
 
     /**
@@ -483,9 +492,9 @@ public abstract with sharing class fflib_SObjectSelector
             Boolean assertCRUD,
             Boolean enforceFLS,
             Boolean includeSelectorFields,
-            Boolean userMode)
+            DataAccess access)
     {
-        // CRUD and FLS security required?
+        // Legacy CRUD enforcement required?
         if (assertCRUD)
         {
         	try { 
@@ -499,8 +508,11 @@ public abstract with sharing class fflib_SObjectSelector
         }
 
         fflib_QueryFactory.FLSEnforcement fls = fflib_QueryFactory.FLSEnforcement.NONE;
-        if(userMode){
+        if(access == DataAccess.USER_MODE){
             fls = fflib_QueryFactory.FLSEnforcement.USER_MODE;
+        }
+        else if(access == DataAccess.SYSTEM_MODE){
+            fls = fflib_QueryFactory.FLSEnforcement.SYSTEM_MODE;
         }
         else if(enforceFLS){
             fls = fflib_QueryFactory.FLSEnforcement.LEGACY;

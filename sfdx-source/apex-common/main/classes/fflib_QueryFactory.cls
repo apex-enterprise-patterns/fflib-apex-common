@@ -54,7 +54,7 @@
 **/
 public class fflib_QueryFactory { //No explicit sharing declaration - inherit from caller
 	public enum SortOrder {ASCENDING, DESCENDING}
-	public enum FLSEnforcement{NONE, LEGACY, USER_MODE}
+	public enum FLSEnforcement{NONE, LEGACY, USER_MODE, SYSTEM_MODE}
 
 	/**
 	 * This property is read-only and may not be set after instantiation.
@@ -94,7 +94,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		//enforcing FLS
 		//Starting in Summer '22, Apex can natively enforce CRUD and FLS with User Mode Operations
 		//Someday, the LEGACY FLSEnforcement heuristic will be removed
-		if(mFlsEnforcement == FLSEnforcement.USER_MODE){
+		if(mFlsEnforcement == FLSEnforcement.USER_MODE || mFlsEnforcement == FLSEnforcement.SYSTEM_MODE){
 			return fieldName.toLowerCase();
 		}
 
@@ -119,7 +119,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			Schema.SObjectField token = fflib_SObjectDescribe.getDescribe(lastSObjectType).getField(field.toLowerCase());
 			DescribeFieldResult tokenDescribe = token != null ? token.getDescribe() : null;
 			
-			if (token != null) {
+			if (token != null && mFlsEnforcement == FLSEnforcement.LEGACY) {
 				fflib_SecurityUtils.checkFieldIsReadable(lastSObjectType, token);
 			}
 
@@ -726,8 +726,17 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			}	
 		}
 		result += ' FROM ' + (relationship != null ? relationship.getRelationshipName() : table.getDescribe().getName());
-		if(conditionExpression != null)
-			result += ' WHERE '+conditionExpression;
+
+		if(conditionExpression != null) {
+			result += ' WHERE ' + conditionExpression;
+		}
+
+		if(mFlsEnforcement == FLSEnforcement.USER_MODE){
+			result += ' WITH USER_MODE';
+		}
+		else if(mFlsEnforcement == FLSEnforcement.SYSTEM_MODE){
+			result += ' WITH SYSTEM_MODE';
+		}
 
 		if(order.size() > 0){
 			result += ' ORDER BY ';
@@ -744,10 +753,6 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		
 		if(allRows) {
 			result += ' ALL ROWS';
-		}
-
-		if(mFlsEnforcement == FLSEnforcement.USER_MODE){
-			result += ' WITH USER_MODE';
 		}
 
 		return result;
