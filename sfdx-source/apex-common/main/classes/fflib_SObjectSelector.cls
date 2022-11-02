@@ -37,11 +37,17 @@ public abstract with sharing class fflib_SObjectSelector
     private Boolean CURRENCY_ISO_CODE_ENABLED {
         get {
             if(CURRENCY_ISO_CODE_ENABLED == null){
-                CURRENCY_ISO_CODE_ENABLED = describeWrapper.getFieldsMap().keySet().contains('currencyisocode');
+	        Boolean isMultiCurrencyOrganization = UserInfo.isMultiCurrencyOrganization();
+		if (isMultiCurrencyOrganization) {
+		    Map<String,Schema.SObjectField> fieldsMap = describeWrapper.getFieldsMap();
+		    CURRENCY_ISO_CODE_ENABLED = fieldsMap.keySet().contains('currencyisocode');
+		} else {
+		    CURRENCY_ISO_CODE_ENABLED = false;
+                }
             }
             return CURRENCY_ISO_CODE_ENABLED;
         }
-		set;
+        set;
     }
      
     /**
@@ -384,7 +390,7 @@ public abstract with sharing class fflib_SObjectSelector
 			queryFactory.selectField(relationshipFieldPath + '.' + field.getDescribe().getName(), this.getSObjectType());
 		}
 		// Automatically select the CurrencyIsoCode for MC orgs (unless the object is a known exception to the rule)
-		if(UserInfo.isMultiCurrencyOrganization() && CURRENCY_ISO_CODE_ENABLED){
+		if(CURRENCY_ISO_CODE_ENABLED){
 			queryFactory.selectField(relationshipFieldPath+'.CurrencyIsoCode');
 		}
      }
@@ -467,7 +473,7 @@ public abstract with sharing class fflib_SObjectSelector
 	                queryFactory.selectFieldSet(fieldSet);
 	
 	        // Automatically select the CurrencyIsoCode for MC orgs (unless the object is a known exception to the rule)
-	        if(UserInfo.isMultiCurrencyOrganization() && CURRENCY_ISO_CODE_ENABLED)
+	        if(CURRENCY_ISO_CODE_ENABLED)
 	            queryFactory.selectField('CurrencyIsoCode');
         }
         
