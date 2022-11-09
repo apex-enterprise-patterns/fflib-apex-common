@@ -30,25 +30,25 @@
 public abstract with sharing class fflib_SObjectSelector
 	implements fflib_ISObjectSelector
 {
-    /**
-     * Indicates whether the sObject has the currency ISO code field for organisations which have multi-currency
-     * enabled. 
-     **/
-    private Boolean CURRENCY_ISO_CODE_ENABLED {
-        get {
-            if(CURRENCY_ISO_CODE_ENABLED == null){
-	        Boolean isMultiCurrencyOrganization = UserInfo.isMultiCurrencyOrganization();
-		if (isMultiCurrencyOrganization) {
-		    Map<String,Schema.SObjectField> fieldsMap = describeWrapper.getFieldsMap();
-		    CURRENCY_ISO_CODE_ENABLED = fieldsMap.keySet().contains('currencyisocode');
-		} else {
-		    CURRENCY_ISO_CODE_ENABLED = false;
-                }
-            }
-            return CURRENCY_ISO_CODE_ENABLED;
-        }
-        set;
-    }
+	/**
+	 * Indicates whether the sObject has the currency ISO code field for organisations which have multi-currency
+	 * enabled.
+	 **/
+	private Boolean CURRENCY_ISO_CODE_ENABLED {
+		get {
+			if(CURRENCY_ISO_CODE_ENABLED == null){
+				Boolean isMultiCurrencyOrganization = UserInfo.isMultiCurrencyOrganization();
+				if (isMultiCurrencyOrganization) {
+					Map<String,Schema.SObjectField> fieldsMap = describeWrapper.getFieldsMap();
+					CURRENCY_ISO_CODE_ENABLED = fieldsMap.keySet().contains('currencyisocode');
+				} else {
+					CURRENCY_ISO_CODE_ENABLED = false;
+				}
+			}
+			return CURRENCY_ISO_CODE_ENABLED;
+		}
+		set;
+	}
      
     /**
      * Should this selector automatically include the FieldSet fields when building queries?
