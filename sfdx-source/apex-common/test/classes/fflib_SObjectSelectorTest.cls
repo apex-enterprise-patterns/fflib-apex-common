@@ -491,6 +491,8 @@ private with sharing class fflib_SObjectSelectorTest
 		};
 		if (UserInfo.isMultiCurrencyOrganization()) {
 			expectedSelectFields.add('CurrencyIsoCode');
+			expectedSelectFields.add('Lead.CurrencyIsoCode');
+			expectedSelectFields.add('Lead.Owner.CurrencyIsoCode');  // Because the Selector is for User; Group would not have
 		}
 
 		//When
@@ -503,6 +505,47 @@ private with sharing class fflib_SObjectSelectorTest
 
 		List<String> actualSelectFields = soqlMatcher.group(1).deleteWhiteSpace().split(',');
 		System.assertEquals(expectedSelectFields, new Set<String>(actualSelectFields));
+	}
+
+	@isTest
+	static void testPolymorphicSelectWithRelatedTypeWherePolymorphicNotImpactedByMulticurrency() {
+		//Given
+
+		Testfflib_CampaignMemberSelector cmSelector = new Testfflib_CampaignMemberSelector();
+		fflib_QueryFactory qf = cmSelector.newQueryFactory();
+		new Testfflib_LeadSelector().configureQueryFactoryFields(qf, 'Lead');
+		new Testfflib_GroupSelector().configureQueryFactoryFields(qf, 'Lead.Owner');
+
+
+		Set<String> expectedSelectFields = new Set<String>{
+				'Id', 'Status', 'Lead.Id', 'Lead.OwnerId', 'Lead.Owner.Id'
+		};
+		Set<String> unexpectedSelectFields = new Set<String>();
+		if (UserInfo.isMultiCurrencyOrganization()) {
+			expectedSelectFields.add('CurrencyIsoCode');
+			expectedSelectFields.add('Lead.CurrencyIsoCode');
+			
+			unexpectedSelectFields.add('Lead.Owner.CurrencyIsoCode'); // Because Group does NOT have CurrencyIsoCode
+		}
+
+		//When
+		String soql = qf.toSOQL();
+
+		//Then
+		Pattern soqlPattern = Pattern.compile('SELECT (.*) FROM CampaignMember ORDER BY CreatedDate ASC NULLS FIRST ');
+		Matcher soqlMatcher = soqlPattern.matcher(soql);
+		soqlMatcher.matches();
+
+		List<String> actualSelectFields = soqlMatcher.group(1).deleteWhiteSpace().split(',');
+		Set<String> actualSelectFieldsSet = new Set<String>(actualSelectFields);
+		System.assertEquals(expectedSelectFields, actualSelectFieldsSet);
+		if (unexpectedSelectFields.size() > 0) {
+			System.assertEquals(
+				false,
+				actualSelectFieldsSet.containsAll(unexpectedSelectFields),
+				String.format('The fields {0} were not expected on actualSelectFieldsSet {1}', new List<Set<String>>{unexpectedSelectFields, actualSelectFieldsSet})
+			);
+		}
 	}
 
 	private class Testfflib_CampaignMemberSelector extends fflib_SObjectSelector {
@@ -536,6 +579,22 @@ private with sharing class fflib_SObjectSelectorTest
 
 		public Schema.SObjectType getSObjectType() {
 			return User.sObjectType;
+		}
+	}
+
+	private class Testfflib_GroupSelector extends fflib_SObjectSelector {
+		public Testfflib_GroupSelector() {
+			super();
+		}
+
+		public List<Schema.SObjectField> getSObjectFieldList() {
+			return new List<Schema.SObjectField>{
+					Group.Id
+			};
+		}
+
+		public Schema.SObjectType getSObjectType() {
+			return Group.sObjectType;
 		}
 	}
 
