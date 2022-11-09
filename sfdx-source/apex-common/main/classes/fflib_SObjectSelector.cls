@@ -383,17 +383,17 @@ public abstract with sharing class fflib_SObjectSelector
       *
       * // TODO: This should be consistent (ideally) with configureQueryFactory below
       **/
-     public void configureQueryFactoryFields(fflib_QueryFactory queryFactory, String relationshipFieldPath)
-     {
-	// Add fields from selector prefixing the relationship path		
+	public void configureQueryFactoryFields(fflib_QueryFactory queryFactory, String relationshipFieldPath)
+	{
+		// Add fields from selector prefixing the relationship path
 		for(SObjectField field : getSObjectFieldList()) {
 			queryFactory.selectField(relationshipFieldPath + '.' + field.getDescribe().getName(), this.getSObjectType());
 		}
 		// Automatically select the CurrencyIsoCode for MC orgs (unless the object is a known exception to the rule)
 		if(CURRENCY_ISO_CODE_ENABLED){
-			queryFactory.selectField(relationshipFieldPath+'.CurrencyIsoCode');
+			queryFactory.selectField(relationshipFieldPath+'.CurrencyIsoCode', getSObjectType());
 		}
-     }
+	}
     
     /**
      * Adds a subselect QueryFactory based on this selector to the given QueryFactor, returns the parentQueryFactory
@@ -444,57 +444,57 @@ public abstract with sharing class fflib_SObjectSelector
     	
     /**
      * Configures a QueryFactory instance according to the configuration of this selector
-     **/        
-    private fflib_QueryFactory configureQueryFactory(fflib_QueryFactory queryFactory, Boolean assertCRUD, Boolean enforceFLS, Boolean includeSelectorFields)
-    {
-        // CRUD and FLS security required?
-        if (assertCRUD)
-        {
-        	try { 
-        		// Leverage QueryFactory for CRUD checking 
-        		queryFactory.assertIsAccessible();
-        	} catch (fflib_SecurityUtils.CrudException e) {
-        		// Marshal exception into DomainException for backwards compatibility
+     **/
+	private fflib_QueryFactory configureQueryFactory(fflib_QueryFactory queryFactory, Boolean assertCRUD, Boolean enforceFLS, Boolean includeSelectorFields)
+	{
+		// CRUD and FLS security required?
+		if (assertCRUD)
+		{
+			try {
+				// Leverage QueryFactory for CRUD checking
+				queryFactory.assertIsAccessible();
+			} catch (fflib_SecurityUtils.CrudException e) {
+				// Marshal exception into DomainException for backwards compatibility
 				throw new fflib_SObjectDomain.DomainException(
-	                'Permission to access an ' + getSObjectType().getDescribe().getName() + ' denied.');               		
-        	}
-        }
-        queryFactory.setEnforceFLS(enforceFLS);
-                
-        // Configure the QueryFactory with the Selector fields?        
-        if(includeSelectorFields)
-        {
-	        // select the Selector fields and Fieldsets and set order
-            queryFactory.selectFields(getSObjectFieldList());
+						'Permission to access an ' + getSObjectType().getDescribe().getName() + ' denied.');
+			}
+		}
+		queryFactory.setEnforceFLS(enforceFLS);
 
-	        List<Schema.FieldSet> fieldSetList = getSObjectFieldSetList();
-	        if(m_includeFieldSetFields && fieldSetList != null)
-	            for(Schema.FieldSet fieldSet : fieldSetList)
-	                queryFactory.selectFieldSet(fieldSet);
-	
-	        // Automatically select the CurrencyIsoCode for MC orgs (unless the object is a known exception to the rule)
-	        if(CURRENCY_ISO_CODE_ENABLED)
-	            queryFactory.selectField('CurrencyIsoCode');
-        }
-        
-        // Parse the getOrderBy()
-        for(String orderBy : getOrderBy().split(','))
-        {
-            List<String> orderByParts = orderBy.trim().split(' ');
-            String fieldNamePart = orderByParts[0];
-            String fieldSortOrderPart = orderByParts.size() > 1 ? orderByParts[1] : null;
-            fflib_QueryFactory.SortOrder fieldSortOrder = fflib_QueryFactory.SortOrder.ASCENDING;
-            if(fieldSortOrderPart==null)
-                fieldSortOrder = fflib_QueryFactory.SortOrder.ASCENDING;
-            else if(fieldSortOrderPart.equalsIgnoreCase('DESC'))
-                fieldSortOrder = fflib_QueryFactory.SortOrder.DESCENDING;
-            else if(fieldSortOrderPart.equalsIgnoreCase('ASC'))
-                fieldSortOrder = fflib_QueryFactory.SortOrder.ASCENDING;
-            queryFactory.addOrdering(fieldNamePart, fieldSortOrder, orderBy.containsIgnoreCase('NULLS LAST'));
-        }           
-        
-        queryFactory.setSortSelectFields(m_sortSelectFields);           
+		// Configure the QueryFactory with the Selector fields?
+		if(includeSelectorFields)
+		{
+			// select the Selector fields and Fieldsets and set order
+			queryFactory.selectFields(getSObjectFieldList());
 
-        return queryFactory;    
-    }    
+			List<Schema.FieldSet> fieldSetList = getSObjectFieldSetList();
+			if(m_includeFieldSetFields && fieldSetList != null)
+				for(Schema.FieldSet fieldSet : fieldSetList)
+					queryFactory.selectFieldSet(fieldSet);
+
+			// Automatically select the CurrencyIsoCode for MC orgs (unless the object is a known exception to the rule)
+			if(CURRENCY_ISO_CODE_ENABLED)
+				queryFactory.selectField('CurrencyIsoCode', getSObjectType());
+		}
+
+		// Parse the getOrderBy()
+		for(String orderBy : getOrderBy().split(','))
+		{
+			List<String> orderByParts = orderBy.trim().split(' ');
+			String fieldNamePart = orderByParts[0];
+			String fieldSortOrderPart = orderByParts.size() > 1 ? orderByParts[1] : null;
+			fflib_QueryFactory.SortOrder fieldSortOrder = fflib_QueryFactory.SortOrder.ASCENDING;
+			if(fieldSortOrderPart==null)
+				fieldSortOrder = fflib_QueryFactory.SortOrder.ASCENDING;
+			else if(fieldSortOrderPart.equalsIgnoreCase('DESC'))
+				fieldSortOrder = fflib_QueryFactory.SortOrder.DESCENDING;
+			else if(fieldSortOrderPart.equalsIgnoreCase('ASC'))
+				fieldSortOrder = fflib_QueryFactory.SortOrder.ASCENDING;
+			queryFactory.addOrdering(fieldNamePart, fieldSortOrder, orderBy.containsIgnoreCase('NULLS LAST'));
+		}
+
+		queryFactory.setSortSelectFields(m_sortSelectFields);
+
+		return queryFactory;
+	}
 }
