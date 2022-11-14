@@ -1,0 +1,17 @@
+name: "Codeowners Validator"
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ master ]
+  schedule:
+    # Runs at 15:00 UTC every Monday
+    - cron: '0 15 * * 1'
+
+jobs:
+  call-workflow:
+    uses: myhelix/security-workflows/.github/workflows/codeowners-validator.yml@v1.0.0
+    secrets:
+      owners-validator-github-secret: ${{ secrets.OWNERS_VALIDATOR_PUBLIC_GITHUB_SECRET }}
