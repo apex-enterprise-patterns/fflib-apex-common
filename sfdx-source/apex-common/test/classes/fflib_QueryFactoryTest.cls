@@ -71,6 +71,30 @@ private class fflib_QueryFactoryTest {
 		System.assert(query.endsWith('WHERE name = \'test\''),'Query should have ended with a filter on name, got: '+query);
 	}
 
+	@IsTest
+	static void testAddFieldConditionSuccess() {
+		String whereClause = 'Name = \'test\' AND Account.Name = \'test\'';
+		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
+		qf.selectField('name');
+		qf.selectField('email');
+		System.assertEquals(null, qf.getCondition());
+		qf.addCondition('Name = \'test\'', fflib_QueryFactory.ConditionJoiner.AND_CONDITION);
+		qf.addCondition('Account.Name = \'test\'', fflib_QueryFactory.ConditionJoiner.AND_CONDITION);
+		System.assertEquals(whereClause, qf.getCondition());
+		String query = qf.toSOQL();
+		System.assert(query.endsWith('WHERE Name = \'test\' AND Account.Name = \'test\''),'Query should have ended with a filter on name, got: '+query);
+	}
+
+	@IsTest
+	static void testAddFieldConditionFailure() {
+		String whereClause = 'Name = \'test\' AND Account.Name = \'test\'';
+		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
+		qf.selectField('name');
+		qf.selectField('email');
+		qf.addCondition(null, fflib_QueryFactory.ConditionJoiner.AND_CONDITION);
+		System.assertEquals(null, qf.getCondition());
+	}
+
 	@isTest
 	static void duplicateFieldSelection() {
 		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
