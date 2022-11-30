@@ -95,7 +95,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		//Starting in Summer '22, Apex can natively enforce CRUD and FLS with User Mode Operations
 		//Someday, the LEGACY FLSEnforcement heuristic will be removed
 		if(mFlsEnforcement == FLSEnforcement.USER_MODE || mFlsEnforcement == FLSEnforcement.SYSTEM_MODE){
-			return fieldName.toLowerCase();
+			return fieldName;
 		}
 
 		if(!fieldName.contains('.')){ //single field
@@ -161,7 +161,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		if(field == null){
 			throw new InvalidFieldException('Invalid field: null');		
 		}
-		return field.getDescribe().getName();
+		return field.getDescribe().getLocalName();
 	}
 
 	/**
@@ -241,9 +241,8 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * Selecting fields is idempotent, if this field is already selected calling this method will have no additional impact.
 	 * @param fieldName the API name of the field to add to the query's SELECT clause.
 	 **/
-	public fflib_QueryFactory selectField(String fieldName){ 		
-		fields.add( getFieldPath(fieldName, null) );
-		return this;
+	public fflib_QueryFactory selectField(String fieldName){
+		return selectFields(new Set<String>{fieldName});
 	}
 
 	/**
@@ -252,8 +251,8 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		* @param fieldName the API name of the field to add to the query's SELECT clause.
 		* @param relatedSObjectType the related sObjectType to resolve polymorphic object fields.
 	 **/
-	public fflib_QueryFactory selectField(String fieldName, Schema.sOBjectType relatedObjectType) {
-		fields.add(getFieldPath(fieldName, relatedObjectType));
+	public fflib_QueryFactory selectField(String fieldName, Schema.sObjectType relatedObjectType) {
+		addField(getFieldPath(fieldName, relatedObjectType));
 		return this;
 	}
 	
@@ -264,65 +263,59 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @exception InvalidFieldException If the field is null {@code field}.
 	**/
 	public fflib_QueryFactory selectField(Schema.SObjectField field){
-		if(field == null) {
-			throw new InvalidFieldException(null, this.table);
-		}
-		if (mFlsEnforcement == FLSEnforcement.LEGACY) {
-			fflib_SecurityUtils.checkFieldIsReadable(table, field);
-		}
-		fields.add( getFieldTokenPath(field) );
-		return this;
+		return selectFields(new Set<Schema.SObjectField>{field});
 	}
 	/**
 	 * Selects multiple fields. This acts the same as calling {@link #selectField(String)} multiple times.
 	 * @param fieldNames the Set of field API names to select.
 	**/
 	public fflib_QueryFactory selectFields(Set<String> fieldNames){
-		for(String fieldName:fieldNames){
-			fields.add( getFieldPath(fieldName) );
-		}	
-		return this;
+		return selectStringField(fieldNames.iterator());
 	}
 	/**
 	 * Selects multiple fields. This acts the same as calling {@link #selectField(String)} multiple times.
 	 * @param fieldNames the List of field API names to select.
 	**/
 	public fflib_QueryFactory selectFields(List<String> fieldNames){
-		for(String fieldName:fieldNames)
-			fields.add( getFieldPath(fieldName) );
+		return selectStringField(fieldNames.iterator());
+	}
+	
+	private fflib_QueryFactory selectStringField(Iterator<String> iter){
+		while( iter.hasNext() ) {
+			addField(getFieldPath(iter.next()));
+		}
 		return this;
 	}
+	
 	/**
 	 * Selects multiple fields. This acts the same as calling {@link #selectField(Schema.SObjectField)} multiple times.
 	 * @param fields the set of {@link Schema.SObjectField}s to select.
 	 * @exception InvalidFieldException if the fields are null {@code fields}.
 	**/
 	public fflib_QueryFactory selectFields(Set<Schema.SObjectField> fields){
-		for(Schema.SObjectField token:fields){
-			if(token == null) {
-				throw new InvalidFieldException();
-			}
-			if (mFlsEnforcement == FLSEnforcement.LEGACY) {
-				fflib_SecurityUtils.checkFieldIsReadable(table, token);
-			}
-			this.fields.add( getFieldTokenPath(token) );
-		}
-		return this;
+		return selectSObjectField(fields.iterator());
 	}
+
 	/**
 	 * Selects multiple fields. This acts the same as calling {@link #selectField(Schema.SObjectField)} multiple times.
 	 * @param fields the set of {@link Schema.SObjectField}s to select.
 	 * @exception InvalidFieldException if the fields are null {@code fields}.	 
 	**/
-	public fflib_QueryFactory selectFields(List<Schema.SObjectField> fields){
-		for(Schema.SObjectField token : fields){
+	public fflib_QueryFactory selectFields(List<Schema.SObjectField> fields) {
+		return selectSObjectField(fields.iterator());
+	}
+
+	private fflib_QueryFactory selectSObjectField(Iterator<Schema.SObjectField> iter){
+
+		while( iter.hasNext() ){
+			Schema.SObjectField token = iter.next();
 			if(token == null) {
 				throw new InvalidFieldException();
 			}
 			if (mFlsEnforcement == FLSEnforcement.LEGACY) {
 				fflib_SecurityUtils.checkFieldIsReadable(table, token);
 			}
-			this.fields.add( getFieldTokenPath(token) );
+			addField( getFieldTokenPath(token) );
 		}
 		return this;
 	}
@@ -344,10 +337,26 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		for(Schema.FieldSetMember field: fieldSet.getFields()){
 			if(!allowCrossObject && field.getFieldPath().contains('.'))
 				throw new InvalidFieldSetException('Cross-object fields not allowed and field "'+field.getFieldPath()+'"" is a cross-object field.');
-			fields.add( getFieldPath(field.getFieldPath()) );
+			addField( getFieldPath(field.getFieldPath()) );
 		}
 		return this;
 	}
+	
+	private void addField(String fieldPath){
+		/** With the introduction of SYSTEM_MODE and USER_MODE, it no longer became necessary to
+		 * use DescribeFieldResult methods to resolve a selected field back to its canonical case-preserving 
+		 * field definition. The consequence is that duplicate fields could be introduced into the SELECT
+		 * clause if, for instance, the Apex code called "selectField('annualrevenue')" but that same AnnualRevenue
+		 * field were included via a Field Set and the FieldSetMember.getFieldPath() returns "AnnualRevenue"
+		 * So, in the cases where we're using USER_MODE or SYSTEM_MODE, we need to downcase all of the fields in the Set
+		 */
+		if(mFlsEnforcement == FLSEnforcement.SYSTEM_MODE || mFlsEnforcement == FLSEnforcement.USER_MODE){
+			fieldPath = fieldPath.toLowerCase();
+		}
+
+		this.fields.add(fieldPath);
+	}
+	
 	/**
 	 * @param conditionExpression Sets the WHERE clause to the string provided. Do not include the "WHERE".
 	**/
@@ -731,10 +740,11 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			result += ' WHERE ' + conditionExpression;
 		}
 
-		if(mFlsEnforcement == FLSEnforcement.USER_MODE){
+		//Subselects can't specify USER_MODE or SYSTEM_MODE -- only the top-level query can do so
+		if(relationship == null && mFlsEnforcement == FLSEnforcement.USER_MODE){
 			result += ' WITH USER_MODE';
 		}
-		else if(mFlsEnforcement == FLSEnforcement.SYSTEM_MODE){
+		else if(relationship == null && mFlsEnforcement == FLSEnforcement.SYSTEM_MODE){
 			result += ' WITH SYSTEM_MODE';
 		}
 

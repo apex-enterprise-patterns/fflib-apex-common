@@ -437,6 +437,30 @@ private with sharing class fflib_SObjectSelectorTest
 		}
 	}
 
+	@IsTest
+	static void toSoql_When_SystemModeAndParentRelationshipAndDuplicateFields_Expect_WellFormedSOQL(){
+		AccessLevelOpportunitySelector sel = new AccessLevelOpportunitySelector(fflib_SObjectSelector.DataAccess.SYSTEM_MODE);
+
+		String soql = sel.createSelectAllWithAccountSOQL();
+
+		String expected = 'SELECT name, id, amount, closedate, account\\.name, account\\.billingpostalcode(.*)FROM Opportunity WITH SYSTEM_MODE ORDER BY Name ASC NULLS FIRST ';
+		Pattern soqlPattern = Pattern.compile(expected);
+		Matcher soqlMatcher = soqlPattern.matcher(soql);
+		System.assert(soqlMatcher.matches(),'Expected: ' + expected + ' Actual:' + soql);
+	}
+
+	@IsTest
+	static void toSoql_When_SystemModeAndChildRelationship_Expect_WellFormedSOQL(){
+		AccessLevelAccountSelector sel = new AccessLevelAccountSelector(fflib_SObjectSelector.DataAccess.SYSTEM_MODE);
+
+		String soql = sel.createSelectAccountWithOpportunitiesSOQL();
+
+		String expected = 'SELECT name, id, annualrevenue, accountnumber,(.*)\\(SELECT name, id, amount, closedate FROM Opportunities ORDER BY Name ASC NULLS FIRST \\)  FROM Account WITH SYSTEM_MODE ORDER BY Name ASC NULLS FIRST ';
+		Pattern soqlPattern = Pattern.compile(expected);
+		Matcher soqlMatcher = soqlPattern.matcher(soql);
+		System.assert(soqlMatcher.matches(),'Expected: ' + expected + ' Actual:' + soql);
+	}
+
 
 	private class Testfflib_SObjectSelector extends fflib_SObjectSelector
 	{
@@ -539,6 +563,28 @@ private with sharing class fflib_SObjectSelectorTest
 					Opportunity.CloseDate
 			};
 		}
+
+		@TestVisible
+		private String createSelectAllWithAccountSOQL(){
+			fflib_QueryFactory qf = newQueryFactory();
+
+			qf.selectField('AMOUNT'); //Duplicate (as String)
+			qf.selectField('amount'); //Duplicate (as String)
+			qf.selectField(Opportunity.Amount); //Duplicate (as SObjectField)
+
+			//Parent Relationship
+			qf.selectFields(new Set<String>{
+					'Account.Name',
+					'Account.BillingPostalCode'
+			});
+			qf.selectField('Account.BILLINGPOSTALCODE'); //Duplicate field (as String)
+
+			return qf.toSOQL();
+		}
+
+		public List<Opportunity> selectAllWithAccount(){
+			return Database.query(createSelectAllWithAccountSOQL());
+		}
 	}
 
 	private class AccessLevelAccountSelector extends fflib_SObjectSelector{
@@ -561,6 +607,21 @@ private with sharing class fflib_SObjectSelectorTest
 					Account.AnnualRevenue,
 					Account.AccountNumber
 			};
+		}
+
+		@TestVisible
+		private String createSelectAccountWithOpportunitiesSOQL(){
+			AccessLevelOpportunitySelector oSel = new AccessLevelOpportunitySelector(getDataAccess());
+
+			fflib_QueryFactory qf = newQueryFactory();
+
+			oSel.addQueryFactorySubselect(qf);
+
+			return qf.toSOQL();
+		}
+
+		public List<Account> selectAccountWithOpportunities(){
+			return Database.query(createSelectAccountWithOpportunitiesSOQL());
 		}
 	}
 
