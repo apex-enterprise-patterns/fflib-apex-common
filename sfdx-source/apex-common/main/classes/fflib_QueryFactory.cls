@@ -66,6 +66,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	private Integer limitCount;
 	private Integer offsetCount;
 	private List<Ordering> order;
+
 	/**
 	 * Integrate checking for READ Field Level Security within the selectField(s) methods
 	 * This can optionally be enforced (or not) by calling the setEnforceFLS method prior to calling 
@@ -75,6 +76,8 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	
 	private Boolean sortSelectFields = true;
 	private Boolean allRows = false;
+
+	private fflib_SecurityUtils.OperationMode operationMode;
 	
 	/**
 	 * The relationship and  subselectQueryMap variables are used to support subselect queries.  Subselects can be added to 
@@ -671,6 +674,25 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		return this;
 	}
 
+	public fflib_QueryFactory setOperationMode(fflib_SecurityUtils.OperationMode operationMode) {
+		this.operationMode = operationMode;
+		return this;
+	}
+
+	public fflib_QueryFactory withUserMode() {
+		this.setOperationMode(fflib_SecurityUtils.OperationMode.USER_MODE);
+		return this;
+	}
+
+	public fflib_QueryFactory withSystemMode() {
+		this.setOperationMode(fflib_SecurityUtils.OperationMode.SYSTEM_MODE);
+		return this;
+	}
+
+	public String getOperationMode() {
+		return this.operationMode.name();
+	}
+
 	/**
 	 * Convert the values provided to this instance into a full SOQL string for use with Database.query
 	 * Check to see if subqueries queries need to be added after the field list.
@@ -696,9 +718,15 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 				result += ', (' + childRow.toSOQL() + ') ';
 			}	
 		}
-		result += ' FROM ' + (relationship != null ? relationship.getRelationshipName() : table.getDescribe().getName());
+
+		Boolean isSubQuery = relationship != null;
+		result += ' FROM ' + (isSubQuery ? relationship.getRelationshipName() : table.getDescribe().getName());
 		if(conditionExpression != null)
 			result += ' WHERE '+conditionExpression;
+
+		if(operationMode != null && !isSubQuery) {
+			result += ' WITH ' + this.operationMode.name();
+		}
 
 		if(order.size() > 0){
 			result += ' ORDER BY ';
@@ -804,5 +832,5 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 
 	public class InvalidFieldSetException extends Exception{}
 	public class NonReferenceFieldException extends Exception{}
-	public class InvalidSubqueryRelationshipException extends Exception{}	
+	public class InvalidSubqueryRelationshipException extends Exception{}
 }

@@ -33,6 +33,7 @@ public class fflib_SecurityUtils
     @TestVisible
     private enum OperationType { CREATE, READ, MODIFY, DEL } //UPDATE and DELETE are reserved words
 
+    public enum OperationMode { SYSTEM_MODE, USER_MODE }
     /**
      * SecurityException is never be thrown directly by fflib_SecurityUtils, instead all 
      * forms of CRUD and FLD violations throw subclasses of it. It is provided as a convenience
