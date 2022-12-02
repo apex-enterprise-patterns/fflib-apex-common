@@ -568,7 +568,7 @@ private with sharing class fflib_SObjectSelectorTest
 
 		selector.enforceFLS();
 		Assert.isTrue(selector.isEnforcingFLS());
-		Assert.isTrue(selector.isEnforcingCRUD());
+		Assert.isFalse(selector.isEnforcingCRUD());
 		Assert.isNull(selector.getOperationMode());
 
 		Assert.areEqual(null, selector.newQueryFactory().getOperationMode());

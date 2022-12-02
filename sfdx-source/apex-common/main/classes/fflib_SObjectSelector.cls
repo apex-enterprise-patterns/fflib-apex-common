@@ -59,7 +59,7 @@ public abstract with sharing class fflib_SObjectSelector
         get;
         set {
             if(value == true) {
-                this.setOperationMode(null);
+                this.operationMode = null;
             }
 
             this.m_enforceFLS = value;
