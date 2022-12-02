@@ -41,30 +41,30 @@ private class fflib_SObjectDescribeTest {
 		Schema.SObjectType nullType = null;
 		Schema.DescribeSObjectResult nullDescribe = null;
 		SObject nullSObject = null;
-		Assert.isNull(fflib_SObjectDescribe.getDescribe(nullStr));
-		Assert.isNull(fflib_SObjectDescribe.getDescribe(''));
-		Assert.isNull(fflib_SObjectDescribe.getDescribe(' '));
-		Assert.isNull(fflib_SObjectDescribe.getDescribe(nullType));
-		Assert.isNull(fflib_SObjectDescribe.getDescribe(nullDescribe));
-		Assert.isNull(fflib_SObjectDescribe.getDescribe(nullSObject));
+		System.Assert.isNull(fflib_SObjectDescribe.getDescribe(nullStr));
+		System.Assert.isNull(fflib_SObjectDescribe.getDescribe(''));
+		System.Assert.isNull(fflib_SObjectDescribe.getDescribe(' '));
+		System.Assert.isNull(fflib_SObjectDescribe.getDescribe(nullType));
+		System.Assert.isNull(fflib_SObjectDescribe.getDescribe(nullDescribe));
+		System.Assert.isNull(fflib_SObjectDescribe.getDescribe(nullSObject));
 	}
 
 	@isTest
 	static void NamespacedAttributeMap_implementations(){
 		fflib_SObjectDescribe.GlobalDescribeMap gdm = fflib_SObjectDescribe.getGlobalDescribe();
 		Schema.SObjectType accountObjType = gdm.get('AccOunT');
-		Assert.areEqual(accountObjType, Account.SobjectType);
-		Assert.areEqual(Schema.getGlobalDescribe().size(), gdm.size());
+		System.Assert.areEqual(accountObjType, Account.SobjectType);
+		System.Assert.areEqual(Schema.getGlobalDescribe().size(), gdm.size());
 
 		fflib_SObjectDescribe acccountDescribe = fflib_SObjectDescribe.getDescribe(accountObjType);
 		fflib_SObjectDescribe.FieldsMap fields = acccountDescribe.getFields();
-		Assert.isTrue( fields.keySet().containsAll(acccountDescribe.getFieldsMap().keySet()) );
+		System.Assert.isTrue( fields.keySet().containsAll(acccountDescribe.getFieldsMap().keySet()) );
 
-		Assert.areEqual(fields.get('name'), Account.SObjectType.fields.name); //behavior of FieldsMap is tested in another method
-		Assert.areEqual(Schema.SObjectType.Account.fields.getMap().size(), fields.size());
+		System.Assert.areEqual(fields.get('name'), Account.SObjectType.fields.name); //behavior of FieldsMap is tested in another method
+		System.Assert.areEqual(Schema.SObjectType.Account.fields.getMap().size(), fields.size());
 
-		Assert.isNull(fields.get(null), 'Null input should result in null ouput.');
-		Assert.isNull(fields.get(''), 'Invalid fieldname input should result in null ouput.');
+		System.Assert.isNull(fields.get(null), 'Null input should result in null ouput.');
+		System.Assert.isNull(fields.get(''), 'Invalid fieldname input should result in null ouput.');
 	}
 
 	@isTest
@@ -78,18 +78,18 @@ private class fflib_SObjectDescribeTest {
 		};
 		fflib_SObjectDescribe.FieldsMap fields = new fflib_SObjectDescribe.FieldsMap(fakeFieldData);
 		fields.currentNamespace = fakeNamespace;
-		Assert.areEqual(true, fields.containsKey('name__c') );
-		Assert.areEqual(true, fields.containsKey(fakeNamespace.toUpperCase()+'__nAMe__c') );
-		Assert.areEqual(fields.get('NAme__c'), fields.get(fakeNamespace+'__namE__c'));
+		System.Assert.areEqual(true, fields.containsKey('name__c') );
+		System.Assert.areEqual(true, fields.containsKey(fakeNamespace.toUpperCase()+'__nAMe__c') );
+		System.Assert.areEqual(fields.get('NAme__c'), fields.get(fakeNamespace+'__namE__c'));
 
-		Assert.isFalse(fields.keySet(false).contains('otherField__c'));
-		Assert.isTrue(fields.keySet(false).contains(fakeNamespace+'__otherField__c'));
+		System.Assert.isFalse(fields.keySet(false).contains('otherField__c'));
+		System.Assert.isTrue(fields.keySet(false).contains(fakeNamespace+'__otherField__c'));
 
-		Assert.isTrue(fields.keySet(true).contains('otherField__c'));
-		Assert.isFalse(fields.keySet(true).contains(fakeNamespace+'__otherField__c'));
+		System.Assert.isTrue(fields.keySet(true).contains('otherField__c'));
+		System.Assert.isFalse(fields.keySet(true).contains(fakeNamespace+'__otherField__c'));
 
 		fields.currentNamespace = 'someOtherNamespace';
-		Assert.areNotEqual(fields.get('name__C'), fields.get(fakeNamespace.capitalize()+'__nAme__c'));
+		System.Assert.areNotEqual(fields.get('name__C'), fields.get(fakeNamespace.capitalize()+'__nAme__c'));
 	}
 
 	@isTest
@@ -102,12 +102,12 @@ private class fflib_SObjectDescribeTest {
 		};
 		fflib_SObjectDescribe.GlobalDescribeMap gdm = new fflib_SObjectDescribe.GlobalDescribeMap(fakeFieldData);
 		gdm.currentNamespace = fakeNamespace;
-		Assert.areEqual(true, gdm.containsKey('name__c') );
-		Assert.areEqual(true, gdm.containsKey(fakeNamespace+'__name__c') );
-		Assert.areEqual(gdm.get('name__c'), gdm.get(fakeNamespace+'__name__c'));
+		System.Assert.areEqual(true, gdm.containsKey('name__c') );
+		System.Assert.areEqual(true, gdm.containsKey(fakeNamespace+'__name__c') );
+		System.Assert.areEqual(gdm.get('name__c'), gdm.get(fakeNamespace+'__name__c'));
 
 		gdm.currentNamespace = 'someOtherNamespace';
-		Assert.areNotEqual(gdm.get('name__c'), gdm.get(fakeNamespace+'__name__c'));
+		System.Assert.areNotEqual(gdm.get('name__c'), gdm.get(fakeNamespace+'__name__c'));
 	}
 
 	@isTest //Tests all forms of the getDescribe static
@@ -115,8 +115,8 @@ private class fflib_SObjectDescribeTest {
 		fflib_SObjectDescribe d = fflib_SObjectDescribe.getDescribe('Account');
 		fflib_SObjectDescribe d2 = fflib_SObjectDescribe.getDescribe(Account.SObjectType);
 		fflib_SObjectDescribe d3 = fflib_SObjectDescribe.getDescribe(Schema.SObjectType.Account);
-		Assert.areEqual('Account', d.getDescribe().getName());
-		Assert.isTrue( (d === d2 && d2 === d3) ,'All three getDescribe calls should return the same cached instance.');
+		System.Assert.areEqual('Account', d.getDescribe().getName());
+		System.Assert.isTrue( (d === d2 && d2 === d3) ,'All three getDescribe calls should return the same cached instance.');
 	}
 
 	@isTest
@@ -133,10 +133,10 @@ private class fflib_SObjectDescribeTest {
 		// Because describe limits are no longer enforced in any API version, this method is no longer available.
 		// In API version 30.0 and earlier, this method is available but is deprecated.
 
-		// Assert.areEqual(1, Limits.getFieldsDescribes() );
+		// System.Assert.areEqual(1, Limits.getFieldsDescribes() );
 
-		Assert.areEqual(false,fields.isEmpty());
-		Assert.areEqual(Account.SObjectType, d.getSObjectType());
+		System.Assert.areEqual(false,fields.isEmpty());
+		System.Assert.areEqual(Account.SObjectType, d.getSObjectType());
 	}
 
 	@isTest
@@ -153,7 +153,7 @@ private class fflib_SObjectDescribeTest {
 		// Because describe limits are no longer enforced in any API version, this method is no longer available.
 		// In API version 30.0 and earlier, this method is available but is deprecated.
 
-		// Assert.areEqual(1, Limits.getFieldSetsDescribes() );
+		// System.Assert.areEqual(1, Limits.getFieldSetsDescribes() );
 
 		// no asserts on result size to avoid a requirement on field sets existing
 	}
@@ -162,7 +162,7 @@ private class fflib_SObjectDescribeTest {
     	static void simpleAccountGetNameField(){
         	fflib_SObjectDescribe d = fflib_SObjectDescribe.getDescribe(Account.SObjectType);
         	Schema.SObjectField nameField = d.getNameField();
-        	Assert.areEqual('Name', nameField.getDescribe().getName());
+        	System.Assert.areEqual('Name', nameField.getDescribe().getName());
 	}
 
 	@isTest
@@ -170,14 +170,14 @@ private class fflib_SObjectDescribeTest {
 		fflib_SObjectDescribe d = fflib_SObjectDescribe.getDescribe('Account');
 		fflib_SObjectDescribe.flushCache();
 		fflib_SObjectDescribe d2 = fflib_SObjectDescribe.getDescribe('Account');
-		Assert.areNotEqual(d, d2, 'Second object should be a fresh instance after a cache flush.' );
+		System.Assert.areNotEqual(d, d2, 'Second object should be a fresh instance after a cache flush.' );
 	}
 
 	@isTest
 	static void rawGlobalDescribeCheck(){
 		Map<String,Schema.SObjectType> systemGd = Schema.getGlobalDescribe();
 		Map<String,Schema.SObjectType> cachedGd = fflib_SObjectDescribe.getRawGlobalDescribe();
-		Assert.areEqual(systemGd.size(),cachedGd.size());
+		System.Assert.areEqual(systemGd.size(),cachedGd.size());
 	}
 
 }

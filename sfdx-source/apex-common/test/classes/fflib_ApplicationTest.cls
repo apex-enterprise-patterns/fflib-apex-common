@@ -38,8 +38,8 @@ private class fflib_ApplicationTest
 					{ new Account( 
 						Id = testAccountId,
 						Name = 'Test Account') });
-		Assert.isInstanceOfType(domainObjectAcct, AccountsDomain.class);
-		Assert.areEqual(testAccountId, getFirstSObject(domainObjectAcct).Id);
+		System.Assert.isInstanceOfType(domainObjectAcct, AccountsDomain.class);
+		System.Assert.areEqual(testAccountId, getFirstSObject(domainObjectAcct).Id);
 
 		// Registered Accounts domain class by SObject List
 		testAccountId = fflib_IDGenerator.generate(Account.SObjectType);
@@ -50,8 +50,8 @@ private class fflib_ApplicationTest
 						Id = testAccountId,
 						Name = 'Test Account') }
 				, Account.SObjectType);
-		Assert.isInstanceOfType(domainObjectAcct, AccountsDomain.class);
-		Assert.areEqual(testAccountId, getFirstSObject(domainObjectAcct).Id);
+		System.Assert.isInstanceOfType(domainObjectAcct, AccountsDomain.class);
+		System.Assert.areEqual(testAccountId, getFirstSObject(domainObjectAcct).Id);
 
 		// Registered Opportunities domain class by SObject List
 		Id testOpportunityId = fflib_IDGenerator.generate(Opportunity.SObjectType);
@@ -61,8 +61,8 @@ private class fflib_ApplicationTest
 					{ new Opportunity( 
 						Id = testOpportunityId,
 						Name = 'Test Opportunity') });
-		Assert.areEqual(testOpportunityId, getFirstSObject(domainObjectOpp).Id);
-		Assert.isInstanceOfType(domainObjectOpp, OpportuntiesDomain.class);
+		System.Assert.areEqual(testOpportunityId, getFirstSObject(domainObjectOpp).Id);
+		System.Assert.isInstanceOfType(domainObjectOpp, OpportuntiesDomain.class);
 
 		// Test failure for creating new instance using IConstructable2
 		// for domain class that does not support it
@@ -74,8 +74,8 @@ private class fflib_ApplicationTest
 						Id = testOpportunityId,
 						Name = 'Test Opportunity') }
 				, Opportunity.SObjectType);
-		Assert.areEqual(testOpportunityId, getFirstSObject(domainObjectOpp).Id);
-		Assert.isInstanceOfType(domainObjectOpp, OpportuntiesDomain.class);
+		System.Assert.areEqual(testOpportunityId, getFirstSObject(domainObjectOpp).Id);
+		System.Assert.isInstanceOfType(domainObjectOpp, OpportuntiesDomain.class);
 
 		// Given
 		fflib_ApexMocks mocks = new fflib_ApexMocks();
@@ -94,7 +94,7 @@ private class fflib_ApplicationTest
 						Name = 'Test Account') });
 
 		// Then
-		Assert.isInstanceOfType(domainObjectAcct, fflib_SObjectMocks.SObjectDomain.class);
+		System.Assert.isInstanceOfType(domainObjectAcct, fflib_SObjectMocks.SObjectDomain.class);
 
 		// When
 		domainObjectAcct = 
@@ -106,7 +106,7 @@ private class fflib_ApplicationTest
 				, Account.SObjectType);
 
 		// Then
-		Assert.isInstanceOfType(domainObjectAcct, fflib_SObjectMocks.SObjectDomain.class);
+		System.Assert.isInstanceOfType(domainObjectAcct, fflib_SObjectMocks.SObjectDomain.class);
 	}
 
 	private static SObject getFirstSObject(fflib_IDomain domainObjectAcct)
@@ -138,11 +138,11 @@ private class fflib_ApplicationTest
 
 		// Then
 		List<Account> assertAccounts = (List<Account>) domainObjectAcc.getObjects();
-		Assert.isInstanceOfType(domainObjectAcc, AccountsDomain.class);
-		Assert.areEqual(testAccountId, getFirstSObject(domainObjectAcc).Id);
-		Assert.areEqual(1, assertAccounts.size());
-		Assert.areEqual(testAccountId, assertAccounts[0].Id);
-		Assert.areEqual('Test Account', assertAccounts[0].Name);
+		System.Assert.isInstanceOfType(domainObjectAcc, AccountsDomain.class);
+		System.Assert.areEqual(testAccountId, getFirstSObject(domainObjectAcc).Id);
+		System.Assert.areEqual(1, assertAccounts.size());
+		System.Assert.areEqual(testAccountId, assertAccounts[0].Id);
+		System.Assert.areEqual('Test Account', assertAccounts[0].Name);
 	}
 
 	@IsTest
@@ -150,9 +150,9 @@ private class fflib_ApplicationTest
 	{
 		try {
 			Domain.newInstance(new List<SObject>());
-			Assert.fail('Expected exception');
+			System.Assert.fail('Expected exception');
 		} catch (fflib_Application.DeveloperException e) {
-			Assert.areEqual('Unable to determine SObjectType', e.getMessage());
+			System.Assert.areEqual('Unable to determine SObjectType', e.getMessage());
 		}
 	}
 
@@ -161,9 +161,9 @@ private class fflib_ApplicationTest
 	{
 		try {
 			Domain.newInstance(new List<SObject>(), null);
-			Assert.fail('Expected exception');
+			System.Assert.fail('Expected exception');
 		} catch (fflib_Application.DeveloperException e) {
-			Assert.areEqual('Must specify sObjectType', e.getMessage());
+			System.Assert.areEqual('Must specify sObjectType', e.getMessage());
 		}
 	}	
 
@@ -172,16 +172,16 @@ private class fflib_ApplicationTest
 	{
 		try {
 			Domain.newInstance(new List<Product2>{ new Product2(Name = 'Test Product') });
-			Assert.fail('Expected exception');
+			System.Assert.fail('Expected exception');
 		} catch (fflib_Application.DeveloperException e) {
-			Assert.areEqual('Domain constructor class not found for SObjectType Product2', e.getMessage());
+			System.Assert.areEqual('Domain constructor class not found for SObjectType Product2', e.getMessage());
 		}
 
 		try {
 			Domain.newInstance(new List<SObject>{ new Product2(Name = 'Test Product') }, Product2.SObjectType);
-			Assert.fail('Expected exception');
+			System.Assert.fail('Expected exception');
 		} catch (fflib_Application.DeveloperException e) {
-			Assert.areEqual('Domain constructor class not found for SObjectType Product2', e.getMessage());
+			System.Assert.areEqual('Domain constructor class not found for SObjectType Product2', e.getMessage());
 		}		
 	}
 
@@ -190,18 +190,18 @@ private class fflib_ApplicationTest
 	{
 		try {
 			Domain.newInstance(new List<Contact>{ new Contact(LastName = 'TestContactLName') });
-			Assert.fail('Expected exception');
+			System.Assert.fail('Expected exception');
 		} catch (System.TypeException e) {
 
-			Assert.isTrue(Pattern.Matches('Invalid conversion from runtime type \\w*\\.?fflib_ApplicationTest\\.ContactsConstructor to \\w*\\.?fflib_IDomainConstructor',
+			System.Assert.isTrue(Pattern.Matches('Invalid conversion from runtime type \\w*\\.?fflib_ApplicationTest\\.ContactsConstructor to \\w*\\.?fflib_IDomainConstructor',
 				e.getMessage()), 'Exception message did not match the expected pattern: ' + e.getMessage());
 		}	
 
 		try {
 			Domain.newInstance(new List<SObject>{ new Contact(LastName = 'TestContactLName') }, Contact.SObjectType);
-			Assert.fail('Expected exception');
+			System.Assert.fail('Expected exception');
 		} catch (System.TypeException e) {
-			Assert.isTrue(Pattern.Matches('Invalid conversion from runtime type \\w*\\.?fflib_ApplicationTest\\.ContactsConstructor to \\w*\\.?fflib_IDomainConstructor',
+			System.Assert.isTrue(Pattern.Matches('Invalid conversion from runtime type \\w*\\.?fflib_ApplicationTest\\.ContactsConstructor to \\w*\\.?fflib_IDomainConstructor',
 				e.getMessage()), 'Exception message did not match the expected pattern: ' + e.getMessage());
 		}		
 	}	
@@ -210,25 +210,25 @@ private class fflib_ApplicationTest
 	private static void callingUnitOfWorkFactoryShouldGivenStandardImplsAndMockImpls()
 	{
 		// Standard behaviour
-		Assert.isInstanceOfType(UnitOfWork.newInstance(), fflib_SObjectUnitOfWork.class);
+		System.Assert.isInstanceOfType(UnitOfWork.newInstance(), fflib_SObjectUnitOfWork.class);
  		
 		// Mocking behaviour
 		UnitOfWork.setMock(new fflib_SObjectMocks.SObjectUnitOfWork(new fflib_ApexMocks()));
-		Assert.isInstanceOfType(UnitOfWork.newInstance(), fflib_SObjectMocks.SObjectUnitOfWork.class);
+		System.Assert.isInstanceOfType(UnitOfWork.newInstance(), fflib_SObjectMocks.SObjectUnitOfWork.class);
 	}
 
 	@IsTest
 	private static void callingUnitOfWorkFactoryWithCustomTypesShouldGivenStandardImplsAndMockImpls()
 	{
 		// Standard behaviour
-		Assert.isInstanceOfType(
+		System.Assert.isInstanceOfType(
 				UnitOfWork.newInstance(
 						new List<SObjectType>{ Account.SObjectType}
 				), fflib_SObjectUnitOfWork.class);
 
 		// Mocking behaviour
 		UnitOfWork.setMock(new fflib_SObjectMocks.SObjectUnitOfWork(new fflib_ApexMocks()));
-		Assert.isInstanceOfType(
+		System.Assert.isInstanceOfType(
 				UnitOfWork.newInstance(
 						new List<SObjectType>{ Account.SObjectType}
 				), fflib_SObjectMocks.SObjectUnitOfWork.class);
@@ -238,32 +238,32 @@ private class fflib_ApplicationTest
 	private static void callingServiceFactoryShouldGiveRegisteredImplsAndMockImpls()
 	{
 		// Standard behaviour
-		Assert.isInstanceOfType(Service.newInstance(IAccountService.class), AccountsServiceImpl.class);
-		Assert.isInstanceOfType(Service.newInstance(IOpportunitiesService.class), OpportunitiesServiceImpl.class);
+		System.Assert.isInstanceOfType(Service.newInstance(IAccountService.class), AccountsServiceImpl.class);
+		System.Assert.isInstanceOfType(Service.newInstance(IOpportunitiesService.class), OpportunitiesServiceImpl.class);
 		try {
 			Service.newInstance(IContactService.class);
-			Assert.fail('Expected exception');
+			System.Assert.fail('Expected exception');
 		} catch (fflib_Application.DeveloperException e) {
-			Assert.areEqual('No implementation registered for service interface ' + IContactService.class.getName(), e.getMessage());
+			System.Assert.areEqual('No implementation registered for service interface ' + IContactService.class.getName(), e.getMessage());
 		}
 
 		// Mocking behaviour		
 		Service.setMock(IAccountService.class, new AccountsServiceMock());
-		Assert.isInstanceOfType(Service.newInstance(IOpportunitiesService.class), OpportunitiesServiceImpl.class);
-		Assert.isInstanceOfType(Service.newInstance(IAccountService.class), AccountsServiceMock.class);
+		System.Assert.isInstanceOfType(Service.newInstance(IOpportunitiesService.class), OpportunitiesServiceImpl.class);
+		System.Assert.isInstanceOfType(Service.newInstance(IAccountService.class), AccountsServiceMock.class);
 	}
 
 	@IsTest
 	private static void callingSelectorFactoryShouldGiveRegisteredImpls()
 	{
 		// Standard behaviour
-		Assert.isInstanceOfType(Selector.newInstance(Account.SObjectType), AccountsSelector.class);
-		Assert.isInstanceOfType(Selector.newInstance(Opportunity.SObjectType), OpportuntiesSelector.class);
+		System.Assert.isInstanceOfType(Selector.newInstance(Account.SObjectType), AccountsSelector.class);
+		System.Assert.isInstanceOfType(Selector.newInstance(Opportunity.SObjectType), OpportuntiesSelector.class);
 		try {
 			Selector.newInstance(User.SObjectType);
-			Assert.fail('Expected exception');
+			System.Assert.fail('Expected exception');
 		} catch (fflib_Application.DeveloperException e) {
-			Assert.areEqual('Selector class not found for SObjectType User', e.getMessage());
+			System.Assert.areEqual('Selector class not found for SObjectType User', e.getMessage());
 		}
 	}
 
@@ -272,15 +272,15 @@ private class fflib_ApplicationTest
 	{
 		try {
 			Selector.selectById(null);
-			Assert.fail('Expected exception');
+			System.Assert.fail('Expected exception');
 		} catch (fflib_Application.DeveloperException e) {
-			Assert.areEqual('Invalid record Id\'s set', e.getMessage());
+			System.Assert.areEqual('Invalid record Id\'s set', e.getMessage());
 		}
 		try {
 			Selector.selectById(new Set<Id>());
-			Assert.fail('Expected exception');
+			System.Assert.fail('Expected exception');
 		} catch (fflib_Application.DeveloperException e) {
-			Assert.areEqual('Invalid record Id\'s set', e.getMessage());
+			System.Assert.areEqual('Invalid record Id\'s set', e.getMessage());
 		}
 	}
 
@@ -292,9 +292,9 @@ private class fflib_ApplicationTest
 				new Set<Id> { 
 					fflib_IDGenerator.generate(Opportunity.SObjectType), 
 					fflib_IDGenerator.generate(Account.SObjectType) });
-			Assert.isTrue(true, 'Expected exception');
+			System.Assert.isTrue(true, 'Expected exception');
 		} catch (fflib_Application.DeveloperException e) {
-			Assert.areEqual('Unable to determine SObjectType, Set contains Id\'s from different SObject types', e.getMessage());
+			System.Assert.areEqual('Unable to determine SObjectType, Set contains Id\'s from different SObject types', e.getMessage());
 		}		
 	}
 
@@ -321,11 +321,11 @@ private class fflib_ApplicationTest
 		List<Account> assertAccounts = Selector.selectById(accountIds);
 
 		// Then
-		Assert.isInstanceOfType(Selector.newInstance(Account.SObjectType), fflib_SObjectMocks.SObjectSelector.class);
-		Assert.areEqual(1, assertAccounts.size());
-		Assert.areEqual(testAccountId, assertAccounts[0].Id);
-		Assert.areEqual('Test Account', assertAccounts[0].Name);
-		Assert.isInstanceOfType(Selector.newInstance(Opportunity.SObjectType), OpportuntiesSelector.class);
+		System.Assert.isInstanceOfType(Selector.newInstance(Account.SObjectType), fflib_SObjectMocks.SObjectSelector.class);
+		System.Assert.areEqual(1, assertAccounts.size());
+		System.Assert.areEqual(testAccountId, assertAccounts[0].Id);
+		System.Assert.areEqual('Test Account', assertAccounts[0].Name);
+		System.Assert.isInstanceOfType(Selector.newInstance(Opportunity.SObjectType), OpportuntiesSelector.class);
 	}
 
 
@@ -363,11 +363,11 @@ private class fflib_ApplicationTest
 		List<Account> assertAccounts = Selector.selectByRelationship(opportunties, Opportunity.AccountId);
 
 		// Then
-		Assert.isInstanceOfType(Selector.newInstance(Account.SObjectType), fflib_SObjectMocks.SObjectSelector.class);
-		Assert.areEqual(1, assertAccounts.size());
-		Assert.areEqual(testAccountId, assertAccounts[0].Id);
-		Assert.areEqual('Test Account', assertAccounts[0].Name);
-		Assert.isInstanceOfType(Selector.newInstance(Opportunity.SObjectType), OpportuntiesSelector.class);
+		System.Assert.isInstanceOfType(Selector.newInstance(Account.SObjectType), fflib_SObjectMocks.SObjectSelector.class);
+		System.Assert.areEqual(1, assertAccounts.size());
+		System.Assert.areEqual(testAccountId, assertAccounts[0].Id);
+		System.Assert.areEqual('Test Account', assertAccounts[0].Name);
+		System.Assert.isInstanceOfType(Selector.newInstance(Opportunity.SObjectType), OpportuntiesSelector.class);
 	}
 
 
@@ -384,7 +384,7 @@ private class fflib_ApplicationTest
 		unitOfWork.commitWork();
 
 		// Then the Custom DML is used by the unit of Work
-		Assert.isTrue(customDML.isInsertCalled, 'Oops, custom DML was not called');
+		System.Assert.isTrue(customDML.isInsertCalled, 'Oops, custom DML was not called');
 	}
 
 	@IsTest
@@ -402,7 +402,7 @@ private class fflib_ApplicationTest
 		uow.commitWork();
 
 		// Then the Custom DML should not be used by the unit of Work
-		Assert.isFalse(customDML.isInsertCalled, 'Oops, custom DML was called');
+		System.Assert.isFalse(customDML.isInsertCalled, 'Oops, custom DML was called');
 	}
 
 	@IsTest
@@ -421,7 +421,7 @@ private class fflib_ApplicationTest
 		unitOfWork.commitWork();
 
 		// Then the Custom DML is used by the unit of Work
-		Assert.isTrue(customDML.isInsertCalled, 'Oops, custom DML was not called');
+		System.Assert.isTrue(customDML.isInsertCalled, 'Oops, custom DML was not called');
 	}
 
 	@IsTest
@@ -441,7 +441,7 @@ private class fflib_ApplicationTest
 		uow.commitWork();
 
 		// Then the Custom DML should not be used by the unit of Work
-		Assert.isFalse(customDML.isInsertCalled, 'Oops, custom DML was called');
+		System.Assert.isFalse(customDML.isInsertCalled, 'Oops, custom DML was called');
 	}
 
 	public class CustomDML implements fflib_SObjectUnitOfWork.IDML

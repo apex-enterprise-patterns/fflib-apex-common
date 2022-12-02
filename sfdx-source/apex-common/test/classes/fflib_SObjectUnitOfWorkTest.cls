@@ -62,9 +62,9 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         uow.commitWork();
 
         // assert that mock email functionality was called
-        Assert.isTrue(((Mock_SendEmailWork) uow.m_emailWork).doWorkWasCalled);
+        System.Assert.isTrue(((Mock_SendEmailWork) uow.m_emailWork).doWorkWasCalled);
 
-        Assert.areEqual(1, mockDML.recordsForInsert.size());
+        System.Assert.areEqual(1, mockDML.recordsForInsert.size());
     }
 
     @IsTest
@@ -83,7 +83,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         catch (Exception e)
         {
             exceptionThrown = true;
-            Assert.areEqual(
+            System.Assert.areEqual(
                     'Only new records can be registered as new',
                     e.getMessage(),
                     'Incorrect exception message thrown'
@@ -91,7 +91,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         }
 
         // THEN it should have thrown an exception
-        Assert.isTrue(exceptionThrown);
+        System.Assert.isTrue(exceptionThrown);
     }
 
     @IsTest
@@ -110,7 +110,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         catch (Exception e)
         {
             exceptionThrown = true;
-            Assert.areEqual(
+            System.Assert.areEqual(
                     'New records cannot be registered as dirty',
                     e.getMessage(),
                     'Incorrect exception message thrown'
@@ -118,7 +118,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         }
 
         // THEN it should have thrown an exception
-        Assert.isTrue(exceptionThrown);
+        System.Assert.isTrue(exceptionThrown);
     }
 
     @IsTest
@@ -135,7 +135,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         unitOfWork.commitWork();
 
         // THEN - the dmlDelete action should be invoked
-        Assert.areEqual(new List<SObject> { opportunity, product }, mockDML.recordsForDelete);
+        System.Assert.areEqual(new List<SObject> { opportunity, product }, mockDML.recordsForDelete);
     }
 
     @IsTest
@@ -152,8 +152,8 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         unitOfWork.commitWork();
 
         // THEN - the dmlDelete and emptyRecycleBin actions should be invoked
-        Assert.areEqual(new List<SObject> { opportunity, product }, mockDML.recordsForDelete);
-        Assert.areEqual(new List<SObject> { opportunity, product }, mockDML.recordsForRecycleBin);
+        System.Assert.areEqual(new List<SObject> { opportunity, product }, mockDML.recordsForDelete);
+        System.Assert.areEqual(new List<SObject> { opportunity, product }, mockDML.recordsForRecycleBin);
     }
 
     @IsTest
@@ -169,7 +169,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         unitOfWork.commitWork();
 
         // THEN - the emptyRecycleBin action should be invoked
-        Assert.areEqual(1, mockDML.recordsForRecycleBin.size());
+        System.Assert.areEqual(1, mockDML.recordsForRecycleBin.size());
     }
 
     @IsTest
@@ -191,13 +191,13 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         catch (Exception e)
         {
             exceptionThrown = true;
-            Assert.isTrue(
+            System.Assert.isTrue(
                     e.getMessage().contains('registerPublishBeforeTransaction'),
                     'Incorrect exception message thrown'
             );
         }
 
-        Assert.isTrue(exceptionThrown);
+        System.Assert.isTrue(exceptionThrown);
     }
 
     @IsTest
@@ -219,13 +219,13 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         catch (Exception e)
         {
             exceptionThrown = true;
-            Assert.isTrue(
+            System.Assert.isTrue(
                     e.getMessage().contains('invalid for publishing'),
                     'Incorrect exception message thrown'
             );
         }
 
-        Assert.isTrue(exceptionThrown);
+        System.Assert.isTrue(exceptionThrown);
     }
 
     @IsTest
@@ -240,13 +240,13 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         catch (Exception e)
         {
             exceptionThrown = true;
-            Assert.isTrue(
+            System.Assert.isTrue(
                     e.getMessage().contains('not supported by this unit of work'),
                     'Incorrect exception message thrown'
             );
         }
 
-        Assert.isTrue(exceptionThrown);
+        System.Assert.isTrue(exceptionThrown);
     }
 
     /**
@@ -290,7 +290,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         uow.commitWork();
 
         // Assert Results
-        Assert.areEqual(175, mockDML.recordsForInsert.size(), 'Incorrect of new records');
+        System.Assert.areEqual(175, mockDML.recordsForInsert.size(), 'Incorrect of new records');
 
         assertEvents(new List<String> {
                 'onCommitWorkStarting'
@@ -335,8 +335,8 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         }
 
         // Assert Results
-        Assert.isTrue(didFail,  'didFail');
-        Assert.isTrue(caughtEx.getMessage().contains('REQUIRED_FIELD_MISSING'), String.format('Exception message was ', new List<String> { caughtEx.getMessage() }));
+        System.Assert.isTrue(didFail,  'didFail');
+        System.Assert.isTrue(caughtEx.getMessage().contains('REQUIRED_FIELD_MISSING'), String.format('Exception message was ', new List<String> { caughtEx.getMessage() }));
 
         assertEvents(new List<String> {
                 'onCommitWorkStarting'
@@ -386,8 +386,8 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         }
 
         // Assert Results
-        Assert.areEqual(didFail, true, 'didFail');
-        Assert.isTrue(caughtEx.getMessage().contains('Work failed.'), String.format('Exception message was ', new List<String> { caughtEx.getMessage() }));
+        System.Assert.areEqual(didFail, true, 'didFail');
+        System.Assert.isTrue(caughtEx.getMessage().contains('Work failed.'), String.format('Exception message was ', new List<String> { caughtEx.getMessage() }));
 
         assertEvents(new List<String> {
                 'onCommitWorkStarting'
@@ -428,8 +428,8 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         uow.registerDirty(opp2);
         uow.commitWork();
 
-        Assert.areEqual(1, mockDML.recordsForUpdate.size());
-        Assert.areEqual('Expected', mockDML.recordsForUpdate.get(0).get(Schema.Opportunity.Name));
+        System.Assert.areEqual(1, mockDML.recordsForUpdate.size());
+        System.Assert.areEqual('Expected', mockDML.recordsForUpdate.get(0).get(Schema.Opportunity.Name));
     }
 
     /**
@@ -455,9 +455,9 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         uow.registerDirty(amountUpdate, new List<SObjectField> { Opportunity.Amount } );
         uow.commitWork();
 
-        Assert.areEqual(1, mockDML.recordsForUpdate.size());
-        Assert.areEqual(nameUpdate.Name, mockDML.recordsForUpdate.get(0).get(Schema.Opportunity.Name));
-        Assert.areEqual(amountUpdate.Amount, mockDML.recordsForUpdate.get(0).get(Schema.Opportunity.Amount));
+        System.Assert.areEqual(1, mockDML.recordsForUpdate.size());
+        System.Assert.areEqual(nameUpdate.Name, mockDML.recordsForUpdate.get(0).get(Schema.Opportunity.Name));
+        System.Assert.areEqual(amountUpdate.Amount, mockDML.recordsForUpdate.get(0).get(Schema.Opportunity.Amount));
     }
 
     /**
@@ -499,7 +499,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         uow.commitWork();
 
         // THEN the records should be registered with both changed values for Amount and StageName
-        Assert.isTrue(
+        System.Assert.isTrue(
                 new fflib_MatcherDefinitions.SObjectsWith(
                         new List<Map<SObjectField, Object>>{
                                 new Map<SObjectField, Object>
@@ -567,7 +567,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         uow.commitWork();
 
         // THEN only the first record should be registered with both changed values for Amount and StageName and the second should be the original
-        Assert.isFalse(
+        System.Assert.isFalse(
                 new fflib_MatcherDefinitions.SObjectsWith(
                         new List<Map<SObjectField, Object>>{
                                 new Map<SObjectField, Object>
@@ -587,7 +587,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
                         .matches(mockDML.recordsForUpdate),
                 'Not all records should not be registered with the dirty values'
         );
-        Assert.isTrue(
+        System.Assert.isTrue(
                 new fflib_MatcherDefinitions.SObjectsWith(
                         new List<Map<SObjectField, Object>>{
                                 new Map<SObjectField, Object>
@@ -625,8 +625,8 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         uow.commitWork();
         Test.stopTest();
 
-        Assert.areEqual(1, mockDML.recordsForUpdate.size());
-        Assert.areEqual(1, mockDML.recordsForInsert.size());
+        System.Assert.areEqual(1, mockDML.recordsForUpdate.size());
+        System.Assert.areEqual(1, mockDML.recordsForInsert.size());
     }
 
     /**
@@ -636,17 +636,17 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     private static void assertEvents(List<String> expectedEvents, List<String> actualEvents, Set<Schema.SObjectType> expectedTypes, Set<Schema.SObjectType> actualTypes)
     {
         // assert that events match
-        Assert.areEqual(expectedEvents.size(), actualEvents.size(), 'events size');
+        System.Assert.areEqual(expectedEvents.size(), actualEvents.size(), 'events size');
         for (Integer i = 0; i < expectedEvents.size(); i++)
         {
-            Assert.areEqual(expectedEvents[i], actualEvents[i], String.format('Event {0} was not fired in order expected.', new List<String> { expectedEvents[i] }));
+            System.Assert.areEqual(expectedEvents[i], actualEvents[i], String.format('Event {0} was not fired in order expected.', new List<String> { expectedEvents[i] }));
         }
 
         // assert that types match
-        Assert.areEqual(expectedTypes.size(), actualTypes.size(), 'types size');
+        System.Assert.areEqual(expectedTypes.size(), actualTypes.size(), 'types size');
         for (Schema.SObjectType sObjectType :expectedTypes)
         {
-            Assert.areEqual(true, actualTypes.contains(sObjectType), String.format('Type {0} was not registered.', new List<String> { sObjectType.getDescribe().getName() }));
+            System.Assert.areEqual(true, actualTypes.contains(sObjectType), String.format('Type {0} was not registered.', new List<String> { sObjectType.getDescribe().getName() }));
         }
     }
 

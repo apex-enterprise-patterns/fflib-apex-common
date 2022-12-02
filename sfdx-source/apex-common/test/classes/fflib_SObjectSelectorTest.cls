@@ -31,8 +31,8 @@ private with sharing class fflib_SObjectSelectorTest
 	static testMethod void testGetSObjectName()
 	{
 		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
-		Assert.isNull(selector.getSObjectFieldSetList());
-		Assert.areEqual('Account',selector.getSObjectName());
+		System.Assert.isNull(selector.getSObjectFieldSetList());
+		System.Assert.areEqual('Account',selector.getSObjectName());
 	}
 	
 	static testMethod void testSelectSObjectsById()
@@ -51,13 +51,13 @@ private with sharing class fflib_SObjectSelectorTest
 		List<Account> result = (List<Account>) selector.selectSObjectsById(idSet);		
 		Test.stopTest();
 		
-		Assert.areEqual(2,result.size());
-		Assert.areEqual('TestAccount2',result[0].Name);
-		Assert.areEqual('A2',result[0].AccountNumber);
-		Assert.areEqual(12345.67,result[0].AnnualRevenue);
-		Assert.areEqual('TestAccount1',result[1].Name);
-		Assert.areEqual('A1',result[1].AccountNumber);
-		Assert.areEqual(76543.21,result[1].AnnualRevenue);
+		System.Assert.areEqual(2,result.size());
+		System.Assert.areEqual('TestAccount2',result[0].Name);
+		System.Assert.areEqual('A2',result[0].AccountNumber);
+		System.Assert.areEqual(12345.67,result[0].AnnualRevenue);
+		System.Assert.areEqual('TestAccount1',result[1].Name);
+		System.Assert.areEqual('A1',result[1].AccountNumber);
+		System.Assert.areEqual(76543.21,result[1].AnnualRevenue);
 	}
 
 	static testMethod void testQueryLocatorById()
@@ -77,17 +77,17 @@ private with sharing class fflib_SObjectSelectorTest
 		System.Iterator<SObject> iteratorResult = result.iterator();
 		Test.stopTest();		
 
-		Assert.isTrue(iteratorResult.hasNext());
+		System.Assert.isTrue(iteratorResult.hasNext());
 		Account account = (Account) iteratorResult.next();
-		Assert.areEqual('TestAccount2',account.Name);
-		Assert.areEqual('A2',account.AccountNumber);
-		Assert.areEqual(12345.67,account.AnnualRevenue);
-		Assert.isTrue(iteratorResult.hasNext());
+		System.Assert.areEqual('TestAccount2',account.Name);
+		System.Assert.areEqual('A2',account.AccountNumber);
+		System.Assert.areEqual(12345.67,account.AnnualRevenue);
+		System.Assert.isTrue(iteratorResult.hasNext());
 		account = (Account) iteratorResult.next();
-		Assert.areEqual('TestAccount1',account.Name);
-		Assert.areEqual('A1',account.AccountNumber);
-		Assert.areEqual(76543.21,account.AnnualRevenue);
-		Assert.isFalse(iteratorResult.hasNext());
+		System.Assert.areEqual('TestAccount1',account.Name);
+		System.Assert.areEqual('A1',account.AccountNumber);
+		System.Assert.areEqual(76543.21,account.AnnualRevenue);
+		System.Assert.isFalse(iteratorResult.hasNext());
 	}
 	
 	static testMethod void testAssertIsAccessible()
@@ -110,11 +110,11 @@ private with sharing class fflib_SObjectSelectorTest
 			try
 			{
 				List<Account> result = (List<Account>) selector.selectSObjectsById(idSet);
-				Assert.fail('Expected exception was not thrown');
+				System.Assert.fail('Expected exception was not thrown');
 			}
 			catch(fflib_SObjectDomain.DomainException e)
 			{
-				Assert.areEqual('Permission to access an Account denied.',e.getMessage());
+				System.Assert.areEqual('Permission to access an Account denied.',e.getMessage());
 			}
 		}
 	}
@@ -142,7 +142,7 @@ private with sharing class fflib_SObjectSelectorTest
 			}
 			catch(fflib_SObjectDomain.DomainException e)
 			{
-				Assert.fail('Did not expect an exception to be thrown');
+				System.Assert.fail('Did not expect an exception to be thrown');
 			}
 		}
 	}
@@ -153,8 +153,8 @@ private with sharing class fflib_SObjectSelectorTest
 		String soql = selector.newQueryFactory().toSOQL();
 		Pattern p = Pattern.compile('SELECT (.*) FROM Account ORDER BY Name DESC NULLS FIRST , AnnualRevenue ASC NULLS LAST ');
 		Matcher m = p.matcher(soql);
-		Assert.isTrue(m.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
-		Assert.areEqual(1, m.groupCount(), 'Unexpected number of groups captured.');
+		System.Assert.isTrue(m.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
+		System.Assert.areEqual(1, m.groupCount(), 'Unexpected number of groups captured.');
 		String fieldListString = m.group(1);
 		assertFieldListString(fieldListString, null);
 	}
@@ -165,8 +165,8 @@ private with sharing class fflib_SObjectSelectorTest
 		String soql = selector.newQueryFactory().toSOQL();
 		Pattern p = Pattern.compile('SELECT (.*) FROM Account ORDER BY Name ASC NULLS FIRST ');
 		Matcher m = p.matcher(soql);
-		Assert.isTrue(m.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
-		Assert.areEqual(1, m.groupCount(), 'Unexpected number of groups captured.');
+		System.Assert.isTrue(m.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
+		System.Assert.areEqual(1, m.groupCount(), 'Unexpected number of groups captured.');
 		String fieldListString = m.group(1);
 		assertFieldListString(fieldListString, null);
 	}
@@ -174,31 +174,31 @@ private with sharing class fflib_SObjectSelectorTest
 	static testMethod void testDefaultConfig()
 	{
 		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
-		Assert.areEqual(false, selector.isEnforcingFLS());
-		Assert.areEqual(true, selector.isEnforcingCRUD());
-		Assert.areEqual(false, selector.isIncludeFieldSetFields());
+		System.Assert.areEqual(false, selector.isEnforcingFLS());
+		System.Assert.areEqual(true, selector.isEnforcingCRUD());
+		System.Assert.areEqual(false, selector.isIncludeFieldSetFields());
 		
-		Assert.areEqual('Account', selector.getSObjectName());
-		Assert.areEqual(Account.SObjectType, selector.getSObjectType2());
+		System.Assert.areEqual('Account', selector.getSObjectName());
+		System.Assert.areEqual(Account.SObjectType, selector.getSObjectType2());
 	}
 	
 	private static void assertFieldListString(String fieldListString, String prefix) {
 		String prefixString = (!String.isBlank(prefix)) ? prefix + '.' : '';
 		List<String> fieldList = fieldListString.split(',{1}\\s?');
-		Assert.areEqual(UserInfo.isMultiCurrencyOrganization() ? 5 : 4, fieldList.size());
+		System.Assert.areEqual(UserInfo.isMultiCurrencyOrganization() ? 5 : 4, fieldList.size());
 		Set<String> fieldSet = new Set<String>();
 		fieldSet.addAll(fieldList);
 		String expected = prefixString + 'AccountNumber';
-		Assert.isTrue(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
+		System.Assert.isTrue(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
 		expected = prefixString + 'AnnualRevenue';
-		Assert.isTrue(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
+		System.Assert.isTrue(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
 		expected = prefixString + 'Id';
-		Assert.isTrue(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
+		System.Assert.isTrue(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
 		expected = prefixString + 'Name';
-		Assert.isTrue(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
+		System.Assert.isTrue(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
 		if (UserInfo.isMultiCurrencyOrganization()) {
 			expected = prefixString + 'CurrencyIsoCode';
-			Assert.isTrue(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
+			System.Assert.isTrue(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
 		}
 	}
 	
@@ -225,7 +225,7 @@ private with sharing class fflib_SObjectSelectorTest
 		soqlMatcher.matches();
 
 		List<String> actualSelectFields = soqlMatcher.group(1).deleteWhiteSpace().split(',');
-		Assert.areEqual(expectedSelectFields, new Set<String>(actualSelectFields));
+		System.Assert.areEqual(expectedSelectFields, new Set<String>(actualSelectFields));
 	}
 
 	// Test case of ordering with NULLS LAST option passed into the ordering method
@@ -249,7 +249,7 @@ private with sharing class fflib_SObjectSelectorTest
 		// Assert that the
 		Pattern soqlPattern = Pattern.compile('SELECT (.*) FROM Account ORDER BY Name DESC NULLS FIRST , AnnualRevenue ASC NULLS LAST ');
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
-		Assert.isTrue(soqlMatcher.matches(), 'The SOQL should have that expected.');
+		System.Assert.isTrue(soqlMatcher.matches(), 'The SOQL should have that expected.');
 	}
 
 	@IsTest
@@ -271,10 +271,10 @@ private with sharing class fflib_SObjectSelectorTest
 		String soql = qf.toSOQL();
 		Pattern soqlPattern = Pattern.compile('SELECT (.*) FROM Account');
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
-		Assert.isTrue(soqlMatcher.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
+		System.Assert.isTrue(soqlMatcher.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
 
 		List<String> actualSelectFields = soqlMatcher.group(1).deleteWhiteSpace().split(',');
-		Assert.areEqual(expectedSelectFields, new Set<String>(actualSelectFields));
+		System.Assert.areEqual(expectedSelectFields, new Set<String>(actualSelectFields));
 	}
 
 	@IsTest
@@ -296,10 +296,10 @@ private with sharing class fflib_SObjectSelectorTest
 		String soql = qf.toSOQL();
 		Pattern soqlPattern = Pattern.compile('SELECT Id, \\(SELECT (.*) FROM Users ORDER BY Name ASC NULLS FIRST \\) +FROM Account');
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
-		Assert.isTrue(soqlMatcher.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
+		System.Assert.isTrue(soqlMatcher.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
 
 		List<String> actualSelectFields = soqlMatcher.group(1).deleteWhiteSpace().split(',');
-		Assert.areEqual(expectedSelectFields, new Set<String>(actualSelectFields));
+		System.Assert.areEqual(expectedSelectFields, new Set<String>(actualSelectFields));
 	}
 
 	@IsTest
@@ -321,10 +321,10 @@ private with sharing class fflib_SObjectSelectorTest
 		String soql = qf.toSOQL();
 		Pattern soqlPattern = Pattern.compile('SELECT Id, \\(SELECT (.*) FROM Users ORDER BY Name ASC NULLS FIRST \\) +FROM Account');
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
-		Assert.isTrue(soqlMatcher.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
+		System.Assert.isTrue(soqlMatcher.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
 
 		List<String> actualSelectFields = soqlMatcher.group(1).deleteWhiteSpace().split(',');
-		Assert.areEqual(expectedSelectFields, new Set<String>(actualSelectFields));
+		System.Assert.areEqual(expectedSelectFields, new Set<String>(actualSelectFields));
 	}
 
 	@IsTest
@@ -344,7 +344,7 @@ private with sharing class fflib_SObjectSelectorTest
 
 		//Then
 		List<String> actualSelectFields = fieldListString.deleteWhiteSpace().split(',');
-		Assert.areEqual(expectedSelectFields, new Set<String>(actualSelectFields));
+		System.Assert.areEqual(expectedSelectFields, new Set<String>(actualSelectFields));
 	}
 
 	@IsTest
@@ -363,7 +363,7 @@ private with sharing class fflib_SObjectSelectorTest
 
 		//Then
 		List<String> actualSelectFields = fieldListString.deleteWhiteSpace().split(',');
-		Assert.areEqual(expectedSelectFields, new Set<String>(actualSelectFields));
+		System.Assert.areEqual(expectedSelectFields, new Set<String>(actualSelectFields));
 
 	}
 
@@ -372,7 +372,7 @@ private with sharing class fflib_SObjectSelectorTest
 		Set<String> expected = new Set<String>(expectedSelectFields.deleteWhiteSpace().split(','));
 		Set<String> actual = new Set<String>(actualSelectFields.deleteWhiteSpace().split(','));
 
-		Assert.areEqual(expected, actual);
+		System.Assert.areEqual(expected, actual);
 	}
 	
 	private class Testfflib_SObjectSelector extends fflib_SObjectSelector
@@ -502,7 +502,7 @@ private with sharing class fflib_SObjectSelectorTest
 		soqlMatcher.matches();
 
 		List<String> actualSelectFields = soqlMatcher.group(1).deleteWhiteSpace().split(',');
-		Assert.areEqual(expectedSelectFields, new Set<String>(actualSelectFields));
+		System.Assert.areEqual(expectedSelectFields, new Set<String>(actualSelectFields));
 	}
 
 	private class Testfflib_CampaignMemberSelector extends fflib_SObjectSelector {

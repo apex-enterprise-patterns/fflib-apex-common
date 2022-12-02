@@ -43,7 +43,7 @@ private class fflib_ObjectsTest
 				}
 		);
 
-		Assert.areEqual(
+		System.Assert.areEqual(
 				DataTransferObject.class,
 				dtoDomain.getType(),
 				'Wrong domain type'
@@ -62,7 +62,7 @@ private class fflib_ObjectsTest
 				}
 		);
 
-		Assert.isTrue(
+		System.Assert.isTrue(
 				dtoDomain.contains(transferObject),
 				'The object should have been part of the domain'
 		);
@@ -73,7 +73,7 @@ private class fflib_ObjectsTest
 	{
 		fflib_ObjectsTest.Domain dtoDomain = generateDomain();
 
-		Assert.isTrue(
+		System.Assert.isTrue(
 				dtoDomain.containsNot(TRANSFER_OBJECT_D),
 				'The object should not have been part of the domain'
 		);
@@ -89,7 +89,7 @@ private class fflib_ObjectsTest
 						TRANSFER_OBJECT_B
 				});
 
-		Assert.isTrue(
+		System.Assert.isTrue(
 				dtoDomain.containsNot(
 						new Set<Object>
 						{
@@ -98,7 +98,7 @@ private class fflib_ObjectsTest
 						}),
 				'The set of objects should not have been part of the domain'
 		);
-		Assert.isTrue(
+		System.Assert.isTrue(
 				dtoDomain.containsNot(
 						new List<Object>
 						{
@@ -113,15 +113,15 @@ private class fflib_ObjectsTest
 	static void itShouldHaveAnEmptyDomain()
 	{
 		fflib_ObjectsTest.Domain dtoDomain = new Domain(new List<DataTransferObject>());
-		Assert.isTrue(dtoDomain.isEmpty(), 'Domain should be empty');
+		System.Assert.isTrue(dtoDomain.isEmpty(), 'Domain should be empty');
 	}
 
 	@IsTest
 	static void itShouldNotBeAnEmptyDomain()
 	{
 		fflib_ObjectsTest.Domain dtoDomain = generateDomain();
-		Assert.isTrue(dtoDomain.isNotEmpty(), 'Domain should not be empty');
-		Assert.areEqual(3, dtoDomain.size(), 'Incorrect amount of records in the domain');
+		System.Assert.isTrue(dtoDomain.isNotEmpty(), 'Domain should not be empty');
+		System.Assert.areEqual(3, dtoDomain.size(), 'Incorrect amount of records in the domain');
 	}
 
 	@IsTest
@@ -129,7 +129,7 @@ private class fflib_ObjectsTest
 	{
 		fflib_ObjectsTest.Domain dtoDomain = generateDomain();
 
-		Assert.isTrue(
+		System.Assert.isTrue(
 				dtoDomain.containsAll(
 						new List<DataTransferObject>
 						{
@@ -139,7 +139,7 @@ private class fflib_ObjectsTest
 				),
 				'Domain should contain the whole List of objects'
 		);
-		Assert.isTrue(
+		System.Assert.isTrue(
 				dtoDomain.containsAll(
 						new Set<Object>
 						{
@@ -155,7 +155,7 @@ private class fflib_ObjectsTest
 	static void itShouldGetTheObjectType()
 	{
 		fflib_Objects domain = new fflib_Objects(new List<Object>());
-		Assert.areEqual(Object.class, domain.getType(), 'Incorrect returned type');
+		System.Assert.areEqual(Object.class, domain.getType(), 'Incorrect returned type');
 	}
 
 	private static Domain generateDomain()

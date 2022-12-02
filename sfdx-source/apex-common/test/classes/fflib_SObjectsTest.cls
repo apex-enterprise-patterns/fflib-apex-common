@@ -33,23 +33,23 @@ private class fflib_SObjectsTest
 	{
 		Account record = new Account(ShippingCountry = 'Holland');
 		DomainAccounts domain = new DomainAccounts(new List<Account>{ record });
-		Assert.isFalse(domain.selectByShippingCountry('Holland').isEmpty(), 'Incorrect test data');
+		System.Assert.isFalse(domain.selectByShippingCountry('Holland').isEmpty(), 'Incorrect test data');
 
 		domain.clearShippingCountry();
 
-		Assert.isTrue(domain.selectByShippingCountry('Holland').isEmpty(), 'Field should have been nullified');
+		System.Assert.isTrue(domain.selectByShippingCountry('Holland').isEmpty(), 'Field should have been nullified');
 	}
 
 	@IsTest
 	static void itShouldReturnTheDomainsType()
 	{
-		Assert.areEqual(
+		System.Assert.areEqual(
 				(Object) Schema.Account.SObjectType,
 				new DomainAccounts(new List<Account>())
 						.getType(),
 				'Unexpected Domain Type'
 		);
-		Assert.areEqual(
+		System.Assert.areEqual(
 				Schema.Account.SObjectType,
 				new DomainAccounts(new List<Account>())
 						.getSObjectType(),
@@ -76,13 +76,13 @@ private class fflib_SObjectsTest
 		);
 
 		Set<Id> recordIds = new Set<Id> {idA, idB, idC};
-		Assert.areEqual(
+		System.Assert.areEqual(
 				recordIds,
 				domain.getRecordIds(),
 				'The domain should return all the record Ids'
 		);
 
-		Assert.areEqual(
+		System.Assert.areEqual(
 				recordIds,
 				domain.getIdFieldValues(Schema.Account.Id),
 				'The domain should return all the record Ids'
@@ -94,7 +94,7 @@ private class fflib_SObjectsTest
 	{
 		DomainAccounts domain = generateDomain();
 
-		Assert.areEqual(1, domain.selectByShippingCountry('USA').size());
+		System.Assert.areEqual(1, domain.selectByShippingCountry('USA').size());
 	}
 
 	@IsTest
@@ -102,7 +102,7 @@ private class fflib_SObjectsTest
 	{
 		DomainAccounts domain = generateDomain();
 
-		Assert.areEqual(3, domain.selectWithoutShippingCountry().size());
+		System.Assert.areEqual(3, domain.selectWithoutShippingCountry().size());
 	}
 
 	@IsTest
@@ -110,7 +110,7 @@ private class fflib_SObjectsTest
 	{
 		DomainAccounts domain = generateDomain();
 
-		Assert.areEqual(1, domain.selectWithEmptyRecord().size());
+		System.Assert.areEqual(1, domain.selectWithEmptyRecord().size());
 	}
 
 	@IsTest
@@ -118,7 +118,7 @@ private class fflib_SObjectsTest
 	{
 		DomainAccounts domain = generateDomain();
 
-		Assert.areEqual(4, domain.selectWithShippingCountry().size());
+		System.Assert.areEqual(4, domain.selectWithShippingCountry().size());
 	}
 
 	@IsTest
@@ -126,7 +126,7 @@ private class fflib_SObjectsTest
 	{
 		DomainAccounts domain = generateDomain();
 
-		Assert.areEqual(4, domain.selectPopulatedRecords().size());
+		System.Assert.areEqual(4, domain.selectPopulatedRecords().size());
 	}
 
 	@IsTest
@@ -143,12 +143,12 @@ private class fflib_SObjectsTest
 				'UK',
 				'USA'
 		};
-		Assert.areEqual(
+		System.Assert.areEqual(
 				expected,
 				domain.getStringFieldValues(Schema.Account.ShippingCountry)
 		);
 
-		Assert.isTrue(
+		System.Assert.isTrue(
 				domain.getFieldValues(Schema.Account.ShippingCountry).equals(expected)
 		);
 	}
@@ -160,7 +160,7 @@ private class fflib_SObjectsTest
 		String country = 'Holland';
 		domain.setShippingCountry(country);
 
-		Assert.areEqual(7, domain.selectByShippingCountry(country).size());
+		System.Assert.areEqual(7, domain.selectByShippingCountry(country).size());
 	}
 
 
@@ -175,7 +175,7 @@ private class fflib_SObjectsTest
 				}
 		);
 
-		Assert.areEqual(1, domain.selectByRating('Hot').size());
+		System.Assert.areEqual(1, domain.selectByRating('Hot').size());
 	}
 
 	@IsTest
@@ -187,9 +187,9 @@ private class fflib_SObjectsTest
 		DomainAccounts domain = new DomainAccounts(new List<Account>{ record });
 		domain.addNameError(errorMessage);
 
-		Assert.areEqual(1, fflib_SObjects.Errors.getAll().size());
-		Assert.areEqual(errorMessage, fflib_SObjects.Errors.getAll()[0].message);
-		Assert.areEqual(Account.Name, ((fflib_SObjects.FieldError) fflib_SObjects.Errors.getAll()[0]).field);
+		System.Assert.areEqual(1, fflib_SObjects.Errors.getAll().size());
+		System.Assert.areEqual(errorMessage, fflib_SObjects.Errors.getAll()[0].message);
+		System.Assert.areEqual(Account.Name, ((fflib_SObjects.FieldError) fflib_SObjects.Errors.getAll()[0]).field);
 	}
 
 	@IsTest
@@ -199,12 +199,12 @@ private class fflib_SObjectsTest
 		Opportunity opp = new Opportunity ( Name = 'Test', Type = 'Existing Account' );
 		fflib_SObjects.Errors.error('Error', opp);
 		fflib_SObjects.Errors.error('Error', opp, Opportunity.Type);
-		Assert.areEqual(2, fflib_SObjects.Errors.getAll().size());
-		Assert.areEqual('Error', fflib_SObjects.Errors.getAll()[0].message);
-		Assert.areEqual('Error', fflib_SObjects.Errors.getAll()[1].message);
-		Assert.areEqual(Opportunity.Type, ((fflib_SObjects.FieldError) fflib_SObjects.Errors.getAll()[1]).field);
+		System.Assert.areEqual(2, fflib_SObjects.Errors.getAll().size());
+		System.Assert.areEqual('Error', fflib_SObjects.Errors.getAll()[0].message);
+		System.Assert.areEqual('Error', fflib_SObjects.Errors.getAll()[1].message);
+		System.Assert.areEqual(Opportunity.Type, ((fflib_SObjects.FieldError) fflib_SObjects.Errors.getAll()[1]).field);
 		fflib_SObjects.Errors.clearAll();
-		Assert.areEqual(0, fflib_SObjects.Errors.getAll().size());
+		System.Assert.areEqual(0, fflib_SObjects.Errors.getAll().size());
 	}
 
 	private static DomainAccounts generateDomain()
