@@ -554,5 +554,40 @@ private with sharing class fflib_SObjectSelectorTest
 		public Schema.SObjectType getSObjectType() {
 			return Lead.sObjectType;
 		}
-	}	
+	}
+
+	@IsTest
+	static void testSetOperationType() {
+		Testfflib_UserSObjectSelector selector = new Testfflib_UserSObjectSelector();
+		Assert.isTrue(selector.isEnforcingCRUD());
+
+		Assert.isFalse(selector.newQueryFactory().isEnforcingFLS());
+
+		selector.ignoreCRUD();
+		Assert.isFalse(selector.isEnforcingCRUD());
+
+		selector.enforceFLS();
+		Assert.isTrue(selector.isEnforcingFLS());
+		Assert.isTrue(selector.isEnforcingCRUD());
+		Assert.isNull(selector.getOperationMode());
+
+		Assert.areEqual(null, selector.newQueryFactory().getOperationMode());
+		Assert.isTrue(selector.newQueryFactory().isEnforcingFLS());
+
+		selector.withSystemMode();
+		Assert.isFalse(selector.isEnforcingFLS());
+		Assert.isFalse(selector.isEnforcingCRUD());
+		Assert.areEqual('SYSTEM_MODE', selector.getOperationMode());
+
+		Assert.areEqual('SYSTEM_MODE', selector.newQueryFactory().getOperationMode());
+		Assert.isFalse(selector.newQueryFactory().isEnforcingFLS());
+
+		selector.withUserMode();
+		Assert.isTrue(selector.isEnforcingFLS());
+		Assert.isTrue(selector.isEnforcingCRUD());
+		Assert.areEqual('USER_MODE', selector.getOperationMode());
+
+		Assert.areEqual('USER_MODE', selector.newQueryFactory().getOperationMode());
+		Assert.isTrue(selector.newQueryFactory().isEnforcingFLS());
+	}
 }

@@ -72,7 +72,16 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * This can optionally be enforced (or not) by calling the setEnforceFLS method prior to calling 
 	 * one of the selectField or selectFieldset methods.
 	**/
-	private Boolean enforceFLS;
+	private Boolean enforceFLS {
+		get;
+		set {
+			if(value == true) {
+				this.setOperationMode(null);
+			}
+
+			this.enforceFLS = value;
+		}
+	}
 	
 	private Boolean sortSelectFields = true;
 	private Boolean allRows = false;
@@ -674,8 +683,12 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		return this;
 	}
 
-	public fflib_QueryFactory setOperationMode(fflib_SecurityUtils.OperationMode operationMode) {
-		this.operationMode = operationMode;
+	public fflib_QueryFactory setOperationMode(fflib_SecurityUtils.OperationMode mode) {
+		this.operationMode = mode;
+		if(mode != null) {
+			this.setEnforceFLS(false);
+		}
+
 		return this;
 	}
 
@@ -690,7 +703,20 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	}
 
 	public String getOperationMode() {
-		return this.operationMode.name();
+		return this.operationMode?.name();
+	}
+
+	public Boolean isEnforcingFLS()
+	{
+		if(this.isEnforcingUserMode()) {
+			return true;
+		}
+
+		return enforceFLS;
+	}
+
+	private Boolean isEnforcingUserMode() {
+		return this.operationMode == fflib_SecurityUtils.OperationMode.USER_MODE;
 	}
 
 	/**

@@ -48,11 +48,23 @@ public abstract with sharing class fflib_SObjectSelector
      * Should this selector automatically include the FieldSet fields when building queries?
      **/
     private Boolean m_includeFieldSetFields = false;
+
+    private fflib_SecurityUtils.OperationMode operationMode;
     
     /**
      * Enforce FLS Security
      **/
-    private Boolean m_enforceFLS = false;
+    private Boolean m_enforceFLS
+    {
+        get;
+        set {
+            if(value == true) {
+                this.setOperationMode(null);
+            }
+
+            this.m_enforceFLS = value;
+        }
+    }
 
     /**
      * Enforce CRUD Security
@@ -100,7 +112,9 @@ public abstract with sharing class fflib_SObjectSelector
     /**
      * Constructs the Selector with the default settings
      **/
-    public fflib_SObjectSelector() { }
+    public fflib_SObjectSelector() {
+        this(false, true, false);
+    }
     
     /**
      * Constructs the Selector
@@ -186,6 +200,34 @@ public abstract with sharing class fflib_SObjectSelector
         return this;
     }
 
+
+
+    public fflib_SObjectSelector withUserMode() {
+        this.setOperationMode(fflib_SecurityUtils.OperationMode.USER_MODE);
+        return this;
+    }
+
+    public fflib_SObjectSelector withSystemMode() {
+        this.setOperationMode(fflib_SecurityUtils.OperationMode.SYSTEM_MODE);
+        return this;
+    }
+
+    public fflib_SObjectSelector setOperationMode(fflib_SecurityUtils.OperationMode mode) {
+        this.operationMode = mode;
+        if(mode != null) {
+            this.ignoreCRUD();
+            this.m_enforceFLS = false;
+        } else {
+            this.m_enforceCRUD = true;
+        }
+
+        return this;
+    }
+
+    public String getOperationMode() {
+        return this.operationMode?.name();
+    }
+
     /**
      * @description Set the selector to automatically include the FieldSet fields when building queries
      **/
@@ -224,6 +266,10 @@ public abstract with sharing class fflib_SObjectSelector
      **/
     public Boolean isEnforcingFLS()
     {
+        if(this.isEnforcingUserMode()) {
+            return true;
+        }
+
     	return m_enforceFLS;
     }
     
@@ -232,8 +278,17 @@ public abstract with sharing class fflib_SObjectSelector
      **/
     public Boolean isEnforcingCRUD()
     {
+        if(this.isEnforcingUserMode()) {
+            return true;
+        }
+
     	return m_enforceCRUD;
     }
+
+    private Boolean isEnforcingUserMode() {
+        return this.operationMode == fflib_SecurityUtils.OperationMode.USER_MODE;
+    }
+
 
     /**
      * Provides access to the builder containing the list of fields base queries are using, this is demand
@@ -369,7 +424,8 @@ public abstract with sharing class fflib_SObjectSelector
     	// Construct QueryFactory around the given SObject
         return configureQueryFactory(
         	new fflib_QueryFactory(getSObjectType2()), 
-        		assertCRUD, enforceFLS, includeSelectorFields);
+        		assertCRUD, enforceFLS, includeSelectorFields)
+                .setOperationMode(this.operationMode);
     }
 
      /**
