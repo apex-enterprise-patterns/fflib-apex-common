@@ -202,6 +202,7 @@ public abstract with sharing class fflib_SObjectSelector
     public fflib_SObjectSelector enforceFLS()
     {
         m_enforceFLS = true;
+        this.setDataAccess(DataAccess.LEGACY);
         return this;
     }
 
@@ -238,7 +239,20 @@ public abstract with sharing class fflib_SObjectSelector
             ignoreCRUD();
             m_enforceFLS = false;
         }
+        else {
+            this.m_enforceCRUD = true;
+        }
 
+        return this;
+    }
+
+    public fflib_SObjectSelector withUserMode() {
+        this.setDataAccess(DataAccess.USER_MODE);
+        return this;
+    }
+
+    public fflib_SObjectSelector withSystemMode() {
+        this.setDataAccess(DataAccess.SYSTEM_MODE);
         return this;
     }
 
@@ -255,6 +269,10 @@ public abstract with sharing class fflib_SObjectSelector
      **/
     public Boolean isEnforcingFLS()
     {
+        if(isUserMode()) {
+            return true;
+        }
+
     	return m_enforceFLS;
     }
     
@@ -263,7 +281,15 @@ public abstract with sharing class fflib_SObjectSelector
      **/
     public Boolean isEnforcingCRUD()
     {
+        if(isUserMode()) {
+            return true;
+        }
+
     	return m_enforceCRUD;
+    }
+
+    private Boolean isUserMode() {
+        return this.getDataAccess() == DataAccess.USER_MODE;
     }
 
     public DataAccess getDataAccess(){

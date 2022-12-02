@@ -225,6 +225,20 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		return this;
 	}
 
+	public fflib_QueryFactory withUserMode() {
+		this.setEnforceFLS(FLSEnforcement.USER_MODE);
+		return this;
+	}
+
+	public fflib_QueryFactory withSystemMode() {
+		this.setEnforceFLS(FLSEnforcement.SYSTEM_MODE);
+		return this;
+	}
+
+	public FLSEnforcement getFLSEnforcement() {
+		return this.mFlsEnforcement;
+	}
+
 
 	/**
 	 * Sets a flag to indicate that this query should have ordered
