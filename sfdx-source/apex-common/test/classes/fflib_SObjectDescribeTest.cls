@@ -41,12 +41,12 @@ private class fflib_SObjectDescribeTest {
 		Schema.SObjectType nullType = null;
 		Schema.DescribeSObjectResult nullDescribe = null;
 		SObject nullSObject = null;
-		System.Assert.isNull(fflib_SObjectDescribe.getDescribe(nullStr));
-		System.Assert.isNull(fflib_SObjectDescribe.getDescribe(''));
-		System.Assert.isNull(fflib_SObjectDescribe.getDescribe(' '));
-		System.Assert.isNull(fflib_SObjectDescribe.getDescribe(nullType));
-		System.Assert.isNull(fflib_SObjectDescribe.getDescribe(nullDescribe));
-		System.Assert.isNull(fflib_SObjectDescribe.getDescribe(nullSObject));
+		System.Assert.areEqual(null, fflib_SObjectDescribe.getDescribe(nullStr));
+		System.Assert.areEqual(null, fflib_SObjectDescribe.getDescribe(''));
+		System.Assert.areEqual(null, fflib_SObjectDescribe.getDescribe(' '));
+		System.Assert.areEqual(null, fflib_SObjectDescribe.getDescribe(nullType));
+		System.Assert.areEqual(null, fflib_SObjectDescribe.getDescribe(nullDescribe));
+		System.Assert.areEqual(null, fflib_SObjectDescribe.getDescribe(nullSObject));
 	}
 
 	@isTest
@@ -63,8 +63,8 @@ private class fflib_SObjectDescribeTest {
 		System.Assert.areEqual(fields.get('name'), Account.SObjectType.fields.name); //behavior of FieldsMap is tested in another method
 		System.Assert.areEqual(Schema.SObjectType.Account.fields.getMap().size(), fields.size());
 
-		System.Assert.isNull(fields.get(null), 'Null input should result in null ouput.');
-		System.Assert.isNull(fields.get(''), 'Invalid fieldname input should result in null ouput.');
+		System.Assert.areEqual(null, fields.get(null), 'Null input should result in null ouput.');
+		System.Assert.areEqual(null, fields.get(''), 'Invalid fieldname input should result in null ouput.');
 	}
 
 	@isTest

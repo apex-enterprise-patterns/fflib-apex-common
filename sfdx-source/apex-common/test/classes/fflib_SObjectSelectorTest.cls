@@ -31,7 +31,7 @@ private with sharing class fflib_SObjectSelectorTest
 	static testMethod void testGetSObjectName()
 	{
 		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
-		System.Assert.isNull(selector.getSObjectFieldSetList());
+		System.Assert.areEqual(null, selector.getSObjectFieldSetList());
 		System.Assert.areEqual('Account',selector.getSObjectName());
 	}
 	

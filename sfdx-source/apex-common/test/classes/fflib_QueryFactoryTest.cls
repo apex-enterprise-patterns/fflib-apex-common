@@ -290,7 +290,7 @@ private class fflib_QueryFactoryTest {
 		//explicitly assert object accessibility when creating the subselect
 		qf.subselectQuery('Tasks', true).selectField('Id').selectField('Subject').setCondition(' IsDeleted = false ');
 		List<fflib_QueryFactory> queries = qf.getSubselectQueries();
-		System.Assert.isNotNull(queries);
+		System.Assert.areNotEqual(null, queries);
 		System.Assert.isTrue(
 				Pattern.matches('SELECT.*(SELECT.*FROM Tasks WHERE.*).*FROM Contact WHERE.*', qf.toSOQL()),
 				'Incorrect returned query'
@@ -304,7 +304,7 @@ private class fflib_QueryFactoryTest {
 		//explicitly assert object accessibility when creating the subselect
 		qf.subselectQuery('Tasks').selectField('Id').selectField('Subject').setCondition(' IsDeleted = false ');
 		List<fflib_QueryFactory> queries = qf.getSubselectQueries();
-		System.Assert.isNotNull(queries);
+		System.Assert.areNotEqual(null, queries);
 		System.Assert.isTrue(
 				Pattern.matches('SELECT.*(SELECT.*FROM Tasks WHERE.*).*FROM Contact WHERE.*', qf.toSOQL()),
 				'Incorrect returned query'
@@ -327,7 +327,7 @@ private class fflib_QueryFactoryTest {
        	//explicitly assert object accessibility when creating the subselect
 		qf.subselectQuery(relationship, true).selectField('Id').selectField('Subject').setCondition(' IsDeleted = false ');
 		List<fflib_QueryFactory> queries = qf.getSubselectQueries();
-		System.Assert.isNotNull(queries);
+		System.Assert.areNotEqual(null, queries);
 		System.Assert.isTrue(
 				Pattern.matches('SELECT.*(SELECT.*FROM Tasks WHERE.*).*FROM Contact WHERE.*', qf.toSOQL()),
 				'Incorrect returned query'
@@ -350,7 +350,7 @@ private class fflib_QueryFactoryTest {
        	//explicitly assert object accessibility when creating the subselect
 		qf.subselectQuery(relationship).selectField('Id').selectField('Subject').setCondition(' IsDeleted = false ');
 		List<fflib_QueryFactory> queries = qf.getSubselectQueries();
-		System.Assert.isNotNull(queries);
+		System.Assert.areNotEqual(null, queries);
 		System.Assert.isTrue(
 				Pattern.matches('SELECT.*(SELECT.*FROM Tasks WHERE.*).*FROM Contact WHERE.*', qf.toSOQL()),
 				'Incorrect returned query'
@@ -381,7 +381,7 @@ private class fflib_QueryFactoryTest {
 		//explicitly assert object accessibility when creating the subselect
 		qf.subselectQuery(Task.SObjectType, true).selectField('Id').selectField('Subject').setCondition(' IsDeleted = false ');
 		List<fflib_QueryFactory> queries = qf.getSubselectQueries();
-		System.Assert.isNotNull(queries);
+		System.Assert.areNotEqual(null, queries);
 		System.Assert.isTrue(
 				Pattern.matches('SELECT.*(SELECT.*FROM Tasks WHERE.*).*FROM Contact WHERE.*', qf.toSOQL()),
 				'Incorrect returned query'
@@ -402,14 +402,14 @@ private class fflib_QueryFactoryTest {
                 relationship = childRow;
             }
         }
-        System.Assert.isNull(qf.getSubselectQueries());
+        System.Assert.areEqual(null, qf.getSubselectQueries());
 		fflib_QueryFactory childQf = qf.subselectQuery(Task.SObjectType);
 		childQf.assertIsAccessible();
 		childQf.setEnforceFLS(true);
 		childQf.selectField('Id');
 		fflib_QueryFactory childQf2 = qf.subselectQuery(Task.SObjectType);
 		List<fflib_QueryFactory> queries = qf.getSubselectQueries();
-		System.Assert.isNotNull(queries);
+		System.Assert.areNotEqual(null, queries);
 		System.Assert.areEqual(1, queries.size());
 	}
 

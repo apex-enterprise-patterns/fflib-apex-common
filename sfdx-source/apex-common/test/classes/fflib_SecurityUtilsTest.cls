@@ -137,7 +137,7 @@ private class fflib_SecurityUtilsTest {
 				}catch(fflib_SecurityUtils.SecurityException e){
 					ex = e;
 				}
-				System.Assert.isNotNull(ex, 'Read only profile should not be able to insert Account.Name');
+				System.Assert.areNotEqual(null, ex, 'Read only profile should not be able to insert Account.Name');
 				System.Assert.isInstanceOfType(ex, fflib_SecurityUtils.FlsException.class, 'Expected an FlsException, got '+ex.getTypeName());
 			}
 			{
@@ -147,7 +147,7 @@ private class fflib_SecurityUtilsTest {
 				}catch(fflib_SecurityUtils.SecurityException e){
 					ex = e;
 				}
-				System.Assert.isNull(ex, 'Read only profile should be able to read Contact.LastName');
+				System.Assert.areEqual(null, ex, 'Read only profile should be able to read Contact.LastName');
 			}
 			{
 				fflib_SecurityUtils.SecurityException ex;
@@ -156,7 +156,7 @@ private class fflib_SecurityUtilsTest {
 				}catch(fflib_SecurityUtils.SecurityException e){
 					ex = e;
 				}
-				System.Assert.isNotNull(ex, 'Read only profile should not be able to update Lead.Company');
+				System.Assert.areNotEqual(null, ex, 'Read only profile should not be able to update Lead.Company');
 				System.Assert.isInstanceOfType(ex, fflib_SecurityUtils.FlsException.class, 'Expected an FlsException, got '+ex.getTypeName());
 			}
 
@@ -190,7 +190,7 @@ private class fflib_SecurityUtilsTest {
 				}catch(fflib_SecurityUtils.SecurityException e){
 					ex = e;
 				}
-				System.Assert.isNull(ex, 'Read only profile should be able to read Contact');
+				System.Assert.areEqual(null, ex, 'Read only profile should be able to read Contact');
 			}
 			{
 				fflib_SecurityUtils.SecurityException ex;
@@ -258,7 +258,7 @@ private class fflib_SecurityUtilsTest {
 				}catch(fflib_SecurityUtils.SecurityException e){
 					ex = e;
 				}
-				System.Assert.isNull(ex, 'Read only profile should be able to read Contact');
+				System.Assert.areEqual(null, ex, 'Read only profile should be able to read Contact');
 			}
 			{
 				fflib_SecurityUtils.SecurityException ex;
