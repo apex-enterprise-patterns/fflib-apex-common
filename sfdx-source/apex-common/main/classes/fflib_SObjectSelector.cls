@@ -125,7 +125,7 @@ public abstract with sharing class fflib_SObjectSelector
      * Constructs the Selector
      *
      * @param includeFieldSetFields Set to true if the Selector queries are to include Fieldset fields as well
-     * @deprecated - consider using userMode for native platform enforcement of CRUD and FLS
+     * @deprecated - consider using dataAccess for native platform enforcement of CRUD and FLS
      **/
     public fflib_SObjectSelector(Boolean includeFieldSetFields, Boolean enforceCRUD, Boolean enforceFLS)
     {
