@@ -652,10 +652,10 @@ private with sharing class fflib_SObjectSelectorTest
 	}
 
 	@isTest
-	static void testPolymorphicSelectWithRelatedType() {
+	static void toSOQL_When_PolymorphicSelect_Expect_RelatedType() {
 		//Given		
 
-		Testfflib_CampaignMemberSelector cmSelector = new Testfflib_CampaignMemberSelector();
+		CampaignMemberSelector cmSelector = new CampaignMemberSelector(fflib_SObjectSelector.DataAccess.LEGACY);
 		fflib_QueryFactory qf = cmSelector.newQueryFactory();
 		new Testfflib_LeadSelector().configureQueryFactoryFields(qf, 'Lead');
 		new Testfflib_UserSelector().configureQueryFactoryFields(qf, 'Lead.Owner');
@@ -680,9 +680,33 @@ private with sharing class fflib_SObjectSelectorTest
 		System.assertEquals(expectedSelectFields, new Set<String>(actualSelectFields));
 	}
 
-	private class Testfflib_CampaignMemberSelector extends fflib_SObjectSelector {
-		public Testfflib_CampaignMemberSelector() {
-			super();
+	@isTest
+	static void toSOQL_When_SystemModePolymorphicSelect_Expect_RelatedType() {
+		CampaignMemberSelector cmSelector = new CampaignMemberSelector(fflib_SObjectSelector.DataAccess.SYSTEM_MODE);
+		fflib_QueryFactory qf = cmSelector.newQueryFactory();
+		new Testfflib_LeadSelector().configureQueryFactoryFields(qf, 'Lead');
+		new Testfflib_UserSelector().configureQueryFactoryFields(qf, 'Lead.Owner');
+
+		List<String> expectedSelectFields = new List<String>{
+				'id', 'status', 'lead.ownerid', 'lead.id', 'lead.owner.userroleid', 'lead.owner.id'
+		};
+		if (UserInfo.isMultiCurrencyOrganization()) {
+			expectedSelectFields.add('CurrencyIsoCode');
+		}
+
+		String expectedSOQL = 'SELECT ' + String.join(expectedSelectFields,', ') + ' FROM CampaignMember WITH SYSTEM_MODE ORDER BY CreatedDate ASC NULLS FIRST ';
+
+		//When
+		String actualSOQL = qf.toSOQL();
+
+		//Then
+		System.assertEquals(expectedSOQL, actualSOQL);
+	}
+
+
+	private class CampaignMemberSelector extends fflib_SObjectSelector {
+		public CampaignMemberSelector(DataAccess access) {
+			super(false, access);
 		}
 
 		public List<Schema.SObjectField> getSObjectFieldList() {
