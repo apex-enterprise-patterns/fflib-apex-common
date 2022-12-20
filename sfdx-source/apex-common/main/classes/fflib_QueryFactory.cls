@@ -289,23 +289,23 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	
 	/**
 	 * Selects multiple fields. This acts the same as calling {@link #selectField(Schema.SObjectField)} multiple times.
-	 * @param fields the set of {@link Schema.SObjectField}s to select.
+	 * @param fields the Set of {@link Schema.SObjectField}s to select.
 	 * @exception InvalidFieldException if the fields are null {@code fields}.
 	**/
 	public fflib_QueryFactory selectFields(Set<Schema.SObjectField> fields){
-		return selectSObjectField(fields.iterator());
+		return selectSObjectFields(fields.iterator());
 	}
 
 	/**
 	 * Selects multiple fields. This acts the same as calling {@link #selectField(Schema.SObjectField)} multiple times.
-	 * @param fields the set of {@link Schema.SObjectField}s to select.
+	 * @param fields the List of {@link Schema.SObjectField}s to select.
 	 * @exception InvalidFieldException if the fields are null {@code fields}.	 
 	**/
 	public fflib_QueryFactory selectFields(List<Schema.SObjectField> fields) {
-		return selectSObjectField(fields.iterator());
+		return selectSObjectFields(fields.iterator());
 	}
 
-	private fflib_QueryFactory selectSObjectField(Iterator<Schema.SObjectField> iter){
+	private fflib_QueryFactory selectSObjectFields(Iterator<Schema.SObjectField> iter){
 
 		while( iter.hasNext() ){
 			Schema.SObjectField token = iter.next();

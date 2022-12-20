@@ -401,9 +401,9 @@ public abstract with sharing class fflib_SObjectSelector
      **/
     public fflib_QueryFactory newQueryFactory(Boolean assertCRUD, Boolean enforceFLS, Boolean includeSelectorFields)
     {
-    	// Construct QueryFactory around the given SObject
+        // Construct QueryFactory around the given SObject
         return newQueryFactory(
-        		assertCRUD,
+                assertCRUD,
                 enforceFLS,
                 includeSelectorFields,
                 DataAccess.LEGACY);
@@ -449,15 +449,15 @@ public abstract with sharing class fflib_SObjectSelector
      * Adds a subselect QueryFactory based on this selector to the given QueryFactor
      **/
     public fflib_QueryFactory addQueryFactorySubselect(fflib_QueryFactory parentQueryFactory, Boolean includeSelectorFields)
-    {    	
-    	fflib_QueryFactory subSelectQueryFactory = 
+    {
+    	fflib_QueryFactory subSelectQueryFactory =
     		parentQueryFactory.subselectQuery(getSObjectType2());
     	return configureQueryFactory(
-    		subSelectQueryFactory, 
-    		m_enforceCRUD, 
+    		subSelectQueryFactory,
+    		m_enforceCRUD,
     		m_enforceFLS,
     		includeSelectorFields,
-            m_dataAccess);
+    		m_dataAccess);
     }
         
      /**

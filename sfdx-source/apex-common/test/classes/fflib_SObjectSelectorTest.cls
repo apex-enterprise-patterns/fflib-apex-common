@@ -373,7 +373,7 @@ private with sharing class fflib_SObjectSelectorTest
 	}
 
 	@IsTest
-	static void toSoql_When_UserModeAndUserCannnotReadObject_Expect_QueryException(){
+	static void toSOQL_When_UserModeAndUserCannnotReadObject_Expect_QueryException(){
 		AccessLevelOpportunitySelector sel = new AccessLevelOpportunitySelector();
 
 		User u = getLimitedReadOnlyUser();
@@ -394,7 +394,7 @@ private with sharing class fflib_SObjectSelectorTest
 	}
 
 	@IsTest
-	static void toSoql_When_SystemModeAndUserCannnotReadObject_Expect_Success(){
+	static void toSOQL_When_SystemModeAndUserCannnotReadObject_Expect_Success(){
 		AccessLevelOpportunitySelector sel = new AccessLevelOpportunitySelector(fflib_SObjectSelector.DataAccess.SYSTEM_MODE);
 
 		User u = getLimitedReadOnlyUser();
@@ -404,7 +404,7 @@ private with sharing class fflib_SObjectSelectorTest
 	}
 
 	@IsTest
-	static void toSoql_When_UserModeAndUserCannnotReadField_Expect_QueryException(){
+	static void toSOQL_When_UserModeAndUserCannnotReadField_Expect_QueryException(){
 		AccessLevelAccountSelector sel = new AccessLevelAccountSelector();
 
 		//Account has Read access by the limited read only user but no FLS access
@@ -427,7 +427,7 @@ private with sharing class fflib_SObjectSelectorTest
 	}
 
 	@IsTest
-	static void toSoql_When_SystemModeAndUserCannnotReadField_Expect_Success(){
+	static void toSOQL_When_SystemModeAndUserCannnotReadField_Expect_Success(){
 		AccessLevelAccountSelector sel = new AccessLevelAccountSelector(fflib_SObjectSelector.DataAccess.SYSTEM_MODE);
 
 		//Account has Read access by the limited read only user but no FLS access
@@ -438,7 +438,7 @@ private with sharing class fflib_SObjectSelectorTest
 	}
 
 	@IsTest
-	static void toSoql_When_SystemModeAndParentRelationshipAndDuplicateFields_Expect_WellFormedSOQL(){
+	static void toSOQL_When_SystemModeAndParentRelationshipAndDuplicateFields_Expect_WellFormedSOQL(){
 		AccessLevelOpportunitySelector sel = new AccessLevelOpportunitySelector(fflib_SObjectSelector.DataAccess.SYSTEM_MODE);
 
 		String soql = sel.createSelectAllWithAccountSOQL();
@@ -450,7 +450,7 @@ private with sharing class fflib_SObjectSelectorTest
 	}
 
 	@IsTest
-	static void toSoql_When_SystemModeAndChildRelationship_Expect_WellFormedSOQL(){
+	static void toSOQL_When_SystemModeAndChildRelationship_Expect_WellFormedSOQL(){
 		AccessLevelAccountSelector sel = new AccessLevelAccountSelector(fflib_SObjectSelector.DataAccess.SYSTEM_MODE);
 
 		String soql = sel.createSelectAccountWithOpportunitiesSOQL();
