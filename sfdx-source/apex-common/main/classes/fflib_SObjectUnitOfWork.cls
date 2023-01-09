@@ -123,14 +123,26 @@ public virtual class fflib_SObjectUnitOfWork
     }
 
 	public virtual class UserModeDML extends SimpleDML{
+		@TestVisible
+		private AccessLevel m_accessLevel;
+
+		public UserModeDML(){
+			this(AccessLevel.USER_MODE);
+		}
+
+		/** Supply the AccessLevel explicitly (UserModeDML uses AccessMode.USER_MODE, by default) */
+		public UserModeDML(AccessLevel access){
+			m_accessLevel = access;
+		}
+
 		public virtual override void dmlInsert(List<SObject> objList){
-			Database.insert(objList,AccessLevel.USER_MODE);
+			Database.insert(objList,m_accessLevel);
 		}
 		public virtual override void dmlUpdate(List<SObject> objList){
-			Database.update(objList,AccessLevel.USER_MODE);
+			Database.update(objList,m_accessLevel);
 		}
 		public virtual override void dmlDelete(List<SObject> objList){
-			Database.delete(objList,AccessLevel.USER_MODE);
+			Database.delete(objList,m_accessLevel);
 		}
 	}
 
