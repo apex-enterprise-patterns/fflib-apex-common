@@ -27,6 +27,10 @@
 @IsTest
 private with sharing class fflib_SObjectSelectorTest 
 {
+	@TestSetup
+	static void testSetup(){
+		fflib_SecurityUtilsTest.testSetup();
+	}
 	
 	static testMethod void testGetSObjectName()
 	{
@@ -177,6 +181,7 @@ private with sharing class fflib_SObjectSelectorTest
 		System.assertEquals(false, selector.isEnforcingFLS());
 		System.assertEquals(true, selector.isEnforcingCRUD());
 		System.assertEquals(false, selector.isIncludeFieldSetFields());
+		System.assertEquals(fflib_SObjectSelector.DataAccess.LEGACY, selector.getDataAccess());
 		
 		System.assertEquals('Account', selector.getSObjectName());
 		System.assertEquals(Account.SObjectType, selector.getSObjectType2());
@@ -367,14 +372,96 @@ private with sharing class fflib_SObjectSelectorTest
 
 	}
 
-	private static void assertEqualsSelectFields(String expectedSelectFields, String actualSelectFields)
-	{
-		Set<String> expected = new Set<String>(expectedSelectFields.deleteWhiteSpace().split(','));
-		Set<String> actual = new Set<String>(actualSelectFields.deleteWhiteSpace().split(','));
+	@IsTest
+	static void toSOQL_When_UserModeAndUserCannnotReadObject_Expect_QueryException(){
+		AccessLevelOpportunitySelector sel = new AccessLevelOpportunitySelector();
 
-		System.assertEquals(expected, actual);
+		User u = getLimitedReadOnlyUser();
+		System.runAs(u){
+			try{
+				System.debug(sel.newQueryFactory().toSOQL());
+				sel.selectSObjectsById(new Set<Id>{fflib_IDGenerator.generate(Opportunity.SObjectType)});
+				Assert.fail('Expected a QueryException due to read only user not having access to Opportunity');
+			}
+			catch(QueryException qe){
+				//If you don't have Read access to the Lead object, the Name field is inaccessible -- so that's what we're verifying
+				Assert.isNotNull(qe.getInaccessibleFields(),'Expected a Map of inaccessible objects; got null');
+				Set<String> inaccessibleFields = qe.getInaccessibleFields().get('Opportunity');
+				Assert.isNotNull(inaccessibleFields,'Expected a Set of inaccessible fields on the Opportunity object; got null');
+				Assert.isTrue(inaccessibleFields.contains('Name'),'Expected Name to be an inaccessible field on Opportunity');
+			}
+		}
 	}
-	
+
+	@IsTest
+	static void toSOQL_When_SystemModeAndUserCannnotReadObject_Expect_Success(){
+		AccessLevelOpportunitySelector sel = new AccessLevelOpportunitySelector(fflib_SObjectSelector.DataAccess.SYSTEM_MODE);
+
+		User u = getLimitedReadOnlyUser();
+		System.runAs(u){
+			sel.selectSObjectsById(new Set<Id>{fflib_IDGenerator.generate(Opportunity.SObjectType)});
+		}
+	}
+
+	@IsTest
+	static void toSOQL_When_UserModeAndUserCannnotReadField_Expect_QueryException(){
+		AccessLevelAccountSelector sel = new AccessLevelAccountSelector();
+
+		//Account has Read access by the limited read only user but no FLS access
+		User u = getLimitedReadOnlyUser();
+		System.runAs(u){
+			try{
+				System.debug(sel.newQueryFactory().toSOQL());
+				sel.selectSObjectsById(new Set<Id>{fflib_IDGenerator.generate(Account.SObjectType)});
+				Assert.fail('Expected a QueryException due to read only user not having access to AnnualRevenue');
+			}
+			catch(QueryException qe){
+				//If you don't have Read access to the Lead object, the Name field is inaccessible -- so that's what we're verifying
+				Assert.isNotNull(qe.getInaccessibleFields(),'Expected a Map of inaccessible objects; got null');
+				Set<String> inaccessibleFields = qe.getInaccessibleFields().get('Account');
+				Assert.isNotNull(inaccessibleFields,'Expected a Set of inaccessible fields on the Account object; got null');
+				Assert.isFalse(inaccessibleFields.contains('Name'),'Expected Name to be an accessible field on Account');
+				Assert.isTrue(inaccessibleFields.contains('AnnualRevenue'),'Expected AnnualRevenue to be an inaccessible field on Account');
+			}
+		}
+	}
+
+	@IsTest
+	static void toSOQL_When_SystemModeAndUserCannnotReadField_Expect_Success(){
+		AccessLevelAccountSelector sel = new AccessLevelAccountSelector(fflib_SObjectSelector.DataAccess.SYSTEM_MODE);
+
+		//Account has Read access by the limited read only user but no FLS access
+		User u = getLimitedReadOnlyUser();
+		System.runAs(u){
+			sel.selectSObjectsById(new Set<Id>{fflib_IDGenerator.generate(Account.SObjectType)});
+		}
+	}
+
+	@IsTest
+	static void toSOQL_When_SystemModeAndParentRelationshipAndDuplicateFields_Expect_WellFormedSOQL(){
+		AccessLevelOpportunitySelector sel = new AccessLevelOpportunitySelector(fflib_SObjectSelector.DataAccess.SYSTEM_MODE);
+
+		String soql = sel.createSelectAllWithAccountSOQL();
+
+		String expected = 'SELECT name, id, amount, closedate, account\\.name, account\\.billingpostalcode(.*)FROM Opportunity WITH SYSTEM_MODE ORDER BY Name ASC NULLS FIRST ';
+		Pattern soqlPattern = Pattern.compile(expected);
+		Matcher soqlMatcher = soqlPattern.matcher(soql);
+		System.assert(soqlMatcher.matches(),'Expected: ' + expected + ' Actual:' + soql);
+	}
+
+	@IsTest
+	static void toSOQL_When_SystemModeAndChildRelationship_Expect_WellFormedSOQL(){
+		AccessLevelAccountSelector sel = new AccessLevelAccountSelector(fflib_SObjectSelector.DataAccess.SYSTEM_MODE);
+
+		String soql = sel.createSelectAccountWithOpportunitiesSOQL();
+
+		String expected = 'SELECT name, id, annualrevenue, accountnumber,(.*)\\(SELECT name, id, amount, closedate FROM Opportunities ORDER BY Name ASC NULLS FIRST \\)  FROM Account WITH SYSTEM_MODE ORDER BY Name ASC NULLS FIRST ';
+		Pattern soqlPattern = Pattern.compile(expected);
+		Matcher soqlMatcher = soqlPattern.matcher(soql);
+		System.assert(soqlMatcher.matches(),'Expected: ' + expected + ' Actual:' + soql);
+	}
+
+
 	private class Testfflib_SObjectSelector extends fflib_SObjectSelector
 	{
 		public Testfflib_SObjectSelector()
@@ -455,6 +542,90 @@ private with sharing class fflib_SObjectSelectorTest
 		}
 	}
 
+	private class AccessLevelOpportunitySelector extends fflib_SObjectSelector{
+		public AccessLevelOpportunitySelector(){
+			this(DataAccess.USER_MODE);
+		}
+
+		public AccessLevelOpportunitySelector(DataAccess access){
+			super(false, access);
+		}
+
+		public Schema.SObjectType getSObjectType(){
+			return Opportunity.sObjectType;
+		}
+
+		public List<Schema.SObjectField> getSObjectFieldList(){
+			return new List<Schema.SObjectField> {
+					Opportunity.Name,
+					Opportunity.Id,
+					Opportunity.Amount,
+					Opportunity.CloseDate
+			};
+		}
+
+		@TestVisible
+		private String createSelectAllWithAccountSOQL(){
+			fflib_QueryFactory qf = newQueryFactory();
+
+			qf.selectField('AMOUNT'); //Duplicate (as String)
+			qf.selectField('amount'); //Duplicate (as String)
+			qf.selectField(Opportunity.Amount); //Duplicate (as SObjectField)
+
+			//Parent Relationship
+			qf.selectFields(new Set<String>{
+					'Account.Name',
+					'Account.BillingPostalCode'
+			});
+			qf.selectField('Account.BILLINGPOSTALCODE'); //Duplicate field (as String)
+
+			return qf.toSOQL();
+		}
+
+		public List<Opportunity> selectAllWithAccount(){
+			return Database.query(createSelectAllWithAccountSOQL());
+		}
+	}
+
+	private class AccessLevelAccountSelector extends fflib_SObjectSelector{
+		public AccessLevelAccountSelector(){
+			this(DataAccess.USER_MODE);
+		}
+
+		public AccessLevelAccountSelector(DataAccess access){
+			super(false, access);
+		}
+
+		public Schema.SObjectType getSObjectType(){
+			return Account.sObjectType;
+		}
+
+		public List<Schema.SObjectField> getSObjectFieldList(){
+			return new List<Schema.SObjectField> {
+					Account.Name,
+					Account.Id,
+					Account.AnnualRevenue,
+					Account.AccountNumber
+			};
+		}
+
+		@TestVisible
+		private String createSelectAccountWithOpportunitiesSOQL(){
+			AccessLevelOpportunitySelector oSel = new AccessLevelOpportunitySelector(getDataAccess());
+
+			fflib_QueryFactory qf = newQueryFactory();
+
+			oSel.addQueryFactorySubselect(qf);
+
+			return qf.toSOQL();
+		}
+
+		public List<Account> selectAccountWithOpportunities(){
+			return Database.query(createSelectAccountWithOpportunitiesSOQL());
+		}
+	}
+
+
 	/**
 	 * Create test user
 	 **/
@@ -476,11 +647,15 @@ private with sharing class fflib_SObjectSelectorTest
 		return testUser;
 	}
 
+	private static User getLimitedReadOnlyUser(){
+		return fflib_SecurityUtilsTest.setupTestUser('Read Only');
+	}
+
 	@isTest
-	static void testPolymorphicSelectWithRelatedType() {
+	static void toSOQL_When_PolymorphicSelect_Expect_RelatedType() {
 		//Given		
 
-		Testfflib_CampaignMemberSelector cmSelector = new Testfflib_CampaignMemberSelector();
+		CampaignMemberSelector cmSelector = new CampaignMemberSelector(fflib_SObjectSelector.DataAccess.LEGACY);
 		fflib_QueryFactory qf = cmSelector.newQueryFactory();
 		new Testfflib_LeadSelector().configureQueryFactoryFields(qf, 'Lead');
 		new Testfflib_UserSelector().configureQueryFactoryFields(qf, 'Lead.Owner');
@@ -505,9 +680,33 @@ private with sharing class fflib_SObjectSelectorTest
 		System.assertEquals(expectedSelectFields, new Set<String>(actualSelectFields));
 	}
 
-	private class Testfflib_CampaignMemberSelector extends fflib_SObjectSelector {
-		public Testfflib_CampaignMemberSelector() {
-			super();
+	@isTest
+	static void toSOQL_When_SystemModePolymorphicSelect_Expect_RelatedType() {
+		CampaignMemberSelector cmSelector = new CampaignMemberSelector(fflib_SObjectSelector.DataAccess.SYSTEM_MODE);
+		fflib_QueryFactory qf = cmSelector.newQueryFactory();
+		new Testfflib_LeadSelector().configureQueryFactoryFields(qf, 'Lead');
+		new Testfflib_UserSelector().configureQueryFactoryFields(qf, 'Lead.Owner');
+
+		List<String> expectedSelectFields = new List<String>{
+				'id', 'status', 'lead.ownerid', 'lead.id', 'lead.owner.userroleid', 'lead.owner.id'
+		};
+		if (UserInfo.isMultiCurrencyOrganization()) {
+			expectedSelectFields.add('CurrencyIsoCode');
+		}
+
+		String expectedSOQL = 'SELECT ' + String.join(expectedSelectFields,', ') + ' FROM CampaignMember WITH SYSTEM_MODE ORDER BY CreatedDate ASC NULLS FIRST ';
+
+		//When
+		String actualSOQL = qf.toSOQL();
+
+		//Then
+		System.assertEquals(expectedSOQL, actualSOQL);
+	}
+
+
+	private class CampaignMemberSelector extends fflib_SObjectSelector {
+		public CampaignMemberSelector(DataAccess access) {
+			super(false, access);
 		}
 
 		public List<Schema.SObjectField> getSObjectFieldList() {
