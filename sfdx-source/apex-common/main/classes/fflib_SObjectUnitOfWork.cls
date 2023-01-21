@@ -529,7 +529,7 @@ public virtual class fflib_SObjectUnitOfWork
         Boolean relatedHasExternalIdField = sObjectType.getDescribe().fields.getMap().keySet().contains(externalIdFieldName.toLowerCase());
         Boolean externalIdFieldIsValid = externalIdField.getDescribe().isIdLookup();
 
-        if (record.Id != null && externalIdFieldName != 'Id')
+        if (record.Id != null && !externalIdFieldName.equalsIgnoreCase('id'))
             throw new UnitOfWorkException('When upserting by external id, the record cannot already have the standard id populated');
 
         if (!relatedHasExternalIdField)
