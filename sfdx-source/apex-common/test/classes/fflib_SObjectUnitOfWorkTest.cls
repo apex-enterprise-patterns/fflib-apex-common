@@ -740,7 +740,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         System.assertEquals('Closed', updatedOpp.StageName);
         System.assertEquals(accName, updatedOpp.Account.Name );
     }
-    
+
     @IsTest
     private static void constructUserModeDML_When_DefaultConstructor_Expect_UserMode(){
         fflib_SObjectUnitOfWork.UserModeDML dml = new fflib_SObjectUnitOfWork.UserModeDML();
@@ -931,6 +931,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         public List<SObject> recordsForInsert = new List<SObject>();
         public List<SObject> recordsForUpdate = new List<SObject>();
         public List<SObject> recordsForDelete = new List<SObject>();
+        public List<SObject> recordsForUpsert = new List<SObject>();
         public List<SObject> recordsForRecycleBin = new List<SObject>();
         public List<SObject> recordsForEventPublish = new List<SObject>();
 
@@ -947,6 +948,11 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         public void dmlDelete(List<SObject> objList)
         {
             this.recordsForDelete.addAll(objList);
+        }
+
+        public void dmlUpsert(List<SObject> objList, Schema.SObjectField externalId)
+        {
+            this.recordsForUpsert.addAll(objList);
         }
 
         public void eventPublish(List<SObject> objList)
