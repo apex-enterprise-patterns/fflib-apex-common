@@ -693,6 +693,24 @@ private class fflib_QueryFactoryTest {
 		System.assertNotEquals(orderedQuery, actualSoql);
 	}
 
+	@isTest
+	static void testSoql_allRows(){
+		//Given
+		fflib_QueryFactory qf = new fflib_QueryFactory(User.SObjectType);
+		qf.selectField('Id');
+		qf.setAllRows();
+
+		String allRowsQuery =
+			'SELECT Id '
+			+'FROM User '
+			+'ALL ROWS';
+
+		//When
+		String actualSoql = qf.toSOQL();
+
+		//Then		
+		System.assertEquals(allRowsQuery, actualSoql);
+	}
 
 	public static User createTestUser_noAccess(){
 		User usr;
