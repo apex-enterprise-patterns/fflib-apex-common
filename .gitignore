@@ -37,6 +37,7 @@ IlluminatedCloud/
 
 # SFDX Related
 .sfdx/
+.sf/
 sfdx-source/common-base/main/default/
 sfdx-source/untracked/
 .execanon

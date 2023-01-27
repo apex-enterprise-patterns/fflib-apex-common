@@ -25,6 +25,10 @@ jobs:
       - run: sfdx shane:github:src:install -c -g apex-enterprise-patterns -r fflib-apex-mocks -p sfdx-source/apex-mocks
       - run: sfdx force:source:push
       - run: sfdx force:apex:test:run -w 5
+      #Intentionally install the Sample Code after the core AEP Commons test pass succeeds so that we don't deploy anything in Sample Code
+      #that could mask a test failure. A much more involved solution would've been to do a workflow_dispatch to the samplecode project.
+      - run: sfdx shane:github:src:install -c -g apex-enterprise-patterns -r fflib-apex-common-samplecode -p sfdx-source/apex-common-samplecode
+      - run: sfdx force:apex:test:run -w 5
       - name: Destroy scratch org
         run: sfdx force:org:delete -p
         if: always()
