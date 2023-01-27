@@ -29,6 +29,18 @@ private class fflib_SObjectsTest
 {
 
 	@IsTest
+	static void itShouldClearTheField()
+	{
+		Account record = new Account(ShippingCountry = 'Holland');
+		DomainAccounts domain = new DomainAccounts(new List<Account>{ record });
+		System.assert(!domain.selectByShippingCountry('Holland').isEmpty(), 'Incorrect test data');
+
+		domain.clearShippingCountry();
+
+		System.assert(domain.selectByShippingCountry('Holland').isEmpty(), 'Field should have been nullified');
+	}
+
+	@IsTest
 	static void itShouldReturnTheDomainsType()
 	{
 		System.assertEquals(
@@ -45,6 +57,36 @@ private class fflib_SObjectsTest
 		);
 	}
 
+
+	@IsTest
+	static void itShouldReturnRecordsIds()
+	{
+		SObjectType accountSObjectType = Schema.Account.SObjectType;
+		Id idA = fflib_IDGenerator.generate(accountSObjectType);
+		Id idB = fflib_IDGenerator.generate(accountSObjectType);
+		Id idC = fflib_IDGenerator.generate(accountSObjectType);
+
+		DomainAccounts domain = new DomainAccounts(
+				new List<SObject>
+				{
+						new Account(Id = idA),
+						new Account(Id = idB),
+						new Account(Id = idC)
+				}
+		);
+
+		Set<Id> recordIds = new Set<Id> {idA, idB, idC};
+		System.assert(
+				domain.getRecordIds().equals(recordIds),
+				'The domain should return all the record Ids'
+		);
+
+		System.assert(
+				domain.getIdFieldValues(Schema.Account.Id).equals(recordIds),
+				'The domain should return all the record Ids'
+		);
+	}
+
 	@IsTest
 	static void itShouldReturnRecordsWithFieldValues()
 	{
@@ -58,7 +100,7 @@ private class fflib_SObjectsTest
 	{
 		DomainAccounts domain = generateDomain();
 
-		System.assert(domain.selectWithoutShippingCountry().size() == 3);
+		System.assertEquals(3, domain.selectWithoutShippingCountry().size());
 	}
 
 	@IsTest
@@ -74,7 +116,7 @@ private class fflib_SObjectsTest
 	{
 		DomainAccounts domain = generateDomain();
 
-		System.assert(domain.selectWithShippingCountry().size() == 3);
+		System.assert(domain.selectWithShippingCountry().size() == 4);
 	}
 
 	@IsTest
@@ -82,7 +124,31 @@ private class fflib_SObjectsTest
 	{
 		DomainAccounts domain = generateDomain();
 
-		System.assert(domain.selectPopulatedRecords().size() == 3);
+		System.assert(domain.selectPopulatedRecords().size() == 4);
+	}
+
+	@IsTest
+	static void itShouldReturnFieldValues()
+	{
+		DomainAccounts domain = generateDomain();
+
+		final Set<String> expected = new Set<String>
+		{
+				null,
+				'',
+				'Canada',
+				'Ireland',
+				'UK',
+				'USA'
+		};
+		System.assert(
+				domain.getStringFieldValues(Schema.Account.ShippingCountry).equals(expected)
+		);
+
+		System.assert(
+				domain.getFieldValues(Schema.Account.ShippingCountry)
+						.equals(expected)
+		);
 	}
 
 	@IsTest
@@ -92,7 +158,7 @@ private class fflib_SObjectsTest
 		String country = 'Holland';
 		domain.setShippingCountry(country);
 
-		System.assert(domain.selectByShippingCountry(country).size() == 6);
+		System.assert(domain.selectByShippingCountry(country).size() == 7);
 	}
 
 
@@ -108,6 +174,20 @@ private class fflib_SObjectsTest
 		);
 
 		System.assert(domain.selectByRating('Hot').size() == 1);
+	}
+
+	@IsTest
+	static void testDomainErrorLogging()
+	{
+		// Test static helpers for raise none domain object instance errors
+		final String errorMessage = 'Test Error';
+		Account record = new Account();
+		DomainAccounts domain = new DomainAccounts(new List<Account>{ record });
+		domain.addNameError(errorMessage);
+
+		System.assertEquals(1, fflib_SObjects.Errors.getAll().size());
+		System.assertEquals(errorMessage, fflib_SObjects.Errors.getAll()[0].message);
+		System.assertEquals(Account.Name, ((fflib_SObjects.FieldError) fflib_SObjects.Errors.getAll()[0]).field);
 	}
 
 	@IsTest
@@ -135,7 +215,8 @@ private class fflib_SObjectsTest
 						new Account(Name = 'C', ShippingCountry = 'UK'),
 						new Account(Name = 'D', ShippingCountry = ''),
 						new Account(Name = 'E'),
-						new Account()
+						new Account(),
+						new Account(Name = 'G', ShippingCountry = 'Canada')
 				}
 		);
 		return domain;
@@ -212,6 +293,16 @@ private class fflib_SObjectsTest
 					Schema.Account.ShippingCountry,
 					Schema.Account.Rating,
 					ratingByCountry);
+		}
+
+		public void addNameError(String message)
+		{
+			addError(Schema.Account.Name, message);
+		}
+
+		public void clearShippingCountry()
+		{
+			clearField(Schema.Account.ShippingCountry);
 		}
 	}
 }

@@ -121,6 +121,32 @@ public virtual class fflib_SObjectUnitOfWork
 			Database.emptyRecycleBin(objList);
 		}
     }
+
+	public virtual class UserModeDML extends SimpleDML{
+		@TestVisible
+		private AccessLevel m_accessLevel;
+
+		public UserModeDML(){
+			this(AccessLevel.USER_MODE);
+		}
+
+		/** Supply the AccessLevel explicitly (UserModeDML uses AccessMode.USER_MODE, by default) */
+		public UserModeDML(AccessLevel access){
+			m_accessLevel = access;
+		}
+
+		public virtual override void dmlInsert(List<SObject> objList){
+			Database.insert(objList,m_accessLevel);
+		}
+		public virtual override void dmlUpdate(List<SObject> objList){
+			Database.update(objList,m_accessLevel);
+		}
+		public virtual override void dmlDelete(List<SObject> objList){
+			Database.delete(objList,m_accessLevel);
+		}
+	}
+
+
     /**
      * Constructs a new UnitOfWork to support work against the given object list
      *
@@ -401,14 +427,7 @@ public virtual class fflib_SObjectUnitOfWork
      **/
     public void registerDirty(SObject record, Schema.SObjectField relatedToParentField, SObject relatedToParentRecord)
     {
-        if (record.Id == null)
-            throw new UnitOfWorkException('New records cannot be registered as dirty');
-        String sObjectType = record.getSObjectType().getDescribe().getName();
-
-		assertForNonEventSObjectType(sObjectType);
-		assertForSupportedSObjectType(m_dirtyMapByType, sObjectType);
-
-        m_dirtyMapByType.get(sObjectType).put(record.Id, record);
+	    registerDirty(record);
         if (relatedToParentRecord!=null && relatedToParentField!=null)
             registerRelationship(record, relatedToParentField, relatedToParentRecord);
     }
@@ -735,6 +754,7 @@ public virtual class fflib_SObjectUnitOfWork
 		}
 	}
 
+	@TestVisible
 	private void assertForNonEventSObjectType(String sObjectType)
 	{
 		if (sObjectType.length() > 3 && sObjectType.right(3)  == '__e')
@@ -749,6 +769,7 @@ public virtual class fflib_SObjectUnitOfWork
 		}
 	}
 
+	@TestVisible
 	private void assertForEventSObjectType(String sObjectType)
 	{
 		if (sObjectType.length() > 3 && sObjectType.right(3) != '__e')
@@ -762,6 +783,7 @@ public virtual class fflib_SObjectUnitOfWork
 		}
 	}
 
+	@TestVisible
 	private void assertForSupportedSObjectType(Map<String, Object> theMap, String sObjectType)
 	{
 		if (!theMap.containsKey(sObjectType))
