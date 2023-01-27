@@ -426,6 +426,7 @@ public virtual class fflib_SObjects
 		return result;
 	}
 
+	/**
 	 * Modifies a value of a field for all records in the domain
 	 *
 	 * @param field The reference to the SObjectField to be modified
