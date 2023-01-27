@@ -629,6 +629,18 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         System.assertEquals(1, mockDML.recordsForInsert.size());
     }
 
+    @IsTest
+    private static void constructUserModeDML_When_DefaultConstructor_Expect_UserMode(){
+        fflib_SObjectUnitOfWork.UserModeDML dml = new fflib_SObjectUnitOfWork.UserModeDML();
+        System.assertEquals(AccessLevel.USER_MODE,dml.m_accessLevel);
+    }
+
+    @IsTest
+    private static void constructUserModeDML_When_AccessLevelSupplied_Expect_SameAccessLevel(){
+        fflib_SObjectUnitOfWork.UserModeDML dml = new fflib_SObjectUnitOfWork.UserModeDML(AccessLevel.SYSTEM_MODE);
+        System.assertEquals(AccessLevel.SYSTEM_MODE,dml.m_accessLevel);
+    }
+
     /**
      * Assert that actual events exactly match expected events (size, order and name)
      * and types match expected types

@@ -121,8 +121,8 @@ private class fflib_ObjectsTest
 	{
 		fflib_ObjectsTest.Domain dtoDomain = generateDomain();
 		System.assert(dtoDomain.isNotEmpty(), 'Domain should not be empty');
+		System.assertEquals(3, dtoDomain.size(), 'Incorrect amount of records in the domain');
 	}
-
 
 	@IsTest
 	static void itShouldContainAllTheObjects()
@@ -151,11 +151,17 @@ private class fflib_ObjectsTest
 		);
 	}
 
+	@IsTest
+	static void itShouldGetTheObjectType()
+	{
+		fflib_Objects domain = new fflib_Objects(new List<Object>());
+		System.assertEquals(Object.class, domain.getType(), 'Incorrect returned type');
+	}
+
 	private static Domain generateDomain()
 	{
 		return new Domain(generateDataTransferObjects());
 	}
-
 
 	private static List<DataTransferObject> generateDataTransferObjects()
 	{
@@ -166,7 +172,6 @@ private class fflib_ObjectsTest
 				TRANSFER_OBJECT_C
 		};
 	}
-
 
 	private class Domain extends fflib_Objects
 	{
