@@ -443,7 +443,7 @@ private with sharing class fflib_SObjectSelectorTest
 
 		String soql = sel.createSelectAllWithAccountSOQL();
 
-		String expected = 'SELECT name, id, amount, closedate, account\\.name, account\\.billingpostalcode(.*)FROM Opportunity WITH SYSTEM_MODE ORDER BY Name ASC NULLS FIRST ';
+		String expected = 'SELECT name, id, amount, closedate, (currencyisocode, )?account\\.name, account\\.billingpostalcode(.*)FROM Opportunity WITH SYSTEM_MODE ORDER BY Name ASC NULLS FIRST ';
 		Pattern soqlPattern = Pattern.compile(expected);
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
 		System.assert(soqlMatcher.matches(),'Expected: ' + expected + ' Actual:' + soql);
@@ -455,7 +455,7 @@ private with sharing class fflib_SObjectSelectorTest
 
 		String soql = sel.createSelectAccountWithOpportunitiesSOQL();
 
-		String expected = 'SELECT name, id, annualrevenue, accountnumber,(.*)\\(SELECT name, id, amount, closedate FROM Opportunities ORDER BY Name ASC NULLS FIRST \\)  FROM Account WITH SYSTEM_MODE ORDER BY Name ASC NULLS FIRST ';
+		String expected = 'SELECT name, id, annualrevenue, accountnumber,(.*)\\(SELECT name, id, amount, closedate(.*)FROM Opportunities ORDER BY Name ASC NULLS FIRST \\)  FROM Account WITH SYSTEM_MODE ORDER BY Name ASC NULLS FIRST ';
 		Pattern soqlPattern = Pattern.compile(expected);
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
 		System.assert(soqlMatcher.matches(),'Expected: ' + expected + ' Actual:' + soql);
@@ -683,18 +683,63 @@ private with sharing class fflib_SObjectSelectorTest
 	}
 
 	@isTest
+	static void toSOQL_When_PolymorphicSelectInMulticurrency_Expect_RelatedType() {
+		//Given
+
+		CampaignMemberSelector cmSelector = new CampaignMemberSelector(fflib_SObjectSelector.DataAccess.LEGACY);
+		fflib_QueryFactory qf = cmSelector.newQueryFactory();
+		new Testfflib_LeadSelector().configureQueryFactoryFields(qf, 'Lead');
+		new Testfflib_GroupSelector().configureQueryFactoryFields(qf, 'Lead.Owner');
+
+
+		Set<String> expectedSelectFields = new Set<String>{
+			'Id', 'Status', 'Lead.Id', 'Lead.OwnerId', 'Lead.Owner.Id'
+		};
+		Set<String> unexpectedSelectFields = new Set<String>();
+		if (UserInfo.isMultiCurrencyOrganization()) {
+			expectedSelectFields.add('CurrencyIsoCode');
+			expectedSelectFields.add('Lead.CurrencyIsoCode');
+
+			unexpectedSelectFields.add('Lead.Owner.CurrencyIsoCode'); // Because Group does NOT have CurrencyIsoCode
+		}
+
+		//When
+		String soql = qf.toSOQL();
+		System.debug(soql);
+
+		//Then
+		Pattern soqlPattern = Pattern.compile('SELECT (.*) FROM CampaignMember ORDER BY CreatedDate ASC NULLS FIRST ');
+		Matcher soqlMatcher = soqlPattern.matcher(soql);
+		soqlMatcher.matches();
+
+		List<String> actualSelectFields = soqlMatcher.group(1).deleteWhiteSpace().split(',');
+		Set<String> actualSelectFieldsSet = new Set<String>(actualSelectFields);
+		Assert.areEqual(expectedSelectFields, actualSelectFieldsSet);
+		if (unexpectedSelectFields.size() > 0) {
+			Assert.isFalse(
+				actualSelectFieldsSet.containsAll(unexpectedSelectFields),
+				String.format('The fields {0} were not expected on actualSelectFieldsSet {1}', new List<Set<String>>{unexpectedSelectFields, actualSelectFieldsSet})
+			);
+		}
+	}
+
+	@isTest
 	static void toSOQL_When_SystemModePolymorphicSelect_Expect_RelatedType() {
 		CampaignMemberSelector cmSelector = new CampaignMemberSelector(fflib_SObjectSelector.DataAccess.SYSTEM_MODE);
 		fflib_QueryFactory qf = cmSelector.newQueryFactory();
 		new Testfflib_LeadSelector().configureQueryFactoryFields(qf, 'Lead');
 		new Testfflib_UserSelector().configureQueryFactoryFields(qf, 'Lead.Owner');
 
-		List<String> expectedSelectFields = new List<String>{
-				'id', 'status', 'lead.ownerid', 'lead.id', 'lead.owner.userroleid', 'lead.owner.id'
-		};
-		if (UserInfo.isMultiCurrencyOrganization()) {
-			expectedSelectFields.add('CurrencyIsoCode');
-		}
+		List<String> expectedSelectFields = new List<String>();
+		expectedSelectFields.add('id');
+		expectedSelectFields.add('status');
+		if (UserInfo.isMultiCurrencyOrganization()) expectedSelectFields.add('currencyisocode');
+		expectedSelectFields.add('lead.ownerid');
+		expectedSelectFields.add('lead.id');
+		if (UserInfo.isMultiCurrencyOrganization()) expectedSelectFields.add('lead.currencyisocode');
+		expectedSelectFields.add('lead.owner.userroleid');
+		expectedSelectFields.add('lead.owner.id');
+		if (UserInfo.isMultiCurrencyOrganization()) expectedSelectFields.add('lead.owner.currencyisocode');
 
 		String expectedSOQL = 'SELECT ' + String.join(expectedSelectFields,', ') + ' FROM CampaignMember WITH SYSTEM_MODE ORDER BY CreatedDate ASC NULLS FIRST ';
 
@@ -704,7 +749,6 @@ private with sharing class fflib_SObjectSelectorTest
 		//Then
 		System.assertEquals(expectedSOQL, actualSOQL);
 	}
-
 
 	private class CampaignMemberSelector extends fflib_SObjectSelector {
 		public CampaignMemberSelector(DataAccess access) {
