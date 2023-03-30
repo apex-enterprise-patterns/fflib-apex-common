@@ -52,14 +52,12 @@ public class fflib_SecurityUtils
     	private CrudException(OperationType operation, Schema.SObjectType objectType){
     		this.m_operation = operation;
     		this.m_objectType = objectType;
-    		if(operation == OperationType.CREATE)
-    			this.setMessage(System.Label.fflib_security_error_object_not_insertable);
-    		else if(operation == OperationType.READ)
-    			this.setMessage(System.Label.fflib_security_error_object_not_readable);
-    		else if(operation == OperationType.MODIFY)
-    			this.setMessage(System.Label.fflib_security_error_object_not_updateable);
-    		else if(operation == OperationType.DEL)
-    			this.setMessage(System.Label.fflib_security_error_object_not_deletable);
+		Map<String, String> messagesByOperation= new Map<String, String>{OperationType.CREATE=> System.Label.fflib_security_error_object_not_insertable,
+				OperationType.READ=> System.Label.fflib_security_error_object_not_readable,
+				OperationType.MODIFY=> System.Label.fflib_security_error_object_not_updateable,
+				OperationType.DEL=> System.Label.fflib_security_error_object_not_deletable
+										 };
+    			this.setMessage(messagesByOperation.get(operation));
 
     		this.setMessage(
     			String.format(
