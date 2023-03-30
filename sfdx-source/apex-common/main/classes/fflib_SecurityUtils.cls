@@ -52,7 +52,7 @@ public class fflib_SecurityUtils
     	private CrudException(OperationType operation, Schema.SObjectType objectType){
     		this.m_operation = operation;
     		this.m_objectType = objectType;
-		Map<String, String> messagesByOperation= new Map<String, String>{OperationType.CREATE=> System.Label.fflib_security_error_object_not_insertable,
+		Map<OperationType, String> messagesByOperation= new Map<OperationType, String>{OperationType.CREATE=> System.Label.fflib_security_error_object_not_insertable,
 				OperationType.READ=> System.Label.fflib_security_error_object_not_readable,
 				OperationType.MODIFY=> System.Label.fflib_security_error_object_not_updateable,
 				OperationType.DEL=> System.Label.fflib_security_error_object_not_deletable
