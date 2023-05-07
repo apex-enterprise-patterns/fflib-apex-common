@@ -27,6 +27,10 @@
 @IsTest
 private with sharing class fflib_SObjectSelectorTest 
 {
+	//Get the correct sort field depending on sortable status of Name field
+	static String getDefaultSortField(DescribeSObjectResult sobjDesc) {
+		return sobjDesc.fields.getMap().get('name').getDescribe().isSortable() ? 'Name' : 'CreatedDate';
+	} 
 	@TestSetup
 	static void testSetup(){
 		fflib_SecurityUtilsTest.testSetup();
@@ -167,7 +171,8 @@ private with sharing class fflib_SObjectSelectorTest
 	{
 		Testfflib_SObjectSelectorDefaultSorting selector = new Testfflib_SObjectSelectorDefaultSorting(false);
 		String soql = selector.newQueryFactory().toSOQL();
-		Pattern p = Pattern.compile('SELECT (.*) FROM Account ORDER BY (?:Name|CreatedDate) ASC NULLS FIRST ');
+		Pattern p = Pattern.compile(String.format('SELECT (.*) FROM Account ORDER BY {0} ASC NULLS FIRST ',
+			new List<String>{getDefaultSortField(SObjectType.Account)}));
 		Matcher m = p.matcher(soql);
 		System.assert(m.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
 		System.assertEquals(1, m.groupCount(), 'Unexpected number of groups captured.');
@@ -443,7 +448,8 @@ private with sharing class fflib_SObjectSelectorTest
 
 		String soql = sel.createSelectAllWithAccountSOQL();
 
-		String expected = 'SELECT name, id, amount, closedate, account\\.name, account\\.billingpostalcode(.*)FROM Opportunity WITH SYSTEM_MODE ORDER BY Name ASC NULLS FIRST ';
+		String expected = String.format('SELECT name, id, amount, closedate, account\\.name, account\\.billingpostalcode(.*)FROM Opportunity WITH SYSTEM_MODE ORDER BY {0} ASC NULLS FIRST ',
+			new List<String>{getDefaultSortField(SObjectType.Opportunity)});
 		Pattern soqlPattern = Pattern.compile(expected);
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
 		System.assert(soqlMatcher.matches(),'Expected: ' + expected + ' Actual:' + soql);
@@ -455,7 +461,8 @@ private with sharing class fflib_SObjectSelectorTest
 
 		String soql = sel.createSelectAccountWithOpportunitiesSOQL();
 
-		String expected = 'SELECT name, id, annualrevenue, accountnumber,(.*)\\(SELECT name, id, amount, closedate FROM Opportunities ORDER BY Name ASC NULLS FIRST \\)  FROM Account WITH SYSTEM_MODE ORDER BY (?:Name|CreatedDate) ASC NULLS FIRST ';
+		String expected = String.format('SELECT name, id, annualrevenue, accountnumber,(.*)\\(SELECT name, id, amount, closedate FROM Opportunities ORDER BY {0} ASC NULLS FIRST \\)  FROM Account WITH SYSTEM_MODE ORDER BY {1} ASC NULLS FIRST ',
+			new List<String>{getDefaultSortField(SObjectType.Opportunity),getDefaultSortField(SObjectType.Account)});
 		Pattern soqlPattern = Pattern.compile(expected);
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
 		System.assert(soqlMatcher.matches(),'Expected: ' + expected + ' Actual:' + soql);
