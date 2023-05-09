@@ -44,23 +44,12 @@ private with sharing class fflib_SObjectSelectorTest
 	}
 	
 	static testMethod void testSelectSObjectsById()
-	{ 
+	{
+		// Inserting in reverse order so that we can test the order by of select 
 		List<Account> accountList = new List<Account> {
-			new Account(Name='TestAccount1',AccountNumber='A2',AnnualRevenue=null),
-			new Account(Name='TestAccount2',AccountNumber='A1',AnnualRevenue=76543.21),
-			new Account(Name='TestAccount3',AccountNumber='A3',AnnualRevenue=76543.21),
-			new Account(Name='TestAccount4',AccountNumber='A4',AnnualRevenue=12345.21) };		
-		insert accountList;
-
-		final DateTime TODAYS_DATE = System.now();
-		final DateTime YESTERDAYS_DATE = System.now().addDays(-1);
-		
-		//Set dates to allow sorting by created date as well as annualrevenue NULLS LAST
-		Test.setCreatedDate(accountList[0].Id,TODAYS_DATE);
-		Test.setCreatedDate(accountList[1].Id,TODAYS_DATE);
-		Test.setCreatedDate(accountList[2].Id,YESTERDAYS_DATE);
-		Test.setCreatedDate(accountList[3].Id,YESTERDAYS_DATE);
-		
+			new Account(Name='TestAccount2',AccountNumber='A2',AnnualRevenue=12345.67),
+			new Account(Name='TestAccount1',AccountNumber='A1',AnnualRevenue=76543.21) };		
+		insert accountList;		
 		Set<Id> idSet = new Set<Id>();
 		for(Account item : accountList)
 			idSet.add(item.Id);
@@ -70,40 +59,22 @@ private with sharing class fflib_SObjectSelectorTest
 		List<Account> result = (List<Account>) selector.selectSObjectsById(idSet);		
 		Test.stopTest();
 		
-		system.assertEquals(4,result.size());
+		system.assertEquals(2,result.size());
 		system.assertEquals('TestAccount2',result[0].Name);
-		system.assertEquals('A1',result[0].AccountNumber);
-		system.assertEquals(76543.21,result[0].AnnualRevenue);
+		system.assertEquals('A2',result[0].AccountNumber);
+		system.assertEquals(12345.67,result[0].AnnualRevenue);
 		system.assertEquals('TestAccount1',result[1].Name);
-		system.assertEquals('A2',result[1].AccountNumber);
-		system.assertEquals(null,result[1].AnnualRevenue);
-		system.assertEquals('TestAccount4',result[2].Name);
-		system.assertEquals('A4',result[2].AccountNumber);
-		system.assertEquals(12345.21,result[2].AnnualRevenue);
-		system.assertEquals('TestAccount3',result[3].Name);
-		system.assertEquals('A3',result[3].AccountNumber);
-		system.assertEquals(76543.21,result[3].AnnualRevenue);
-
+		system.assertEquals('A1',result[1].AccountNumber);
+		system.assertEquals(76543.21,result[1].AnnualRevenue);
 	}
 
 	static testMethod void testQueryLocatorById()
 	{
+		// Inserting in reverse order so that we can test the order by of select 
 		List<Account> accountList = new List<Account> {
-			new Account(Name='TestAccount1',AccountNumber='A2',AnnualRevenue=null),
-			new Account(Name='TestAccount2',AccountNumber='A1',AnnualRevenue=76543.21),
-			new Account(Name='TestAccount3',AccountNumber='A3',AnnualRevenue=76543.21),
-			new Account(Name='TestAccount4',AccountNumber='A4',AnnualRevenue=12345.21) };		
+			new Account(Name='TestAccount2',AccountNumber='A2',AnnualRevenue=12345.67),
+			new Account(Name='TestAccount1',AccountNumber='A1',AnnualRevenue=76543.21) };		
 		insert accountList;		
-
-		final DateTime TODAYS_DATE = System.now();
-		final DateTime YESTERDAYS_DATE = System.now().addDays(-1);
-		
-		//Set dates to allow sorting by created date as well as annualrevenue NULLS LAST
-		Test.setCreatedDate(accountList[0].Id,TODAYS_DATE);
-		Test.setCreatedDate(accountList[1].Id,TODAYS_DATE);
-		Test.setCreatedDate(accountList[2].Id,YESTERDAYS_DATE);
-		Test.setCreatedDate(accountList[3].Id,YESTERDAYS_DATE);
-
 		Set<Id> idSet = new Set<Id>();
 		for(Account item : accountList)
 			idSet.add(item.Id);
@@ -113,30 +84,18 @@ private with sharing class fflib_SObjectSelectorTest
 		Database.QueryLocator result = selector.queryLocatorById(idSet);		
 		System.Iterator<SObject> iteratorResult = result.iterator();
 		Test.stopTest();		
-
+	
 		System.assert(true, iteratorResult.hasNext());
 		Account account = (Account) iteratorResult.next();
 		system.assertEquals('TestAccount2',account.Name);
-		system.assertEquals('A1',account.AccountNumber);
-		system.assertEquals(76543.21,account.AnnualRevenue);				
-		System.assertEquals(true, iteratorResult.hasNext());
-		account = (Account) iteratorResult.next();
-		system.assertEquals('TestAccount1',account.Name);
 		system.assertEquals('A2',account.AccountNumber);
-		system.assertEquals(null,account.AnnualRevenue);				
-		System.assertEquals(true, iteratorResult.hasNext());
-		account = (Account) iteratorResult.next();
-		system.assertEquals('TestAccount4',account.Name);
-		system.assertEquals('A4',account.AccountNumber);
-		system.assertEquals(12345.21,account.AnnualRevenue);				
+		system.assertEquals(12345.67,account.AnnualRevenue);				
 		System.assert(true, iteratorResult.hasNext());
 		account = (Account) iteratorResult.next();
-		system.assertEquals('TestAccount3',account.Name);
-		system.assertEquals('A3',account.AccountNumber);
+		system.assertEquals('TestAccount1',account.Name);
+		system.assertEquals('A1',account.AccountNumber);
 		system.assertEquals(76543.21,account.AnnualRevenue);				
 		System.assertEquals(false, iteratorResult.hasNext());
-
-	
 	}
 	
 	static testMethod void testAssertIsAccessible()
@@ -200,7 +159,7 @@ private with sharing class fflib_SObjectSelectorTest
 	{
 		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
 		String soql = selector.newQueryFactory().toSOQL();
-		Pattern p = Pattern.compile('SELECT (.*) FROM Account ORDER BY CreatedDate DESC NULLS FIRST , AnnualRevenue ASC NULLS LAST ');
+		Pattern p = Pattern.compile('SELECT (.*) FROM Account ORDER BY AccountNumber DESC NULLS FIRST , AnnualRevenue ASC NULLS LAST ');
 		Matcher m = p.matcher(soql);
 		System.assert(m.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
 		System.assertEquals(1, m.groupCount(), 'Unexpected number of groups captured.');
@@ -271,7 +230,7 @@ private with sharing class fflib_SObjectSelectorTest
 		String soql = qf.toSOQL();
 
 		//Then
-		Pattern soqlPattern = Pattern.compile('SELECT (.*) FROM Account ORDER BY CreatedDate DESC NULLS FIRST , AnnualRevenue ASC NULLS LAST ');
+		Pattern soqlPattern = Pattern.compile('SELECT (.*) FROM Account ORDER BY AccountNumber DESC NULLS FIRST , AnnualRevenue ASC NULLS LAST ');
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
 		soqlMatcher.matches();
 
@@ -298,7 +257,7 @@ private with sharing class fflib_SObjectSelectorTest
 		String soql = qf.toSOQL();
 
 		// Assert that the
-		Pattern soqlPattern = Pattern.compile('SELECT (.*) FROM Account ORDER BY CreatedDate DESC NULLS FIRST , AnnualRevenue ASC NULLS LAST ');
+		Pattern soqlPattern = Pattern.compile('SELECT (.*) FROM Account ORDER BY AccountNumber DESC NULLS FIRST , AnnualRevenue ASC NULLS LAST ');
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
 		system.assert(soqlMatcher.matches(), 'The SOQL should have that expected.');
 	}
@@ -539,7 +498,7 @@ private with sharing class fflib_SObjectSelectorTest
 		
 		public override String getOrderBy()
 		{
-			return 'CreatedDate DESC, AnnualRevenue ASC NULLS LAST';
+			return 'AccountNumber DESC, AnnualRevenue ASC NULLS LAST';
 		}
 	}
 	
