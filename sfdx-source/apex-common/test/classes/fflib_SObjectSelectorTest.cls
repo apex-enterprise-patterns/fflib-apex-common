@@ -27,10 +27,6 @@
 @IsTest
 private with sharing class fflib_SObjectSelectorTest 
 {
-	//Get the correct sort field depending on sortable status of Name field
-	static String getDefaultSortField(DescribeSObjectResult sobjDesc) {
-		return sobjDesc.fields.getMap().get('name').getDescribe().isSortable() ? 'Name' : 'CreatedDate';
-	} 
 	@TestSetup
 	static void testSetup(){
 		fflib_SecurityUtilsTest.testSetup();
@@ -172,7 +168,7 @@ private with sharing class fflib_SObjectSelectorTest
 		Testfflib_SObjectSelectorDefaultSorting selector = new Testfflib_SObjectSelectorDefaultSorting(false);
 		String soql = selector.newQueryFactory().toSOQL();
 		Pattern p = Pattern.compile(String.format('SELECT (.*) FROM Account ORDER BY {0} ASC NULLS FIRST ',
-			new List<String>{getDefaultSortField(SObjectType.Account)}));
+			new List<String>{selector.getOrderBy()}));
 		Matcher m = p.matcher(soql);
 		System.assert(m.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
 		System.assertEquals(1, m.groupCount(), 'Unexpected number of groups captured.');
@@ -304,7 +300,7 @@ private with sharing class fflib_SObjectSelectorTest
 
 		//Then
 		String soql = qf.toSOQL();
-		Pattern soqlPattern = Pattern.compile('SELECT Id, \\(SELECT (.*) FROM Users ORDER BY Name ASC NULLS FIRST \\) +FROM Account');
+		Pattern soqlPattern = Pattern.compile(String.format('SELECT Id, \\(SELECT (.*) FROM Users ORDER BY {0} ASC NULLS FIRST \\) +FROM Account',new List<String>{selector.getOrderBy()}));
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
 		System.assert(soqlMatcher.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
 
@@ -329,7 +325,8 @@ private with sharing class fflib_SObjectSelectorTest
 
 		//Then
 		String soql = qf.toSOQL();
-		Pattern soqlPattern = Pattern.compile('SELECT Id, \\(SELECT (.*) FROM Users ORDER BY Name ASC NULLS FIRST \\) +FROM Account');
+		Pattern soqlPattern = Pattern.compile(String.format('SELECT Id, \\(SELECT (.*) FROM Users ORDER BY {0} ASC NULLS FIRST \\) +FROM Account',
+			new List<String>{selector.getOrderBy()}));
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
 		System.assert(soqlMatcher.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
 
@@ -449,7 +446,7 @@ private with sharing class fflib_SObjectSelectorTest
 		String soql = sel.createSelectAllWithAccountSOQL();
 
 		String expected = String.format('SELECT name, id, amount, closedate, account\\.name, account\\.billingpostalcode(.*)FROM Opportunity WITH SYSTEM_MODE ORDER BY {0} ASC NULLS FIRST ',
-			new List<String>{getDefaultSortField(SObjectType.Opportunity)});
+			new List<String>{sel.getOrderBy()});
 		Pattern soqlPattern = Pattern.compile(expected);
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
 		System.assert(soqlMatcher.matches(),'Expected: ' + expected + ' Actual:' + soql);
@@ -461,8 +458,8 @@ private with sharing class fflib_SObjectSelectorTest
 
 		String soql = sel.createSelectAccountWithOpportunitiesSOQL();
 
-		String expected = String.format('SELECT name, id, annualrevenue, accountnumber,(.*)\\(SELECT name, id, amount, closedate FROM Opportunities ORDER BY {0} ASC NULLS FIRST \\)  FROM Account WITH SYSTEM_MODE ORDER BY {1} ASC NULLS FIRST ',
-			new List<String>{getDefaultSortField(SObjectType.Opportunity),getDefaultSortField(SObjectType.Account)});
+		String expected = String.format('SELECT name, id, annualrevenue, accountnumber,(.*)\\(SELECT name, id, amount, closedate FROM Opportunities ORDER BY {0} ASC NULLS FIRST \\)  FROM Account WITH SYSTEM_MODE ORDER BY {0} ASC NULLS FIRST ',
+			new List<String>{sel.getOrderBy()});
 		Pattern soqlPattern = Pattern.compile(expected);
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
 		System.assert(soqlMatcher.matches(),'Expected: ' + expected + ' Actual:' + soql);
@@ -679,7 +676,8 @@ private with sharing class fflib_SObjectSelectorTest
 		String soql = qf.toSOQL();
 
 		//Then
-		Pattern soqlPattern = Pattern.compile('SELECT (.*) FROM CampaignMember ORDER BY CreatedDate ASC NULLS FIRST ');
+		Pattern soqlPattern = Pattern.compile(String.format('SELECT (.*) FROM CampaignMember ORDER BY {0} ASC NULLS FIRST ',
+		new List<String>{cmSelector.getOrderBy()}));
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
 		soqlMatcher.matches();
 
@@ -701,7 +699,8 @@ private with sharing class fflib_SObjectSelectorTest
 			expectedSelectFields.add('CurrencyIsoCode');
 		}
 
-		String expectedSOQL = 'SELECT ' + String.join(expectedSelectFields,', ') + ' FROM CampaignMember WITH SYSTEM_MODE ORDER BY CreatedDate ASC NULLS FIRST ';
+		String expectedSOQL = String.format('SELECT ' + String.join(expectedSelectFields,', ') + ' FROM CampaignMember WITH SYSTEM_MODE ORDER BY {0} ASC NULLS FIRST ',
+			new List<String>{cmSelector.getOrderBy()});
 
 		//When
 		String actualSOQL = qf.toSOQL();
