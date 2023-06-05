@@ -75,6 +75,60 @@ public virtual class fflib_SObjects
 	}
 
 	/**
+	 * Adds an error message to the records in the domain
+	 *
+	 * @param message The error message to add to each record
+	 */
+	protected void addError(String message)
+	{
+		for (SObject record : getRecords())
+		{
+			record.addError(error(message, record));
+		}
+	}
+
+	/**
+	 * Adds an error message to the a field records in the domain
+	 *
+	 * @param field The field where the error should be reported
+	 * @param message The error message to add to the given field on each record
+	 */
+	@TestVisible
+	protected virtual void addError(Schema.SObjectField field, String message)
+	{
+		for (SObject record : getRecords())
+		{
+			record.addError(field, error(message, record, field));
+		}
+	}
+
+	/**
+	 * Clear the field value on all the records of the domain
+	 * @param field The field to nullify
+	 */
+	@TestVisible
+	protected virtual void clearField(Schema.SObjectField field)
+	{
+		clearFields(new Set<Schema.SObjectField>{ field });
+	}
+
+	/**
+	 * Clear the field values on all the records of the domain
+	 * @param fields The fields to nullify
+	 */
+	@TestVisible
+	protected virtual void clearFields(Set<Schema.SObjectField> fields)
+	{
+		for (SObject record : getRecords())
+		{
+			for (SObjectField field : fields)
+			{
+				record.put(field, null);
+			}
+		}
+	}
+
+	/**
 	 * Ensures logging of errors in the Domain context for later assertions in tests
 	 *
 	 * @param message
@@ -96,44 +150,82 @@ public virtual class fflib_SObjects
 	 *
 	 * @return Returns the Error message
 	 **/
-	protected virtual String error(String message, SObject record, SObjectField field)
+	protected virtual String error(String message, SObject record, Schema.SObjectField field)
 	{
 		return fflib_SObjects.Errors.error(this, message, record, field);
 	}
 
-	protected virtual Set<Object> getFieldValues(Schema.SObjectField sObjectField)
+	/**
+	 * @param field The SObjectField reference of the type Id
+	 *
+	 * @return Return a set with all the Id values of the given field
+	 */
+	@TestVisible
+	protected Set<Id> getIdFieldValues(Schema.SObjectField field)
 	{
-		Set<Object> result = new Set<Object>();
+		Set<Id> result = new Set<Id>();
 		for (SObject record : getRecords())
 		{
-			result.add(record.get(sObjectField));
+			result.add((Id) record.get(field));
 		}
 		return result;
 	}
 
 	/**
-	 * @param sObjectField The Schema.SObjectField to compare against the given value
-	 * @param value The given value of the records sObjectField to include in the return
+	 * @param field The SObjectField reference of the type String
 	 *
-	 * @return A list with only the SObjects where the given sObjectField has the provided value
+	 * @return Return a set with all the String values of the given field
 	 */
-	protected virtual List<SObject> getRecordsByFieldValue(Schema.SObjectField sObjectField, Object value)
+	@TestVisible
+	protected Set<String> getStringFieldValues(Schema.SObjectField field)
 	{
-		return getRecordsByFieldValues(sObjectField, new Set<Object>{value});
+		Set<String> result = new Set<String>();
+		for (SObject record : getRecords())
+		{
+			result.add((String) record.get(field));
+		}
+		return result;
 	}
 
 	/**
-	 * @param sObjectField The Schema.SObjectField to compare against the given value
-	 * @param values The given values of the records sObjectField to include in the return
+	 * @param field The SObjectField reference
 	 *
-	 * @return A list with only the SObjects where the given sObjectField value is part of the provided values
+	 * @return Return a set with all the values of the given field
 	 */
-	protected virtual List<SObject> getRecordsByFieldValues(Schema.SObjectField sObjectField, Set<Object> values)
+	@TestVisible
+	protected virtual Set<Object> getFieldValues(Schema.SObjectField field)
+	{
+		Set<Object> result = new Set<Object>();
+		for (SObject record : getRecords())
+		{
+			result.add(record.get(field));
+		}
+		return result;
+	}
+
+	/**
+	 * @param field The Schema.SObjectField to compare against the given value
+	 * @param value The given value of the records field to include in the return
+	 *
+	 * @return A list with only the SObjects where the given field has the provided value
+	 */
+	protected virtual List<SObject> getRecordsByFieldValue(Schema.SObjectField field, Object value)
+	{
+		return getRecordsByFieldValues(field, new Set<Object>{value});
+	}
+
+	/**
+	 * @param field The Schema.SObjectField to compare against the given value
+	 * @param values The given values of the records field to include in the return
+	 *
+	 * @return A list with only the SObjects where the given field value is part of the provided values
+	 */
+	protected virtual List<SObject> getRecordsByFieldValues(Schema.SObjectField field, Set<Object> values)
 	{
 		List<SObject> result = new List<SObject>();
 		for (SObject record : getRecords())
 		{
-			if (values?.contains(record.get(sObjectField)))
+			if (values?.contains(record.get(field)))
 			{
 				result.add(record);
 			}
@@ -142,53 +234,52 @@ public virtual class fflib_SObjects
 	}
 
 	/**
-	 * @param sObjectField The Schema.SObjectField to check its value for a Blank value
+	 * @param field The Schema.SObjectField to check its value for a Blank value
 	 *
-	 * @return A list with only the SObjects where the given sObjectField value is either null or '')
+	 * @return A list with only the SObjects where the given field value is either null or '')
 	 */
-	protected virtual List<SObject> getRecordsWithBlankFieldValues(Schema.SObjectField sObjectField)
+	protected virtual List<SObject> getRecordsWithBlankFieldValues(Schema.SObjectField field)
 	{
 		return getRecordsWithBlankFieldValues(
-				new Set<Schema.SObjectField> {sObjectField}
+				new Set<Schema.SObjectField> {field}
 		);
 	}
 
 	/**
-	 * @param sObjectFields The Schema.SObjectFields to check their value for a Blank value
+	 * @param fields The Schema.SObjectFields to check their value for a Blank value
 	 *
-	 * @return A list with only the SObjects where the at least one given sObjectField value is either null or '')
+	 * @return A list with only the SObjects where the at least one given field value is either null or '')
 	 */
-	protected virtual List<SObject> getRecordsWithBlankFieldValues(Set<Schema.SObjectField> sObjectFields)
+	protected virtual List<SObject> getRecordsWithBlankFieldValues(Set<Schema.SObjectField> fields)
 	{
 		List<SObject> result = new List<SObject>();
 		for (SObject record : getRecords())
 		{
-			for (SObjectField sObjectField : sObjectFields)
+			for (SObjectField field : fields)
 			{
-				if (String.isBlank((String) record.get(sObjectField)))
-				{
-					result.add(record);
-					break;
-				}
+				if (String.isNotBlank((String) record.get(field))) continue;
+
+				result.add(record);
+				break;
 			}
 		}
 		return result;
 	}
 
 	/**
-	 * @param sObjectFields The Schema.SObjectFields to check their value for a Blank value
+	 * @param fields The Schema.SObjectFields to check their value for a Blank value
 	 *
-	 * @return A list with only the SObjects where all given sObjectField values are either null or ''
+	 * @return A list with only the SObjects where all given field values are either null or ''
 	 */
-	protected virtual List<SObject> getRecordsWithAllBlankFieldValues(Set<Schema.SObjectField> sObjectFields)
+	protected virtual List<SObject> getRecordsWithAllBlankFieldValues(Set<Schema.SObjectField> fields)
 	{
 		List<SObject> result = new List<SObject>();
 		for (SObject record : getRecords())
 		{
 			Boolean allBlank = true;
-			for (SObjectField sObjectField : sObjectFields)
+			for (SObjectField field : fields)
 			{
-				if (String.isNotBlank((String) record.get(sObjectField)))
+				if (String.isNotBlank((String) record.get(field)))
 				{
 					allBlank = false;
 					break;
@@ -200,30 +291,30 @@ public virtual class fflib_SObjects
 	}
 
 	/**
-	 * @param sObjectField The Schema.SObjectField to check its value for a Non-Blank value
+	 * @param field The Schema.SObjectField to check its value for a Non-Blank value
 	 *
-	 * @return A list with only the SObjects where the given sObjectField value is not null or ''
+	 * @return A list with only the SObjects where the given field value is not null or ''
 	 */
-	protected virtual List<SObject> getRecordsWithNotBlankFieldValues(Schema.SObjectField sObjectField)
+	protected virtual List<SObject> getRecordsWithNotBlankFieldValues(Schema.SObjectField field)
 	{
 		return getRecordsWithNotBlankFieldValues(
-				new Set<Schema.SObjectField> {sObjectField}
+				new Set<Schema.SObjectField> {field}
 		);
 	}
 
 	/**
-	 * @param sObjectFields The Schema.SObjectFields to check their value for a Non-Blank value
+	 * @param fields The Schema.SObjectFields to check their value for a Non-Blank value
 	 *
-	 * @return A list with only the SObjects where the at least one given sObjectField value not null or ''
+	 * @return A list with only the SObjects where the at least one given field value not null or ''
 	 */
-	protected virtual List<SObject> getRecordsWithNotBlankFieldValues(Set<Schema.SObjectField> sObjectFields)
+	protected virtual List<SObject> getRecordsWithNotBlankFieldValues(Set<Schema.SObjectField> fields)
 	{
 		List<SObject> result = new List<SObject>();
 		for (SObject record : getRecords())
 		{
-			for (SObjectField sObjectField : sObjectFields)
+			for (SObjectField field : fields)
 			{
-				if (String.isNotBlank((String) record.get(sObjectField)))
+				if (String.isNotBlank((String) record.get(field)))
 				{
 					result.add(record);
 					break;
@@ -234,19 +325,19 @@ public virtual class fflib_SObjects
 	}
 
 	/**
-	 * @param sObjectFields The Schema.SObjectFields to check their value for a Non-Blank value
+	 * @param fields The Schema.SObjectFields to check their value for a Non-Blank value
 	 *
-	 * @return A list with only the SObjects where all given sObjectField values are not null or ''
+	 * @return A list with only the SObjects where all given field values are not null or ''
 	 */
-	protected virtual List<SObject> getRecordsWithAllNotBlankFieldValues(Set<Schema.SObjectField> sObjectFields)
+	protected virtual List<SObject> getRecordsWithAllNotBlankFieldValues(Set<Schema.SObjectField> fields)
 	{
 		List<SObject> result = new List<SObject>();
 		for (SObject record : getRecords())
 		{
 			Boolean allNonBlank = true;
-			for (SObjectField sObjectField : sObjectFields)
+			for (SObjectField field : fields)
 			{
-				if (String.isBlank((String) record.get(sObjectField)))
+				if (String.isBlank((String) record.get(field)))
 				{
 					allNonBlank = false;
 					break;
@@ -257,31 +348,36 @@ public virtual class fflib_SObjects
 		return result;
 	}
 
-
-	protected virtual void setFieldValue(Schema.SObjectField sObjectField, Object value)
+	/**
+	 * Modifies a value of a field for all records in the domain
+	 *
+	 * @param field The reference to the SObjectField to be modified
+	 * @param value The value to store in the given SObjectField
+	 */
+	protected virtual void setFieldValue(Schema.SObjectField field, Object value)
 	{
 		for (SObject record : getRecords())
 		{
-			record.put(sObjectField, value);
+			record.put(field, value);
 		}
 	}
 
 	/**
-	 * @param sObjectFieldToCheck The SObjectField to match the key against in the provided map
-	 * @param sObjectFieldToUpdate The SObjectField to store the mapped value when the key matches the value in the sObjectFieldToUpdate field
-	 * @param values Map of values to store by the sObjectFieldToCheck fields value
+	 * @param fieldToCheck The SObjectField to match the key against in the provided map
+	 * @param fieldToUpdate The SObjectField to store the mapped value when the key matches the value in the fieldToUpdate field
+	 * @param values Map of values to store by the fieldToCheck fields value
 	 */
 	protected virtual void setFieldValueByMap(
-			Schema.SObjectField sObjectFieldToCheck,
-			Schema.SObjectField sObjectFieldToUpdate,
+			Schema.SObjectField fieldToCheck,
+			Schema.SObjectField fieldToUpdate,
 			Map<Object, Object> values)
 	{
 		for (SObject record : getRecords())
 		{
-			Object keyValue = record.get(sObjectFieldToCheck);
+			Object keyValue = record.get(fieldToCheck);
 			if (values?.containsKey(keyValue))
 			{
-				record.put(sObjectFieldToUpdate, values.get(keyValue));
+				record.put(fieldToUpdate, values.get(keyValue));
 			}
 		}
 	}

@@ -269,8 +269,8 @@ public virtual with sharing class fflib_SObjectDomain
      **/
     public virtual void handleAfterUndelete() 
     {
-    	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isCreateable())
-    	   throw new DomainException('Permission to create an ' + SObjectDescribe.getName() + ' denied.');
+    	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isUndeletable())
+    	   throw new DomainException('Permission to undelete an ' + SObjectDescribe.getName() + ' denied.');
     	   
     	onAfterUndelete();
     }	

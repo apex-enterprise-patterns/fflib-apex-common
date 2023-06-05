@@ -122,6 +122,41 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     }
 
     @IsTest
+    private static void testRegisterDeleted()
+    {
+        // GIVEN - two existing records
+        Opportunity opportunity = new Opportunity(Id = fflib_IDGenerator.generate(Schema.Opportunity.SObjectType));
+        Product2 product = new Product2(Id = fflib_IDGenerator.generate(Schema.Product2.SObjectType));
+        MockDML mockDML = new MockDML();
+        fflib_SObjectUnitOfWork unitOfWork = new fflib_SObjectUnitOfWork(MY_SOBJECTS, mockDML);
+
+        // WHEN - we mark the records as deleted
+        unitOfWork.registerDeleted(new List<SObject> { opportunity, product });
+        unitOfWork.commitWork();
+
+        // THEN - the dmlDelete action should be invoked
+        System.assertEquals(new List<SObject> { opportunity, product }, mockDML.recordsForDelete);
+    }
+
+    @IsTest
+    private static void testRegisterPermanentlyDeleted()
+    {
+        // GIVEN - two existing records
+        Opportunity opportunity = new Opportunity(Id = fflib_IDGenerator.generate(Schema.Opportunity.SObjectType));
+        Product2 product = new Product2(Id = fflib_IDGenerator.generate(Schema.Product2.SObjectType));
+        MockDML mockDML = new MockDML();
+        fflib_SObjectUnitOfWork unitOfWork = new fflib_SObjectUnitOfWork(MY_SOBJECTS, mockDML);
+
+        // WHEN - we mark the records as deleted
+        unitOfWork.registerPermanentlyDeleted(new List<SObject> { opportunity, product });
+        unitOfWork.commitWork();
+
+        // THEN - the dmlDelete and emptyRecycleBin actions should be invoked
+        System.assertEquals(new List<SObject> { opportunity, product }, mockDML.recordsForDelete);
+        System.assertEquals(new List<SObject> { opportunity, product }, mockDML.recordsForRecycleBin);
+    }
+
+    @IsTest
     private static void testRegisterEmptyRecycleBin()
     {
         // GIVEN - an existing record of the recycle bin
@@ -592,6 +627,18 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 
         System.assertEquals(1, mockDML.recordsForUpdate.size());
         System.assertEquals(1, mockDML.recordsForInsert.size());
+    }
+
+    @IsTest
+    private static void constructUserModeDML_When_DefaultConstructor_Expect_UserMode(){
+        fflib_SObjectUnitOfWork.UserModeDML dml = new fflib_SObjectUnitOfWork.UserModeDML();
+        System.assertEquals(AccessLevel.USER_MODE,dml.m_accessLevel);
+    }
+
+    @IsTest
+    private static void constructUserModeDML_When_AccessLevelSupplied_Expect_SameAccessLevel(){
+        fflib_SObjectUnitOfWork.UserModeDML dml = new fflib_SObjectUnitOfWork.UserModeDML(AccessLevel.SYSTEM_MODE);
+        System.assertEquals(AccessLevel.SYSTEM_MODE,dml.m_accessLevel);
     }
 
     /**
