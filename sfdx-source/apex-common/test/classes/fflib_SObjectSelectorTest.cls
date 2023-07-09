@@ -445,7 +445,7 @@ private with sharing class fflib_SObjectSelectorTest
 
 		String soql = sel.createSelectAllWithAccountSOQL();
 
-		String expected = String.format('SELECT name, id, amount, closedate, (currencyisocode, )?account\\.name, account\\.billingpostalcode(.*)FROM Opportunity WITH SYSTEM_MODE ORDER BY {0} ASC NULLS FIRST ',
+		String expected = String.format('SELECT name, id, amount, closedate, (currencyisocode, )?account\\.name, account\\.billingpostalcode(, currencyisocode)? FROM Opportunity WITH SYSTEM_MODE ORDER BY {0} ASC NULLS FIRST ',
 			new List<String>{sel.getOrderBy()});
 		Pattern soqlPattern = Pattern.compile(expected);
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
