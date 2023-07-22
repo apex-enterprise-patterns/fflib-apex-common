@@ -43,7 +43,7 @@ public class fflib_Predicate implements fflib_Expression{
 
 
 	public void appendSOQLString(fflib_StringBuilder sb) {
-		sb.add(getFieldPath(field.toString(), null));
+		sb.add(fflibQueryFactory.getFieldPath(field.getDescribe().getLocalName(), null));
 		sb.add(comparisonOperator);
 
 		appendSOQLString( sb, value );
