@@ -86,7 +86,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	private Schema.ChildRelationship relationship;
 	private Map<Schema.ChildRelationship, fflib_QueryFactory> subselectQueryMap;
 
-	private String getFieldPath(String fieldName, Schema.sObjectType relatedSObjectType){
+	public String getFieldPath(String fieldName, Schema.sObjectType relatedSObjectType){
 
 		//Enforcing FLS using the legacy heuristic requires resolving the full field path to its respective
 		//Describe result to test for isAccessible on the DescribeFieldResult
@@ -364,6 +364,15 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		this.conditionExpression = conditionExpression;
 		return this;
 	}
+
+	/**
+	* @param conditionExpression Sets the WHERE clause to the string provided. Do not include the "WHERE".
+	**/
+	public fflib_QueryFactory setCondition(fflib_CriteriaBuilder criteriaBuilder){
+		this.conditionExpression = criteriaBuilder.toSoql();
+		return this;
+	}
+
 	/**
 	 * @returns the current value of the WHERE clause, if any, as set by {@link #setCondition}
 	**/
