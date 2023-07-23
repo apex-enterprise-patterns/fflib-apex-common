@@ -209,7 +209,7 @@ private with sharing class fflib_SObjectSelectorTest
 	}
 	
 
-	@isTest
+	@IsTest
 	static void testWithoutSorting()
 	{
 		//Given
@@ -235,7 +235,7 @@ private with sharing class fflib_SObjectSelectorTest
 	}
 
 	// Test case of ordering with NULLS LAST option passed into the ordering method
-	@isTest
+	@IsTest
 	static void testWithOrderingNullsLast()
 	{
 		// Build the selector to test with
@@ -636,7 +636,7 @@ private with sharing class fflib_SObjectSelectorTest
 	private static User createChatterExternalUser()
 	{
 		// Can only proceed with test if we have a suitable profile - Chatter External license has no access to Opportunity
-		List<Profile> testProfiles = [Select Id From Profile where UserLicense.Name='Chatter External' limit 1];
+		List<Profile> testProfiles = [SELECT Id FROM Profile WHERE UserLicense.Name='Chatter External' LIMIT 1];
 		if(testProfiles.size()!=1)
 			return null; 		
 
@@ -655,14 +655,14 @@ private with sharing class fflib_SObjectSelectorTest
 		return fflib_SecurityUtilsTest.setupTestUser('Read Only');
 	}
 
-	@isTest
+	@IsTest
 	static void toSOQL_When_PolymorphicSelect_Expect_RelatedType() {
 		//Given		
 
 		CampaignMemberSelector cmSelector = new CampaignMemberSelector(fflib_SObjectSelector.DataAccess.LEGACY);
 		fflib_QueryFactory qf = cmSelector.newQueryFactory();
-		new Testfflib_LeadSelector().configureQueryFactoryFields(qf, 'Lead');
-		new Testfflib_UserSelector().configureQueryFactoryFields(qf, 'Lead.Owner');
+		new LeadSelector().configureQueryFactoryFields(qf, 'Lead');
+		new UserSelector().configureQueryFactoryFields(qf, 'Lead.Owner');
 
 
 		Set<String> expectedSelectFields = new Set<String>{
@@ -687,14 +687,14 @@ private with sharing class fflib_SObjectSelectorTest
 		System.assertEquals(expectedSelectFields, new Set<String>(actualSelectFields));
 	}
 
-	@isTest
+	@IsTest
 	static void toSOQL_When_PolymorphicSelectInMulticurrency_Expect_RelatedType() {
 		//Given
 
 		CampaignMemberSelector cmSelector = new CampaignMemberSelector(fflib_SObjectSelector.DataAccess.LEGACY);
 		fflib_QueryFactory qf = cmSelector.newQueryFactory();
-		new Testfflib_LeadSelector().configureQueryFactoryFields(qf, 'Lead');
-		new Testfflib_GroupSelector().configureQueryFactoryFields(qf, 'Lead.Owner');
+		new LeadSelector().configureQueryFactoryFields(qf, 'Lead');
+		new GroupSelector().configureQueryFactoryFields(qf, 'Lead.Owner');
 
 
 		Set<String> expectedSelectFields = new Set<String>{
@@ -728,23 +728,29 @@ private with sharing class fflib_SObjectSelectorTest
 		}
 	}
 
-	@isTest
+	@IsTest
 	static void toSOQL_When_SystemModePolymorphicSelect_Expect_RelatedType() {
 		CampaignMemberSelector cmSelector = new CampaignMemberSelector(fflib_SObjectSelector.DataAccess.SYSTEM_MODE);
 		fflib_QueryFactory qf = cmSelector.newQueryFactory();
-		new Testfflib_LeadSelector().configureQueryFactoryFields(qf, 'Lead');
-		new Testfflib_UserSelector().configureQueryFactoryFields(qf, 'Lead.Owner');
+		new LeadSelector().configureQueryFactoryFields(qf, 'Lead');
+		new UserSelector().configureQueryFactoryFields(qf, 'Lead.Owner');
 
 		List<String> expectedSelectFields = new List<String>();
 		expectedSelectFields.add('id');
 		expectedSelectFields.add('status');
-		if (UserInfo.isMultiCurrencyOrganization()) expectedSelectFields.add('currencyisocode');
+		if (UserInfo.isMultiCurrencyOrganization()) {
+			expectedSelectFields.add('currencyisocode');
+		}
 		expectedSelectFields.add('lead.ownerid');
 		expectedSelectFields.add('lead.id');
-		if (UserInfo.isMultiCurrencyOrganization()) expectedSelectFields.add('lead.currencyisocode');
+		if (UserInfo.isMultiCurrencyOrganization()) {
+			expectedSelectFields.add('lead.currencyisocode');
+		}
 		expectedSelectFields.add('lead.owner.userroleid');
 		expectedSelectFields.add('lead.owner.id');
-		if (UserInfo.isMultiCurrencyOrganization()) expectedSelectFields.add('lead.owner.currencyisocode');
+		if (UserInfo.isMultiCurrencyOrganization()) {
+			expectedSelectFields.add('lead.owner.currencyisocode');
+		}
 
 		String expectedSOQL = String.format('SELECT ' + String.join(expectedSelectFields,', ') + ' FROM CampaignMember WITH SYSTEM_MODE ORDER BY {0} ASC NULLS FIRST ',
 			new List<String>{cmSelector.getOrderBy()});
@@ -773,8 +779,8 @@ private with sharing class fflib_SObjectSelectorTest
 		}
 	}
 
-	private class Testfflib_UserSelector extends fflib_SObjectSelector {
-		public Testfflib_UserSelector() {
+	private class UserSelector extends fflib_SObjectSelector {
+		public UserSelector() {
 			super();
 		}
 
@@ -790,8 +796,8 @@ private with sharing class fflib_SObjectSelectorTest
 		}
 	}
 
-	private class Testfflib_GroupSelector extends fflib_SObjectSelector {
-		public Testfflib_GroupSelector() {
+	private class GroupSelector extends fflib_SObjectSelector {
+		public GroupSelector() {
 			super();
 		}
 
@@ -806,8 +812,8 @@ private with sharing class fflib_SObjectSelectorTest
 		}
 	}
 
-	private class Testfflib_LeadSelector extends fflib_SObjectSelector {
-		public Testfflib_LeadSelector() {
+	private class LeadSelector extends fflib_SObjectSelector {
+		public LeadSelector() {
 			super();
 		}
 
