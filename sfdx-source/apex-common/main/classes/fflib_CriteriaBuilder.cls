@@ -9,29 +9,23 @@ public class fflib_CriteriaBuilder{
 		this.fflibQueryFactory = fflibQueryFactory;
 	}
 
-	public fflib_Expression greatherThan(Schema.SObjectField field, Object value){
-		fflib_Predicate expression= new fflib_Predicate(fflib_ComparisonOperator.GREATER_THAN, field, value, fflibQueryFactory);
-		predicates.add(expression);
-		return expression;
+	public fflib_Expression greatherThan(String field, Object value){
+		return mountPredicate(fflib_ComparisonOperator.GREATER_THAN, field, value);
 	}
 	public fflib_Expression withAnd(fflib_Expression x, fflib_Expression y){
+		predicates.remove(predicates.indexOf(x));
+		predicates.remove(predicates.indexOf(y));
 		final fflib_JunctionPredicate junction = new fflib_JunctionPredicate();
 		junction.add(x);
 		junction.add(y);
 		predicates.add(junction);
 
 		return junction;
-	}
-	public fflib_Expression withAnd(fflib_Expression x){
-		final fflib_JunctionPredicate junction = new fflib_JunctionPredicate();
-		junction.add(x);
-		predicates.add(junction);
-
-		return junction;
-
 	}
 
 	public fflib_Expression withOr(fflib_Expression x, fflib_Expression y ){
+		predicates.remove(predicates.indexOf(x));
+		predicates.remove(predicates.indexOf(y));
 		final fflib_JunctionPredicate junction = new fflib_JunctionPredicate(fflib_BooleanOperator.WITH_OR);
 		junction.add(x);
 		junction.add(y);
@@ -39,88 +33,69 @@ public class fflib_CriteriaBuilder{
 		return junction;
 
 	}
-
-	public fflib_Expression withOr(fflib_Expression x ){
-		final fflib_JunctionPredicate junction = new fflib_JunctionPredicate(fflib_BooleanOperator.WITH_OR);
-		junction.add(x);
-		predicates.add(junction);
-		return junction;
+	public fflib_Expression isNull(String field){
+		return mountPredicate(fflib_ComparisonOperator.EQUAL, field, null);
 	}
 
+	public fflib_Expression notNull(String field){
+		return mountPredicate(fflib_ComparisonOperator.NOT_EQUAL, field, null);
+	}
+	public fflib_Expression isFalse(String field){
+		return mountPredicate(fflib_ComparisonOperator.EQUAL, field, false);
+	}
 
-	public fflib_Expression isFalse(Schema.SObjectField field){
-		fflib_Predicate expression= new fflib_Predicate(fflib_ComparisonOperator.GREATER_THAN, field, false, fflibQueryFactory);
+	public fflib_Expression isTrue(String field){
+		return mountPredicate(fflib_ComparisonOperator.EQUAL, field, true);
+	}
+
+	public fflib_Expression isIn(String field, List<Object> value){
+		fflib_Predicate expression = new fflib_LikePredicate(fflib_ComparisonOperator.IS_IN, field, value, fflibQueryFactory);
+		predicates.add(expression);
+		return expression;
+	}
+	public fflib_Expression notIn(String field, List<Object> value){
+		fflib_Predicate expression = new fflib_LikePredicate(fflib_ComparisonOperator.NOT_IN, field, value, fflibQueryFactory);
+		predicates.add(expression);
+		return expression;
+	}
+	public fflib_Expression notIn(String field, String value){
+		return mountPredicate(fflib_ComparisonOperator.NOT_IN, field, value);
+
+	}
+	public fflib_Expression isIn(String field, String value){
+		return mountPredicate(fflib_ComparisonOperator.IS_IN, field, value);
+
+	}
+	public fflib_Expression greatherThanOrEqualsTo(String field, Object value){
+		return mountPredicate(fflib_ComparisonOperator.GREATER_THAN_OR_EQUAL, field, value);
+	}
+	public fflib_Expression equals(String field, Object value){
+		return mountPredicate(fflib_ComparisonOperator.EQUAL, field, value);
+	}
+	public fflib_Expression notEquals(String field, Object value){
+		return mountPredicate(fflib_ComparisonOperator.NOT_EQUAL, field, value);
+	}
+
+	public fflib_Expression lessThan(String field, Object value){
+		return mountPredicate(fflib_ComparisonOperator.LESS_THAN, field, value);
+	}
+
+	public fflib_Expression lessThanOrEqualsTo(String field, Object value){
+		return mountPredicate(fflib_ComparisonOperator.LESS_THAN_OR_EQUAL, field, value);
+	}
+
+	public fflib_Predicate isLike(String field, Object value){
+		fflib_Predicate expression = new fflib_LikePredicate(fflib_ComparisonOperator.IS_LIKE, field, value, fflibQueryFactory);
+		predicates.add(expression);
+		return expression;
+	}
+
+	public fflib_Predicate notLike(String field, Object value){
+		fflib_Predicate expression = new fflib_LikePredicate(fflib_ComparisonOperator.NOT_LIKE, field, value, fflibQueryFactory);
 		predicates.add(expression);
 		return expression;
 
 	}
-
-	public fflib_Expression isTrue(Schema.SObjectField field){
-		fflib_Predicate expression= new fflib_Predicate(fflib_ComparisonOperator.GREATER_THAN, field, true, fflibQueryFactory);
-		predicates.add(expression);
-		return expression;
-
-	}
-
-	public fflib_Expression isIn(Schema.SObjectField field, List<Object> value){
-		fflib_Predicate expression= new fflib_Predicate(fflib_ComparisonOperator.IS_IN, field, value, fflibQueryFactory);
-		predicates.add(expression);
-		return expression;
-
-	}
-	public fflib_Expression notIn(Schema.SObjectField field, Object value){
-		fflib_Predicate expression= new fflib_Predicate(fflib_ComparisonOperator.GREATER_THAN, field, value, fflibQueryFactory);
-		predicates.add(expression);
-		return expression;
-
-	}
-
-
-	public fflib_Expression greatherThanOrEqualsTo(Schema.SObjectField field, Object value){
-		fflib_Predicate expression= new fflib_Predicate(fflib_ComparisonOperator.GREATER_THAN_OR_EQUAL, field, value, fflibQueryFactory);
-		predicates.add(expression);
-		return expression;
-
-	}
-	public fflib_Expression equals(Schema.SObjectField field, Object value){
-		fflib_Predicate expression= new fflib_Predicate(fflib_ComparisonOperator.EQUAL, field, value, fflibQueryFactory);
-		predicates.add(expression);
-		return expression;
-
-	}
-	public fflib_Expression notEquals(Schema.SObjectField field, Object value){
-		fflib_Predicate expression= new fflib_Predicate(fflib_ComparisonOperator.NOT_EQUAL, field, value,fflibQueryFactory);
-		predicates.add(expression);
-		return expression;
-
-	}
-
-	public fflib_Expression lessThan(Schema.SObjectField field, Object value){
-		fflib_Predicate expression= new fflib_Predicate(fflib_ComparisonOperator.LESS_THAN, field, value,fflibQueryFactory);
-		predicates.add(expression);
-		return expression;
-
-	}
-
-	public fflib_Expression lessThanOrEqualsTo(Schema.SObjectField field, Object value){
-		fflib_Predicate expression= new fflib_Predicate(fflib_ComparisonOperator.LESS_THAN_OR_EQUAL, field, value,fflibQueryFactory);
-		predicates.add(expression);
-		return expression;
-
-	}
-//	public fflib_Predicate isLike(Schema.SObjectField field, fflib_Expression y){
-//		fflib_Predicate expression= new fflib_Predicate(fflib_ComparisonOperator.GREATER_THAN, field, value);
-//		predicates.add(expression);
-//		return expression;
-//
-//	}
-//
-//	public fflib_Predicate notLike(fflib_Expression y){
-//		fflib_Predicate expression= new fflib_Predicate(fflib_ComparisonOperator.GREATER_THAN, field, value);
-//		predicates.add(expression);
-//		return expression;
-//
-//	}
 
 
 //	public fflib_Predicate includes(fflib_Expression y){
@@ -144,5 +119,11 @@ public class fflib_CriteriaBuilder{
 			next.appendSOQLString(sb);
 		}
 		return sb.getStringValue();
+	}
+
+	public fflib_Predicate mountPredicate(String operation, String field, Object value) {
+		fflib_Predicate expression = new fflib_Predicate(operation, field, value, fflibQueryFactory);
+		predicates.add(expression);
+		return expression;
 	}
 }

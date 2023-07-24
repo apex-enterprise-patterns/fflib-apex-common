@@ -11,7 +11,10 @@ public class fflib_ComparisonOperator {
 	LESS_THAN_OR_EQUAL =' <= ',
 	GREATER_THAN = ' > ',
 	GREATER_THAN_OR_EQUAL=' >= ',
-	IS_IN = ' IN ';
+	IS_IN = ' IN ',
+	NOT_IN =' NOT IN ',
+	IS_LIKE = ' LIKE ',
+	NOT_LIKE = ' NOT LIKE ';
 
 //	public abstract ComparisonOperator negated();
 //

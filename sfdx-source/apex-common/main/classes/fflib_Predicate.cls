@@ -1,15 +1,15 @@
-public class fflib_Predicate implements fflib_Expression{
+public virtual class fflib_Predicate implements fflib_Expression{
 
-	private final String comparisonOperator;
+	protected final String comparisonOperator{get; private set;}
 
 //	List<fflib_Expression> expressions;
-	Schema.SObjectField field;
-	Object value;
+	protected String field {get; private set;}
+	protected Object value {get; private set;}
 
-	private fflib_QueryFactory fflibQueryFactory;
+	protected final fflib_QueryFactory fflibQueryFactory {get; private set;}
 
 	public fflib_Predicate(String comparisonOperator,
-						   SObjectField field,
+							String field,
 						   Object value, fflib_QueryFactory fflibQueryFactory) {
 		this.comparisonOperator = comparisonOperator;
 		this.field = field;
@@ -42,8 +42,8 @@ public class fflib_Predicate implements fflib_Expression{
 	}
 
 
-	public void appendSOQLString(fflib_StringBuilder sb) {
-		sb.add(fflibQueryFactory.getFieldPath(field.getDescribe().getLocalName(), null));
+	virtual public void appendSOQLString(fflib_StringBuilder sb) {
+		sb.add(fflibQueryFactory.getFieldPath(field, null));
 		sb.add(comparisonOperator);
 
 		appendSOQLString( sb, value );
@@ -52,10 +52,13 @@ public class fflib_Predicate implements fflib_Expression{
 
 	public static void appendSOQLString(fflib_StringBuilder sb,  Object value) {
 		final String str = ''+ value ;
-
-		if ( value instanceof String ) {
+		if ( value instanceof String || value instanceof Id) {
 			appendStringLiteral( sb, str );
-		}
+		}else if (value instanceof Date) {
+			sb.add('' + Datetime.newInstance(((Date) value).year(), ((Date) value).month(), ((Date) value).day()).format('yyyy-MM-dd'));
+		}// else if (value instanceof Datetime) {
+//			sb.add('' + ((Datetime) value).format('yyyy-MM-dd') + 'T' + ((Datetime) value).format('HH:mm:ss') + 'Z');
+//		}
 		else {
 			sb.add( str );
 		}
@@ -65,8 +68,12 @@ public class fflib_Predicate implements fflib_Expression{
 		//sb.add( '\'' );
 		//for ( Integer i = 0; i < value.length(); i++ ) {
 		//	final String c= value.substring( i, i+1 );
-
+		if(!value.startsWith(':')){
 			sb.add('\''+ value +'\'' );
+		}else{
+			sb.add( value );
+		}
+
 	//	}
 	//	sb.add( '\'' );
 	}
