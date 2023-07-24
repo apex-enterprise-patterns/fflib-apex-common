@@ -67,6 +67,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	private Integer limitCount;
 	private Integer offsetCount;
 	private List<Ordering> order;
+	public Map<String, Schema.DisplayType> fieldTypeIndexedByName;
 	/**
 	 * Integrate checking for READ Field Level Security within the selectField(s) methods
 	 * This can optionally be enforced (or not) by calling the setEnforceFLS method prior to calling 
@@ -97,7 +98,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		if(mFlsEnforcement == FLSEnforcement.USER_MODE || mFlsEnforcement == FLSEnforcement.SYSTEM_MODE){
 			return fieldName;
 		}
-
+		Schema.DisplayType fieldType;
 		if(!fieldName.contains('.')){ //single field
 			Schema.SObjectField token = fflib_SObjectDescribe.getDescribe(table).getField(fieldName.toLowerCase());
 			if(token == null) {
@@ -106,8 +107,11 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			if(mFlsEnforcement == FLSEnforcement.LEGACY) {
 				fflib_SecurityUtils.checkFieldIsReadable(this.table, token);
 			}
+			String fieldPathName = token.getDescribe().getName();
+			fieldType = token.getDescribe().getType();
+			fieldTypeIndexedByName.put(fieldPathName, fieldType);
 
-			return token.getDescribe().getName();
+			return fieldPathName;
 		}
 
 		//traversing FK relationship(s)
@@ -141,6 +145,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 				fieldPath.add(tokenDescribe.getRelationshipName());
 			}else if(token != null && !i.hasNext()){
 				fieldPath.add(tokenDescribe.getName());
+				fieldType = tokenDescribe.getType();
 			}else{
 				if(token == null)
 					throw new InvalidFieldException(field,lastSObjectType);
@@ -148,8 +153,10 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 					throw new NonReferenceFieldException(lastSObjectType+'.'+field+' is not a lookup or master-detail field but is used in a cross-object query field.');
 			}
 		}
+		String fieldPathName = String.join(fieldPath,'.');
+		fieldTypeIndexedByName.put(fieldPathName, fieldType);
 
-		return String.join(fieldPath,'.');
+		return fieldPathName;
 	}
 	
 	private String getFieldPath(String fieldName) {
@@ -186,6 +193,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		fields = new Set<String>();
 		order = new List<Ordering>();
 		mFlsEnforcement = FLSEnforcement.NONE;
+		fieldTypeIndexedByName= new Map<String, Schema.DisplayType>();
 	}
 
 	/**

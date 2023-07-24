@@ -8,10 +8,10 @@ public with sharing class fflib_InPredicate  extends fflib_Predicate {
 
     override
 	public void appendSOQLString(fflib_StringBuilder sb) {
-		if ( comparisonOperator == fflib_ComparisonOperator.NOT_IN ) {
-			sb.add( ' not' );
-		}
-		sb.add( fflib_ComparisonOperator.IS_IN + '(' );
+		sb.add(fflibQueryFactory.getFieldPath(field, null));
+
+		sb.add( comparisonOperator + '(' );
+
 		if(value instanceof List<fflib_Expression>) {
 			List<fflib_Expression> listExpressions= ((List<fflib_Expression>)value);
 			listExpressions.get(0).appendSOQLString(sb);
@@ -19,13 +19,16 @@ public with sharing class fflib_InPredicate  extends fflib_Predicate {
 				sb.add(', ');
 				listExpressions.get(i).appendSOQLString(sb);
 			}
-		}else{
+		}else if(value instanceof List<Object>){
 			List<Object> listExpressions= ((List<Object>)value);
+			fflib_StringBuilder builder = new fflib_StringBuilder.CommaDelimitedListBuilder();
 			for (Integer i = 0; i < listExpressions.size(); i++) {
-				appendSOQLString(sb, listExpressions.get(i));
-				sb.add(', ');
+				appendSOQLString(builder, listExpressions.get(i));
 
 			}
+			sb.add(builder.toString());
+		}else{
+			appendSOQLString(sb, value);
 		}
 		sb.add( ')' );
 	}

@@ -23,15 +23,18 @@ public class fflib_JunctionPredicate implements fflib_Expression{
 		return booleanOperator;
 	}
 
-	public void accept(fflib_Predicate fflibPredicate) {
+//	public void visitJunction(fflib_Expression junction) {
+//		for ( fflib_Expression predicate : junction.getPredicates() ) {
+//			predicate.accept( this );
+//		}
+//	}
+	public void accept(fflib_Expression sqlTreeWalker) {
+		//sqlTreeWalker.visitJunction( this );
 	}
+
 
 	public void add(fflib_Expression predicate) {
 		expressions.add( predicate );
-	}
-
-	public String toSoql() {
-		return null;
 	}
 
 	public void appendSOQLString(fflib_StringBuilder sb) {

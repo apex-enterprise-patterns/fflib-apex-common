@@ -49,22 +49,25 @@ public class fflib_CriteriaBuilder{
 	}
 
 	public fflib_Expression isIn(String field, List<Object> value){
-		fflib_Predicate expression = new fflib_LikePredicate(fflib_ComparisonOperator.IS_IN, field, value, fflibQueryFactory);
+		fflib_Predicate expression = new fflib_InPredicate(fflib_ComparisonOperator.IS_IN, field, value, fflibQueryFactory);
 		predicates.add(expression);
 		return expression;
 	}
 	public fflib_Expression notIn(String field, List<Object> value){
-		fflib_Predicate expression = new fflib_LikePredicate(fflib_ComparisonOperator.NOT_IN, field, value, fflibQueryFactory);
+		fflib_Predicate expression = new fflib_InPredicate(fflib_ComparisonOperator.NOT_IN, field, value, fflibQueryFactory);
 		predicates.add(expression);
 		return expression;
 	}
 	public fflib_Expression notIn(String field, String value){
-		return mountPredicate(fflib_ComparisonOperator.NOT_IN, field, value);
+		fflib_Predicate expression = new fflib_InPredicate(fflib_ComparisonOperator.NOT_IN, field, value, fflibQueryFactory);
+		predicates.add(expression);
+		return expression;
 
 	}
 	public fflib_Expression isIn(String field, String value){
-		return mountPredicate(fflib_ComparisonOperator.IS_IN, field, value);
-
+		fflib_Predicate expression = new fflib_InPredicate(fflib_ComparisonOperator.IS_IN, field, value, fflibQueryFactory);
+		predicates.add(expression);
+		return expression;
 	}
 	public fflib_Expression greatherThanOrEqualsTo(String field, Object value){
 		return mountPredicate(fflib_ComparisonOperator.GREATER_THAN_OR_EQUAL, field, value);

@@ -37,46 +37,71 @@ public virtual class fflib_Predicate implements fflib_Expression{
 //	}
 
 
-	public void accept(fflib_Predicate sqlTreeWalker) {
+	public void accept(fflib_Expression sqlTreeWalker) {
 		//sqlTreeWalker.visitJunction( this );
 	}
 
 
 	virtual public void appendSOQLString(fflib_StringBuilder sb) {
-		sb.add(fflibQueryFactory.getFieldPath(field, null));
+		String fieldPath = fflibQueryFactory.getFieldPath(field, null);
+
+		sb.add(fieldPath);
 		sb.add(comparisonOperator);
 
 		appendSOQLString( sb, value );
 
 	}
 
-	public static void appendSOQLString(fflib_StringBuilder sb,  Object value) {
-		final String str = ''+ value ;
-		if ( value instanceof String || value instanceof Id) {
-			appendStringLiteral( sb, str );
-		}else if (value instanceof Date) {
-			sb.add('' + Datetime.newInstance(((Date) value).year(), ((Date) value).month(), ((Date) value).day()).format('yyyy-MM-dd'));
-		}// else if (value instanceof Datetime) {
-//			sb.add('' + ((Datetime) value).format('yyyy-MM-dd') + 'T' + ((Datetime) value).format('HH:mm:ss') + 'Z');
-//		}
-		else {
+	public void appendSOQLString(fflib_StringBuilder sb,  Object value) {
+		String fieldPath = fflibQueryFactory.getFieldPath(field, null);
+		Schema.DisplayType fieldType= fflibQueryFactory.fieldTypeIndexedByName.get(fieldPath);
+
+		switch on fieldType {
+			when DATE {
+				appendDate(sb, value);
+			  }
+			  when DATETIME {
+				  appendDateTime(sb, value);
+			  }
+			  when else {
+				  appendStringLiteral( sb, value );
+			  }
+			}
+	}
+
+	@TestVisible
+	private static void appendStringLiteral(fflib_StringBuilder sb, Object value) {
+		String str = '' + value;
+		if (( value instanceof String || value instanceof Id) ) {
+			str = str.startsWith(':') ? str : '\'' + value + '\'';
+			sb.add( str );
+
+		}else{
 			sb.add( str );
 		}
 	}
 
-	public static void appendStringLiteral(fflib_StringBuilder sb, String value) {
-		//sb.add( '\'' );
-		//for ( Integer i = 0; i < value.length(); i++ ) {
-		//	final String c= value.substring( i, i+1 );
-		if(!value.startsWith(':')){
-			sb.add('\''+ value +'\'' );
-		}else{
-			sb.add( value );
+	@TestVisible
+	private static void appendDate(fflib_StringBuilder sb, Object value) {
+		if (value instanceof Date) {
+			String dateValue= Datetime.newInstance(((Date)value).year(), ((Date)value).month(), ((Date)value).day()).format('YYYY-MM-dd').split(' ')[0];
+			sb.add(dateValue);
+		} else if (value instanceof String) {
+			sb.add(''+ value);
+		} else {
+			throw new IllegalArgumentException();
 		}
-
-	//	}
-	//	sb.add( '\'' );
 	}
 
+	@TestVisible
+	private static void appendDateTime(fflib_StringBuilder sb, Object value) {
+		if (value instanceof Datetime) {
+			sb.add('' + ((Datetime) value).format('yyyy-MM-dd') + 'T' + ((Datetime) value).format('HH:mm:ss') + 'Z');
+		} else if (value instanceof String) {
+			sb.add(''+ value);
 
+		} else {
+			throw new IllegalArgumentException();
+		}
+	}
 }

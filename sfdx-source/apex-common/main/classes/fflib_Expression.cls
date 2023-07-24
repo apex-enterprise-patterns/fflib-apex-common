@@ -4,8 +4,8 @@ public interface fflib_Expression{
 
 	void add(fflib_Expression predicate);
 
-
-	void accept(fflib_Predicate fflibPredicate);
+	//TODO: Validate if data is accepted by fieldType and operation Type
+	void accept(fflib_Expression fflibPredicate);
 
 	void appendSOQLString(fflib_StringBuilder sb);
 
