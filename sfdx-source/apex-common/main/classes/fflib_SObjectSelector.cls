@@ -488,7 +488,7 @@ public abstract with sharing class fflib_SObjectSelector
     /**
      * Configures a QueryFactory instance according to the configuration of this selector
      **/        
-    private fflib_QueryFactory configureQueryFactory(fflib_QueryFactory queryFactory,
+    protected virtual fflib_QueryFactory configureQueryFactory(fflib_QueryFactory queryFactory,
             Boolean assertCRUD,
             Boolean enforceFLS,
             Boolean includeSelectorFields,
