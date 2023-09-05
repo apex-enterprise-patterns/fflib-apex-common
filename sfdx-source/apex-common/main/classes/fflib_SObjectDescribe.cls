@@ -108,7 +108,7 @@ public class fflib_SObjectDescribe {
 		}
 		else if ( fieldName.endsWithIgnoreCase('__pr') ) //resolve custom field cross-object (__pr) syntax for person accounts
 		{
-			fieldNameAdjusted = fieldName.removeEndIgnoreCase('__pr') + '__c';
+			fieldNameAdjusted = fieldName.removeEndIgnoreCase('__pr') + '__pc';
 		}
 
 		Schema.SObjectField result = wrappedFields.get( fieldNameAdjusted, implyNamespace ); 
