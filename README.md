@@ -52,7 +52,7 @@ Documentation
 - [Apex Hours (August 2020): Apex Enterprise Patterns](https://www.apexhours.com/apex-enterprise-patterns/)
 
 **Related Book**
-- [Salesforce Platform Enterprise Architecture, 4th Edition, by Andrew Fawcett](https://www.amazon.com/Salesforce-Platform-Enterprise-Architecture-applications-ebook/dp/B0BD8TBT75/ref=pd_ci_mcx_mh_mcx_views_0)
+- [Salesforce Platform Enterprise Architecture, 4th Edition, by Andrew Fawcett](https://www.amazon.com/Salesforce-Platform-Enterprise-Architecture-applications-ebook/dp/B0BD8TBT75/)
 
 **Other Related Blogs**
 
