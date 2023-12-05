@@ -24,10 +24,10 @@
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **/
 
-@isTest
+@isTest @TestVisible
 private class fflib_SecurityUtilsTest {
 
-	@TestSetup
+	@TestSetup @TestVisible
 	static void testSetup() {
 		// #315 Create a Permission Set that grants "Read" access to Account, Contact and Lead. We will use this in
 		// Spring '21 orgs that lack the "Read Only" Profile. See:
@@ -78,10 +78,12 @@ private class fflib_SecurityUtilsTest {
 		);
 	}
 
+	@TestVisible
 	static User setupTestUser(String profileName){
 		Profile p;
-		Boolean usedMinimumAccessProfile = false;
+		Boolean applyReadOnlyPermissionSet = false;
 		if (profileName == 'Read Only') {
+			applyReadOnlyPermissionSet = true;
 			try {
 				p = getProfile(profileName);
 			} catch (QueryException ex) {
@@ -89,7 +91,6 @@ private class fflib_SecurityUtilsTest {
 					// #315 If the "Read Only" Profile is absent, then assume it's a Spring '21 org and see if there's a
 					// "Minimum Access - Salesforce" Profile we can use instead.
 					p = getProfile('Minimum Access - Salesforce');
-					usedMinimumAccessProfile = true;
 				}
 			}
 		} else {
@@ -117,7 +118,7 @@ private class fflib_SecurityUtilsTest {
 		);
 		insert usr;
 
-		if (usedMinimumAccessProfile) {
+		if (applyReadOnlyPermissionSet) {
 			// #315 We need to assign the Perm Set to grant Account "Read" access
 			PermissionSet accountReadPS = [SELECT Id FROM PermissionSet WHERE Name = 'ReadOnlyPermissionSet'];
 			PermissionSetAssignment psa = new PermissionSetAssignment(AssigneeId = usr.Id, PermissionSetId = accountReadPS.Id);
