@@ -19,23 +19,24 @@ jobs:
         uses: apex-enterprise-patterns/setup-sfdx@v2 #We're using a fork of https://github.com/sfdx-actions/setup-sfdx for safety
         with:
           sfdx-auth-url: ${{ secrets.DEVHUB_SFDXURL }}
-      # Install the required plugins
-      - run: echo y | sf plugins install shane-sfdx-plugins
-      # Setup the config parameters needed
-      - run: sf config set target-dev-hub SFDX-ENV --global #Even though the setup-sfdx action uses --setdefaultdevhubusername, it doesn't seem to stick since it uses --setdefaultusername so we brute force it here
-      # Create the scratch org
-      - run: sf org create scratch --definition-file config/project-scratch-def.json --set-default --duration-days 1 --no-track-source
-      # Install required dependency frameworks
-      - run: sf shane github src install --convert --githubuser apex-enterprise-patterns --repo fflib-apex-mocks --path sfdx-source/apex-mocks
-      # Deploy/compile the codebase
-      - run: sf project deploy start
-      # Run the core framework tests
-      - run: sf apex run test --wait 5
+      - name: Install the required plugins
+        run: echo y | sf plugins install shane-sfdx-plugins
+      - name: Setup the config parameters needed
+        run: sf config set target-dev-hub SFDX-ENV --global #Even though the setup-sfdx action uses --setdefaultdevhubusername, it doesn't seem to stick since it uses --setdefaultusername so we brute force it here
+      - name: Create the scratch org
+        run: sf org create scratch --definition-file config/project-scratch-def.json --set-default --duration-days 1 --no-track-source
+      - name: Install required dependency frameworks
+        run: sf shane github src install --convert --githubuser apex-enterprise-patterns --repo fflib-apex-mocks --path sfdx-source/apex-mocks
+      - name: Deploy and compile the codebase
+        run: sf project deploy start
+      - name: Run the core framework tests
+        run: sf apex run test --wait 5
       # Intentionally install the Sample Code after the core AEP Commons test pass succeeds so that we don't deploy anything in Sample Code
       # that could mask a test failure. A much more involved solution would've been to do a workflow_dispatch to the samplecode project.
-      - run: sf shane github src install --convert --githubuser apex-enterprise-patterns --repo fflib-apex-common-samplecode --path sfdx-source/apex-common-samplecode
-      # Run the core framework tests and the sample code project tests
-      - run: sf apex run test --wait 5
+      - name: Install sample code project to verify with
+        run: sf shane github src install --convert --githubuser apex-enterprise-patterns --repo fflib-apex-common-samplecode --path sfdx-source/apex-common-samplecode
+      - name: Run the core framework tests and the sample code project tests
+        run: sf apex run test --wait 5
       - name: Destroy scratch org
         run: sf org delete scratch --no-prompt
         if: always()
