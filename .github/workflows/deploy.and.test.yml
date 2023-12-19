@@ -15,7 +15,7 @@ jobs:
         with:
           ref: ${{github.event.pull_request.head.ref}}
           repository: ${{github.event.pull_request.head.repo.full_name}}
-      - name: Install SFDX CLI and authorize DevHub
+      - name: Install SF CLI and authorize DevHub
         uses: apex-enterprise-patterns/setup-sfdx@v2 #We're using a fork of https://github.com/sfdx-actions/setup-sfdx for safety
         with:
           sfdx-auth-url: ${{ secrets.DEVHUB_SFDXURL }}
