@@ -74,6 +74,7 @@ public virtual class fflib_SObjectUnitOfWork
     @TestVisible
     protected IEmailWork m_emailWork = new SendEmailWork();
 
+    @TestVisible
     protected IDML m_dml;
 
     private final Map<SharingMode, IDML> SHARING_MODE_MAP = new Map<SharingMode, IDML> {
@@ -163,6 +164,7 @@ public virtual class fflib_SObjectUnitOfWork
 		}
 	}
 
+    @TestVisible
     private virtual without sharing class WithoutSharingDML implements IDML {
         public virtual void dmlInsert(List<SObject> objList) {
             insert objList;
@@ -183,6 +185,7 @@ public virtual class fflib_SObjectUnitOfWork
         }
     }
 
+    @TestVisible
     private virtual with sharing class WithSharingDML implements IDML {
         public virtual void dmlInsert(List<SObject> objList) {
             insert objList;
