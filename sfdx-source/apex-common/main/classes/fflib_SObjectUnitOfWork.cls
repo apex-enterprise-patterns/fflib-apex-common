@@ -251,6 +251,15 @@ public virtual class fflib_SObjectUnitOfWork
     public virtual void onCommitWorkFinished(Boolean wasSuccessful) {}
 
     /**
+     * Sets sharing mode to be used when performing commitWork. When this is not set, it defaults to inherit the calling class.
+     *
+     * @param sharingMode Sharing mode to use during commitWork
+     */
+    public void setSharingMode(SharingMode sharingMode) {
+        this.m_dml = SHARING_MODE_MAP.get(sharingMode);
+    }
+
+    /**
      * Registers the type to be used for DML operations
      *
      * @param sObjectType - The type to register

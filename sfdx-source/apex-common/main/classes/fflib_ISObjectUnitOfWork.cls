@@ -30,6 +30,11 @@
 public interface fflib_ISObjectUnitOfWork
 {
     /**
+     * Explicitly sets sharing mode to be used when performing commitWork. When this is not set, it defaults to inherit the calling class.
+     * @param sharingMode Sharing mode to use during commitWork
+     */
+    void setSharingMode(fflib_SObjectUnitOfWork.SharingMode sharingMode);
+    /**
      * Register a newly created SObject instance to be inserted when commitWork is called
      *
      * @param record A newly created SObject instance to be inserted during commitWork
