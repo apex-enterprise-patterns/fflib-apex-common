@@ -151,6 +151,45 @@ public virtual class fflib_SObjectUnitOfWork
 		}
 	}
 
+    private virtual without sharing class WithoutSharingDML implements IDML {
+        public virtual void dmlInsert(List<SObject> objList) {
+            insert objList;
+        }
+        public virtual void dmlUpdate(List<SObject> objList) {
+            update objList;
+        }
+        public virtual void dmlDelete(List<SObject> objList) {
+            delete objList;
+        }
+        public virtual void eventPublish(List<SObject> objList) {
+            if(objList.isEmpty()) { return; }
+            EventBus.publish(objList);
+        }
+        public virtual void emptyRecycleBin(List<SObject> objList) {
+            if(objList.isEmpty()) { return; }
+            Database.emptyRecycleBin(objList);
+        }
+    }
+
+    private virtual with sharing class WithSharingDML implements IDML {
+        public virtual void dmlInsert(List<SObject> objList) {
+            insert objList;
+        }
+        public virtual void dmlUpdate(List<SObject> objList) {
+            update objList;
+        }
+        public virtual void dmlDelete(List<SObject> objList) {
+            delete objList;
+        }
+        public virtual void eventPublish(List<SObject> objList) {
+            if(objList.isEmpty()) { return; }
+            EventBus.publish(objList);
+        }
+        public virtual void emptyRecycleBin(List<SObject> objList) {
+            if(objList.isEmpty()) { return; }
+            Database.emptyRecycleBin(objList);
+        }
+    }
 
     /**
      * Constructs a new UnitOfWork to support work against the given object list
