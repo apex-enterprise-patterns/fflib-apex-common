@@ -87,6 +87,11 @@ public class fflib_SObjectMocks
 			this.mocks = mocks;
 		}
 
+		public void setSharingMode(fflib_SObjectUnitOfWork.SharingMode sharingMode)
+		{
+			mocks.mockVoidMethod(this, 'setSharingMode', new List<Type> {fflib_SObjectUnitOfWork.SharingMode.class}, new List<Object> {sharingMode});
+		}
+
 		public void registerNew(SObject record)
 		{
 			mocks.mockVoidMethod(this, 'registerNew', new List<Type> {SObject.class}, new List<Object> {record});
