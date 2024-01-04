@@ -36,6 +36,18 @@ private with sharing class fflib_SObjectUnitOfWorkTest
             OpportunityLineItem.SObjectType };
 
     @IsTest
+    private static void testUnitOfWorkSetSharing() {
+        fflib_SObjectUnitOfWork unitOfWork = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
+        Assert.isInstanceOfType(unitOfWork.m_dml, fflib_SObjectUnitOfWork.SimpleDML.class);
+
+        unitOfWork.setSharingMode(fflib_SObjectUnitOfWork.SharingMode.WITH);
+        Assert.isInstanceOfType(unitOfWork.m_dml, fflib_SObjectUnitOfWork.WithSharingDML.class);
+
+        unitOfWork.setSharingMode(fflib_SObjectUnitOfWork.SharingMode.WITHOUT);
+        Assert.isInstanceOfType(unitOfWork.m_dml, fflib_SObjectUnitOfWork.WithoutSharingDML.class);
+    }
+
+    @IsTest
     private static void testUnitOfWorkEmail()
     {
         String testRecordName = 'UoW Test Name 1';
