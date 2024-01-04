@@ -76,6 +76,12 @@ public virtual class fflib_SObjectUnitOfWork
 
     protected IDML m_dml;
 
+    private final Map<SharingMode, IDML> SHARING_MODE_MAP = new Map<SharingMode, IDML> {
+        SharingMode.WITH => new WithSharingDML(),
+        SharingMode.WITHOUT => new WithoutSharingDML(),
+        SharingMode.INHERIT => new SimpleDML()
+    };
+
     /**
      * Interface describes work to be performed during the commitWork method
      **/
@@ -91,6 +97,12 @@ public virtual class fflib_SObjectUnitOfWork
         void dmlDelete(List<SObject> objList);
         void eventPublish(List<SObject> objList);
 	    void emptyRecycleBin(List<SObject> objList);
+    }
+
+    public enum SharingMode {
+        WITH,
+        WITHOUT,
+        INHERIT
     }
 
     public virtual class SimpleDML implements IDML
