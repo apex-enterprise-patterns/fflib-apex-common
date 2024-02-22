@@ -378,7 +378,7 @@ private with sharing class fflib_SObjectSelectorTest
 	static void toSOQL_When_UserModeAndUserCannnotReadObject_Expect_QueryException(){
 		AccessLevelOpportunitySelector sel = new AccessLevelOpportunitySelector();
 
-		User u = getLimitedReadOnlyUser();
+		User u = getMinimumAccessUser();
 		System.runAs(u){
 			try{
 				System.debug(sel.newQueryFactory().toSOQL());
@@ -399,7 +399,7 @@ private with sharing class fflib_SObjectSelectorTest
 	static void toSOQL_When_SystemModeAndUserCannnotReadObject_Expect_Success(){
 		AccessLevelOpportunitySelector sel = new AccessLevelOpportunitySelector(fflib_SObjectSelector.DataAccess.SYSTEM_MODE);
 
-		User u = getLimitedReadOnlyUser();
+		User u = getMinimumAccessUser();
 		System.runAs(u){
 			sel.selectSObjectsById(new Set<Id>{fflib_IDGenerator.generate(Opportunity.SObjectType)});
 		}
@@ -410,7 +410,7 @@ private with sharing class fflib_SObjectSelectorTest
 		AccessLevelAccountSelector sel = new AccessLevelAccountSelector();
 
 		//Account has Read access by the limited read only user but no FLS access
-		User u = getLimitedReadOnlyUser();
+		User u = getMinimumAccessUser();
 		System.runAs(u){
 			try{
 				System.debug(sel.newQueryFactory().toSOQL());
@@ -433,7 +433,7 @@ private with sharing class fflib_SObjectSelectorTest
 		AccessLevelAccountSelector sel = new AccessLevelAccountSelector(fflib_SObjectSelector.DataAccess.SYSTEM_MODE);
 
 		//Account has Read access by the limited read only user but no FLS access
-		User u = getLimitedReadOnlyUser();
+		User u = getMinimumAccessUser();
 		System.runAs(u){
 			sel.selectSObjectsById(new Set<Id>{fflib_IDGenerator.generate(Account.SObjectType)});
 		}
@@ -651,8 +651,8 @@ private with sharing class fflib_SObjectSelectorTest
 		return testUser;
 	}
 
-	private static User getLimitedReadOnlyUser(){
-		return fflib_SecurityUtilsTest.setupTestUser('Read Only');
+	private static User getMinimumAccessUser(){
+		return fflib_SecurityUtilsTest.setupTestUser(true);
 	}
 
 	@IsTest
