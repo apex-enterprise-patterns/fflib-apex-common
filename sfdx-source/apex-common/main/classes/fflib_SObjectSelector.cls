@@ -438,7 +438,7 @@ public abstract with sharing class fflib_SObjectSelector
      }
     
     /**
-     * Adds a subselect QueryFactory based on this selector to the given QueryFactor, returns the parentQueryFactory
+     * Adds a subselect QueryFactory based on this selector to the given QueryFactor, returns the child QueryFactory
      **/
     public fflib_QueryFactory addQueryFactorySubselect(fflib_QueryFactory parentQueryFactory)
     {    
@@ -461,7 +461,7 @@ public abstract with sharing class fflib_SObjectSelector
     }
         
      /**
-      * Adds a subselect QueryFactory based on this selector to the given QueryFactor, returns the parentQueryFactory
+      * Adds a subselect QueryFactory based on this selector to the given QueryFactor, returns the child QueryFactory
       **/
      public fflib_QueryFactory addQueryFactorySubselect(fflib_QueryFactory parentQueryFactory, String relationshipName)
      {
