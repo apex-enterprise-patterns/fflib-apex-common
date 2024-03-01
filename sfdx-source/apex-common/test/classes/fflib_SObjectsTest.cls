@@ -128,6 +128,55 @@ private class fflib_SObjectsTest
 	}
 
 	@IsTest
+	static void itShouldReturnRecordIdById()
+	{
+		final Id contactId = fflib_IDGenerator.generate(Schema.Contact.SObjectType);
+		final Id accountId = fflib_IDGenerator.generate(Schema.Account.SObjectType);
+		final Contact record = new Contact(Id = contactId, AccountId = accountId);
+		fflib_SObjects domain = new fflib_SObjects(new List<Contact>{ record });
+		System.Test.startTest();
+		Map<Id, Id> accountIdByContactId = domain.getIdFieldByIdField(Schema.Contact.AccountId, Schema.Contact.Id);
+		System.Test.stopTest();
+		System.assert(accountIdByContactId.containsKey(contactId));
+		System.assertEquals(accountId, accountIdByContactId.get(contactId));
+	}
+
+	@IsTest
+	static void itShouldReturnStringById()
+	{
+		final String accountName = 'My Account';
+		final Id accountId = fflib_IDGenerator.generate(Schema.Account.SObjectType);
+		final Account record = new Account(Id = accountId, Name = accountName);
+		fflib_SObjects domain = new fflib_SObjects(new List<Account>{ record });
+		System.Test.startTest();
+		Map<String, Id> nameById = domain.getIdFieldByStringField(Schema.Account.Id, Schema.Account.Name);
+		System.Test.stopTest();
+		System.assert(nameById.containsKey(accountName));
+		System.assertEquals(accountId, nameById.get(accountName));
+	}
+
+	@IsTest
+	static void itShouldReturnStringFieldByIdField()
+	{
+		final String accountName = 'My Account';
+		final Id accountId = fflib_IDGenerator.generate(Account.SObjectType);
+		fflib_SObjects domain = new fflib_SObjects(
+				new List<Account>
+				{
+						new Account(Id = accountId, Name = accountName),
+						new Account(Name = accountName + ' 2')              // This one should be ignored
+				});
+
+		System.Test.startTest();
+		Map<Id, String> result = domain.getStringFieldByIdField(Account.Name, Account.Id);
+		System.Test.stopTest();
+
+		System.assertEquals(1, result.size(), 'Incorrect returned amount of results');
+		System.assert(result.keySet().contains(accountId), 'The accountId is missing from the results');
+		System.assertEquals(accountName, result.get(accountId), 'Incorrect returned account name');
+	}
+
+	@IsTest
 	static void itShouldReturnFieldValues()
 	{
 		DomainAccounts domain = generateDomain();
