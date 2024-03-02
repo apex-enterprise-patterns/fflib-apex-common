@@ -123,6 +123,11 @@ public virtual class fflib_SObjectUnitOfWork
         }
         public virtual void eventPublish(List<SObject> objList)
         {
+            if (objList.isEmpty())
+            {
+                return;
+            }
+            
             EventBus.publish(objList);
         }
 		public virtual void emptyRecycleBin(List<SObject> objList)

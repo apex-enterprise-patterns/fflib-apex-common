@@ -79,22 +79,20 @@ private class fflib_SecurityUtilsTest {
 	}
 
 	@TestVisible
-	static User setupTestUser(String profileName){
+	static User setupTestUser(Boolean limitedAccess){
 		Profile p;
-		Boolean applyReadOnlyPermissionSet = false;
-		if (profileName == 'Read Only') {
-			applyReadOnlyPermissionSet = true;
+
+		if (limitedAccess) {
 			try {
-				p = getProfile(profileName);
+				p = getProfile('Minimum Access - Salesforce');
 			} catch (QueryException ex) {
 				if (ex.getMessage().contains('List has no rows for assignment to SObject')) {
-					// #315 If the "Read Only" Profile is absent, then assume it's a Spring '21 org and see if there's a
-					// "Minimum Access - Salesforce" Profile we can use instead.
-					p = getProfile('Minimum Access - Salesforce');
+					//#440 - not ideal, but we'll fall back to the rather liberally permissioned 'Read Only' profile that exists in very old orgs
+					p = getProfile('Read Only');
 				}
 			}
 		} else {
-			p = getProfile(profileName);
+			p = getProfile('System Administrator');
 		}
 
 		//username global uniqueness is still enforced in tests 
@@ -118,7 +116,7 @@ private class fflib_SecurityUtilsTest {
 		);
 		insert usr;
 
-		if (applyReadOnlyPermissionSet) {
+		if (limitedAccess) {
 			// #315 We need to assign the Perm Set to grant Account "Read" access
 			PermissionSet accountReadPS = [SELECT Id FROM PermissionSet WHERE Name = 'ReadOnlyPermissionSet'];
 			PermissionSetAssignment psa = new PermissionSetAssignment(AssigneeId = usr.Id, PermissionSetId = accountReadPS.Id);
@@ -129,7 +127,7 @@ private class fflib_SecurityUtilsTest {
 
 	@isTest
 	static void readonly_field_access() {
-		User testUser = setupTestUser('Read Only');
+		User testUser = setupTestUser(true);
 		System.runAs(testUser){
 			{
 				fflib_SecurityUtils.SecurityException ex;
@@ -172,7 +170,7 @@ private class fflib_SecurityUtilsTest {
 
 	@isTest
 	static void readonly_object_access() {
-		User testUser = setupTestUser('Read Only');
+		User testUser = setupTestUser(true);
 		System.runAs(testUser){
 			{
 				fflib_SecurityUtils.SecurityException ex;
@@ -226,7 +224,7 @@ private class fflib_SecurityUtilsTest {
 
 	@isTest
 	static void readonly_objectAndField_access() {
-		User testUser = setupTestUser('Read Only');
+		User testUser = setupTestUser(true);
 		System.runAs(testUser){
 			{
 				fflib_SecurityUtils.SecurityException ex;
@@ -311,7 +309,7 @@ private class fflib_SecurityUtilsTest {
 
 	@isTest
 	static void sysadmin_objectAndField_access() {
-		User testUser = setupTestUser('System Administrator');
+		User testUser = setupTestUser(false);
 		System.runAs(testUser){
 			fflib_SecurityUtils.checkInsert(
 				Account.SObjectType,

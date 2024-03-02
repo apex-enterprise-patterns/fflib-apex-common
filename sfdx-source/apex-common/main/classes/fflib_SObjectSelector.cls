@@ -433,12 +433,12 @@ public abstract with sharing class fflib_SObjectSelector
 		}
 		// Automatically select the CurrencyIsoCode for MC orgs (unless the object is a known exception to the rule)
 		if(UserInfo.isMultiCurrencyOrganization() && CURRENCY_ISO_CODE_ENABLED){
-			queryFactory.selectField(relationshipFieldPath+'.CurrencyIsoCode');
+			queryFactory.selectField(relationshipFieldPath+'.CurrencyIsoCode', getSObjectType());
 		}
      }
     
     /**
-     * Adds a subselect QueryFactory based on this selector to the given QueryFactor, returns the parentQueryFactory
+     * Adds a subselect QueryFactory based on this selector to the given QueryFactor, returns the child QueryFactory
      **/
     public fflib_QueryFactory addQueryFactorySubselect(fflib_QueryFactory parentQueryFactory)
     {    
@@ -461,7 +461,7 @@ public abstract with sharing class fflib_SObjectSelector
     }
         
      /**
-      * Adds a subselect QueryFactory based on this selector to the given QueryFactor, returns the parentQueryFactory
+      * Adds a subselect QueryFactory based on this selector to the given QueryFactor, returns the child QueryFactory
       **/
      public fflib_QueryFactory addQueryFactorySubselect(fflib_QueryFactory parentQueryFactory, String relationshipName)
      {
@@ -533,7 +533,7 @@ public abstract with sharing class fflib_SObjectSelector
 	
 	        // Automatically select the CurrencyIsoCode for MC orgs (unless the object is a known exception to the rule)
 	        if(UserInfo.isMultiCurrencyOrganization() && CURRENCY_ISO_CODE_ENABLED)
-	            queryFactory.selectField('CurrencyIsoCode');
+	            queryFactory.selectField('CurrencyIsoCode', getSObjectType());
         }
         
         // Parse the getOrderBy()
