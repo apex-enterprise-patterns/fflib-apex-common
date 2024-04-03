@@ -609,6 +609,65 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     }
 
     @IsTest
+    private static void testRegisterDirtyWithRelationship() {
+        // GIVEN an existing opportunity
+        Opportunity existingOpp = new Opportunity(
+            Id = fflib_IDGenerator.generate(Schema.Opportunity.SObjectType),
+            Name = 'Existing Opportunity',
+            StageName = 'Closed',
+            CloseDate = System.today()
+        );
+        // AND an existing Account to which the existing opportunity will be related to
+        Account newAccount = new Account(
+            Id = fflib_IDGenerator.generate(Schema.Account.SObjectType),
+            Name = 'New Account'
+        );
+
+        // WHEN
+        Test.startTest();
+        MockDML mockDML = new MockDML();
+        List<Schema.SObjectType> mySobjects = new List<Schema.SObjectType>{
+            Account.SObjectType,
+            Opportunity.SObjectType
+        };
+        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(mySobjects, mockDML);
+        uow.registerNew(newAccount);
+        uow.registerDirty(existingOpp, Opportunity.AccountId, newAccount);
+        uow.commitWork();
+        Test.stopTest();
+
+        // THEN
+        System.Assert.isTrue(
+            new fflib_MatcherDefinitions.SObjectsWith(
+                new List<Map<SObjectField, Object>>{
+                    new Map<SObjectField, Object>
+                    {
+                        Account.Id => newAccount.Id,
+                        Account.Name => 'New Account'
+                    }
+                }
+            ).matches(mockDML.recordsForInsert),
+            'The new accoout record does not match'
+        );
+
+        // AND
+        System.Assert.isTrue(
+            new fflib_MatcherDefinitions.SObjectsWith(
+                new List<Map<SObjectField, Object>>{
+                    new Map<SObjectField, Object>
+                    {
+                        Opportunity.Id => existingOpp.Id,
+                        Opportunity.Name => 'Existing Opportunity',
+                        Opportunity.StageName => 'Closed',
+                        Opportunity.AccountId => newAccount.Id
+                    }
+                }
+            ).matches(mockDML.recordsForUpdate),
+            'The opportunity record should be related to the new Account'
+        );
+    }
+
+    @IsTest
     private static void testRegisterUpsert() {
         Opportunity existingOpp = new Opportunity(
                 Id = fflib_IDGenerator.generate(Schema.Opportunity.SObjectType),
