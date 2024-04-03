@@ -109,6 +109,11 @@ public virtual class fflib_SObjectUnitOfWork
         }
         public virtual void eventPublish(List<SObject> objList)
         {
+            if (objList.isEmpty())
+            {
+                return;
+            }
+            
             EventBus.publish(objList);
         }
 		public virtual void emptyRecycleBin(List<SObject> objList)
@@ -702,7 +707,7 @@ public virtual class fflib_SObjectUnitOfWork
 	{
 		for (Schema.SObjectType sObjectType : m_sObjectTypes)
 		{
-			m_relationships.get(sObjectType.getDescribe().getName()).resolve();
+            m_relationships.get(sObjectType.getDescribe().getName()).resolve();
 			m_dml.dmlUpdate(m_dirtyMapByType.get(sObjectType.getDescribe().getName()).values());
 		}
 	}
