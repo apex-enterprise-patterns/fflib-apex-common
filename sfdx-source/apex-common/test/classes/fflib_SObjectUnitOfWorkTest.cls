@@ -610,7 +610,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     }
 
     @IsTest
-    private static void testRegisterDirtyRelatedToNewSobject() {
+    private static void testRegisterDirtyWithRelationship() {
         // GIVEN an existing opportunity
         Opportunity existingOpp = new Opportunity(
             Id = fflib_IDGenerator.generate(Schema.Opportunity.SObjectType),
@@ -627,8 +627,8 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         Test.startTest();
         MockDML mockDML = new MockDML();
         List<Schema.SObjectType> mySobjects = new List<Schema.SObjectType>{
-            Account.SObjectType,
-            Opportunity.SObjectType
+            Opportunity.SObjectType,
+            Account.SObjectType
         };
         fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(mySobjects, mockDML);
         uow.registerNew(newAccount);
@@ -637,7 +637,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         Test.stopTest();
 
         // THEN
-        System.assert(
+        System.Assert.isTrue(
             new fflib_MatcherDefinitions.SObjectsWith(
                 new List<Map<SObjectField, Object>>{
                     new Map<SObjectField, Object>
@@ -649,10 +649,9 @@ private with sharing class fflib_SObjectUnitOfWorkTest
             ).matches(mockDML.recordsForInsert),
             'The new accoout record does not match'
         );
-        
+
         // AND
-        
-        System.assert(
+        System.Assert.isTrue(
             new fflib_MatcherDefinitions.SObjectsWith(
                 new List<Map<SObjectField, Object>>{
                     new Map<SObjectField, Object>
@@ -667,7 +666,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
             'The opportunity record should be related to the new Account'
         );
     }
-    
+
     @IsTest
     private static void testRegisterUpsert() {
         Opportunity existingOpp = new Opportunity(
