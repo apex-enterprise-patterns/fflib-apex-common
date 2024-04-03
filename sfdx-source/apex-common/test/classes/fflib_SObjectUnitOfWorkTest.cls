@@ -619,16 +619,15 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         );
         // AND an existing Account to which the existing opportunity will be related to
         Account newAccount = new Account(
-            Id = fflib_IDGenerator.generate(Schema.Account.SObjectType),
             Name = 'New Account'
         );
 
         // WHEN
         Test.startTest();
-        MockDML mockDML = new MockDML();
+        MockDMLWithInsertIds mockDML = new MockDMLWithInsertIds();
         List<Schema.SObjectType> mySobjects = new List<Schema.SObjectType>{
-            Account.SObjectType,
-            Opportunity.SObjectType
+            Opportunity.SObjectType,
+            Account.SObjectType
         };
         fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(mySobjects, mockDML);
         uow.registerNew(newAccount);
@@ -647,7 +646,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
                     }
                 }
             ).matches(mockDML.recordsForInsert),
-            'The new accoout record does not match'
+            'The new account record does not match'
         );
 
         // AND
@@ -883,6 +882,43 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 
         public void dmlInsert(List<SObject> objList)
         {
+            this.recordsForInsert.addAll(objList);
+        }
+
+        public void dmlUpdate(List<SObject> objList)
+        {
+            this.recordsForUpdate.addAll(objList);
+        }
+
+        public void dmlDelete(List<SObject> objList)
+        {
+            this.recordsForDelete.addAll(objList);
+        }
+
+        public void eventPublish(List<SObject> objList)
+        {
+            this.recordsForEventPublish.addAll(objList);
+        }
+
+        public void emptyRecycleBin(List<SObject> objList)
+        {
+            this.recordsForRecycleBin.addAll(objList);
+        }
+    }
+
+    private class MockDMLWithInsertIds implements fflib_SObjectUnitOfWork.IDML
+    {
+        public List<SObject> recordsForInsert = new List<SObject>();
+        public List<SObject> recordsForUpdate = new List<SObject>();
+        public List<SObject> recordsForDelete = new List<SObject>();
+        public List<SObject> recordsForRecycleBin = new List<SObject>();
+        public List<SObject> recordsForEventPublish = new List<SObject>();
+
+        public void dmlInsert(List<SObject> objList)
+        {
+            for (SObject obj : objList) {
+                obj.Id = fflib_IDGenerator.generate(obj.getSObjectType());
+            }
             this.recordsForInsert.addAll(objList);
         }
 
