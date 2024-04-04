@@ -923,7 +923,6 @@ public virtual class fflib_SObjectUnitOfWork
                     relationship.resolve();
                 }
             }
-
         }
 
         public void add(SObject record, Schema.SObjectField relatedToField, Schema.SObjectField externalIdField, Object externalId)
@@ -1002,7 +1001,6 @@ public virtual class fflib_SObjectUnitOfWork
             relationshipObject.put( ExternalIdField.getDescribe().getName(), this.ExternalId );
             this.Record.putSObject( this.RelationshipName, relationshipObject );
         }
-
 
         public Boolean isResolved()
         {
