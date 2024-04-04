@@ -810,12 +810,11 @@ public virtual class fflib_SObjectUnitOfWork
         public void resolve()
         {
             // Resolve relationships
-            for (IRelationship relationship : m_relationships)
-            {
-                //relationship.Record.put(relationship.RelatedToField, relationship.RelatedTo.Id);
-                relationship.resolve();
-            }
-
+            for (Integer i = (m_relationships.size() - 1); i >= 0; i--) {
+                if (m_relationships.get(i).resolve()) {
+                    m_relationships.remove(i);
+                }
+            } 
         }
 
         public void add(SObject record, Schema.SObjectField relatedToField, Schema.SObjectField externalIdField, Object externalId)
@@ -875,7 +874,7 @@ public virtual class fflib_SObjectUnitOfWork
 
     private interface IRelationship
     {
-        void resolve();
+        Boolean resolve();
     }
 
     private class RelationshipByExternalId implements IRelationship
@@ -887,11 +886,16 @@ public virtual class fflib_SObjectUnitOfWork
         public Schema.SObjectField ExternalIdField;
         public Object ExternalId;
 
-        public void resolve()
+        public Boolean resolve()
         {
+            if (ExternalId == null) {
+                return false;
+            }
+
             SObject relationshipObject = this.RelatedTo.newSObject();
             relationshipObject.put( ExternalIdField.getDescribe().getName(), this.ExternalId );
             this.Record.putSObject( this.RelationshipName, relationshipObject );
+            return true;
         }
     }
 
@@ -901,9 +905,14 @@ public virtual class fflib_SObjectUnitOfWork
         public Schema.SObjectField RelatedToField;
         public SObject RelatedTo;
 
-        public void resolve()
+        public Boolean resolve()
         {
+            if (String.isBlank(this.relatedTo.Id)) {
+                return false;
+            }
+
             this.Record.put( this.RelatedToField, this.RelatedTo.Id);
+            return true;
         }
     }
 
@@ -912,9 +921,14 @@ public virtual class fflib_SObjectUnitOfWork
         public Messaging.SingleEmailMessage email;
         public SObject relatedTo;
 
-        public void resolve()
+        public Boolean resolve()
         {
+            if (String.isBlank(this.relatedTo.Id)) {
+                return false;
+            }
+
             this.email.setWhatId( this.relatedTo.Id );
+            return true;
         }
     }
 
