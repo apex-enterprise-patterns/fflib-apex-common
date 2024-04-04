@@ -883,7 +883,10 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         public void dmlInsert(List<SObject> objList)
         {
             for (SObject obj : objList) {
-                obj.Id = fflib_IDGenerator.generate(obj?.getSObjectType());
+                if (obj == null) {
+                    continue;
+                }
+                obj.Id = fflib_IDGenerator.generate(obj.getSObjectType());
             }
             this.recordsForInsert.addAll(objList);
         }
