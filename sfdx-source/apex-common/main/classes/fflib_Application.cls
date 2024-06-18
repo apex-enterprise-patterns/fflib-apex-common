@@ -273,8 +273,15 @@ public virtual class fflib_Application
 		@TestVisible
 		protected virtual void setMock(fflib_ISObjectSelector selectorInstance)
 		{
-			m_sObjectByMockSelector.put(selectorInstance.sObjectType(), selectorInstance);
-		} 
+			System.debug(System.LoggingLevel.INFO, '*** fflib - Please note your mocked class should have sObjectType() stubbed, or use setMock( SObjectType, SelectorMock )');
+			setMock(selectorInstance.sObjectType(), selectorInstance);
+		}
+
+		@TestVisible
+		protected virtual void setMock(SObjectType sType, fflib_ISObjectSelector selectorInstance)
+		{
+			m_sObjectByMockSelector.put(sType, selectorInstance);
+		}
 	}
 
 	/**
@@ -415,7 +422,14 @@ public virtual class fflib_Application
 		@TestVisible
 		protected virtual void setMock(fflib_ISObjectDomain mockDomain)
 		{
-			mockDomainByObject.put((Object) mockDomain.sObjectType(), (fflib_IDomain) mockDomain);
+			System.debug(System.LoggingLevel.INFO, '*** fflib - Please note your mocked class should have sObjectType() stubbed, or use setMock( SObjectType, SelectorMock )');
+			setMock(mockDomain.sObjectType(), mockDomain);
+		}
+
+		@TestVisible
+		protected virtual void setMock(SObjectType sType, fflib_ISObjectDomain mockDomain)
+		{
+			mockDomainByObject.put((Object)sType, (fflib_IDomain)mockDomain);
 		}
 
 		@TestVisible
