@@ -63,10 +63,10 @@ public virtual with sharing class fflib_SObjectDomain
 		{
 			if (ExistingRecords == null)
 			{
-				if (System.Test.isRunningTest() & Test.Database.hasRecords())
+				if (System.Test.isRunningTest() & TestFactory.Database.hasRecords())
 				{
 					// If in test context and records are in the mock database use those instead of Trigger.oldMap
-					ExistingRecords = Test.Database.oldRecords;
+					ExistingRecords = TestFactory.Database.oldRecords;
 				}
 				else
 				{
@@ -92,7 +92,7 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Useful during unit testing to access mock support for database inserts and updates (testing without DML)
 	 **/
-	public static TestFactory Test  {get; private set;}
+	public static TestFactory TestFactory  {get; private set;}
 	
 	/**
 	 * Retains instances of domain classes implementing trigger stateful
@@ -108,7 +108,7 @@ public virtual with sharing class fflib_SObjectDomain
 	{
 		Errors = new fflib_SObjectDomain.ErrorFactory();
 
-		Test = new TestFactory();
+		TestFactory = new TestFactory();
 		
 		TriggerStateByClass = new Map<Type, List<fflib_SObjectDomain>>();
 
@@ -273,12 +273,14 @@ public virtual with sharing class fflib_SObjectDomain
     	   throw new DomainException('Permission to undelete an ' + SObjectDescribe.getName() + ' denied.');
     	   
     	onAfterUndelete();
+	}
 
 	/**
      * Runs at the end of each trigger context
      *
      **/
-	public virtual void handleAndFinally() {
+	public virtual void handleAndFinally() 
+	{
 
 	}
 
@@ -383,10 +385,10 @@ public virtual with sharing class fflib_SObjectDomain
 	public static void triggerHandler(Type domainClass)
 	{		
 		// Process the trigger context
-		if(System.Test.isRunningTest() & Test.Database.hasRecords())
+		if(System.Test.isRunningTest() & TestFactory.Database.hasRecords())
 		{
 			// If in test context and records in the mock database delegate initially to the mock database trigger handler
-			Test.Database.testTriggerHandler(domainClass);
+			TestFactory.Database.testTriggerHandler(domainClass);
 		}
 		else
 		{
