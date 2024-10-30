@@ -619,7 +619,7 @@ private with sharing class fflib_SObjectSelectorTest
 
 			fflib_QueryFactory qf = newQueryFactory();
 
-			oSel.addQueryFactorySubselect(qf);
+			oSel.addQueryFactorySubselect(qf,'Opportunities');
 
 			return qf.toSOQL();
 		}
