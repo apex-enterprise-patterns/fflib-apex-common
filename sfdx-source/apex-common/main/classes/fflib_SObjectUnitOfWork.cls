@@ -247,10 +247,7 @@ public virtual class fflib_SObjectUnitOfWork
 	 **/
 	public void registerEmptyRecycleBin(SObject record)
 	{
-		String sObjectType = record.getSObjectType().getDescribe().getName();
-		assertForSupportedSObjectType(m_emptyRecycleBinMapByType, sObjectType);
-
-		m_emptyRecycleBinMapByType.get(sObjectType).put(record.Id, record);
+		registerEmptyRecycleBin(new List<SObject> {record});
 	}
 
 	/**
@@ -260,9 +257,13 @@ public virtual class fflib_SObjectUnitOfWork
 	 **/
 	public void registerEmptyRecycleBin(List<SObject> records)
 	{
-		for (SObject record : records)
+		if (records.isEmpty()) return;
+
+		Map<String, List<SObject>> sortedRecords =
+				sortAndValidateForExistingNonEvent(m_emptyRecycleBinMapByType, records);
+		for (String sObjectName : sortedRecords.keySet())
 		{
-			registerEmptyRecycleBin(record);
+			registerEmptyRecycleBin(sObjectName, sortedRecords.get(sObjectName));
 		}
 	}
 
@@ -283,10 +284,7 @@ public virtual class fflib_SObjectUnitOfWork
      **/
     public void registerNew(List<SObject> records)
     {
-        for (SObject record : records)
-        {
-            registerNew(record, null, null);
-        }
+	    registerNew(records, null, null);
     }
 
     /**
@@ -299,35 +297,60 @@ public virtual class fflib_SObjectUnitOfWork
      **/
     public void registerNew(SObject record, Schema.SObjectField relatedToParentField, SObject relatedToParentRecord)
     {
-        if (record.Id != null)
-            throw new UnitOfWorkException('Only new records can be registered as new');
-        String sObjectType = record.getSObjectType().getDescribe().getName();
-
-		assertForNonEventSObjectType(sObjectType);
-		assertForSupportedSObjectType(m_newListByType, sObjectType);
-
-        m_newListByType.get(sObjectType).add(record);
-        if (relatedToParentRecord!=null && relatedToParentField!=null)
-            registerRelationship(record, relatedToParentField, relatedToParentRecord);
+	    registerNew(new List<SObject> {record}, relatedToParentField, relatedToParentRecord);
     }
 
-    /**
-     * Register a relationship between two records that have yet to be inserted to the database. This information will be
-     *  used during the commitWork phase to make the references only when related records have been inserted to the database.
-     *
-     * @param record An existing or newly created record
-     * @param relatedToField A SObjectField reference to the lookup field that relates the two records together
-     * @param relatedTo A SObject instance (yet to be committed to the database)
-     */
-    public void registerRelationship(SObject record, Schema.SObjectField relatedToField, SObject relatedTo)
-    {
-        String sObjectType = record.getSObjectType().getDescribe().getName();
+	/**
+	 * Register newly created records to be inserted when commitWork is called,
+	 * it also provides a reference to the single parent record instance (should also be registered as new separately)
+	 *
+	 * @param records newly created records to be inserted during commitWork
+	 * @param relatedToParentField A SObjectField reference to the child field that associates the child record with its parent
+	 * @param relatedToParentRecord A SObject instance of the parent record (should also be registered as new separately)
+	 **/
+	public void registerNew(List<SObject> records, Schema.SObjectField relatedToParentField, SObject relatedToParentRecord)
+	{
+		if (records.isEmpty()) return;
 
-		assertForNonEventSObjectType(sObjectType);
-		assertForSupportedSObjectType(m_newListByType, sObjectType);
+		Map<String, List<SObject>> sortedRecords = sortAndValidateForNewNonEvent(m_newListByType, records);
+		for (String sObjectName : sortedRecords.keySet())
+		{
+			registerNew(sObjectName, sortedRecords.get(sObjectName), relatedToParentField, relatedToParentRecord);
+		}
+	}
 
-        m_relationships.get(sObjectType).add(record, relatedToField, relatedTo);
-    }
+	/**
+	 * Register a relationship between two records that have yet to be inserted to the database. This information will be
+	 *  used during the commitWork phase to make the references only when related records have been inserted to the database.
+	 *
+	 * @param record An existing or newly created record
+	 * @param relatedToField A SObjectField reference to the lookup field that relates the two records together
+	 * @param relatedTo A SObject instance (yet to be committed to the database)
+	 */
+	public void registerRelationship(SObject record, Schema.SObjectField relatedToField, SObject relatedTo)
+	{
+		registerRelationship(new List<SObject> {record}, relatedToField, relatedTo);
+	}
+
+	/**
+	 * Register a relationship between two records that have yet to be inserted to the database. This information will be
+	 *  used during the commitWork phase to make the references only when related records have been inserted to the database.
+	 *
+	 * @param records Existing or newly created records
+	 * @param relatedToField A SObjectField reference to the field that relates the given records to the relatedTo record
+	 * @param relatedTo A SObject instance (yet to be committed to the database)
+	 */
+	public void registerRelationship(List<SObject> records, Schema.SObjectField relatedToField, SObject relatedTo)
+	{
+		if (records.isEmpty()) return;
+
+		Map<String, List<SObject>> sortedRecords = sortAndValidateForNonEvent(m_newListByType, records);
+
+		for (String sObjectName : sortedRecords.keySet())
+		{
+			registerRelationship(sObjectName, sortedRecords.get(sObjectName), relatedToField, relatedTo);
+		}
+	}
 
     /**
      * Registers a relationship between a record and a Messaging.Email where the record has yet to be inserted
@@ -357,11 +380,12 @@ public virtual class fflib_SObjectUnitOfWork
      */
     public void registerRelationship(SObject record, Schema.SObjectField relatedToField, Schema.SObjectField externalIdField, Object externalId)
     {
-        // NOTE: Due to the lack of ExternalID references on Standard Objects, this method can not be provided a standardized Unit Test. - Rick Parker
-        String sObjectType = record.getSObjectType().getDescribe().getName();
-        if(!m_newListByType.containsKey(sObjectType))
-            throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
-        m_relationships.get(sObjectType).add(record, relatedToField, externalIdField, externalId);
+	    // NOTE: Due to the lack of ExternalID references on Standard Objects, this method can not be provided a standardized Unit Test. - Rick Parker
+	    String sObjectType = record.getSObjectType().getDescribe().getName();
+
+	    assertForSupportedSObjectType(m_newListByType, sObjectType);
+
+	    m_relationships.get(sObjectType).add(record, relatedToField, externalIdField, externalId);
     }
 
     /**
@@ -374,68 +398,65 @@ public virtual class fflib_SObjectUnitOfWork
         registerDirty(record, new List<SObjectField>());
     }
 
-    /**
-     * Registers the entire records as dirty or just only the dirty fields if the record was already registered
-     *
-     * @param records SObjects to register as dirty
-     * @param dirtyFields A list of modified fields
-     */
-    public void registerDirty(List<SObject> records, List<SObjectField> dirtyFields)
-    {
-	    for (SObject record : records)
-	    {
-		    registerDirty(record, dirtyFields);
-	    }
-    }
-
 	/**
 	 * Registers the entire record as dirty or just only the dirty fields if the record was already registered
 	 *
 	 * @param record SObject to register as dirty
 	 * @param dirtyFields A list of modified fields
 	 */
-    public void registerDirty(SObject record, List<SObjectField> dirtyFields)
-    {
-        if (record.Id == null)
-            throw new UnitOfWorkException('New records cannot be registered as dirty');
-        String sObjectType = record.getSObjectType().getDescribe().getName();
+	public void registerDirty(SObject record, List<SObjectField> dirtyFields)
+	{
+		registerDirty(new List<SObject> {record}, dirtyFields);
+	}
 
-		assertForNonEventSObjectType(sObjectType);
-		assertForSupportedSObjectType(m_dirtyMapByType, sObjectType);
+	/**
+	 * Registers the entire record as dirty or just only the dirty fields if the record was already registered
+	 *
+	 * @param records SObjects to register as dirty
+	 * @param dirtyFields A list of modified fields
+	 */
+	public void registerDirty(List<SObject> records, List<SObjectField> dirtyFields)
+	{
+		if (records.isEmpty()) return;
 
-        // If record isn't registered as dirty, or no dirty fields to drive a merge
-        if (!m_dirtyMapByType.get(sObjectType).containsKey(record.Id) || dirtyFields.isEmpty())
-        {
-            // Register the record as dirty
-            m_dirtyMapByType.get(sObjectType).put(record.Id, record);
-        }
-        else
-        {
-            // Update the registered record's fields
-            SObject registeredRecord = m_dirtyMapByType.get(sObjectType).get(record.Id);
-
-            for (SObjectField dirtyField : dirtyFields) {
-                registeredRecord.put(dirtyField, record.get(dirtyField));
-            }
-
-            m_dirtyMapByType.get(sObjectType).put(record.Id, registeredRecord);
-        }
-    }
+		Map<String, List<SObject>> sortedRecords = sortAndValidateForExistingNonEvent(m_dirtyMapByType, records);
+		for (String sObjectName : sortedRecords.keySet())
+		{
+			registerDirty(sObjectName, sortedRecords.get(sObjectName), dirtyFields);
+		}
+	}
 
     /**
      * Register an existing record to be updated when commitWork is called,
      *   you may also provide a reference to the parent record instance (should also be registered as new separately)
      *
-     * @param record A newly created SObject instance to be inserted during commitWork
+     * @param record An existing SObject instance to be updated during commitWork
      * @param relatedToParentField A SObjectField reference to the child field that associates the child record with its parent
      * @param relatedToParentRecord A SObject instance of the parent record (should also be registered as new separately)
      **/
     public void registerDirty(SObject record, Schema.SObjectField relatedToParentField, SObject relatedToParentRecord)
     {
-	    registerDirty(record);
-        if (relatedToParentRecord!=null && relatedToParentField!=null)
-            registerRelationship(record, relatedToParentField, relatedToParentRecord);
+	    registerDirty(new List<SObject> {record}, relatedToParentField, relatedToParentRecord);
     }
+
+	/**
+	 * Register existing records to be updated when commitWork is called,
+	 * it provide a reference to the parent record instance (should also be registered as new separately)
+	 *
+	 * @param records Existing records to be updated during commitWork
+	 * @param relatedToParentField A SObjectField reference to the child field that associates the child record with its parent
+	 * @param relatedToParentRecord A SObject instance of the parent record (should also be registered as new separately)
+	 **/
+	public void registerDirty(List<SObject> records, Schema.SObjectField relatedToParentField, SObject relatedToParentRecord)
+	{
+		if (records.isEmpty()) return;
+
+		Map<String, List<SObject>> sortedRecords = sortAndValidateForExistingNonEvent(m_dirtyMapByType, records);
+		for (String sObjectName : sortedRecords.keySet())
+		{
+			registerDirty(sObjectName, sortedRecords.get(sObjectName), relatedToParentField, relatedToParentRecord);
+		}
+	}
 
     /**
      * Register a list of existing records to be updated during the commitWork method
@@ -444,10 +465,7 @@ public virtual class fflib_SObjectUnitOfWork
      **/
     public void registerDirty(List<SObject> records)
     {
-        for (SObject record : records)
-        {
-            this.registerDirty(record);
-        }
+	    registerDirty(records, new List<SObjectField>());
     }
 
     /**
@@ -457,14 +475,7 @@ public virtual class fflib_SObjectUnitOfWork
      **/
     public void registerUpsert(SObject record)
     {
-        if (record.Id == null) 
-        {
-            registerNew(record, null, null);
-        }
-        else
-        {
-            registerDirty(record, new List<SObjectField>());
-        }
+	    registerUpsert(new List<SObject> {record});
     }
 
     /**
@@ -474,10 +485,15 @@ public virtual class fflib_SObjectUnitOfWork
      **/
     public void registerUpsert(List<SObject> records)
     {
-        for (SObject record : records)
-        {
-            this.registerUpsert(record);
-        }
+	    List<SObject> forInsert = new List<SObject>();
+	    List<SObject> forUpdate = new List<SObject>();
+	    for (SObject record : records)
+	    {
+		    if (record.Id == null) forInsert.add(record);
+		    else forUpdate.add(record);
+	    }
+	    if (!forInsert.isEmpty()) registerNew(forInsert);
+	    if (!forUpdate.isEmpty()) registerDirty(forUpdate);
     }
 
     /**
@@ -487,14 +503,7 @@ public virtual class fflib_SObjectUnitOfWork
      **/
     public void registerDeleted(SObject record)
     {
-        if (record.Id == null)
-            throw new UnitOfWorkException('New records cannot be registered for deletion');
-        String sObjectType = record.getSObjectType().getDescribe().getName();
-
-		assertForNonEventSObjectType(sObjectType);
-		assertForSupportedSObjectType(m_deletedMapByType, sObjectType);
-
-        m_deletedMapByType.get(sObjectType).put(record.Id, record);
+	    registerDeleted(new List<SObject> {record});
     }
 
     /**
@@ -504,10 +513,13 @@ public virtual class fflib_SObjectUnitOfWork
      **/
     public void registerDeleted(List<SObject> records)
     {
-        for (SObject record : records)
-        {
-            this.registerDeleted(record);
-        }
+	    if (records.isEmpty()) return;
+
+	    Map<String, List<SObject>> sortedRecords = sortAndValidateForExistingNonEvent(m_deletedMapByType, records);
+	    for (String sObjectName : sortedRecords.keySet())
+	    {
+		    registerDeleted(sObjectName, sortedRecords.get(sObjectName));
+	    }
     }
 
 	/**
@@ -528,8 +540,7 @@ public virtual class fflib_SObjectUnitOfWork
      **/
     public void registerPermanentlyDeleted(SObject record)
     {
-	    this.registerEmptyRecycleBin(record);
-        this.registerDeleted(record);
+	    registerPermanentlyDeleted(new List<SObject> {record});
     }
 
     /**
@@ -636,6 +647,129 @@ public virtual class fflib_SObjectUnitOfWork
 		{
 			doAfterCommitWorkSteps(wasSuccessful);
 		}
+	}
+
+	/**
+	 * Adds the records to the delete queue for the given SObjectType
+	 *
+	 * @param sObjectName The SObjectType name of the records
+	 * @param records SObjects to register as deleted
+	 */
+	protected void registerDeleted(String sObjectName, List<SObject> records)
+	{
+		m_deletedMapByType.get(sObjectName).putAll(records);
+	}
+
+	/**
+	 * Adds the records to the dirty and relationship queue for the given SObjectType
+	 *
+	 * @param sObjectName The SObjectType name of the records
+	 * @param records SObjects to register as dirty
+	 * @param relatedToParentField A SObjectField reference to the child field that associates the child record with its parent
+	 * @param relatedToParentRecord A SObject instance of the parent record (should also be registered as new separately)
+	 */
+	protected void registerDirty(
+			String sObjectName,
+			List<SObject> records,
+			Schema.SObjectField relatedToParentField,
+			SObject relatedToParentRecord)
+	{
+		m_dirtyMapByType.get(sObjectName).putAll(records);
+
+		if (relatedToParentRecord == null || relatedToParentField == null) return;
+
+		registerRelationship(sObjectName, records, relatedToParentField, relatedToParentRecord);
+	}
+
+	/**
+	 * Adds the records to the dirty queue for the given SObjectType
+	 *
+	 * @param sObjectName The SObjectType name of the records
+	 * @param records SObjects to register as dirty
+	 * @param dirtyFields A list of modified fields
+	 */
+	protected void registerDirty(String sObjectName, List<SObject> records, List<SObjectField> dirtyFields)
+	{
+		// Register the record as dirty, if no dirty fields or all records are not registered as dirty
+		if (dirtyFields.isEmpty()
+				||
+				!m_dirtyMapByType.get(sObjectName).keySet().containsAll(new Map<Id, SObject>(records).keySet()))
+		{
+			m_dirtyMapByType.get(sObjectName).putAll(records);
+		}
+		else
+		{
+			// Check records one by one and resolve dirty fields.
+			for (SObject record : records)
+			{
+				// Register the record as dirty, if record isn't registered already
+				if (!m_dirtyMapByType.get(sObjectName).containsKey(record.Id))
+				{
+					m_dirtyMapByType.get(sObjectName).put(record.Id, record);
+				}
+				else
+				{
+					// Update the registered record's fields
+					SObject registeredRecord = m_dirtyMapByType.get(sObjectName).get(record.Id);
+
+					for (SObjectField dirtyField : dirtyFields)
+					{
+						registeredRecord.put(dirtyField, record.get(dirtyField));
+					}
+
+					m_dirtyMapByType.get(sObjectName).put(record.Id, registeredRecord);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Adds the records to the emptyRecycleBin queue for the given SObjectType
+	 *
+	 * @param sObjectName  The SObjectType name of the records
+	 * @param records Records to register as emptyRecycleBin
+	 */
+	protected void registerEmptyRecycleBin(String sObjectName, List<SObject> records)
+	{
+		m_emptyRecycleBinMapByType.get(sObjectName).putAll(records);
+	}
+
+	/**
+	 * Adds the records to the insert queue for the given SObjectType
+	 *
+	 * @param sObjectName The SObjectType name of the records
+	 * @param records Records to register as new, all of the given SObjectType
+	 * @param relatedToParentField A SObjectField reference to the child field that associates the child record with its parent
+	 * @param relatedToParentRecord A SObject instance of the parent record (should also be registered as new separately)
+	 */
+	protected void registerNew(
+			String sObjectName,
+			List<SObject> records,
+			Schema.SObjectField relatedToParentField,
+			SObject relatedToParentRecord)
+	{
+		m_newListByType.get(sObjectName).addAll(records);
+
+		if (relatedToParentRecord == null || relatedToParentField == null) return;
+
+		registerRelationship(sObjectName, records, relatedToParentField, relatedToParentRecord);
+	}
+
+	/**
+	 * Adds the records to the relationship queue for the given SObjectType
+	 *
+	 * @param sObjectName The SObjectType name of the records
+	 * @param records Existing or newly created records
+	 * @param relatedToField A SObjectField reference to the field that relates the given records to the relatedTo record
+	 * @param relatedTo A SObject instance (yet to be committed to the database)
+	 */
+	protected void registerRelationship(
+			String sObjectName,
+			List<SObject> records,
+			Schema.SObjectField relatedToField,
+			SObject relatedTo)
+	{
+		m_relationships.get(sObjectName).add(records, relatedToField, relatedTo);
 	}
 
 	private void doCommitWork()
@@ -765,9 +899,7 @@ public virtual class fflib_SObjectUnitOfWork
 		if (sObjectType.length() > 3 && sObjectType.right(3)  == '__e')
 		{
 			throw new UnitOfWorkException(
-					String.format(
-							'SObject type {0} must use registerPublishBeforeTransaction or ' +
-									'registerPublishAfterTransaction methods to be used within this unit of work',
+					String.format(Label.fflib_SObjectUnitOfWork_event_SObjectType_must_use_publish,
 							new List<String> { sObjectType }
 					)
 			);
@@ -780,12 +912,23 @@ public virtual class fflib_SObjectUnitOfWork
 		if (sObjectType.length() > 3 && sObjectType.right(3) != '__e')
 		{
 			throw new UnitOfWorkException(
-					String.format(
-							'SObject type {0} is invalid for publishing within this unit of work',
+					String.format(Label.fflib_SObjectUnitOfWork_non_event_SObjectType_used_with_publish,
 							new List<String> {sObjectType}
 					)
 			);
 		}
+	}
+
+	private void assertForExistingRecord(SObject record)
+	{
+		if (record.Id == null)
+			throw new UnitOfWorkException(Label.fflib_SObjectUnitOfWork_new_records_not_supported);
+	}
+
+	private void assertForNewRecord(SObject record)
+	{
+		if (record.Id != null)
+			throw new UnitOfWorkException(Label.fflib_SObjectUnitOfWork_only_new_records_supported);
 	}
 
 	@TestVisible
@@ -795,24 +938,92 @@ public virtual class fflib_SObjectUnitOfWork
 		{
 			throw new UnitOfWorkException(
 					String.format(
-							'SObject type {0} is not supported by this unit of work',
-							new List<String> { sObjectType }
+							Label.fflib_SObjectUnitOfWork_not_supported_SObjectType,
+							new List<String> {sObjectType}
 					)
 			);
 		}
 	}
 
-    private class Relationships
-    {
-        private List<IRelationship> m_relationships = new List<IRelationship>();
+	private Map<String, List<SObject>> sortAndValidateForExistingNonEvent(Map<String, Object> theMap, List<SObject> records)
+	{
+		Map<String, List<SObject>> result = new Map<String, List<SObject>>();
+		for (SObject record : records)
+		{
+			String sObjectName = record.getSObjectType().getDescribe().getName();
 
-        public void resolve()
-        {
-            // Resolve relationships
-            for (IRelationship relationship : m_relationships)
-            {
-                //relationship.Record.put(relationship.RelatedToField, relationship.RelatedTo.Id);
-                relationship.resolve();
+			assertForSupportedSObjectType(theMap, sObjectName);
+			assertForExistingRecord(record);
+			assertForNonEventSObjectType(sObjectName);
+
+			if (result.containsKey(sObjectName))
+			{
+				result.get(sObjectName).add(record);
+			}
+			else
+			{
+				result.put(sObjectName, new List<SObject> {record});
+			}
+		}
+		return result;
+	}
+
+	private Map<String, List<SObject>> sortAndValidateForNewNonEvent(Map<String, Object> theMap, List<SObject> records)
+	{
+		Map<String, List<SObject>> result = new Map<String, List<SObject>>();
+		for (SObject record : records)
+		{
+			String sObjectName = record.getSObjectType().getDescribe().getName();
+
+			assertForSupportedSObjectType(theMap, sObjectName);
+			assertForNewRecord(record);
+			assertForNonEventSObjectType(sObjectName);
+
+			if (result.containsKey(sObjectName))
+			{
+				result.get(sObjectName).add(record);
+			}
+			else
+			{
+				result.put(sObjectName, new List<SObject> {record});
+			}
+		}
+		return result;
+	}
+
+	private Map<String, List<SObject>> sortAndValidateForNonEvent(Map<String, Object> theMap, List<SObject> records)
+	{
+		Map<String, List<SObject>> result = new Map<String, List<SObject>>();
+		for (SObject record : records)
+		{
+			String sObjectName = record.getSObjectType().getDescribe().getName();
+
+			assertForSupportedSObjectType(theMap, sObjectName);
+			assertForNonEventSObjectType(sObjectName);
+
+			if (result.containsKey(sObjectName))
+			{
+				result.get(sObjectName).add(record);
+			}
+			else
+			{
+				result.put(sObjectName, new List<SObject> {record});
+			}
+		}
+		return result;
+	}
+
+	private class Relationships
+	{
+		private List<IRelationship> m_relationships = new List<IRelationship>();
+
+		public void resolve()
+		{
+			// Resolve relationships
+			for (IRelationship relationship : m_relationships)
+			{
+				//relationship.Record.put(relationship.RelatedToField, relationship.RelatedTo.Id);
+				relationship.resolve();
             }
 
         }
@@ -820,12 +1031,12 @@ public virtual class fflib_SObjectUnitOfWork
         public void add(SObject record, Schema.SObjectField relatedToField, Schema.SObjectField externalIdField, Object externalId)
         {
             if (relatedToField == null) {
-                throw new UnitOfWorkException('Invalid argument: relatedToField.');
+                throw new UnitOfWorkException(Label.fflib_SObjectUnitOfWork_invalid_argument_relatedToField_null);
             }
 
             String relationshipName = relatedToField.getDescribe().getRelationshipName();
             if (String.isBlank(relationshipName)) {
-                throw new UnitOfWorkException('Invalid argument: relatedToField. Field supplied is not a relationship field.');
+                throw new UnitOfWorkException(Label.fflib_SObjectUnitOfWork_invalid_argument_relatedToField_invalid);
             }
 
             List<Schema.SObjectType> relatedObjects = relatedToField.getDescribe().getReferenceTo();
@@ -836,32 +1047,40 @@ public virtual class fflib_SObjectUnitOfWork
             Boolean externalIdFieldIsValid = externalIdField.getDescribe().isExternalId();
 
             if (!relatedHasExternalIdField) {
-                throw new UnitOfWorkException('Invalid argument: externalIdField. Field supplied is not a known field on the target sObject.');
+                throw new UnitOfWorkException(Label.fflib_SObjectUnitOfWork_invalid_argument_externalIdField_unknown);
             }
 
             if (!externalIdFieldIsValid) {
-                throw new UnitOfWorkException('Invalid argument: externalIdField. Field supplied is not a marked as an External Identifier.');
+                throw new UnitOfWorkException(Label.fflib_SObjectUnitOfWork_invalid_argument_externalIdField_invalid);
             }
 
-            RelationshipByExternalId relationship = new RelationshipByExternalId();
-            relationship.Record = record;
-            relationship.RelatedToField = relatedToField;
-            relationship.RelatedTo = relatedObject;
-            relationship.RelationshipName = relationshipName;
-            relationship.ExternalIdField = externalIdField;
-            relationship.ExternalId = externalId;
-            m_relationships.add(relationship);
+	        RelationshipByExternalId relationship = new RelationshipByExternalId();
+	        relationship.Record = record;
+	        relationship.RelatedToField = relatedToField;
+	        relationship.RelatedTo = relatedObject;
+	        relationship.RelationshipName = relationshipName;
+	        relationship.ExternalIdField = externalIdField;
+	        relationship.ExternalId = externalId;
+	        m_relationships.add(relationship);
         }
 
-        public void add(SObject record, Schema.SObjectField relatedToField, SObject relatedTo)
-        {
-            // Relationship to resolve
-            Relationship relationship = new Relationship();
-            relationship.Record = record;
-            relationship.RelatedToField = relatedToField;
-            relationship.RelatedTo = relatedTo;
-            m_relationships.add(relationship);
-        }
+	    public void add(List<SObject> records, Schema.SObjectField relatedToField, SObject relatedTo)
+	    {
+		    for (SObject record : records)
+		    {
+			    add(record, relatedToField, relatedTo);
+		    }
+	    }
+
+	    public void add(SObject record, Schema.SObjectField relatedToField, SObject relatedTo)
+	    {
+		    // Relationship to resolve
+		    Relationship relationship = new Relationship();
+		    relationship.Record = record;
+		    relationship.RelatedToField = relatedToField;
+		    relationship.RelatedTo = relatedTo;
+		    m_relationships.add(relationship);
+	    }
 
         public void add(Messaging.SingleEmailMessage email, SObject relatedTo)
         {
