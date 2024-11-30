@@ -24,7 +24,8 @@
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 @IsTest
-private class fflib_ApplicationTest 
+public class fflib_ApplicationTest 
+	implements IAccountsSelector
 {
 	@IsTest
 	private static void callingDomainFactoryShouldGiveRegisteredImplsAndMocks()
@@ -78,8 +79,7 @@ private class fflib_ApplicationTest
 
 		// Given
 		fflib_ApexMocks mocks = new fflib_ApexMocks();
-		mocks.startStubbing();		
-		// fflib_ISObjectDomain domainMock = new fflib_SObjectMocks.SObjectDomain(mocks);
+		mocks.startStubbing();
 		fflib_ApplicationTest.IAccounts accountsDomainMock = (fflib_ApplicationTest.IAccounts)mocks.mock(fflib_ApplicationTest.IAccounts.class);
 		mocks.when(accountsDomainMock.sObjectType()).thenReturn(Account.SObjectType);
 		mocks.stopStubbing();		
@@ -347,8 +347,10 @@ private class fflib_ApplicationTest
 	{	
 		// Given
 		fflib_ApexMocks mocks = new fflib_ApexMocks();
-		IAccountsSelector mockAccountsSelector = (IAccountsSelector)mocks.mock(IAccountsSelector.class);
-
+		// IAccountsSelector mockAccountsSelector = (IAccountsSelector)mocks.mock(IAccountsSelector.class); ///////**** */
+		// extends fflib_ISObjectSelector
+		// fflib_ISObjectSelector mockAccountsSelector = (fflib_ISObjectSelector)mocks.mock(fflib_ISObjectSelector.class); ///////**** */
+		IAccountsSelector mockAccountsSelector = (IAccountsSelector)mocks.mock(fflib_ApplicationTest.class); ///////**** */
 		Id testAccountId = fflib_IDGenerator.generate(Account.SObjectType);
 		List<Account> accounts = 
 			new List<Account> 
@@ -698,4 +700,29 @@ private class fflib_ApplicationTest
 	public class OpportunitiesServiceImpl implements IOpportunitiesService { }
 
 	public class AccountsServiceImpl implements IAccountsService { }
+
+	public List<Schema.SObjectField> getSObjectFieldList()
+		{
+			return new List<Schema.SObjectField> {
+				Account.Name,
+				Account.Id,
+				Account.AccountNumber,
+				Account.AnnualRevenue
+			};
+		}
+		
+		public Schema.SObjectType getSObjectType()
+		{
+			return Account.sObjectType;
+		}
+
+		public Schema.SObjectType sObjectType()
+		{
+			return Account.sObjectType;
+		}
+
+		public List<SObject> selectSObjectsById(Set<Id> idSet)
+		{
+			return new List<SObject>();
+		}
 }
