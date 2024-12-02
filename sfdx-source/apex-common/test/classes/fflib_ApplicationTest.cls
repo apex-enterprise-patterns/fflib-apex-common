@@ -444,6 +444,64 @@ private class fflib_ApplicationTest
 		System.assert(!customDML.isInsertCalled, 'Oops, custom DML was called');
 	}
 
+	@IsTest
+	static void itShouldReturnTheReplacedServiceImplementation()
+	{
+		// GIVEN a configured service binding resolver with an interface linked to an implementation
+		System.assert(
+				Service.newInstance(IOpportunitiesService.class) instanceOf OpportunitiesServiceImpl
+		);
+
+		// WHEN we replace the binding and request the implementation for the interface
+		Service.replaceWith(IOpportunitiesService.class, OpportunitiesServiceAltImpl.class);
+		Object result = Service.newInstance(IOpportunitiesService.class);
+
+		// THEN it should return the alternative implementation
+		System.assert(
+				result instanceof OpportunitiesServiceAltImpl,
+				'Incorrect implementation returned, expected the alternative implementation'
+		);
+	}
+
+	@IsTest
+	static void itShouldReturnTheReplacedSelectorImplementation()
+	{
+		// GIVEN a configured service binding resolver with an interface linked to an implementation
+		System.assert(
+				Selector.newInstance(Account.SObjectType) instanceOf AccountsSelector
+		);
+
+		// WHEN we replace the binding and request the implementation for the interface
+		Selector.replaceWith(Account.SObjectType, AccountsSelectorAlt.class);
+		Object result = Selector.newInstance(Account.SObjectType);
+
+		// THEN it should return the alternative implementation
+		System.assert(
+				result instanceof AccountsSelectorAlt,
+				'Incorrect implementation returned, expected the alternative implementation'
+		);
+	}
+
+	@IsTest
+	static void itShouldReturnTheReplacedDomainImplementation()
+	{
+		// GIVEN a configured service binding resolver with an interface linked to an implementation
+		final List<Account> records = new List<Account>();
+		System.assert(
+				Domain.newInstance(records) instanceOf AccountsDomain
+		);
+
+		// WHEN we replace the binding and request the implementation for the interface
+		Domain.replaceWith(Account.SObjectType, AccountsConstructorAlt.class);
+		Object result = Domain.newInstance(records);
+
+		// THEN it should return the alternative implementation
+		System.assert(
+				result instanceof AccountsDomainAlt,
+				'Incorrect implementation returned, expected the alternative implementation'
+		);
+	}
+
 	public class CustomDML implements fflib_SObjectUnitOfWork.IDML
 	{
 		public boolean isInsertCalled = false;
@@ -502,7 +560,16 @@ private class fflib_ApplicationTest
 					Opportunity.SObjectType => OpportuntiesConstructor.class,
 					Contact.SObjectType => ContactsConstructor.class });
 
-	public class AccountsDomain extends fflib_SObjectDomain
+
+	public interface IAccountsDomain extends fflib_ISObjectDomain {}
+	public class AccountsDomainAlt extends  AccountsDomain
+	{
+		public AccountsDomainAlt(List<SObject> records)
+		{
+			super(records);
+		}
+	}
+	public virtual class AccountsDomain extends fflib_SObjectDomain implements IAccountsDomain
 	{
 		public AccountsDomain(List<Account> sObjectList)
 		{
@@ -527,6 +594,15 @@ private class fflib_ApplicationTest
 			return new AccountsDomain(sObjectList, sObjectType);
 		}		
 	}	
+
+	public class AccountsConstructorAlt implements fflib_IDomainConstructor
+	{
+		public fflib_IDomain construct(List<Object> objects)
+		{
+			return new AccountsDomainAlt((List<SObject>) objects);
+		}
+	}
+
 
 	public class OpportuntiesDomain extends fflib_SObjectDomain
 	{
@@ -588,8 +664,8 @@ private class fflib_ApplicationTest
 			return Opportunity.sObjectType;
 		}
 	}
-	
-	class AccountsSelector extends fflib_SObjectSelector
+
+	virtual class AccountsSelector extends fflib_SObjectSelector
 	{
 		public List<Schema.SObjectField> getSObjectFieldList()
 		{
@@ -607,6 +683,8 @@ private class fflib_ApplicationTest
 		}
 	}
 
+	class AccountsSelectorAlt extends AccountsSelector {}
+
 	public interface IContactService { }
 
 	public interface IOpportunitiesService { }
@@ -614,6 +692,8 @@ private class fflib_ApplicationTest
 	public interface IAccountService { }
 
 	public class OpportunitiesServiceImpl implements IOpportunitiesService { }
+
+	public class OpportunitiesServiceAltImpl implements IOpportunitiesService { }
 
 	public class AccountsServiceImpl implements IAccountService { }
 
