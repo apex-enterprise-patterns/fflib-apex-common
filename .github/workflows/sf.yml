@@ -1,0 +1,36 @@
+name: Salesforce Code Analyzer Workflow
+on: 
+  - push
+  - workflow_dispatch
+jobs:
+  salesforce-code-analyzer-workflow:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out files
+        uses: actions/checkout@v4
+
+      - name: Install Salesforce CLI
+        run: npm install -g @salesforce/cli@latest
+
+      - name: Install Salesforce Code Analyzer Plugin
+        run: sf plugins install @salesforce/sfdx-scanner@latest
+
+      - name: Run Salesforce Code Analyzer
+        id: run-code-analyzer
+        uses: forcedotcom/run-code-analyzer@v1
+        with:
+          run-command: run
+          run-arguments: --category=security --target . --format=sarif --outfile results.sarif
+          results-artifact-name: salesforce-code-analyzer-results
+
+    #   - name: Check the outputs to determine whether to fail
+    #     if: |
+    #       steps.run-code-analyzer.outputs.exit-code > 0 ||
+    #       steps.run-code-analyzer.outputs.num-sev1-violations > 0 ||
+    #       steps.run-code-analyzer.outputs.num-violations > 10
+    #     run: exit 1
+
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
