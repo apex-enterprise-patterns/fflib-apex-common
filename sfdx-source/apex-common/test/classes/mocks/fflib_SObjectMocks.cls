@@ -102,9 +102,19 @@ public class fflib_SObjectMocks
 			mocks.mockVoidMethod(this, 'registerNew', new List<Type> {SObject.class, Schema.sObjectField.class, SObject.class}, new List<Object> {record, relatedToParentField, relatedToParentRecord});
 		}
 
+		public void registerNew(List<SObject> records, SObjectField relatedToParentField, SObject relatedToParentRecord)
+		{
+			mocks.mockVoidMethod(this, 'registerNew', new List<Type> {SObject.class, Schema.sObjectField.class, SObject.class}, new List<Object> {records, relatedToParentField, relatedToParentRecord});
+		}
+
 		public void registerRelationship(SObject record, Schema.sObjectField relatedToField, SObject relatedTo)
 		{
 			mocks.mockVoidMethod(this, 'registerRelationship', new List<Type> {SObject.class, Schema.sObjectField.class, SObject.class}, new List<Object> {record, relatedToField, relatedTo});
+		}
+
+		public void registerRelationship(List<SObject> records, SObjectField relatedToField, SObject relatedTo)
+		{
+			mocks.mockVoidMethod(this, 'registerRelationship', new List<Type> {SObject.class, Schema.sObjectField.class, SObject.class}, new List<Object> {records, relatedToField, relatedTo});
 		}
 
 		public void registerRelationship(Messaging.SingleEmailMessage email, SObject relatedTo)
