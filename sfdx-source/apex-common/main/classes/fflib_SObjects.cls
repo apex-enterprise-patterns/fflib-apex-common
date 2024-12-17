@@ -182,7 +182,7 @@ public virtual class fflib_SObjects
 		Set<String> result = new Set<String>();
 		for (SObject record : getRecords())
 		{
-			result.add(String.valueOf(record.get(field)));
+			result.add((String) record.get(field));
 		}
 		return result;
 	}
