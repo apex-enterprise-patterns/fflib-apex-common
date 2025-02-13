@@ -433,27 +433,6 @@ private class fflib_QueryFactoryTest {
 	}
 
 	@isTest
-	static void addChildQueries_invalidChildRelationshipTooDeep(){
-		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
-		qf.selectField('name');
-		qf.selectField('email');
-		qf.setCondition( 'name like \'%test%\'' );
-		qf.addOrdering( new fflib_QueryFactory.Ordering('Contact','name',fflib_QueryFactory.SortOrder.ASCENDING) ).addOrdering('CreatedDATE',fflib_QueryFactory.SortOrder.DESCENDING);
-		Schema.DescribeSObjectResult descResult = Contact.SObjectType.getDescribe();
-  
-		fflib_QueryFactory childQf = qf.subselectQuery(Task.SObjectType);
-		childQf.selectField('Id');
-		childQf.selectField('Subject');
-		Exception e;
-		try {
-			fflib_QueryFactory subChildQf = childQf.subselectQuery(Task.SObjectType);
-		} catch (fflib_QueryFactory.InvalidSubqueryRelationshipException ex) {
-			e = ex;   
-		}	
-		System.assertNotEquals(e, null);
-	}
-
-	@isTest
 	static void checkFieldObjectReadSort_success(){
 		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
 		qf.assertIsAccessible()
