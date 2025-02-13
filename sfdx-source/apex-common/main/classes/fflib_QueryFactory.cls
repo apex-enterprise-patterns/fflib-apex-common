@@ -503,9 +503,6 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param relationship The ChildRelationship to be added as a subquery
 	**/
 	private fflib_QueryFactory setSubselectQuery(Schema.ChildRelationship relationship, Boolean assertIsAccessible){
-		if (this.relationship != null){
-			throw new InvalidSubqueryRelationshipException('Invalid call to subselectQuery.  You may not add a subselect query to a subselect query.');
-		} 
 		if (this.subselectQueryMap == null){
 			this.subselectQueryMap = new Map<Schema.ChildRelationship, fflib_QueryFactory>();
 		}
