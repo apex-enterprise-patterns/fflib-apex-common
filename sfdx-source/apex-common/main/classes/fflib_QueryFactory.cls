@@ -40,9 +40,8 @@
  * will be included by default. Constructing Ordering instances manually is discouraged.
  * 
  * Subselect Queries are supported with the subselectQuery methods.  
- * More than one sub-query can be added to a single query, but sub-queries can only be 1 level deep.  
- * An exception will thrown from the subselectQuery method when there is an attempt to add a subquery to a sub-query
- * or to add a subquery to a query with an invalid relationship.
+ * More than one sub-query can be added to a single query.
+ * An exception will thrown from the subselectQuery method when there is an attempt to add a subquery to a query with an invalid relationship.
  *
  * Current limitations:
  * - Aggregate functions are not currently supported.
