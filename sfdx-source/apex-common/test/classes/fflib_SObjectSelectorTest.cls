@@ -646,19 +646,19 @@ private with sharing class fflib_SObjectSelectorTest
 		}
 	}
 
-	private class OrderSelector extends fflib_SObjectSelector{
-		public OrderSelector(){
+	private class ListEmailSelector extends fflib_SObjectSelector{
+		public ListEmailSelector(){
 			super(false,DataAccess.SYSTEM_MODE);
 		}
 
 		public Schema.SObjectType getSObjectType(){
-			return Order.SObjectType;
+			return ListEmail.SObjectType;
 		}
 
 		public List<Schema.SObjectField> getSObjectFieldList(){
 			return new List<Schema.SObjectField> {
-					Order.Id,
-					Order.OrderNumber
+					ListEmail.Id,
+					ListEmail.Name
 			};
 		}
 	}
@@ -823,19 +823,19 @@ private with sharing class fflib_SObjectSelectorTest
 		AccessLevelOpportunitySelector oppSel = new AccessLevelOpportunitySelector();
 		fflib_QueryFactory oppQF = oppSel.addQueryFactorySubselect(cQF);
 
-		OrderSelector orderSel = new OrderSelector();
-		fflib_QueryFactory orderQF = orderSel.addQueryFactorySubselect(oppQF);
+		ListEmailSelector listEmailSel = new ListEmailSelector();
+		fflib_QueryFactory listEmailQF = listEmailSel.addQueryFactorySubselect(oppQF);
 
 		TaskSelector tSel = new TaskSelector();
-		fflib_QueryFactory tQF = tSel.addQueryFactorySubselect(orderQF);
+		fflib_QueryFactory tQF = tSel.addQueryFactorySubselect(listEmailQF);
 
 		String expected
 				= 'SELECT name, id, annualrevenue, accountnumber, '
 				+   '(SELECT id, contractnumber, '
 				+     '(SELECT name, id, amount, closedate, '
-				+       '(SELECT id, ordernumber, '
+				+       '(SELECT id, name, '
 				+         '(SELECT id, subject FROM Tasks ORDER BY Subject ASC NULLS FIRST )  '
-				+       'FROM Orders ORDER BY OrderNumber ASC NULLS FIRST )  '
+				+       'FROM ListEmails ORDER BY Name ASC NULLS FIRST )  '
 				+     'FROM Opportunities ORDER BY Name ASC NULLS FIRST )  '
 				+   'FROM Contracts ORDER BY ContractNumber ASC NULLS FIRST )  '
 				+ 'FROM Account WITH USER_MODE ORDER BY Name ASC NULLS FIRST ';
