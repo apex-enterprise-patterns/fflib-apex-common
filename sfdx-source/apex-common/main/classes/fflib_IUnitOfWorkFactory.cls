@@ -25,8 +25,46 @@
 **/
 public interface fflib_IUnitOfWorkFactory
 {
+	/**
+	 * Returns a new fflib_SObjectUnitOfWork configured with the
+	 *   SObjectType list provided in the constructor, returns a Mock implementation
+	 *   if set via the setMock method
+	 *
+	 * @return Instance of fflib_ISObjectUnitOfWork
+	 **/
 	fflib_ISObjectUnitOfWork newInstance();
+
+	/**
+	 * Returns a new fflib_SObjectUnitOfWork configured with the
+	 *   SObjectType list provided in the constructor, returns a Mock implementation
+	 *   if set via the setMock method
+	 *
+	 * @param dml A custom implementation of the IDML to perform the database operations
+	 *
+	 * @return Instance of fflib_ISObjectUnitOfWork
+	 **/
 	fflib_ISObjectUnitOfWork newInstance(fflib_SObjectUnitOfWork.IDML dml);
+
+	/**
+	 * Returns a new fflib_SObjectUnitOfWork configured with the
+	 *   SObjectType list specified, returns a Mock implementation
+	 *   if set via the setMock method
+	 *
+	 * @param objectTypes The hierarchical structure of the SObjectTypes
+	 *
+	 * @return Instance of fflib_ISObjectUnitOfWork
+	 **/
 	fflib_ISObjectUnitOfWork newInstance(List<SObjectType> objectTypes);
+
+	/**
+	 * Returns a new fflib_SObjectUnitOfWork configured with the
+	 *   SObjectType list specified, returns a Mock implementation
+	 *   if set via the setMock method
+	 *
+	 * @param objectTypes The hierarchical structure of the SObjectTypes
+	 * @param dml A custom implementation of the IDML to perform the database operations
+	 *
+	 * @return Instance of fflib_ISObjectUnitOfWork
+	 **/
 	fflib_ISObjectUnitOfWork newInstance(List<SObjectType> objectTypes, fflib_SObjectUnitOfWork.IDML dml);
 }
