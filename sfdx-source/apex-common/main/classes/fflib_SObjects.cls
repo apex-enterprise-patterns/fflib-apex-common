@@ -257,7 +257,7 @@ public virtual class fflib_SObjects
 		{
 			for (SObjectField field : fields)
 			{
-				if (String.isNotBlank((String) record.get(field))) continue;
+				if (String.isNotBlank(String.valueOf(record.get(field)))) continue;
 
 				result.add(record);
 				break;
@@ -279,7 +279,7 @@ public virtual class fflib_SObjects
 			Boolean allBlank = true;
 			for (SObjectField field : fields)
 			{
-				if (String.isNotBlank((String) record.get(field)))
+				if (String.isNotBlank(String.valueOf(record.get(field))))
 				{
 					allBlank = false;
 					break;
@@ -314,7 +314,7 @@ public virtual class fflib_SObjects
 		{
 			for (SObjectField field : fields)
 			{
-				if (String.isNotBlank((String) record.get(field)))
+				if (String.isNotBlank(String.valueOf(record.get(field))))
 				{
 					result.add(record);
 					break;
@@ -337,7 +337,7 @@ public virtual class fflib_SObjects
 			Boolean allNonBlank = true;
 			for (SObjectField field : fields)
 			{
-				if (String.isBlank((String) record.get(field)))
+				if (String.isBlank(String.valueOf(record.get(field))))
 				{
 					allNonBlank = false;
 					break;
