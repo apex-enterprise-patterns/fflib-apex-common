@@ -27,7 +27,7 @@
 /**
  * Helper class, roughly based on the Java version, but subclassed to assist in a number of use cases in this library
  * 
- * NOTE: Aspects of this where developed before recent improvements to String handling, as such could likely be enhanced at this stage.
+ * NOTE: Aspects of this were developed before recent improvements to String handling, as such could likely be enhanced at this stage.
  **/
 public virtual class fflib_StringBuilder
 {

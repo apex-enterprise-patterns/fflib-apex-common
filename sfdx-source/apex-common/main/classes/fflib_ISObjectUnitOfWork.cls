@@ -215,7 +215,7 @@ public interface fflib_ISObjectUnitOfWork
      **/
     void commitWork();
     /**
-     * Register a generic peace of work to be invoked during the commitWork phase
+     * Register a generic piece of work to be invoked during the commitWork phase
      *
      * @param work Work to be registered
      **/
