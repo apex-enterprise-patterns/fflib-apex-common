@@ -1,11 +1,11 @@
 {
-    "packageDirectories": [
-        {
-            "path": "sfdx-source/apex-common",
-            "default": true
-        }
-    ],
-    "namespace": "",
-    "sfdcLoginUrl": "https://login.salesforce.com",
-    "sourceApiVersion": "55.0"
+  "packageDirectories": [
+    {
+      "path": "sfdx-source/apex-common",
+      "default": true
+    }
+  ],
+  "namespace": "",
+  "sfdcLoginUrl": "https://login.salesforce.com",
+  "sourceApiVersion": "63.0"
 }
