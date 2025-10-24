@@ -709,27 +709,27 @@ private with sharing class fflib_SObjectSelectorTest
 	static void toSOQL_When_PolymorphicSelect_Expect_RelatedType() {
 		//Given		
 
-		CampaignMemberSelector cmSelector = new CampaignMemberSelector(fflib_SObjectSelector.DataAccess.LEGACY);
-		fflib_QueryFactory qf = cmSelector.newQueryFactory();
-		new LeadSelector().configureQueryFactoryFields(qf, 'Lead');
-		new UserSelector().configureQueryFactoryFields(qf, 'Lead.Owner');
+		CaseCommentSelector ccSelector = new CaseCommentSelector(fflib_SObjectSelector.DataAccess.LEGACY);
+		fflib_QueryFactory qf = ccSelector.newQueryFactory();
+		new CaseSelector().configureQueryFactoryFields(qf, 'Parent');
+		new UserSelector().configureQueryFactoryFields(qf, 'Parent.Owner');
 
 
 		Set<String> expectedSelectFields = new Set<String>{
-				'Id', 'Status', 'Lead.Id', 'Lead.OwnerId', 'Lead.Owner.Id', 'Lead.Owner.UserRoleId'
+				'Id', 'CommentBody', 'Parent.Id', 'Parent.OwnerId', 'Parent.Owner.Id', 'Parent.Owner.UserRoleId'
 		};
 		if (UserInfo.isMultiCurrencyOrganization()) {
 			expectedSelectFields.add('CurrencyIsoCode');
-			expectedSelectFields.add('Lead.CurrencyIsoCode');
-			expectedSelectFields.add('Lead.Owner.CurrencyIsoCode');  // Because the Selector is for User; Group would not have
+			expectedSelectFields.add('Parent.CurrencyIsoCode');
+			expectedSelectFields.add('Parent.Owner.CurrencyIsoCode');  // Because the Selector is for User; Group would not have
 		}
 
 		//When
 		String soql = qf.toSOQL();
 
 		//Then
-		Pattern soqlPattern = Pattern.compile(String.format('SELECT (.*) FROM CampaignMember ORDER BY {0} ASC NULLS FIRST ',
-		new List<String>{cmSelector.getOrderBy()}));
+		Pattern soqlPattern = Pattern.compile(String.format('SELECT (.*) FROM CaseComment ORDER BY {0} ASC NULLS FIRST ',
+		new List<String>{ccSelector.getOrderBy()}));
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
 		soqlMatcher.matches();
 
@@ -741,21 +741,21 @@ private with sharing class fflib_SObjectSelectorTest
 	static void toSOQL_When_PolymorphicSelectInMulticurrency_Expect_RelatedType() {
 		//Given
 
-		CampaignMemberSelector cmSelector = new CampaignMemberSelector(fflib_SObjectSelector.DataAccess.LEGACY);
-		fflib_QueryFactory qf = cmSelector.newQueryFactory();
-		new LeadSelector().configureQueryFactoryFields(qf, 'Lead');
-		new GroupSelector().configureQueryFactoryFields(qf, 'Lead.Owner');
+		CaseCommentSelector ccSelector = new CaseCommentSelector(fflib_SObjectSelector.DataAccess.LEGACY);
+		fflib_QueryFactory qf = ccSelector.newQueryFactory();
+		new CaseSelector().configureQueryFactoryFields(qf, 'Parent');
+		new GroupSelector().configureQueryFactoryFields(qf, 'Parent.Owner');
 
 
 		Set<String> expectedSelectFields = new Set<String>{
-			'Id', 'Status', 'Lead.Id', 'Lead.OwnerId', 'Lead.Owner.Id'
+			'Id', 'CommentBody', 'Parent.Id', 'Parent.OwnerId', 'Parent.Owner.Id'
 		};
 		Set<String> unexpectedSelectFields = new Set<String>();
 		if (UserInfo.isMultiCurrencyOrganization()) {
 			expectedSelectFields.add('CurrencyIsoCode');
-			expectedSelectFields.add('Lead.CurrencyIsoCode');
+			expectedSelectFields.add('Parent.CurrencyIsoCode');
 
-			unexpectedSelectFields.add('Lead.Owner.CurrencyIsoCode'); // Because Group does NOT have CurrencyIsoCode
+			unexpectedSelectFields.add('Parent.Owner.CurrencyIsoCode'); // Because Group does NOT have CurrencyIsoCode
 		}
 
 		//When
@@ -763,7 +763,7 @@ private with sharing class fflib_SObjectSelectorTest
 		System.debug(soql);
 
 		//Then
-		Pattern soqlPattern = Pattern.compile('SELECT (.*) FROM CampaignMember ORDER BY CreatedDate ASC NULLS FIRST ');
+		Pattern soqlPattern = Pattern.compile('SELECT (.*) FROM CaseComment ORDER BY CreatedDate ASC NULLS FIRST ');
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
 		soqlMatcher.matches();
 
@@ -780,30 +780,30 @@ private with sharing class fflib_SObjectSelectorTest
 
 	@IsTest
 	static void toSOQL_When_SystemModePolymorphicSelect_Expect_RelatedType() {
-		CampaignMemberSelector cmSelector = new CampaignMemberSelector(fflib_SObjectSelector.DataAccess.SYSTEM_MODE);
-		fflib_QueryFactory qf = cmSelector.newQueryFactory();
-		new LeadSelector().configureQueryFactoryFields(qf, 'Lead');
-		new UserSelector().configureQueryFactoryFields(qf, 'Lead.Owner');
+		CaseCommentSelector ccSelector = new CaseCommentSelector(fflib_SObjectSelector.DataAccess.SYSTEM_MODE);
+		fflib_QueryFactory qf = ccSelector.newQueryFactory();
+		new CaseSelector().configureQueryFactoryFields(qf, 'Parent');
+		new UserSelector().configureQueryFactoryFields(qf, 'Parent.Owner');
 
 		List<String> expectedSelectFields = new List<String>();
 		expectedSelectFields.add('id');
-		expectedSelectFields.add('status');
+		expectedSelectFields.add('commentbody');
 		if (UserInfo.isMultiCurrencyOrganization()) {
 			expectedSelectFields.add('currencyisocode');
 		}
-		expectedSelectFields.add('lead.ownerid');
-		expectedSelectFields.add('lead.id');
+		expectedSelectFields.add('parent.ownerid');
+		expectedSelectFields.add('parent.id');
 		if (UserInfo.isMultiCurrencyOrganization()) {
-			expectedSelectFields.add('lead.currencyisocode');
+			expectedSelectFields.add('parent.currencyisocode');
 		}
-		expectedSelectFields.add('lead.owner.userroleid');
-		expectedSelectFields.add('lead.owner.id');
+		expectedSelectFields.add('parent.owner.userroleid');
+		expectedSelectFields.add('parent.owner.id');
 		if (UserInfo.isMultiCurrencyOrganization()) {
-			expectedSelectFields.add('lead.owner.currencyisocode');
+			expectedSelectFields.add('parent.owner.currencyisocode');
 		}
 
-		String expectedSOQL = String.format('SELECT ' + String.join(expectedSelectFields,', ') + ' FROM CampaignMember WITH SYSTEM_MODE ORDER BY {0} ASC NULLS FIRST ',
-			new List<String>{cmSelector.getOrderBy()});
+		String expectedSOQL = String.format('SELECT ' + String.join(expectedSelectFields,', ') + ' FROM CaseComment WITH SYSTEM_MODE ORDER BY {0} ASC NULLS FIRST ',
+			new List<String>{ccSelector.getOrderBy()});
 
 		//When
 		String actualSOQL = qf.toSOQL();
@@ -843,20 +843,37 @@ private with sharing class fflib_SObjectSelectorTest
 		Assert.areEqual(expected,aQF.toSOQL());
 	}
 
-	private class CampaignMemberSelector extends fflib_SObjectSelector {
-		public CampaignMemberSelector(DataAccess access) {
+	private class CaseCommentSelector extends fflib_SObjectSelector {
+		public CaseCommentSelector(DataAccess access) {
 			super(false, access);
 		}
 
 		public List<Schema.SObjectField> getSObjectFieldList() {
 			return new List<Schema.SObjectField>{
-					CampaignMember.Id,
-					CampaignMember.Status
+					CaseComment.Id,
+					CaseComment.CommentBody
 			};
 		}
 
 		public Schema.SObjectType getSObjectType() {
-			return CampaignMember.sObjectType;
+			return CaseComment.sObjectType;
+		}
+	}
+
+	private class CaseSelector extends fflib_SObjectSelector {
+		public CaseSelector() {
+			super();
+		}
+
+		public List<Schema.SObjectField> getSObjectFieldList() {
+			return new List<Schema.SObjectField>{
+					Case.OwnerId,
+					Case.Id
+			};
+		}
+
+		public Schema.SObjectType getSObjectType() {
+			return Case.sObjectType;
 		}
 	}
 
@@ -890,23 +907,6 @@ private with sharing class fflib_SObjectSelectorTest
 
 		public Schema.SObjectType getSObjectType() {
 			return Group.sObjectType;
-		}
-	}
-
-	private class LeadSelector extends fflib_SObjectSelector {
-		public LeadSelector() {
-			super();
-		}
-
-		public List<Schema.SObjectField> getSObjectFieldList() {
-			return new List<Schema.SObjectField>{
-					Lead.OwnerId,
-					Lead.Id
-			};
-		}
-
-		public Schema.SObjectType getSObjectType() {
-			return Lead.sObjectType;
 		}
 	}	
 }
