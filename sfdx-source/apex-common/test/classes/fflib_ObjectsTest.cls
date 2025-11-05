@@ -113,14 +113,14 @@ private class fflib_ObjectsTest
 	static void itShouldHaveAnEmptyDomain()
 	{
 		fflib_ObjectsTest.Domain dtoDomain = new Domain(new List<DataTransferObject>());
-		System.assert(dtoDomain.isEmpty(), 'Domain should be empty');
+		Assert.isTrue(dtoDomain.isEmpty(), 'Domain should be empty');
 	}
 
 	@IsTest
 	static void itShouldNotBeAnEmptyDomain()
 	{
 		fflib_ObjectsTest.Domain dtoDomain = generateDomain();
-		System.assert(dtoDomain.isNotEmpty(), 'Domain should not be empty');
+		Assert.isTrue(dtoDomain.isNotEmpty(), 'Domain should not be empty');
 		Assert.areEqual(3, dtoDomain.size(), 'Incorrect amount of records in the domain');
 	}
 

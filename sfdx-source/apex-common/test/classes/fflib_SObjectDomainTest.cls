@@ -302,8 +302,8 @@ private with sharing class fflib_SObjectDomainTest
 		// THEN it should only return the changed records
 		Map<Id, SObject> resultMap = new Map<Id, SObject>(result);
 		Assert.areEqual(2, result.size());
-		System.assert(resultMap.containsKey(idLuke));
-		System.assert(resultMap.containsKey(idHan));
+		Assert.isTrue(resultMap.containsKey(idLuke));
+		Assert.isTrue(resultMap.containsKey(idHan));
 	}
 
 

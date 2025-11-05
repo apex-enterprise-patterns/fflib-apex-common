@@ -290,8 +290,8 @@ private class fflib_QueryFactoryTest {
 		//explicitly assert object accessibility when creating the subselect
 		qf.subselectQuery('Tasks', true).selectField('Id').selectField('Subject').setCondition(' IsDeleted = false ');
 		List<fflib_QueryFactory> queries = qf.getSubselectQueries();
-		System.assert(queries != null);
-		System.assert(
+		Assert.isNotNull(queries);
+		Assert.isTrue(
 				Pattern.matches('SELECT.*(SELECT.*FROM Tasks WHERE.*).*FROM Contact WHERE.*', qf.toSOQL()),
 				'Incorrect returned query'
 		);
@@ -304,8 +304,8 @@ private class fflib_QueryFactoryTest {
 		//explicitly assert object accessibility when creating the subselect
 		qf.subselectQuery('Tasks').selectField('Id').selectField('Subject').setCondition(' IsDeleted = false ');
 		List<fflib_QueryFactory> queries = qf.getSubselectQueries();
-		System.assert(queries != null);
-		System.assert(
+		Assert.isNotNull(queries);
+		Assert.isTrue(
 				Pattern.matches('SELECT.*(SELECT.*FROM Tasks WHERE.*).*FROM Contact WHERE.*', qf.toSOQL()),
 				'Incorrect returned query'
 		);
@@ -462,7 +462,7 @@ private class fflib_QueryFactoryTest {
 			'FirstName'},
 			fields);
 
-		System.assert(qf.toSOQL().containsIgnoreCase('NULLS LAST'));
+		Assert.isTrue(qf.toSOQL().containsIgnoreCase('NULLS LAST'));
 	}
 
 	@isTest
@@ -479,7 +479,7 @@ private class fflib_QueryFactoryTest {
 				} catch (fflib_SecurityUtils.CrudException e) {
 					excThrown = true;
 				}	
-				System.assert(excThrown);
+				Assert.isTrue(excThrown);
 			}	
 		}	
 	}  
@@ -607,10 +607,10 @@ private class fflib_QueryFactoryTest {
 		String query = qf.toSOQL();
 		String query2 = qf2.toSOQL();
 
-		System.assert(query.containsIgnoreCase('Fax') == false);
-		System.assert(query.containsIgnoreCase('Description'));
-		System.assert(query2.containsIgnoreCase('Description'));
-		System.assert(query2.containsIgnoreCase('Fax'));
+		Assert.isFalse(query.containsIgnoreCase('Fax'));
+		Assert.isTrue(query.containsIgnoreCase('Description'));
+		Assert.isTrue(query2.containsIgnoreCase('Description'));
+		Assert.isTrue(query2.containsIgnoreCase('Fax'));
 
 		Assert.areEqual(2, qf.getOrderings().size());
 		Assert.areEqual('Name', qf.getOrderings()[0].getField() );
@@ -637,11 +637,11 @@ private class fflib_QueryFactoryTest {
 
 		subquery2_0.addOrdering(new fflib_QueryFactory.Ordering('Contact','Name',fflib_QueryFactory.SortOrder.ASCENDING));
 
-		System.assert(subqueries.size() == 1);
-		System.assert(subqueries2.size() == 2);
+		Assert.areEqual(1, subqueries.size());
+		Assert.areEqual(2, subqueries2.size());
 
-		System.assert(qf.getSubselectQueries().get(0).getOrderings().size() == 0);
-		System.assert(qf2.getSubselectQueries().get(0).getOrderings().size() == 1);
+		Assert.areEqual(0, qf.getSubselectQueries().get(0).getOrderings().size());
+		Assert.areEqual(1, qf2.getSubselectQueries().get(0).getOrderings().size());
 	}
 	
 	@isTest

@@ -204,7 +204,7 @@ private with sharing class fflib_SObjectSelectorTest
 		Assert.isTrue(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
 		if (UserInfo.isMultiCurrencyOrganization()) {
 			expected = prefixString + 'CurrencyIsoCode';
-			System.assert(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
+			Assert.isTrue(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
 		}
 	}
 	

@@ -91,7 +91,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         }
 
         // THEN it should have thrown an exception
-        System.assert(exceptionThrown);
+        Assert.isTrue(exceptionThrown);
     }
 
     @IsTest
@@ -118,7 +118,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         }
 
         // THEN it should have thrown an exception
-        System.assert(exceptionThrown);
+        Assert.isTrue(exceptionThrown);
     }
 
     @IsTest
@@ -336,7 +336,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 
         // Assert Results
         Assert.areEqual(didFail, true, 'didFail');
-        System.assert(caughtEx.getMessage().contains('REQUIRED_FIELD_MISSING'), String.format('Exception message was {0}', new List<String> { caughtEx.getMessage() }));
+        Assert.isTrue(caughtEx.getMessage().contains('REQUIRED_FIELD_MISSING'), String.format('Exception message was {0}', new List<String> { caughtEx.getMessage() }));
 
         assertEvents(new List<String> {
                 'onCommitWorkStarting'
@@ -387,7 +387,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 
         // Assert Results
         Assert.areEqual(didFail, true, 'didFail');
-        System.assert(caughtEx.getMessage().contains('Work failed.'), String.format('Exception message was {0}', new List<String> { caughtEx.getMessage() }));
+        Assert.isTrue(caughtEx.getMessage().contains('Work failed.'), String.format('Exception message was {0}', new List<String> { caughtEx.getMessage() }));
 
         assertEvents(new List<String> {
                 'onCommitWorkStarting'

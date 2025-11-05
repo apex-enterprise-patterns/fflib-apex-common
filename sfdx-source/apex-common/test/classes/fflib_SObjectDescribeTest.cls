@@ -58,7 +58,7 @@ private class fflib_SObjectDescribeTest {
 
 		fflib_SObjectDescribe acccountDescribe = fflib_SObjectDescribe.getDescribe(accountObjType);
 		fflib_SObjectDescribe.FieldsMap fields = acccountDescribe.getFields();
-		System.assert( fields.keySet().containsAll(acccountDescribe.getFieldsMap().keySet()) );
+		Assert.isTrue( fields.keySet().containsAll(acccountDescribe.getFieldsMap().keySet()) );
 
 		Assert.areEqual(fields.get('name'), Account.SObjectType.fields.name); //behavior of FieldsMap is tested in another method
 		Assert.areEqual(Schema.SObjectType.Account.fields.getMap().size(), fields.size());
@@ -80,13 +80,13 @@ private class fflib_SObjectDescribeTest {
 		fields.currentNamespace = fakeNamespace;
 		Assert.areEqual(true, fields.containsKey('name__c') );
 		Assert.areEqual(true, fields.containsKey(fakeNamespace.toUpperCase()+'__nAMe__c') );
-		System.assert(fields.get('NAme__c') === fields.get(fakeNamespace+'__namE__c'));
+		Assert.isTrue(fields.get('NAme__c') === fields.get(fakeNamespace+'__namE__c'));
 
-		System.assert(!fields.keySet(false).contains('otherField__c'));
-		System.assert(fields.keySet(false).contains(fakeNamespace+'__otherField__c'));
+		Assert.isFalse(fields.keySet(false).contains('otherField__c'));
+		Assert.isTrue(fields.keySet(false).contains(fakeNamespace+'__otherField__c'));
 
-		System.assert(fields.keySet(true).contains('otherField__c'));
-		System.assert(!fields.keySet(true).contains(fakeNamespace+'__otherField__c'));
+		Assert.isTrue(fields.keySet(true).contains('otherField__c'));
+		Assert.isFalse(fields.keySet(true).contains(fakeNamespace+'__otherField__c'));
 
 		fields.currentNamespace = 'someOtherNamespace';
 		Assert.areNotEqual(fields.get('name__C'), fields.get(fakeNamespace.capitalize()+'__nAme__c'));
@@ -116,7 +116,7 @@ private class fflib_SObjectDescribeTest {
 		fflib_SObjectDescribe d2 = fflib_SObjectDescribe.getDescribe(Account.SObjectType);
 		fflib_SObjectDescribe d3 = fflib_SObjectDescribe.getDescribe(Schema.SObjectType.Account);
 		Assert.areEqual('Account', d.getDescribe().getName());
-		System.assert( (d === d2 && d2 === d3) ,'All three getDescribe calls should return the same cached instance.');
+		Assert.isTrue( (d === d2 && d2 === d3) ,'All three getDescribe calls should return the same cached instance.');
 	}
 
 	@isTest
@@ -170,7 +170,7 @@ private class fflib_SObjectDescribeTest {
 		fflib_SObjectDescribe d = fflib_SObjectDescribe.getDescribe('Account');
 		fflib_SObjectDescribe.flushCache();
 		fflib_SObjectDescribe d2 = fflib_SObjectDescribe.getDescribe('Account');
-		System.assert(d !== d2, 'Second object should be a fresh instance after a cache flush.' );
+		Assert.isTrue(d !== d2, 'Second object should be a fresh instance after a cache flush.' );
 	}
 
 	@isTest
