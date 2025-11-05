@@ -191,13 +191,13 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         catch (Exception e)
         {
             exceptionThrown = true;
-            System.assert(
+            Assert.isTrue(
                     e.getMessage().contains('registerPublishBeforeTransaction'),
                     'Incorrect exception message thrown'
             );
         }
 
-        System.assert(exceptionThrown);
+        Assert.isTrue(exceptionThrown);
     }
 
     @IsTest
@@ -219,13 +219,13 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         catch (Exception e)
         {
             exceptionThrown = true;
-            System.assert(
+            Assert.isTrue(
                     e.getMessage().contains('invalid for publishing'),
                     'Incorrect exception message thrown'
             );
         }
 
-        System.assert(exceptionThrown);
+        Assert.isTrue(exceptionThrown);
     }
 
     @IsTest
@@ -240,13 +240,13 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         catch (Exception e)
         {
             exceptionThrown = true;
-            System.assert(
+            Assert.isTrue(
                     e.getMessage().contains('not supported by this unit of work'),
                     'Incorrect exception message thrown'
             );
         }
 
-        System.assert(exceptionThrown);
+        Assert.isTrue(exceptionThrown);
     }
 
     /**
@@ -499,7 +499,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         uow.commitWork();
 
         // THEN the records should be registered with both changed values for Amount and StageName
-        System.assert(
+        Assert.isTrue(
                 new fflib_MatcherDefinitions.SObjectsWith(
                         new List<Map<SObjectField, Object>>{
                                 new Map<SObjectField, Object>
@@ -567,7 +567,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         uow.commitWork();
 
         // THEN only the first record should be registered with both changed values for Amount and StageName and the second should be the original
-        System.assert(
+        Assert.isTrue(
                 !new fflib_MatcherDefinitions.SObjectsWith(
                         new List<Map<SObjectField, Object>>{
                                 new Map<SObjectField, Object>
@@ -587,7 +587,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
                         .matches(mockDML.recordsForUpdate),
                 'Not all records should not be registered with the dirty values'
         );
-        System.assert(
+        Assert.isTrue(
                 new fflib_MatcherDefinitions.SObjectsWith(
                         new List<Map<SObjectField, Object>>{
                                 new Map<SObjectField, Object>

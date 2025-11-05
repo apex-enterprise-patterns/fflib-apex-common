@@ -199,7 +199,7 @@ private class fflib_SecurityUtilsTest {
 					ex = e;
 				}
 				Assert.areNotEqual(null, ex, 'Read only profile should not be able to update Lead');
-				System.assert(ex instanceof fflib_SecurityUtils.CrudException, 'Expected an CrudException, got '+ex.getTypeName());
+				Assert.isInstanceOfType(ex, fflib_SecurityUtils.CrudException.class, 'Expected an CrudException, got '+ex.getTypeName());
 			}
 			{
 				fflib_SecurityUtils.SecurityException ex;
@@ -209,7 +209,7 @@ private class fflib_SecurityUtilsTest {
 					ex = e;
 				}
 				Assert.areNotEqual(null, ex, 'Read only profile should not be able to delete Opportunity');
-				System.assert(ex instanceof fflib_SecurityUtils.CrudException, 'Expected an CrudException, got '+ex.getTypeName());
+				Assert.isInstanceOfType(ex, fflib_SecurityUtils.CrudException.class, 'Expected an CrudException, got '+ex.getTypeName());
 			}
 
 			fflib_SecurityUtils.BYPASS_INTERNAL_FLS_AND_CRUD = true;
@@ -241,7 +241,7 @@ private class fflib_SecurityUtilsTest {
 					ex = e;
 				}
 				Assert.areNotEqual(null, ex, 'Read only profile should not be able to insert Account');
-				System.assert(ex instanceof fflib_SecurityUtils.CrudException, 'Expected an CrudException, got '+ex.getTypeName());
+				Assert.isInstanceOfType(ex, fflib_SecurityUtils.CrudException.class, 'Expected an CrudException, got '+ex.getTypeName());
 			}
 			{
 				fflib_SecurityUtils.SecurityException ex;
@@ -274,7 +274,7 @@ private class fflib_SecurityUtilsTest {
 					ex = e;
 				}
 				Assert.areNotEqual(null, ex, 'Read only profile should not be able to update Lead');
-				System.assert(ex instanceof fflib_SecurityUtils.CrudException, 'Expected an CrudException, got '+ex.getTypeName());
+				Assert.isInstanceOfType(ex, fflib_SecurityUtils.CrudException.class, 'Expected an CrudException, got '+ex.getTypeName());
 			}
 
 			fflib_SecurityUtils.BYPASS_INTERNAL_FLS_AND_CRUD = true;

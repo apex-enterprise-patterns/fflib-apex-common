@@ -104,7 +104,7 @@ private class fflib_SObjectDescribeTest {
 		gdm.currentNamespace = fakeNamespace;
 		Assert.areEqual(true, gdm.containsKey('name__c') );
 		Assert.areEqual(true, gdm.containsKey(fakeNamespace+'__name__c') );
-		System.assert(gdm.get('name__c') === gdm.get(fakeNamespace+'__name__c'));
+		Assert.areEqual(gdm.get('name__c'), gdm.get(fakeNamespace+'__name__c'));
 
 		gdm.currentNamespace = 'someOtherNamespace';
 		Assert.areNotEqual(gdm.get('name__c'), gdm.get(fakeNamespace+'__name__c'));

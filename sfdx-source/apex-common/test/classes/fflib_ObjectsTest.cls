@@ -62,7 +62,7 @@ private class fflib_ObjectsTest
 				}
 		);
 
-		System.assert(
+		Assert.isTrue(
 				dtoDomain.contains(transferObject),
 				'The object should have been part of the domain'
 		);
@@ -73,7 +73,7 @@ private class fflib_ObjectsTest
 	{
 		fflib_ObjectsTest.Domain dtoDomain = generateDomain();
 
-		System.assert(
+		Assert.isTrue(
 				dtoDomain.containsNot(TRANSFER_OBJECT_D),
 				'The object should not have been part of the domain'
 		);
@@ -89,7 +89,7 @@ private class fflib_ObjectsTest
 						TRANSFER_OBJECT_B
 				});
 
-		System.assert(
+		Assert.isTrue(
 				dtoDomain.containsNot(
 						new Set<Object>
 						{
@@ -98,7 +98,7 @@ private class fflib_ObjectsTest
 						}),
 				'The set of objects should not have been part of the domain'
 		);
-		System.assert(
+		Assert.isTrue(
 				dtoDomain.containsNot(
 						new List<Object>
 						{
@@ -129,7 +129,7 @@ private class fflib_ObjectsTest
 	{
 		fflib_ObjectsTest.Domain dtoDomain = generateDomain();
 
-		System.assert(
+		Assert.isTrue(
 				dtoDomain.containsAll(
 						new List<DataTransferObject>
 						{
@@ -139,7 +139,7 @@ private class fflib_ObjectsTest
 				),
 				'Domain should contain the whole List of objects'
 		);
-		System.assert(
+		Assert.isTrue(
 				dtoDomain.containsAll(
 						new Set<Object>
 						{
