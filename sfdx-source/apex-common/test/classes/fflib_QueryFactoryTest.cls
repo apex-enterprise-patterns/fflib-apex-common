@@ -380,6 +380,7 @@ private class fflib_QueryFactoryTest {
 		Schema.DescribeSObjectResult descResult = Contact.SObjectType.getDescribe();
 		//explicitly assert object accessibility when creating the subselect
 		qf.subselectQuery(Task.SObjectType, true).selectField('Id').selectField('Subject').setCondition(' IsDeleted = false ');
+		List<fflib_QueryFactory> queries = qf.getSubselectQueries();
 		Assert.isNotNull(queries);
 		Assert.isTrue(
 				Pattern.matches('SELECT.*(SELECT.*FROM Tasks WHERE.*).*FROM Contact WHERE.*', qf.toSOQL()),

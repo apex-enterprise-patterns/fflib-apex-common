@@ -292,7 +292,7 @@ private class fflib_ApplicationTest
 				new Set<Id> { 
 					fflib_IDGenerator.generate(Opportunity.SObjectType), 
 					fflib_IDGenerator.generate(Account.SObjectType) });
-			Assert.isTrue('Expected exception');
+			Assert.fail('Expected exception');
 		} catch (fflib_Application.DeveloperException e) {
 			Assert.areEqual('Unable to determine SObjectType, Set contains Id\'s from different SObject types', e.getMessage());
 		}		
@@ -493,7 +493,6 @@ private class fflib_ApplicationTest
 			new Map<SObjectType, Type> {
 					Account.SObjectType => AccountsSelector.class,
 					Opportunity.SObjectType => OpportunitiesSelector.class });
-					Opportunity.SObjectType => OpportunitiesSelector.class });
 
 	// Configure and create the DomainFactory for this Application
 	public static final fflib_Application.DomainFactory Domain = 
@@ -532,15 +531,12 @@ private class fflib_ApplicationTest
 	}	
 
 	public class OpportunitiesDomain extends fflib_SObjectDomain
-	public class OpportunitiesDomain extends fflib_SObjectDomain
 	{
-		public OpportunitiesDomain(List<Opportunity> sObjectList)
 		public OpportunitiesDomain(List<Opportunity> sObjectList)
 		{
 			super(sObjectList);
 		}
 
-		public OpportunitiesDomain(List<SObject> sObjectList, SObjectType sObjectType)
 		public OpportunitiesDomain(List<SObject> sObjectList, SObjectType sObjectType)
 		{
 			super(sObjectList, sObjectType);
@@ -548,17 +544,14 @@ private class fflib_ApplicationTest
 	}	
 
 	public class OpportunitiesConstructor implements fflib_SObjectDomain.IConstructable2
-	public class OpportunitiesConstructor implements fflib_SObjectDomain.IConstructable2
 	{
 		public fflib_SObjectDomain construct(List<SObject> sObjectList)
 		{
-			return new OpportunitiesDomain(sObjectList);
 			return new OpportunitiesDomain(sObjectList);
 		}
 
 		public fflib_SObjectDomain construct(List<SObject> sObjectList, SObjectType sObjectType)
 		{
-			return new OpportunitiesDomain(sObjectList, sObjectType);
 			return new OpportunitiesDomain(sObjectList, sObjectType);
 		}		
 	}
@@ -582,7 +575,6 @@ private class fflib_ApplicationTest
 
 	}		
 
-	class OpportunitiesSelector extends fflib_SObjectSelector
 	class OpportunitiesSelector extends fflib_SObjectSelector
 	{
 		public List<Schema.SObjectField> getSObjectFieldList()
