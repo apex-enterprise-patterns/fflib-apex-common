@@ -43,13 +43,13 @@ private class fflib_SObjectsTest
 	@IsTest
 	static void itShouldReturnTheDomainsType()
 	{
-		System.assertEquals(
+		Assert.areEqual(
 				(Object) Schema.Account.SObjectType,
 				new DomainAccounts(new List<Account>())
 						.getType(),
 				'Unexpected Domain Type'
 		);
-		System.assertEquals(
+		Assert.areEqual(
 				Schema.Account.SObjectType,
 				new DomainAccounts(new List<Account>())
 						.getSObjectType(),
@@ -100,7 +100,7 @@ private class fflib_SObjectsTest
 	{
 		DomainAccounts domain = generateDomain();
 
-		System.assertEquals(3, domain.selectWithoutShippingCountry().size());
+		Assert.areEqual(3, domain.selectWithoutShippingCountry().size());
 	}
 
 	@IsTest
@@ -185,9 +185,9 @@ private class fflib_SObjectsTest
 		DomainAccounts domain = new DomainAccounts(new List<Account>{ record });
 		domain.addNameError(errorMessage);
 
-		System.assertEquals(1, fflib_SObjects.Errors.getAll().size());
-		System.assertEquals(errorMessage, fflib_SObjects.Errors.getAll()[0].message);
-		System.assertEquals(Account.Name, ((fflib_SObjects.FieldError) fflib_SObjects.Errors.getAll()[0]).field);
+		Assert.areEqual(1, fflib_SObjects.Errors.getAll().size());
+		Assert.areEqual(errorMessage, fflib_SObjects.Errors.getAll()[0].message);
+		Assert.areEqual(Account.Name, ((fflib_SObjects.FieldError) fflib_SObjects.Errors.getAll()[0]).field);
 	}
 
 	@IsTest
@@ -197,12 +197,12 @@ private class fflib_SObjectsTest
 		Opportunity opp = new Opportunity ( Name = 'Test', Type = 'Existing Account' );
 		fflib_SObjects.Errors.error('Error', opp);
 		fflib_SObjects.Errors.error('Error', opp, Opportunity.Type);
-		System.assertEquals(2, fflib_SObjects.Errors.getAll().size());
-		System.assertEquals('Error', fflib_SObjects.Errors.getAll()[0].message);
-		System.assertEquals('Error', fflib_SObjects.Errors.getAll()[1].message);
-		System.assertEquals(Opportunity.Type, ((fflib_SObjects.FieldError) fflib_SObjects.Errors.getAll()[1]).field);
+		Assert.areEqual(2, fflib_SObjects.Errors.getAll().size());
+		Assert.areEqual('Error', fflib_SObjects.Errors.getAll()[0].message);
+		Assert.areEqual('Error', fflib_SObjects.Errors.getAll()[1].message);
+		Assert.areEqual(Opportunity.Type, ((fflib_SObjects.FieldError) fflib_SObjects.Errors.getAll()[1]).field);
 		fflib_SObjects.Errors.clearAll();
-		System.assertEquals(0, fflib_SObjects.Errors.getAll().size());
+		Assert.areEqual(0, fflib_SObjects.Errors.getAll().size());
 	}
 
 	private static DomainAccounts generateDomain()

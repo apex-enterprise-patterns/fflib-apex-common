@@ -43,7 +43,7 @@ private class fflib_ObjectsTest
 				}
 		);
 
-		System.assertEquals(
+		Assert.areEqual(
 				DataTransferObject.class,
 				dtoDomain.getType(),
 				'Wrong domain type'
@@ -121,7 +121,7 @@ private class fflib_ObjectsTest
 	{
 		fflib_ObjectsTest.Domain dtoDomain = generateDomain();
 		System.assert(dtoDomain.isNotEmpty(), 'Domain should not be empty');
-		System.assertEquals(3, dtoDomain.size(), 'Incorrect amount of records in the domain');
+		Assert.areEqual(3, dtoDomain.size(), 'Incorrect amount of records in the domain');
 	}
 
 	@IsTest
@@ -155,7 +155,7 @@ private class fflib_ObjectsTest
 	static void itShouldGetTheObjectType()
 	{
 		fflib_Objects domain = new fflib_Objects(new List<Object>());
-		System.assertEquals(Object.class, domain.getType(), 'Incorrect returned type');
+		Assert.areEqual(Object.class, domain.getType(), 'Incorrect returned type');
 	}
 
 	private static Domain generateDomain()

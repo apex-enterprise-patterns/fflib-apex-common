@@ -932,7 +932,7 @@ public virtual with sharing class fflib_SObjectDomain
 		public override void onAfterInsert()
 		{
 			// This is a stateless domain class, so should not retain anything betweet before and after
-			System.assertEquals(null, someState);
+			Assert.areEqual(null, someState);
 		}
 	}	
 	
@@ -966,7 +966,7 @@ public virtual with sharing class fflib_SObjectDomain
 		public override void onBeforeInsert() 
 		{
 			// This must always be null, as we do not reuse domain instances within recursive scenarios (different record sets)
-			System.assertEquals(null, someState);
+			Assert.areEqual(null, someState);
 			
 			// Process records			 
 			List<Opportunity> newOpps = new List<Opportunity>();

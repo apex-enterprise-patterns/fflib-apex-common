@@ -136,7 +136,7 @@ private class fflib_SecurityUtilsTest {
 				}catch(fflib_SecurityUtils.SecurityException e){
 					ex = e;
 				}
-				System.assertNotEquals(null, ex, 'Read only profile should not be able to insert Account.Name');
+				Assert.areNotEqual(null, ex, 'Read only profile should not be able to insert Account.Name');
 				System.assert(ex instanceof fflib_SecurityUtils.FlsException, 'Expected an FlsException, got '+ex.getTypeName());
 			}
 			{
@@ -146,7 +146,7 @@ private class fflib_SecurityUtilsTest {
 				}catch(fflib_SecurityUtils.SecurityException e){
 					ex = e;
 				}
-				System.assertEquals(null, ex, 'Read only profile should be able to read Contact.LastName');
+				Assert.areEqual(null, ex, 'Read only profile should be able to read Contact.LastName');
 			}
 			{
 				fflib_SecurityUtils.SecurityException ex;
@@ -155,7 +155,7 @@ private class fflib_SecurityUtilsTest {
 				}catch(fflib_SecurityUtils.SecurityException e){
 					ex = e;
 				}
-				System.assertNotEquals(null, ex, 'Read only profile should not be able to update Lead.Company');
+				Assert.areNotEqual(null, ex, 'Read only profile should not be able to update Lead.Company');
 				System.assert(ex instanceof fflib_SecurityUtils.FlsException, 'Expected an FlsException, got '+ex.getTypeName());
 			}
 
@@ -179,7 +179,7 @@ private class fflib_SecurityUtilsTest {
 				}catch(fflib_SecurityUtils.SecurityException e){
 					ex = e;
 				}
-				System.assertNotEquals(null, ex, 'Read only profile should not be able to insert Account');
+				Assert.areNotEqual(null, ex, 'Read only profile should not be able to insert Account');
 				System.assert(ex instanceof fflib_SecurityUtils.CrudException, 'Expected an CrudException, got '+ex.getTypeName());
 			}
 			{
@@ -189,7 +189,7 @@ private class fflib_SecurityUtilsTest {
 				}catch(fflib_SecurityUtils.SecurityException e){
 					ex = e;
 				}
-				System.assertEquals(null, ex, 'Read only profile should be able to read Contact');
+				Assert.areEqual(null, ex, 'Read only profile should be able to read Contact');
 			}
 			{
 				fflib_SecurityUtils.SecurityException ex;
@@ -198,7 +198,7 @@ private class fflib_SecurityUtilsTest {
 				}catch(fflib_SecurityUtils.SecurityException e){
 					ex = e;
 				}
-				System.assertNotEquals(null, ex, 'Read only profile should not be able to update Lead');
+				Assert.areNotEqual(null, ex, 'Read only profile should not be able to update Lead');
 				System.assert(ex instanceof fflib_SecurityUtils.CrudException, 'Expected an CrudException, got '+ex.getTypeName());
 			}
 			{
@@ -208,7 +208,7 @@ private class fflib_SecurityUtilsTest {
 				}catch(fflib_SecurityUtils.SecurityException e){
 					ex = e;
 				}
-				System.assertNotEquals(null, ex, 'Read only profile should not be able to delete Opportunity');
+				Assert.areNotEqual(null, ex, 'Read only profile should not be able to delete Opportunity');
 				System.assert(ex instanceof fflib_SecurityUtils.CrudException, 'Expected an CrudException, got '+ex.getTypeName());
 			}
 
@@ -240,7 +240,7 @@ private class fflib_SecurityUtilsTest {
 				}catch(fflib_SecurityUtils.SecurityException e){
 					ex = e;
 				}
-				System.assertNotEquals(null, ex, 'Read only profile should not be able to insert Account');
+				Assert.areNotEqual(null, ex, 'Read only profile should not be able to insert Account');
 				System.assert(ex instanceof fflib_SecurityUtils.CrudException, 'Expected an CrudException, got '+ex.getTypeName());
 			}
 			{
@@ -257,7 +257,7 @@ private class fflib_SecurityUtilsTest {
 				}catch(fflib_SecurityUtils.SecurityException e){
 					ex = e;
 				}
-				System.assertEquals(null, ex, 'Read only profile should be able to read Contact');
+				Assert.areEqual(null, ex, 'Read only profile should be able to read Contact');
 			}
 			{
 				fflib_SecurityUtils.SecurityException ex;
@@ -273,7 +273,7 @@ private class fflib_SecurityUtilsTest {
 				}catch(fflib_SecurityUtils.SecurityException e){
 					ex = e;
 				}
-				System.assertNotEquals(null, ex, 'Read only profile should not be able to update Lead');
+				Assert.areNotEqual(null, ex, 'Read only profile should not be able to update Lead');
 				System.assert(ex instanceof fflib_SecurityUtils.CrudException, 'Expected an CrudException, got '+ex.getTypeName());
 			}
 
