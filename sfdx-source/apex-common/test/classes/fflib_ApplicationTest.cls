@@ -350,7 +350,7 @@ private class fflib_ApplicationTest
 		Selector.setMock(selectorMock);
 
 		// When
-		List<Opportunity> pportunities = 
+		List<Opportunity> opportunities = 
 			new List<Opportunity>
 				{ new Opportunity(
 						Id = testOpportunityId,
@@ -360,7 +360,7 @@ private class fflib_ApplicationTest
 				  new Opportunity(
 						Id = testOpportunityId,
 						Name = 'Test Opportunity 2') };
-		List<Account> assertAccounts = Selector.selectByRelationship(pportunities, Opportunity.AccountId);
+		List<Account> assertAccounts = Selector.selectByRelationship(opportunities, Opportunity.AccountId);
 
 		// Then
 		Assert.isInstanceOfType(Selector.newInstance(Account.SObjectType), fflib_SObjectMocks.SObjectSelector.class);
