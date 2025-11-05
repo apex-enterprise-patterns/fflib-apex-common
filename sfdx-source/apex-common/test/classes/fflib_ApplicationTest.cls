@@ -325,7 +325,7 @@ private class fflib_ApplicationTest
 		Assert.areEqual(1, assertAccounts.size());
 		Assert.areEqual(testAccountId, assertAccounts[0].Id);
 		Assert.areEqual('Test Account', assertAccounts[0].Name);
-		Assert.isInstanceOfType(Selector.newInstance(Opportunity.SObjectType), OpportuntiesSelector.class);
+		Assert.isInstanceOfType(Selector.newInstance(Opportunity.SObjectType), OpportunitiesSelector.class);
 	}
 
 
@@ -350,7 +350,7 @@ private class fflib_ApplicationTest
 		Selector.setMock(selectorMock);
 
 		// When
-		List<Opportunity> opportunties = 
+		List<Opportunity> Opportunities = 
 			new List<Opportunity>
 				{ new Opportunity(
 						Id = testOpportunityId,
@@ -360,14 +360,14 @@ private class fflib_ApplicationTest
 				  new Opportunity(
 						Id = testOpportunityId,
 						Name = 'Test Opportunity 2') };
-		List<Account> assertAccounts = Selector.selectByRelationship(opportunties, Opportunity.AccountId);
+		List<Account> assertAccounts = Selector.selectByRelationship(Opportunities, Opportunity.AccountId);
 
 		// Then
 		Assert.isInstanceOfType(Selector.newInstance(Account.SObjectType), fflib_SObjectMocks.SObjectSelector.class);
 		Assert.areEqual(1, assertAccounts.size());
 		Assert.areEqual(testAccountId, assertAccounts[0].Id);
 		Assert.areEqual('Test Account', assertAccounts[0].Name);
-		Assert.isInstanceOfType(Selector.newInstance(Opportunity.SObjectType), OpportuntiesSelector.class);
+		Assert.isInstanceOfType(Selector.newInstance(Opportunity.SObjectType), OpportunitiesSelector.class);
 	}
 
 
@@ -491,7 +491,7 @@ private class fflib_ApplicationTest
 		new fflib_Application.SelectorFactory(
 			new Map<SObjectType, Type> {
 					Account.SObjectType => AccountsSelector.class,
-					Opportunity.SObjectType => OpportuntiesSelector.class });
+					Opportunity.SObjectType => OpportunitiesSelector.class });
 
 	// Configure and create the DomainFactory for this Application
 	public static final fflib_Application.DomainFactory Domain = 
@@ -499,7 +499,7 @@ private class fflib_ApplicationTest
 			fflib_ApplicationTest.Selector,
 			new Map<SObjectType, Type> {
 					Account.SObjectType => AccountsConstructor.class,
-					Opportunity.SObjectType => OpportuntiesConstructor.class,
+					Opportunity.SObjectType => OpportunitiesConstructor.class,
 					Contact.SObjectType => ContactsConstructor.class });
 
 	public class AccountsDomain extends fflib_SObjectDomain
@@ -528,29 +528,29 @@ private class fflib_ApplicationTest
 		}		
 	}	
 
-	public class OpportuntiesDomain extends fflib_SObjectDomain
+	public class OpportunitiesDomain extends fflib_SObjectDomain
 	{
-		public OpportuntiesDomain(List<Opportunity> sObjectList)
+		public OpportunitiesDomain(List<Opportunity> sObjectList)
 		{
 			super(sObjectList);
 		}
 
-		public OpportuntiesDomain(List<SObject> sObjectList, SObjectType sObjectType)
+		public OpportunitiesDomain(List<SObject> sObjectList, SObjectType sObjectType)
 		{
 			super(sObjectList, sObjectType);
 		}		
 	}	
 
-	public class OpportuntiesConstructor implements fflib_SObjectDomain.IConstructable2
+	public class OpportunitiesConstructor implements fflib_SObjectDomain.IConstructable2
 	{
 		public fflib_SObjectDomain construct(List<SObject> sObjectList)
 		{
-			return new OpportuntiesDomain(sObjectList);
+			return new OpportunitiesDomain(sObjectList);
 		}
 
 		public fflib_SObjectDomain construct(List<SObject> sObjectList, SObjectType sObjectType)
 		{
-			return new OpportuntiesDomain(sObjectList, sObjectType);
+			return new OpportunitiesDomain(sObjectList, sObjectType);
 		}		
 	}
 
@@ -573,7 +573,7 @@ private class fflib_ApplicationTest
 
 	}		
 
-	class OpportuntiesSelector extends fflib_SObjectSelector
+	class OpportunitiesSelector extends fflib_SObjectSelector
 	{
 		public List<Schema.SObjectField> getSObjectFieldList()
 		{
