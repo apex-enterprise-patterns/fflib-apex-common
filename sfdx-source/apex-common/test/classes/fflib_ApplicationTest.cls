@@ -38,7 +38,7 @@ private class fflib_ApplicationTest
 					{ new Account( 
 						Id = testAccountId,
 						Name = 'Test Account') });
-		Assert.isInstanceOfType(domainObjectAcct, AccountsDomain);
+		Assert.isInstanceOfType(domainObjectAcct, AccountsDomain.class);
 		Assert.areEqual(testAccountId, getFirstSObject(domainObjectAcct).Id);
 
 		// Registered Accounts domain class by SObject List
@@ -50,7 +50,7 @@ private class fflib_ApplicationTest
 						Id = testAccountId,
 						Name = 'Test Account') }
 				, Account.SObjectType);
-		Assert.isInstanceOfType(domainObjectAcct, AccountsDomain);
+		Assert.isInstanceOfType(domainObjectAcct, AccountsDomain.class);
 		Assert.areEqual(testAccountId, getFirstSObject(domainObjectAcct).Id);
 
 		// Registered Opportunities domain class by SObject List
@@ -62,7 +62,7 @@ private class fflib_ApplicationTest
 						Id = testOpportunityId,
 						Name = 'Test Opportunity') });
 		Assert.areEqual(testOpportunityId, getFirstSObject(domainObjectOpp).Id);
-		Assert.isInstanceOfType(domainObjectOpp, OpportunitiesDomain);
+		Assert.isInstanceOfType(domainObjectOpp, OpportunitiesDomain.class);
 
 		// Test failure for creating new instance using IConstructable2
 		// for domain class that does not support it
@@ -75,7 +75,7 @@ private class fflib_ApplicationTest
 						Name = 'Test Opportunity') }
 				, Opportunity.SObjectType);
 		Assert.areEqual(testOpportunityId, getFirstSObject(domainObjectOpp).Id);
-		Assert.isInstanceOfType(domainObjectOpp, OpportunitiesDomain);
+		Assert.isInstanceOfType(domainObjectOpp, OpportunitiesDomain.class);
 
 		// Given
 		fflib_ApexMocks mocks = new fflib_ApexMocks();
@@ -94,7 +94,7 @@ private class fflib_ApplicationTest
 						Name = 'Test Account') });
 
 		// Then
-		Assert.isInstanceOfType(domainObjectAcct, fflib_SObjectMocks.SObjectDomain);
+		Assert.isInstanceOfType(domainObjectAcct, fflib_SObjectMocks.SObjectDomain.class);
 
 		// When
 		domainObjectAcct = 
@@ -106,7 +106,7 @@ private class fflib_ApplicationTest
 				, Account.SObjectType);
 
 		// Then
-		Assert.isInstanceOfType(domainObjectAcct, fflib_SObjectMocks.SObjectDomain);
+		Assert.isInstanceOfType(domainObjectAcct, fflib_SObjectMocks.SObjectDomain.class);
 	}
 
 	private static SObject getFirstSObject(fflib_IDomain domainObjectAcct)
@@ -138,7 +138,7 @@ private class fflib_ApplicationTest
 
 		// Then
 		List<Account> assertAccounts = (List<Account>) domainObjectAcc.getObjects();
-		Assert.isInstanceOfType(domainObjectAcc, AccountsDomain);
+		Assert.isInstanceOfType(domainObjectAcc, AccountsDomain.class);
 		Assert.areEqual(testAccountId, getFirstSObject(domainObjectAcc).Id);
 		Assert.areEqual(1, assertAccounts.size());
 		Assert.areEqual(testAccountId, assertAccounts[0].Id);
@@ -210,11 +210,11 @@ private class fflib_ApplicationTest
 	private static void callingUnitOfWorkFactoryShouldGivenStandardImplsAndMockImpls()
 	{
 		// Standard behaviour
-		Assert.isInstanceOfType(UnitOfWork.newInstance(), fflib_SObjectUnitOfWork);
+		Assert.isInstanceOfType(UnitOfWork.newInstance(), fflib_SObjectUnitOfWork.class);
  		
 		// Mocking behaviour
 		UnitOfWork.setMock(new fflib_SObjectMocks.SObjectUnitOfWork(new fflib_ApexMocks()));
-		Assert.isInstanceOfType(UnitOfWork.newInstance(), fflib_SObjectMocks.SObjectUnitOfWork);
+		Assert.isInstanceOfType(UnitOfWork.newInstance(), fflib_SObjectMocks.SObjectUnitOfWork.class);
 	}
 
 	@IsTest
@@ -224,22 +224,22 @@ private class fflib_ApplicationTest
 		Assert.isInstanceOfType(
 				UnitOfWork.newInstance(
 						new List<SObjectType>{ Account.SObjectType}
-				), fflib_SObjectUnitOfWork);
+				), fflib_SObjectUnitOfWork.class);
 
 		// Mocking behaviour
 		UnitOfWork.setMock(new fflib_SObjectMocks.SObjectUnitOfWork(new fflib_ApexMocks()));
 		Assert.isInstanceOfType(
 				UnitOfWork.newInstance(
 						new List<SObjectType>{ Account.SObjectType}
-				), fflib_SObjectMocks.SObjectUnitOfWork);
+				), fflib_SObjectMocks.SObjectUnitOfWork.class);
 	}
 
 	@IsTest
 	private static void callingServiceFactoryShouldGiveRegisteredImplsAndMockImpls()
 	{
 		// Standard behaviour
-		Assert.isInstanceOfType(Service.newInstance(IAccountService.class), AccountsServiceImpl);
-		Assert.isInstanceOfType(Service.newInstance(IOpportunitiesService.class), OpportunitiesServiceImpl);
+		Assert.isInstanceOfType(Service.newInstance(IAccountService.class), AccountsServiceImpl.class);
+		Assert.isInstanceOfType(Service.newInstance(IOpportunitiesService.class), OpportunitiesServiceImpl.class);
 		try {
 			Service.newInstance(IContactService.class);
 			Assert.fail('Expected exception');
@@ -249,16 +249,16 @@ private class fflib_ApplicationTest
 
 		// Mocking behaviour		
 		Service.setMock(IAccountService.class, new AccountsServiceMock());
-		Assert.isInstanceOfType(Service.newInstance(IOpportunitiesService.class), OpportunitiesServiceImpl);
-		Assert.isInstanceOfType(Service.newInstance(IAccountService.class), AccountsServiceMock);
+		Assert.isInstanceOfType(Service.newInstance(IOpportunitiesService.class), OpportunitiesServiceImpl.class);
+		Assert.isInstanceOfType(Service.newInstance(IAccountService.class), AccountsServiceMock.class);
 	}
 
 	@IsTest
 	private static void callingSelectorFactoryShouldGiveRegisteredImpls()
 	{
 		// Standard behaviour
-		Assert.isInstanceOfType(Selector.newInstance(Account.SObjectType), AccountsSelector);
-		Assert.isInstanceOfType(Selector.newInstance(Opportunity.SObjectType), OpportunitiesSelector);
+		Assert.isInstanceOfType(Selector.newInstance(Account.SObjectType), AccountsSelector.class);
+		Assert.isInstanceOfType(Selector.newInstance(Opportunity.SObjectType), OpportunitiesSelector.class);
 		try {
 			Selector.newInstance(User.SObjectType);
 			Assert.fail('Expected exception');
