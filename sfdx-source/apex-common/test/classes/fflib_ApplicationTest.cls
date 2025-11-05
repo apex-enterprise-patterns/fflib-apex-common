@@ -368,7 +368,6 @@ private class fflib_ApplicationTest
 		Assert.areEqual(testAccountId, assertAccounts[0].Id);
 		Assert.areEqual('Test Account', assertAccounts[0].Name);
 		Assert.isInstanceOfType(Selector.newInstance(Opportunity.SObjectType), OpportunitiesSelector.class);
-		Assert.isInstanceOfType(Selector.newInstance(Opportunity.SObjectType), OpportunitiesSelector.class);
 	}
 
 
@@ -500,7 +499,6 @@ private class fflib_ApplicationTest
 			fflib_ApplicationTest.Selector,
 			new Map<SObjectType, Type> {
 					Account.SObjectType => AccountsConstructor.class,
-					Opportunity.SObjectType => OpportunitiesConstructor.class,
 					Opportunity.SObjectType => OpportunitiesConstructor.class,
 					Contact.SObjectType => ContactsConstructor.class });
 
