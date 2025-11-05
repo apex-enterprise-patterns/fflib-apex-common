@@ -62,7 +62,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         uow.commitWork();
 
         // assert that mock email functionality was called
-        System.assert(((Mock_SendEmailWork) uow.m_emailWork).doWorkWasCalled);
+        Assert.isTrue(((Mock_SendEmailWork) uow.m_emailWork).doWorkWasCalled, 'Email work should have been called');
 
         Assert.areEqual(1, mockDML.recordsForInsert.size());
     }

@@ -321,11 +321,11 @@ private class fflib_ApplicationTest
 		List<Account> assertAccounts = Selector.selectById(accountIds);
 
 		// Then
-		System.assert(Selector.newInstance(Account.SObjectType) instanceof fflib_SObjectMocks.SObjectSelector);
+		Assert.isInstanceOfType(Selector.newInstance(Account.SObjectType), fflib_SObjectMocks.SObjectSelector.class);
 		Assert.areEqual(1, assertAccounts.size());
 		Assert.areEqual(testAccountId, assertAccounts[0].Id);
 		Assert.areEqual('Test Account', assertAccounts[0].Name);
-		System.assert(Selector.newInstance(Opportunity.SObjectType) instanceof OpportuntiesSelector);
+		Assert.isInstanceOfType(Selector.newInstance(Opportunity.SObjectType), OpportuntiesSelector.class);
 	}
 
 
@@ -363,11 +363,11 @@ private class fflib_ApplicationTest
 		List<Account> assertAccounts = Selector.selectByRelationship(opportunties, Opportunity.AccountId);
 
 		// Then
-		System.assert(Selector.newInstance(Account.SObjectType) instanceof fflib_SObjectMocks.SObjectSelector);
+		Assert.isInstanceOfType(Selector.newInstance(Account.SObjectType), fflib_SObjectMocks.SObjectSelector.class);
 		Assert.areEqual(1, assertAccounts.size());
 		Assert.areEqual(testAccountId, assertAccounts[0].Id);
 		Assert.areEqual('Test Account', assertAccounts[0].Name);
-		System.assert(Selector.newInstance(Opportunity.SObjectType) instanceof OpportuntiesSelector);
+		Assert.isInstanceOfType(Selector.newInstance(Opportunity.SObjectType), OpportuntiesSelector.class);
 	}
 
 
@@ -384,7 +384,7 @@ private class fflib_ApplicationTest
 		unitOfWork.commitWork();
 
 		// Then the Custom DML is used by the unit of Work
-		System.assert(customDML.isInsertCalled, 'Oops, custom DML was not called');
+	Assert.isTrue(customDML.isInsertCalled, 'Oops, custom DML was not called');
 	}
 
 	@IsTest
@@ -402,7 +402,7 @@ private class fflib_ApplicationTest
 		uow.commitWork();
 
 		// Then the Custom DML should not be used by the unit of Work
-		System.assert(!customDML.isInsertCalled, 'Oops, custom DML was called');
+	Assert.isFalse(customDML.isInsertCalled, 'Oops, custom DML was called');
 	}
 
 	@IsTest
@@ -421,7 +421,7 @@ private class fflib_ApplicationTest
 		unitOfWork.commitWork();
 
 		// Then the Custom DML is used by the unit of Work
-		System.assert(customDML.isInsertCalled, 'Oops, custom DML was not called');
+	Assert.isTrue(customDML.isInsertCalled, 'Oops, custom DML was not called');
 	}
 
 	@IsTest
@@ -441,7 +441,7 @@ private class fflib_ApplicationTest
 		uow.commitWork();
 
 		// Then the Custom DML should not be used by the unit of Work
-		System.assert(!customDML.isInsertCalled, 'Oops, custom DML was called');
+	Assert.isFalse(customDML.isInsertCalled, 'Oops, custom DML was called');
 	}
 
 	public class CustomDML implements fflib_SObjectUnitOfWork.IDML

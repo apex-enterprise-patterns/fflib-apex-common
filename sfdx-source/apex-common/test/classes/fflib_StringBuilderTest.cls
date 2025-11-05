@@ -93,10 +93,10 @@ private with sharing class fflib_StringBuilderTest
 		List<String> fieldList = sb.getStringValue().split(',');
 		Set<String> fieldSet = new Set<String>(fieldList);
 		Assert.areEqual(4, fieldSet.size());
-		system.assert(fieldSet.contains('Name'));
-		system.assert(fieldSet.contains('Id'));
-		system.assert(fieldSet.contains('AccountNumber'));
-		system.assert(fieldSet.contains('AnnualRevenue'));
+		Assert.isTrue(fieldSet.contains('Name'));
+		Assert.isTrue(fieldSet.contains('Id'));
+		Assert.isTrue(fieldSet.contains('AccountNumber'));
+		Assert.isTrue(fieldSet.contains('AnnualRevenue'));
 	}
 
 	static testMethod void testMultiCurrencyFieldListBuilder()
@@ -105,11 +105,11 @@ private with sharing class fflib_StringBuilderTest
 		fflib_StringBuilder.MultiCurrencyFieldListBuilder sb = new fflib_StringBuilder.MultiCurrencyFieldListBuilder(fields);
 		List<String> fieldList = sb.getStringValue().split(',');
 		Set<String> fieldSet = new Set<String>(fieldList);
-		system.assert(fieldSet.contains('Name'));
-		system.assert(fieldSet.contains('Id'));
-		system.assert(fieldSet.contains('AccountNumber'));
-		system.assert(fieldSet.contains('AnnualRevenue'));
+		Assert.isTrue(fieldSet.contains('Name'));
+		Assert.isTrue(fieldSet.contains('Id'));
+		Assert.isTrue(fieldSet.contains('AccountNumber'));
+		Assert.isTrue(fieldSet.contains('AnnualRevenue'));
 		if(UserInfo.isMultiCurrencyOrganization())
-			system.assert(fieldSet.contains('CurrencyIsoCode'));
+			Assert.isTrue(fieldSet.contains('CurrencyIsoCode'));
 	}
 }

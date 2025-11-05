@@ -114,7 +114,7 @@ private with sharing class fflib_SObjectSelectorTest
 			try
 			{
 				List<Account> result = (List<Account>) selector.selectSObjectsById(idSet);
-				System.assert(false,'Expected exception was not thrown');
+				Assert.fail('Expected exception was not thrown');
 			}
 			catch(fflib_SObjectDomain.DomainException e)
 			{
@@ -146,7 +146,7 @@ private with sharing class fflib_SObjectSelectorTest
 			}
 			catch(fflib_SObjectDomain.DomainException e)
 			{
-				System.assert(false,'Did not expect an exception to be thrown');
+				Assert.fail('Did not expect an exception to be thrown');
 			}
 		}
 	}
@@ -157,7 +157,7 @@ private with sharing class fflib_SObjectSelectorTest
 		String soql = selector.newQueryFactory().toSOQL();
 		Pattern p = Pattern.compile('SELECT (.*) FROM Account ORDER BY AccountNumber DESC NULLS FIRST , AnnualRevenue ASC NULLS LAST ');
 		Matcher m = p.matcher(soql);
-		System.assert(m.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
+		Assert.isTrue(m.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
 		Assert.areEqual(1, m.groupCount(), 'Unexpected number of groups captured.');
 		String fieldListString = m.group(1);
 		assertFieldListString(fieldListString, null);
@@ -170,7 +170,7 @@ private with sharing class fflib_SObjectSelectorTest
 		Pattern p = Pattern.compile(String.format('SELECT (.*) FROM Account ORDER BY {0} ASC NULLS FIRST ',
 			new List<String>{selector.getOrderBy()}));
 		Matcher m = p.matcher(soql);
-		System.assert(m.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
+		Assert.isTrue(m.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
 		Assert.areEqual(1, m.groupCount(), 'Unexpected number of groups captured.');
 		String fieldListString = m.group(1);
 		assertFieldListString(fieldListString, null);
@@ -195,13 +195,13 @@ private with sharing class fflib_SObjectSelectorTest
 		Set<String> fieldSet = new Set<String>();
 		fieldSet.addAll(fieldList);
 		String expected = prefixString + 'AccountNumber';
-		System.assert(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
+		Assert.isTrue(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
 		expected = prefixString + 'AnnualRevenue';
-		System.assert(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
+		Assert.isTrue(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
 		expected = prefixString + 'Id';
-		System.assert(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
+		Assert.isTrue(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
 		expected = prefixString + 'Name';
-		System.assert(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
+		Assert.isTrue(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
 		if (UserInfo.isMultiCurrencyOrganization()) {
 			expected = prefixString + 'CurrencyIsoCode';
 			System.assert(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
@@ -255,7 +255,7 @@ private with sharing class fflib_SObjectSelectorTest
 		// Assert that the
 		Pattern soqlPattern = Pattern.compile('SELECT (.*) FROM Account ORDER BY AccountNumber DESC NULLS FIRST , AnnualRevenue ASC NULLS LAST ');
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
-		system.assert(soqlMatcher.matches(), 'The SOQL should have that expected.');
+		Assert.isTrue(soqlMatcher.matches(), 'The SOQL should have that expected.');
 	}
 
 	@IsTest
@@ -277,7 +277,7 @@ private with sharing class fflib_SObjectSelectorTest
 		String soql = qf.toSOQL();
 		Pattern soqlPattern = Pattern.compile('SELECT (.*) FROM Account');
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
-		System.assert(soqlMatcher.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
+		Assert.isTrue(soqlMatcher.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
 
 		List<String> actualSelectFields = soqlMatcher.group(1).deleteWhiteSpace().split(',');
 		Assert.areEqual(expectedSelectFields, new Set<String>(actualSelectFields));
@@ -302,7 +302,7 @@ private with sharing class fflib_SObjectSelectorTest
 		String soql = qf.toSOQL();
 		Pattern soqlPattern = Pattern.compile(String.format('SELECT Id, \\(SELECT (.*) FROM Users ORDER BY {0} ASC NULLS FIRST \\) +FROM Account',new List<String>{selector.getOrderBy()}));
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
-		System.assert(soqlMatcher.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
+		Assert.isTrue(soqlMatcher.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
 
 		List<String> actualSelectFields = soqlMatcher.group(1).deleteWhiteSpace().split(',');
 		Assert.areEqual(expectedSelectFields, new Set<String>(actualSelectFields));
@@ -328,7 +328,7 @@ private with sharing class fflib_SObjectSelectorTest
 		Pattern soqlPattern = Pattern.compile(String.format('SELECT Id, \\(SELECT (.*) FROM Users ORDER BY {0} ASC NULLS FIRST \\) +FROM Account',
 			new List<String>{selector.getOrderBy()}));
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
-		System.assert(soqlMatcher.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
+		Assert.isTrue(soqlMatcher.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
 
 		List<String> actualSelectFields = soqlMatcher.group(1).deleteWhiteSpace().split(',');
 		Assert.areEqual(expectedSelectFields, new Set<String>(actualSelectFields));
@@ -449,7 +449,7 @@ private with sharing class fflib_SObjectSelectorTest
 			new List<String>{sel.getOrderBy()});
 		Pattern soqlPattern = Pattern.compile(expected);
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
-		System.assert(soqlMatcher.matches(),'Expected: ' + expected + ' Actual:' + soql);
+		Assert.isTrue(soqlMatcher.matches(),'Expected: ' + expected + ' Actual:' + soql);
 	}
 
 	@IsTest
@@ -462,7 +462,7 @@ private with sharing class fflib_SObjectSelectorTest
 			new List<String>{sel.getOrderBy()});
 		Pattern soqlPattern = Pattern.compile(expected);
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
-		System.assert(soqlMatcher.matches(),'Expected: ' + expected + ' Actual:' + soql);
+		Assert.isTrue(soqlMatcher.matches(),'Expected: ' + expected + ' Actual:' + soql);
 	}
 
 

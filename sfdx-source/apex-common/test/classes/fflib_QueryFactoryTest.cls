@@ -52,11 +52,11 @@ private class fflib_QueryFactoryTest {
 		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
 		qf.selectField('NAMe').selectFields( new Set<String>{'naMe', 'email'});
 		String query = qf.toSOQL();
-		System.assert( Pattern.matches('SELECT.*Name.*FROM.*',query), 'Expected Name field in query, got '+query);
-		System.assert( Pattern.matches('SELECT.*Email.*FROM.*',query), 'Expected Name field in query, got '+query);
+		Assert.isTrue( Pattern.matches('SELECT.*Name.*FROM.*',query), 'Expected Name field in query, got '+query);
+		Assert.isTrue( Pattern.matches('SELECT.*Email.*FROM.*',query), 'Expected Name field in query, got '+query);
 		qf.setLimit(100);
 		Assert.areEqual(100,qf.getLimit());
-		System.assert( qf.toSOQL().endsWithIgnoreCase('LIMIT '+qf.getLimit()), 'Failed to respect limit clause:'+qf.toSOQL() );
+		Assert.isTrue( qf.toSOQL().endsWithIgnoreCase('LIMIT '+qf.getLimit()), 'Failed to respect limit clause:'+qf.toSOQL() );
 	}
 
 	@isTest
@@ -68,7 +68,7 @@ private class fflib_QueryFactoryTest {
 		qf.setCondition( whereClause );
 		Assert.areEqual(whereClause,qf.getCondition()); 
 		String query = qf.toSOQL();
-		System.assert(query.endsWith('WHERE name = \'test\''),'Query should have ended with a filter on name, got: '+query);
+		Assert.isTrue(query.endsWith('WHERE name = \'test\''),'Query should have ended with a filter on name, got: '+query);
 	}
 
 	@isTest
@@ -140,7 +140,7 @@ private class fflib_QueryFactoryTest {
 		}catch(fflib_QueryFactory.InvalidFieldException e){
 			exceptions.add(e);
 		}
-		Assert.areEqual(4,exceptions.size());
+		Assert.areEqual(4, exceptions.size(), 'Expected 4 InvalidFieldExceptions to be thrown');
 	}
 
 	@isTest
@@ -157,8 +157,8 @@ private class fflib_QueryFactoryTest {
 		Assert.areEqual(fflib_QueryFactory.SortOrder.DESCENDING,qf.getOrderings()[1].getDirection() );
 
 		
-		System.assert( Pattern.matches('SELECT.*Name.*FROM.*',query), 'Expected Name field in query, got '+query);
-		System.assert( Pattern.matches('SELECT.*Email.*FROM.*',query), 'Expected Name field in query, got '+query);
+		Assert.isTrue(Pattern.matches('SELECT.*Name.*FROM.*',query), 'Expected Name field in query, got '+query);
+		Assert.isTrue(Pattern.matches('SELECT.*Email.*FROM.*',query), 'Expected Email field in query, got '+query);
 	}
 
 	@isTest
@@ -265,13 +265,13 @@ private class fflib_QueryFactoryTest {
 	static void invalidFields_noQueryField(){
 		try {
 			String path = fflib_QueryFactory.getFieldTokenPath(null);
-			System.assert(false,'Expected InvalidFieldException; none was thrown');
+			Assert.fail('Expected InvalidFieldException; none was thrown');
 		} 
 		catch (fflib_QueryFactory.InvalidFieldException ife) {
 			//Expected
 		}
 		catch (Exception e){
-			System.assert(false,'Expected InvalidFieldException; ' + e.getTypeName() + ' was thrown instead: ' + e);
+			Assert.fail('Expected InvalidFieldException; ' + e.getTypeName() + ' was thrown instead: ' + e);
 		}
 	}
 
@@ -279,7 +279,7 @@ private class fflib_QueryFactoryTest {
 	static void queryFieldsNotEquals(){
 		String qfld = fflib_QueryFactory.getFieldTokenPath(Contact.Name);
 		String qfld2 = fflib_QueryFactory.getFieldTokenPath(Contact.LastName);
-		System.assert(!qfld.equals(qfld2));	
+		Assert.isFalse(qfld.equals(qfld2), 'Field paths should not be equal');
 	}
 
 	@isTest
@@ -402,15 +402,15 @@ private class fflib_QueryFactoryTest {
                 relationship = childRow;
             }
         }
-        System.assert(qf.getSubselectQueries() == null);
+        Assert.isNull(qf.getSubselectQueries(), 'Subselect queries should initially be null');
 		fflib_QueryFactory childQf = qf.subselectQuery(Task.SObjectType);
 		childQf.assertIsAccessible();
 		childQf.setEnforceFLS(true);
 		childQf.selectField('Id');
 		fflib_QueryFactory childQf2 = qf.subselectQuery(Task.SObjectType);
 		List<fflib_QueryFactory> queries = qf.getSubselectQueries();
-		System.assert(queries != null);
-		System.assert(queries.size() == 1);
+		Assert.isNotNull(queries, 'Subselect queries should not be null after adding subquery');
+		Assert.areEqual(1, queries.size(), 'Should have exactly one subquery');
 	}
 
 	@isTest
@@ -499,7 +499,7 @@ private class fflib_QueryFactoryTest {
 				} catch (fflib_SecurityUtils.FlsException e) {
 					excThrown = true;
 				}	
-				System.assert(excThrown);
+				Assert.isTrue(excThrown);
 			}	
 		}	
 	}
@@ -509,7 +509,7 @@ private class fflib_QueryFactoryTest {
 		fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
 		qf.assertIsAccessible().setEnforceFLS(true).setCondition( 'name like \'%test%\'' ).addOrdering('CreatedDate',fflib_QueryFactory.SortOrder.DESCENDING);
 		String query = qf.toSOQL();
-		System.assert(query.containsIgnoreCase('SELECT Id FROM Contact'),'Expected \'SELECT Id FROM Contact\' in the SOQL, found: ' + query);
+		Assert.isTrue(query.containsIgnoreCase('SELECT Id FROM Contact'),'Expected \'SELECT Id FROM Contact\' in the SOQL, found: ' + query);
 	}  
 
 	@isTest

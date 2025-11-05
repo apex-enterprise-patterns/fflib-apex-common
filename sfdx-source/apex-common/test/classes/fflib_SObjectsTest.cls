@@ -33,11 +33,11 @@ private class fflib_SObjectsTest
 	{
 		Account record = new Account(ShippingCountry = 'Holland');
 		DomainAccounts domain = new DomainAccounts(new List<Account>{ record });
-		System.assert(!domain.selectByShippingCountry('Holland').isEmpty(), 'Incorrect test data');
+		Assert.isFalse(domain.selectByShippingCountry('Holland').isEmpty(), 'Incorrect test data');
 
 		domain.clearShippingCountry();
 
-		System.assert(domain.selectByShippingCountry('Holland').isEmpty(), 'Field should have been nullified');
+		Assert.isTrue(domain.selectByShippingCountry('Holland').isEmpty(), 'Field should have been nullified');
 	}
 
 	@IsTest
@@ -92,7 +92,7 @@ private class fflib_SObjectsTest
 	{
 		DomainAccounts domain = generateDomain();
 
-		System.assert(domain.selectByShippingCountry('USA').size() == 1);
+		Assert.areEqual(1, domain.selectByShippingCountry('USA').size(), 'Should have one record with USA shipping country');
 	}
 
 	@IsTest
@@ -108,7 +108,7 @@ private class fflib_SObjectsTest
 	{
 		DomainAccounts domain = generateDomain();
 
-		System.assert(domain.selectWithEmptyRecord().size() == 1);
+		Assert.areEqual(1, domain.selectWithEmptyRecord().size(), 'Should have one empty record');
 	}
 
 	@IsTest
@@ -116,7 +116,7 @@ private class fflib_SObjectsTest
 	{
 		DomainAccounts domain = generateDomain();
 
-		System.assert(domain.selectWithShippingCountry().size() == 4);
+		Assert.areEqual(4, domain.selectWithShippingCountry().size(), 'Should have four records with shipping country');
 	}
 
 	@IsTest
