@@ -368,6 +368,7 @@ private class fflib_ApplicationTest
 		Assert.areEqual(testAccountId, assertAccounts[0].Id);
 		Assert.areEqual('Test Account', assertAccounts[0].Name);
 		Assert.isInstanceOfType(Selector.newInstance(Opportunity.SObjectType), OpportunitiesSelector.class);
+		Assert.isInstanceOfType(Selector.newInstance(Opportunity.SObjectType), OpportunitiesSelector.class);
 	}
 
 
@@ -492,6 +493,7 @@ private class fflib_ApplicationTest
 			new Map<SObjectType, Type> {
 					Account.SObjectType => AccountsSelector.class,
 					Opportunity.SObjectType => OpportunitiesSelector.class });
+					Opportunity.SObjectType => OpportunitiesSelector.class });
 
 	// Configure and create the DomainFactory for this Application
 	public static final fflib_Application.DomainFactory Domain = 
@@ -499,6 +501,7 @@ private class fflib_ApplicationTest
 			fflib_ApplicationTest.Selector,
 			new Map<SObjectType, Type> {
 					Account.SObjectType => AccountsConstructor.class,
+					Opportunity.SObjectType => OpportunitiesConstructor.class,
 					Opportunity.SObjectType => OpportunitiesConstructor.class,
 					Contact.SObjectType => ContactsConstructor.class });
 
@@ -529,12 +532,15 @@ private class fflib_ApplicationTest
 	}	
 
 	public class OpportunitiesDomain extends fflib_SObjectDomain
+	public class OpportunitiesDomain extends fflib_SObjectDomain
 	{
+		public OpportunitiesDomain(List<Opportunity> sObjectList)
 		public OpportunitiesDomain(List<Opportunity> sObjectList)
 		{
 			super(sObjectList);
 		}
 
+		public OpportunitiesDomain(List<SObject> sObjectList, SObjectType sObjectType)
 		public OpportunitiesDomain(List<SObject> sObjectList, SObjectType sObjectType)
 		{
 			super(sObjectList, sObjectType);
@@ -542,14 +548,17 @@ private class fflib_ApplicationTest
 	}	
 
 	public class OpportunitiesConstructor implements fflib_SObjectDomain.IConstructable2
+	public class OpportunitiesConstructor implements fflib_SObjectDomain.IConstructable2
 	{
 		public fflib_SObjectDomain construct(List<SObject> sObjectList)
 		{
+			return new OpportunitiesDomain(sObjectList);
 			return new OpportunitiesDomain(sObjectList);
 		}
 
 		public fflib_SObjectDomain construct(List<SObject> sObjectList, SObjectType sObjectType)
 		{
+			return new OpportunitiesDomain(sObjectList, sObjectType);
 			return new OpportunitiesDomain(sObjectList, sObjectType);
 		}		
 	}
@@ -573,6 +582,7 @@ private class fflib_ApplicationTest
 
 	}		
 
+	class OpportunitiesSelector extends fflib_SObjectSelector
 	class OpportunitiesSelector extends fflib_SObjectSelector
 	{
 		public List<Schema.SObjectField> getSObjectFieldList()
