@@ -25,5 +25,23 @@
 **/
 public interface fflib_IServiceFactory
 {
+	/**
+	 * Returns a new instance of the Apex class associated with the given Apex interface
+	 *   Will return any mock implementation of the interface provided via setMock
+	 *   Note that this method will not check the configured Apex class actually implements the interface
+	 *
+	 * @param serviceInterfaceType Apex interface type
+	 * @exception Is thrown if there is no registered Apex class for the interface type
+	 *
+	 * @return Instance of the requested service class interface type
+	 **/
 	Object newInstance(Type serviceInterfaceType);
+
+	/**
+	 * Creates or replaces an existing binding for another
+	 *
+	 * @param serviceInterfaceType The Interface type to replace its implementation
+	 * @param replacementImplType The implementation type of the replacement
+	 */
+	void replaceWith(Type serviceInterfaceType, Type replacementImplType);
 }
