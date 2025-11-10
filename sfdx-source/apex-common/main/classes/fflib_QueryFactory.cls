@@ -126,7 +126,8 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 				fflib_SecurityUtils.checkFieldIsReadable(lastSObjectType, token);
 			}
 
-			if (token != null && i.hasNext() && tokenDescribe.getSoapType() == Schema.SoapType.ID) {
+			if (token != null && i.hasNext() && (tokenDescribe.getSoapType() == Schema.SoapType.ID
+				|| (tokenDescribe.getSoapType() == Schema.SoapType.STRING && tokenDescribe.getType() == Schema.DisplayType.REFERENCE))) {
 				List<Schema.sObjectType> relatedObjs = tokenDescribe.getReferenceTo(); //if it's polymorphic, it matters which one we use - i.e. Lead.Owner is GROUP|USER and each has different fields.
 
 				if (relatedObjs.size() == 1 || relatedSObjectType == null) {
