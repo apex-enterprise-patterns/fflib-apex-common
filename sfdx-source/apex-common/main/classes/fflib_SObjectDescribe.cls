@@ -294,11 +294,11 @@ public class fflib_SObjectDescribe {
 				return null;
 			}
 		}
-		@NamespaceAccessible
+
     	public virtual Boolean containsKey(String name){
 			return this.containsKey(name, true);
 		}
-		@NamespaceAccessible
+
     	public virtual Boolean containsKey(String name, Boolean implyNamespace){
 			if(name == null) //short-circuit lookup logic since null can't possibly be a valid field name, and it saves us null checking
 				return null;
@@ -308,7 +308,6 @@ public class fflib_SObjectDescribe {
 				implyNamespace && values.containsKey(name.toLowerCase())
 			);
 		}
-		@NamespaceAccessible
     	public virtual Integer size(){
 			return values.size();
 		}
@@ -316,11 +315,9 @@ public class fflib_SObjectDescribe {
 		 * Returns the key set of the map.
 		 * Note: unlike other NamespacedAttributeMap methods keySet defaults implyNamespace to false if not specified.
 		**/
-		@NamespaceAccessible
     	public virtual Set<String> keySet(){
 			return this.keySet(false);
 		}
-		@NamespaceAccessible
     	public virtual Set<String> keySet(Boolean implyNamespace){
 			if(implyNamespace){
 				Set<String> result = new Set<String>();

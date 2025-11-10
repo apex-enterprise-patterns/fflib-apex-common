@@ -865,8 +865,7 @@ public  virtual class fflib_SObjectUnitOfWork
     {
         private List<IRelationship> m_relationships = new List<IRelationship>();
 
-        @NamespaceAccessible
-    public  void resolve()
+        public  void resolve()
         {
             // Resolve relationships
             for (IRelationship relationship : m_relationships)
@@ -877,8 +876,7 @@ public  virtual class fflib_SObjectUnitOfWork
 
         }
 
-        @NamespaceAccessible
-    public  void add(SObject record, Schema.SObjectField relatedToField, Schema.SObjectField externalIdField, Object externalId)
+        public  void add(SObject record, Schema.SObjectField relatedToField, Schema.SObjectField externalIdField, Object externalId)
         {
             if (relatedToField == null) {
                 throw new UnitOfWorkException('Invalid argument: relatedToField.');
@@ -914,8 +912,7 @@ public  virtual class fflib_SObjectUnitOfWork
             m_relationships.add(relationship);
         }
 
-        @NamespaceAccessible
-    public  void add(SObject record, Schema.SObjectField relatedToField, SObject relatedTo)
+        public  void add(SObject record, Schema.SObjectField relatedToField, SObject relatedTo)
         {
             // Relationship to resolve
             Relationship relationship = new Relationship();
@@ -925,8 +922,7 @@ public  virtual class fflib_SObjectUnitOfWork
             m_relationships.add(relationship);
         }
 
-        @NamespaceAccessible
-    public  void add(Messaging.SingleEmailMessage email, SObject relatedTo)
+        public  void add(Messaging.SingleEmailMessage email, SObject relatedTo)
         {
             EmailRelationship emailRelationship = new EmailRelationship();
             emailRelationship.email = email;
@@ -942,20 +938,13 @@ public  virtual class fflib_SObjectUnitOfWork
 
     private class RelationshipByExternalId implements IRelationship
     {
-        @NamespaceAccessible
     public  SObject Record;
-        @NamespaceAccessible
     public  Schema.SObjectField RelatedToField;
-        @NamespaceAccessible
     public  Schema.SObjectType RelatedTo;
-        @NamespaceAccessible
     public  String RelationshipName;
-        @NamespaceAccessible
     public  Schema.SObjectField ExternalIdField;
-        @NamespaceAccessible
     public  Object ExternalId;
 
-        @NamespaceAccessible
     public  void resolve()
         {
             SObject relationshipObject = this.RelatedTo.newSObject();
@@ -966,14 +955,10 @@ public  virtual class fflib_SObjectUnitOfWork
 
     private class Relationship implements IRelationship
     {
-        @NamespaceAccessible
     public  SObject Record;
-        @NamespaceAccessible
     public  Schema.SObjectField RelatedToField;
-        @NamespaceAccessible
     public  SObject RelatedTo;
 
-        @NamespaceAccessible
     public  void resolve()
         {
             this.Record.put( this.RelatedToField, this.RelatedTo.Id);
@@ -982,12 +967,9 @@ public  virtual class fflib_SObjectUnitOfWork
 
     private class EmailRelationship implements IRelationship
     {
-        @NamespaceAccessible
     public  Messaging.SingleEmailMessage email;
-        @NamespaceAccessible
     public  SObject relatedTo;
 
-        @NamespaceAccessible
     public  void resolve()
         {
             this.email.setWhatId( this.relatedTo.Id );
@@ -1013,19 +995,16 @@ public  virtual class fflib_SObjectUnitOfWork
     {
         private List<Messaging.Email> emails;
 
-        @NamespaceAccessible
     public  SendEmailWork()
         {
             this.emails = new List<Messaging.Email>();
         }
 
-        @NamespaceAccessible
     public  void registerEmail(Messaging.Email email)
         {
             this.emails.add(email);
         }
 
-        @NamespaceAccessible
     public  void doWork()
         {
             if (emails.size() > 0) Messaging.sendEmail(emails);
