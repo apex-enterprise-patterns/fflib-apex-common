@@ -1,15 +1,13 @@
 {
-    "orgName": "apex-common",
-    "edition": "Developer",
-    "features": [
-        "MultiCurrency"
-    ],
-    "settings": {
-        "currencySettings":{
-            "enableMultiCurrency": true
-        },
-        "lightningExperienceSettings": {
-            "enableS1DesktopEnabled": true
-        }
+  "orgName": "apex-common",
+  "edition": "Developer",
+  "features": ["MultiCurrency"],
+  "settings": {
+    "currencySettings": {
+      "enableMultiCurrency": true
+    },
+    "lightningExperienceSettings": {
+      "enableS1DesktopEnabled": true
     }
+  }
 }

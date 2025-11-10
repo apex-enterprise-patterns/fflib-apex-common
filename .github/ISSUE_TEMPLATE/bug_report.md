@@ -1,10 +1,9 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-title: ''
-labels: ''
-assignees: ''
-
+title: ""
+labels: ""
+assignees: ""
 ---
 
 **Describe the bug**
@@ -15,6 +14,7 @@ assignees: ''
 (Please provide a public github repo with a full SFDX project that demonstrates the problem. If the repro case can be followed with a single example Apex class against a scratch org with just the fflib-apex-common and fflib-apex-mocks project deployed into it, you don't need to provide a github repo)
 
 Steps to reproduce the behavior:
+
 1. Create a scratch org as follows....
 2. Run the following Anonymous Apex....
 3. See error
