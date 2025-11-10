@@ -1,0 +1,14 @@
+{
+  "scripts": {
+    "prettier:write": "prettier --write .",
+    "prettier:check": "prettier --check .",
+    "prettier:diff": "prettier --ignore-unknown --list-different",
+    "sf:runLocalTests": "sf apex run test --test-level RunLocalTests --synchronous",
+    "sf:deploy": "sf project deploy start --source-dir sfdx-source/apex-common --ignore-conflicts"
+  },
+  "devDependencies": {
+    "@prettier/plugin-xml": "^3.4.2",
+    "prettier": "^3.6.2",
+    "prettier-plugin-apex": "^2.2.6"
+  }
+}

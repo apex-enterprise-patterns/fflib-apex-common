@@ -22,63 +22,62 @@
  *  OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-**/
-public interface fflib_IObjects extends fflib_IDomain
-{
-	/**
-	 * @param value Values to check if they are part of the domain
-	 *
-	 * @return True if the provided value is part of the domain
-	 */
-	Boolean contains(Object value);
+ **/
+public interface fflib_IObjects extends fflib_IDomain {
+  /**
+   * @param value Values to check if they are part of the domain
+   *
+   * @return True if the provided value is part of the domain
+   */
+  Boolean contains(Object value);
 
-	/**
-	 * @param values Values to check if they are part of the domain
-	 *
-	 * @return True if all the provided values are part of the domain
-	 */
-	Boolean containsAll(List<Object> values);
+  /**
+   * @param values Values to check if they are part of the domain
+   *
+   * @return True if all the provided values are part of the domain
+   */
+  Boolean containsAll(List<Object> values);
 
-	/**
-	 * @param values Values to check if they are part of the domain
-	 *
-	 * @return True if all the provided values are part of the domain
-	 */
-	Boolean containsAll(Set<Object> values);
+  /**
+   * @param values Values to check if they are part of the domain
+   *
+   * @return True if all the provided values are part of the domain
+   */
+  Boolean containsAll(Set<Object> values);
 
-	/**
-	 * @param value Value to check if it is part of the domain
-	 *
-	 * @return True if the provided value is not part of the domain
-	 */
-	Boolean containsNot(Object value);
+  /**
+   * @param value Value to check if it is part of the domain
+   *
+   * @return True if the provided value is not part of the domain
+   */
+  Boolean containsNot(Object value);
 
-	/**
-	 * @param values Values to check if they are part of the domain
-	 *
-	 * @return True if all the provided values are not part of the domain
-	 */
-	Boolean containsNot(List<Object> values);
+  /**
+   * @param values Values to check if they are part of the domain
+   *
+   * @return True if all the provided values are not part of the domain
+   */
+  Boolean containsNot(List<Object> values);
 
-	/**
-	 * @param values Values to check if they are part of the domain
-	 *
-	 * @return True if all the provided values are not part of the domain
-	 */
-	Boolean containsNot(Set<Object> values);
+  /**
+   * @param values Values to check if they are part of the domain
+   *
+   * @return True if all the provided values are not part of the domain
+   */
+  Boolean containsNot(Set<Object> values);
 
-	/**
-	 * @return Returns True is the domain is empty
-	 */
-	Boolean isEmpty();
+  /**
+   * @return Returns True is the domain is empty
+   */
+  Boolean isEmpty();
 
-	/**
-	 * @return Returns True is the domain has objects
-	 */
-	Boolean isNotEmpty();
+  /**
+   * @return Returns True is the domain has objects
+   */
+  Boolean isNotEmpty();
 
-	/**
-	 * @return Returns the amount of records contained in the domain
-	 */
-	Integer size();
+  /**
+   * @return Returns the amount of records contained in the domain
+   */
+  Integer size();
 }
