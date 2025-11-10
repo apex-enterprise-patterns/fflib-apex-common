@@ -1,0 +1,51 @@
+{
+  "trailingComma": "none",
+  "tabWidth": 4,
+  "printWidth": 120,
+  "plugins": ["@prettier/plugin-xml", "prettier-plugin-apex"],
+  "overrides": [
+    {
+      "files": "*.xml",
+      "options": {
+        "xmlSelfClosingSpace": false,
+        "bracketSameLine": true,
+        "printWidth": 99999,
+        "tabWidth": 4,
+        "xmlWhitespaceSensitivity": "ignore",
+        "singleAttributePerLine": false
+      }
+    },
+    {
+      "files": "*{labels,validationRule,globalValueSet,field,md,flexipage}-meta.xml",
+      "options": {
+        "xmlSelfClosingSpace": false,
+        "bracketSameLine": true,
+        "printWidth": 99999,
+        "tabWidth": 4,
+        "xmlWhitespaceSensitivity": "preserve",
+        "singleAttributePerLine": false
+      }
+    },
+    {
+      "files": "*.{cmp,page,component,design,evt,auradoc}",
+      "options": {
+        "parser": "html"
+      }
+    },
+    {
+      "files": "*.js",
+      "options": {
+        "arrowParens": "always",
+        "bracketSpacing": true
+      }
+    },
+    {
+      "files": "**/aura/**/*.js",
+      "options": {
+        "arrowParens": "always",
+        "bracketSpacing": true,
+        "quoteProps": "preserve"
+      }
+    }
+  ]
+}
