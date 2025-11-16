@@ -51,6 +51,15 @@ public interface fflib_ISObjectUnitOfWork
      **/
     void registerNew(SObject record, Schema.SObjectField relatedToParentField, SObject relatedToParentRecord);
     /**
+	 * Register newly created records to be inserted when commitWork is called,
+	 * it also provides a reference to the single parent record instance (should also be registered as new separately)
+	 *
+	 * @param records newly created records of the same SObjectType to be inserted during commitWork
+	 * @param relatedToParentField A SObjectField reference to the child field that associates the child record with its parent
+	 * @param relatedToParentRecord A SObject instance of the parent record (should also be registered as new separately)
+	 **/
+    void registerNew(List<SObject> records, Schema.SObjectField relatedToParentField, SObject relatedToParentRecord);
+    /**
      * Register a relationship between two records that have yet to be inserted to the database. This information will be
      *  used during the commitWork phase to make the references only when related records have been inserted to the database.
      *
@@ -59,6 +68,15 @@ public interface fflib_ISObjectUnitOfWork
      * @param relatedTo A SObject instance (yet to be committed to the database)
      */
     void registerRelationship(SObject record, Schema.SObjectField relatedToField, SObject relatedTo);
+    /**
+	 * Register a relationship between two records that have yet to be inserted to the database. This information will be
+	 *  used during the commitWork phase to make the references only when related records have been inserted to the database.
+	 *
+	 * @param records Existing or newly created records
+	 * @param relatedToField A SObjectField reference to the field that relates the given records to the relatedTo record
+	 * @param relatedTo A SObject instance (yet to be committed to the database)
+	 */
+    void registerRelationship(List<SObject> records, Schema.SObjectField relatedToField, SObject relatedTo);
     /**
      * Registers a relationship between a record and a Messaging.Email where the record has yet to be inserted
      *  to the database.  This information will be
