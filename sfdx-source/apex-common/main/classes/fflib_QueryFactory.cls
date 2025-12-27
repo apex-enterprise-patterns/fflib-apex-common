@@ -40,9 +40,8 @@
  * will be included by default. Constructing Ordering instances manually is discouraged.
  * 
  * Subselect Queries are supported with the subselectQuery methods.  
- * More than one sub-query can be added to a single query, but sub-queries can only be 1 level deep.  
- * An exception will thrown from the subselectQuery method when there is an attempt to add a subquery to a sub-query
- * or to add a subquery to a query with an invalid relationship.
+ * More than one sub-query can be added to a single query.
+ * An exception will thrown from the subselectQuery method when there is an attempt to add a subquery to a query with an invalid relationship.
  *
  * Current limitations:
  * - Aggregate functions are not currently supported.
@@ -123,7 +122,8 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 				fflib_SecurityUtils.checkFieldIsReadable(lastSObjectType, token);
 			}
 
-			if (token != null && i.hasNext() && tokenDescribe.getSoapType() == Schema.SoapType.ID) {
+			if (token != null && i.hasNext() && (tokenDescribe.getSoapType() == Schema.SoapType.ID
+				|| (tokenDescribe.getSoapType() == Schema.SoapType.STRING && tokenDescribe.getType() == Schema.DisplayType.REFERENCE))) {
 				List<Schema.sObjectType> relatedObjs = tokenDescribe.getReferenceTo(); //if it's polymorphic, it matters which one we use - i.e. Lead.Owner is GROUP|USER and each has different fields.
 
 				if (relatedObjs.size() == 1 || relatedSObjectType == null) {
@@ -503,9 +503,6 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param relationship The ChildRelationship to be added as a subquery
 	**/
 	private fflib_QueryFactory setSubselectQuery(Schema.ChildRelationship relationship, Boolean assertIsAccessible){
-		if (this.relationship != null){
-			throw new InvalidSubqueryRelationshipException('Invalid call to subselectQuery.  You may not add a subselect query to a subselect query.');
-		} 
 		if (this.subselectQueryMap == null){
 			this.subselectQueryMap = new Map<Schema.ChildRelationship, fflib_QueryFactory>();
 		}
