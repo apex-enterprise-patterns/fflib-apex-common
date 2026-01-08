@@ -91,13 +91,17 @@ public virtual class fflib_SObjectUnitOfWork
     {
         void dmlInsert(List<SObject> objList);
         void dmlUpdate(List<SObject> objList);
-        void dmlUpsert(List<SObject> objList, Schema.SObjectField externalId);
         void dmlDelete(List<SObject> objList);
         void eventPublish(List<SObject> objList);
 	    void emptyRecycleBin(List<SObject> objList);
     }
 
-    public virtual class SimpleDML implements IDML
+    public interface IDML2 extends IDML
+    {
+        void dmlUpsert(List<SObject> objList, Schema.SObjectField externalId);
+    }
+
+    public virtual class SimpleDML implements IDML2
     {
         public virtual void dmlInsert(List<SObject> objList)
         {
@@ -796,8 +800,16 @@ public virtual class fflib_SObjectUnitOfWork
         String sobjName;
         for (Schema.SObjectType sObjectType : m_sObjectTypes) {
             sobjName = sObjectType.getDescribe().getName();
-            m_relationships.get(sobjName).resolve();
-			m_dml.dmlUpsert(m_upsertRecordsPerType.get(sobjName), m_externalIdToUpsertPerType.get(sobjName));
+            List<SObject> upsertRecords = m_upsertRecordsPerType.get(sobjName);
+            if (upsertRecords != null && !upsertRecords.isEmpty()) {
+                m_relationships.get(sobjName).resolve();
+                if (m_dml instanceof IDML2) {
+                    IDML2 dml2 = (IDML2) m_dml;
+                    dml2.dmlUpsert(upsertRecords, m_externalIdToUpsertPerType.get(sobjName));
+                } else {
+                    throw new UnitOfWorkException('Upsert by external ID requires IDML2 implementation. Current DML implementation does not support this feature.');
+                }
+            }
 		}
     }
 
