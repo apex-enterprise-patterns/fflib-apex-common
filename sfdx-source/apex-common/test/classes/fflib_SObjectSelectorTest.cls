@@ -456,10 +456,14 @@ private with sharing class fflib_SObjectSelectorTest
 	static void toSOQL_When_SystemModeAndChildRelationship_Expect_WellFormedSOQL(){
 		AccessLevelAccountSelector sel = new AccessLevelAccountSelector(fflib_SObjectSelector.DataAccess.SYSTEM_MODE);
 
-		String soql = sel.createSelectAccountWithOpportunitiesSOQL();
+	AccessLevelOpportunitySelector innerSelector = new AccessLevelOpportunitySelector();
 
-		String expected = String.format('SELECT name, id, annualrevenue, accountnumber, (currencyisocode, )?\\(SELECT name, id, amount, closedate(, currencyisocode)? FROM Opportunities ORDER BY {0} ASC NULLS FIRST \\)  FROM Account WITH SYSTEM_MODE ORDER BY {0} ASC NULLS FIRST ',
-			new List<String>{sel.getOrderBy()});
+	String soql = sel.createSelectAccountWithOpportunitiesSOQL();
+
+	String expected = String.format(
+	  'SELECT name, id, annualrevenue, accountnumber, (currencyisocode, )?\\(SELECT name, id, amount, closedate(, currencyisocode)? FROM Opportunities ORDER BY {0} ASC NULLS FIRST \\)  FROM Account WITH SYSTEM_MODE ORDER BY {1} ASC NULLS FIRST ',
+	  new List<String>{ innerSelector.getOrderBy(), sel.getOrderBy() }
+	);
 		Pattern soqlPattern = Pattern.compile(expected);
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
 		System.assert(soqlMatcher.matches(),'Expected: ' + expected + ' Actual:' + soql);
@@ -829,16 +833,18 @@ private with sharing class fflib_SObjectSelectorTest
 		TaskSelector tSel = new TaskSelector();
 		fflib_QueryFactory tQF = tSel.addQueryFactorySubselect(listEmailQF);
 
-		String expected
-				= 'SELECT name, id, annualrevenue, accountnumber, '
-				+   '(SELECT id, contractnumber, '
-				+     '(SELECT name, id, amount, closedate, '
-				+       '(SELECT id, name, '
-				+         '(SELECT id, subject FROM Tasks ORDER BY Subject ASC NULLS FIRST )  '
-				+       'FROM ListEmails ORDER BY Name ASC NULLS FIRST )  '
-				+     'FROM Opportunities ORDER BY Name ASC NULLS FIRST )  '
-				+   'FROM Contracts ORDER BY ContractNumber ASC NULLS FIRST )  '
-				+ 'FROM Account WITH USER_MODE ORDER BY Name ASC NULLS FIRST ';
+	String expected = String.format(
+		'SELECT name, id, annualrevenue, accountnumber, ' +
+			'(SELECT id, contractnumber, ' +
+				'(SELECT name, id, amount, closedate, ' +
+					'(SELECT id, name, ' +
+						'(SELECT id, subject FROM Tasks ORDER BY {0} ASC NULLS FIRST )  ' +
+					'FROM ListEmails ORDER BY {1} ASC NULLS FIRST )  ' +
+				'FROM Opportunities ORDER BY {2} ASC NULLS FIRST )  ' +
+			'FROM Contracts ORDER BY {3} ASC NULLS FIRST )  ' +
+		'FROM Account WITH USER_MODE ORDER BY {4} ASC NULLS FIRST ',
+		new List<String>{ tSel.getOrderBy(), listEmailSel.getOrderBy(), oppSel.getOrderBy(), cSel.getOrderBy(), aSel.getOrderBy() }
+	);
 
 		Assert.areEqual(expected,aQF.toSOQL());
 	}
