@@ -448,6 +448,7 @@ private class fflib_ApplicationTest
 	{
 		public boolean isInsertCalled = false;
 		public boolean isUpdateCalled = false;
+		public boolean isUpsertCalled = false;
 		public boolean isDeleteCalled = false;
 		public boolean isPublishCalled = false;
 		public Boolean isEmptyRecycleBinCalled = false;
@@ -457,6 +458,9 @@ private class fflib_ApplicationTest
 		}
 		public void dmlUpdate(List<SObject> objList){
 			this.isUpdateCalled = true;
+		}
+		public void dmlUpsert(List<SObject> objList, Schema.SObjectField externalId){
+			this.isUpsertCalled = true;
 		}
 		public void dmlDelete(List<SObject> objList){
 			this.isDeleteCalled = true;
