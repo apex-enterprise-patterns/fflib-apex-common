@@ -30,13 +30,13 @@ public virtual class fflib_SObjects
 {
 
 	@NamespaceAccessible
-    public Schema.DescribeSObjectResult SObjectDescribe {get; private set;}
+	public Schema.DescribeSObjectResult SObjectDescribe {get; private set;}
 
 	/**
 	 * Useful during unit testing to assert at a more granular and robust level for errors raised during the various trigger events
 	 **/
 	@NamespaceAccessible
-    public static ErrorFactory Errors  {get; private set;}
+	public static ErrorFactory Errors  {get; private set;}
 
 	static
 	{
@@ -47,38 +47,38 @@ public virtual class fflib_SObjects
 	 * Class constructor
 	 */
 	@NamespaceAccessible
-    public fflib_SObjects(List<SObject> records)
+	public fflib_SObjects(List<SObject> records)
 	{
 		super(records);
 	}
 
 	@NamespaceAccessible
-    public fflib_SObjects(List<SObject> records, Schema.SObjectType sObjectType)
+	public fflib_SObjects(List<SObject> records, Schema.SObjectType sObjectType)
 	{
 		super(records);
 		SObjectDescribe = sObjectType.getDescribe();
 	}
 
 	@NamespaceAccessible
-    public virtual List<SObject> getRecords()
+	public virtual List<SObject> getRecords()
 	{
 		return (List<SObject>) getObjects();
 	}
 
 	@NamespaceAccessible
-    public virtual Set<Id> getRecordIds()
+	public virtual Set<Id> getRecordIds()
 	{
 		return new Map<Id, SObject>(getRecords()).keySet();
 	}
 
 	@NamespaceAccessible
-    public virtual override Object getType()
+	public virtual override Object getType()
 	{
 		return getSObjectType();
 	}
 
 	@NamespaceAccessible
-    public virtual SObjectType getSObjectType()
+	public virtual SObjectType getSObjectType()
 	{
 		return SObjectDescribe.getSObjectType();
 	}
@@ -89,7 +89,7 @@ public virtual class fflib_SObjects
 	 * @param message The error message to add to each record
 	 */
 	@NamespaceAccessible
-    protected void addError(String message)
+	protected void addError(String message)
 	{
 		for (SObject record : getRecords())
 		{
@@ -105,7 +105,7 @@ public virtual class fflib_SObjects
 	 */
 	@TestVisible
 	@NamespaceAccessible
-    protected virtual void addError(Schema.SObjectField field, String message)
+	protected virtual void addError(Schema.SObjectField field, String message)
 	{
 		for (SObject record : getRecords())
 		{
@@ -119,7 +119,7 @@ public virtual class fflib_SObjects
 	 */
 	@TestVisible
 	@NamespaceAccessible
-    protected virtual void clearField(Schema.SObjectField field)
+	protected virtual void clearField(Schema.SObjectField field)
 	{
 		clearFields(new Set<Schema.SObjectField>{ field });
 	}
@@ -130,7 +130,7 @@ public virtual class fflib_SObjects
 	 */
 	@TestVisible
 	@NamespaceAccessible
-    protected virtual void clearFields(Set<Schema.SObjectField> fields)
+	protected virtual void clearFields(Set<Schema.SObjectField> fields)
 	{
 		for (SObject record : getRecords())
 		{
@@ -150,7 +150,7 @@ public virtual class fflib_SObjects
 	 * @return Returns the Error message
 	 **/
 	@NamespaceAccessible
-    protected virtual String error(String message, SObject record)
+	protected virtual String error(String message, SObject record)
 	{
 		return Errors.error(this, message, record);
 	}
@@ -165,7 +165,7 @@ public virtual class fflib_SObjects
 	 * @return Returns the Error message
 	 **/
 	@NamespaceAccessible
-    protected virtual String error(String message, SObject record, Schema.SObjectField field)
+	protected virtual String error(String message, SObject record, Schema.SObjectField field)
 	{
 		return fflib_SObjects.Errors.error(this, message, record, field);
 	}
@@ -177,7 +177,7 @@ public virtual class fflib_SObjects
 	 */
 	@TestVisible
 	@NamespaceAccessible
-    protected Set<Id> getIdFieldValues(Schema.SObjectField field)
+	protected Set<Id> getIdFieldValues(Schema.SObjectField field)
 	{
 		Set<Id> result = new Set<Id>();
 		for (SObject record : getRecords())
@@ -194,7 +194,7 @@ public virtual class fflib_SObjects
 	 */
 	@TestVisible
 	@NamespaceAccessible
-    protected Set<String> getStringFieldValues(Schema.SObjectField field)
+	protected Set<String> getStringFieldValues(Schema.SObjectField field)
 	{
 		Set<String> result = new Set<String>();
 		for (SObject record : getRecords())
@@ -211,7 +211,7 @@ public virtual class fflib_SObjects
 	 */
 	@TestVisible
 	@NamespaceAccessible
-    protected virtual Set<Object> getFieldValues(Schema.SObjectField field)
+	protected virtual Set<Object> getFieldValues(Schema.SObjectField field)
 	{
 		Set<Object> result = new Set<Object>();
 		for (SObject record : getRecords())
@@ -228,7 +228,7 @@ public virtual class fflib_SObjects
 	 * @return A list with only the SObjects where the given field has the provided value
 	 */
 	@NamespaceAccessible
-    protected virtual List<SObject> getRecordsByFieldValue(Schema.SObjectField field, Object value)
+	protected virtual List<SObject> getRecordsByFieldValue(Schema.SObjectField field, Object value)
 	{
 		return getRecordsByFieldValues(field, new Set<Object>{value});
 	}
@@ -240,7 +240,7 @@ public virtual class fflib_SObjects
 	 * @return A list with only the SObjects where the given field value is part of the provided values
 	 */
 	@NamespaceAccessible
-    protected virtual List<SObject> getRecordsByFieldValues(Schema.SObjectField field, Set<Object> values)
+	protected virtual List<SObject> getRecordsByFieldValues(Schema.SObjectField field, Set<Object> values)
 	{
 		List<SObject> result = new List<SObject>();
 		for (SObject record : getRecords())
@@ -259,7 +259,7 @@ public virtual class fflib_SObjects
 	 * @return A list with only the SObjects where the given field value is either null or '')
 	 */
 	@NamespaceAccessible
-    protected virtual List<SObject> getRecordsWithBlankFieldValues(Schema.SObjectField field)
+	protected virtual List<SObject> getRecordsWithBlankFieldValues(Schema.SObjectField field)
 	{
 		return getRecordsWithBlankFieldValues(
 				new Set<Schema.SObjectField> {field}
@@ -272,7 +272,7 @@ public virtual class fflib_SObjects
 	 * @return A list with only the SObjects where the at least one given field value is either null or '')
 	 */
 	@NamespaceAccessible
-    protected virtual List<SObject> getRecordsWithBlankFieldValues(Set<Schema.SObjectField> fields)
+	protected virtual List<SObject> getRecordsWithBlankFieldValues(Set<Schema.SObjectField> fields)
 	{
 		List<SObject> result = new List<SObject>();
 		for (SObject record : getRecords())
@@ -294,7 +294,7 @@ public virtual class fflib_SObjects
 	 * @return A list with only the SObjects where all given field values are either null or ''
 	 */
 	@NamespaceAccessible
-    protected virtual List<SObject> getRecordsWithAllBlankFieldValues(Set<Schema.SObjectField> fields)
+	protected virtual List<SObject> getRecordsWithAllBlankFieldValues(Set<Schema.SObjectField> fields)
 	{
 		List<SObject> result = new List<SObject>();
 		for (SObject record : getRecords())
@@ -319,7 +319,7 @@ public virtual class fflib_SObjects
 	 * @return A list with only the SObjects where the given field value is not null or ''
 	 */
 	@NamespaceAccessible
-    protected virtual List<SObject> getRecordsWithNotBlankFieldValues(Schema.SObjectField field)
+	protected virtual List<SObject> getRecordsWithNotBlankFieldValues(Schema.SObjectField field)
 	{
 		return getRecordsWithNotBlankFieldValues(
 				new Set<Schema.SObjectField> {field}
@@ -332,7 +332,7 @@ public virtual class fflib_SObjects
 	 * @return A list with only the SObjects where the at least one given field value not null or ''
 	 */
 	@NamespaceAccessible
-    protected virtual List<SObject> getRecordsWithNotBlankFieldValues(Set<Schema.SObjectField> fields)
+	protected virtual List<SObject> getRecordsWithNotBlankFieldValues(Set<Schema.SObjectField> fields)
 	{
 		List<SObject> result = new List<SObject>();
 		for (SObject record : getRecords())
@@ -355,7 +355,7 @@ public virtual class fflib_SObjects
 	 * @return A list with only the SObjects where all given field values are not null or ''
 	 */
 	@NamespaceAccessible
-    protected virtual List<SObject> getRecordsWithAllNotBlankFieldValues(Set<Schema.SObjectField> fields)
+	protected virtual List<SObject> getRecordsWithAllNotBlankFieldValues(Set<Schema.SObjectField> fields)
 	{
 		List<SObject> result = new List<SObject>();
 		for (SObject record : getRecords())
@@ -381,7 +381,7 @@ public virtual class fflib_SObjects
 	 * @param value The value to store in the given SObjectField
 	 */
 	@NamespaceAccessible
-    protected virtual void setFieldValue(Schema.SObjectField field, Object value)
+	protected virtual void setFieldValue(Schema.SObjectField field, Object value)
 	{
 		for (SObject record : getRecords())
 		{
@@ -395,7 +395,7 @@ public virtual class fflib_SObjects
 	 * @param values Map of values to store by the fieldToCheck fields value
 	 */
 	@NamespaceAccessible
-    protected virtual void setFieldValueByMap(
+	protected virtual void setFieldValueByMap(
 			Schema.SObjectField fieldToCheck,
 			Schema.SObjectField fieldToUpdate,
 			Map<Object, Object> values)
@@ -411,23 +411,23 @@ public virtual class fflib_SObjects
 	}
 
 	/**
-     * Ensures logging of errors in the Domain context for later assertions in tests
-     **/
+	 * Ensures logging of errors in the Domain context for later assertions in tests
+	 **/
 	@NamespaceAccessible
-    public virtual class ErrorFactory
+	public virtual class ErrorFactory
 	{
 		private List<Error> errorList = new List<Error>();
 
 		private ErrorFactory() {	}
 
 		@NamespaceAccessible
-    public String error(String message, SObject record)
+	public String error(String message, SObject record)
 		{
 			return error(null, message, record);
 		}
 
 		@NamespaceAccessible
-    public String error(fflib_SObjects domain, String message, SObject record)
+	public String error(fflib_SObjects domain, String message, SObject record)
 		{
 			ObjectError objectError = new ObjectError();
 			objectError.domain = domain;
@@ -438,13 +438,13 @@ public virtual class fflib_SObjects
 		}
 
 		@NamespaceAccessible
-    public String error(String message, SObject record, SObjectField field)
+	public String error(String message, SObject record, SObjectField field)
 		{
 			return error(null, message, record, field);
 		}
 
 		@NamespaceAccessible
-    public String error(fflib_ISObjects domain, String message, SObject record, SObjectField field)
+	public String error(fflib_ISObjects domain, String message, SObject record, SObjectField field)
 		{
 			FieldError fieldError = new FieldError();
 			fieldError.domain = domain;
@@ -456,13 +456,13 @@ public virtual class fflib_SObjects
 		}
 
 		@NamespaceAccessible
-    public List<Error> getAll()
+	public List<Error> getAll()
 		{
 			return errorList.clone();
 		}
 
 		@NamespaceAccessible
-    public void clearAll()
+	public void clearAll()
 		{
 			errorList.clear();
 		}
@@ -472,37 +472,37 @@ public virtual class fflib_SObjects
 	 * Ensures logging of errors in the Domain context for later assertions in tests
 	 **/
 	@NamespaceAccessible
-    public virtual class FieldError extends ObjectError
+	public virtual class FieldError extends ObjectError
 	{
 		@NamespaceAccessible
-    public SObjectField field;
+	public SObjectField field;
 
 		@NamespaceAccessible
-    public FieldError()	{ }
+	public FieldError()	{ }
 	}
 
 	/**
 	 * Ensures logging of errors in the Domain context for later assertions in tests
 	 **/
 	@NamespaceAccessible
-    public virtual class ObjectError extends Error
+	public virtual class ObjectError extends Error
 	{
 		@NamespaceAccessible
-    public SObject record;
+	public SObject record;
 
 		@NamespaceAccessible
-    public ObjectError() { }
+	public ObjectError() { }
 	}
 
 	/**
 	 * Ensures logging of errors in the Domain context for later assertions in tests
 	 **/
 	@NamespaceAccessible
-    public abstract class Error
+	public abstract class Error
 	{
 		@NamespaceAccessible
-    public String message;
+	public String message;
 		@NamespaceAccessible
-    public fflib_ISObjects domain;
+	public fflib_ISObjects domain;
 	}
 }

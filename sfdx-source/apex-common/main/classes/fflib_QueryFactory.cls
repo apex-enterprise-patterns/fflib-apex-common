@@ -54,16 +54,16 @@
 @NamespaceAccessible
 public class fflib_QueryFactory { //No explicit sharing declaration - inherit from caller
 	@NamespaceAccessible
-    public enum SortOrder {ASCENDING, DESCENDING}
+	public enum SortOrder {ASCENDING, DESCENDING}
 	@NamespaceAccessible
-    public enum FLSEnforcement{NONE, LEGACY, USER_MODE, SYSTEM_MODE}
+	public enum FLSEnforcement{NONE, LEGACY, USER_MODE, SYSTEM_MODE}
 
 	/**
 	 * This property is read-only and may not be set after instantiation.
 	 * The {@link Schema.SObjectType} token of the SObject that will be used in the FROM clause of the resultant query.
 	**/
 	@NamespaceAccessible
-    public Schema.SObjectType table {get; private set;}
+	public Schema.SObjectType table {get; private set;}
 	@TestVisible
 	private Set<String> fields; 
 	private String conditionExpression;
@@ -175,7 +175,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param obj the object to check equality of.
 	**/
 	@NamespaceAccessible
-    public Boolean equals(Object obj){
+	public Boolean equals(Object obj){
 		if( !(obj instanceof fflib_QueryFactory) || ((fflib_QueryFactory)obj).table != this.table || ((fflib_QueryFactory)obj).fields.size() != this.fields.size() )
 			return false;
 		return ((fflib_QueryFactory)obj).toSOQL() == this.toSOQL();
@@ -187,7 +187,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param table	the SObject to be used in the FROM clause of the resultant query. This sets the value of {@link #table}.
 	**/
 	@NamespaceAccessible
-    public fflib_QueryFactory(Schema.SObjectType table){
+	public fflib_QueryFactory(Schema.SObjectType table){
 		this.table = table;
 		fields = new Set<String>();
 		order = new List<Ordering>();
@@ -211,7 +211,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * Asserts true if User has access.
 	 **/
 	@NamespaceAccessible
-    public fflib_QueryFactory assertIsAccessible(){
+	public fflib_QueryFactory assertIsAccessible(){
 		fflib_SecurityUtils.checkObjectIsReadable(table);
 		return this;
 	}
@@ -224,12 +224,12 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @deprecated - use the setEnforceFLS overload that specifies Legacy or Native FLS enforcement
 	 **/
 	@NamespaceAccessible
-    public fflib_QueryFactory setEnforceFLS(Boolean enforce){
+	public fflib_QueryFactory setEnforceFLS(Boolean enforce){
 		return setEnforceFLS(enforce ? FLSEnforcement.LEGACY : FLSEnforcement.NONE);
 	}
 
 	@NamespaceAccessible
-    public fflib_QueryFactory setEnforceFLS(FLSEnforcement enforcement){
+	public fflib_QueryFactory setEnforceFLS(FLSEnforcement enforcement){
 		this.mFlsEnforcement = enforcement;
 		return this;
 	}
@@ -242,7 +242,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param doSort whether or not select fields should be sorted in the soql statement.
 	 **/
 	@NamespaceAccessible
-    public fflib_QueryFactory setSortSelectFields(Boolean doSort){
+	public fflib_QueryFactory setSortSelectFields(Boolean doSort){
 		this.sortSelectFields = doSort;
 		return this;
 	}
@@ -252,7 +252,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param fieldName the API name of the field to add to the query's SELECT clause.
 	 **/
 	@NamespaceAccessible
-    public fflib_QueryFactory selectField(String fieldName){
+	public fflib_QueryFactory selectField(String fieldName){
 		return selectFields(new Set<String>{fieldName});
 	}
 
@@ -263,7 +263,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		* @param relatedSObjectType the related sObjectType to resolve polymorphic object fields.
 	 **/
 	@NamespaceAccessible
-    public fflib_QueryFactory selectField(String fieldName, Schema.sObjectType relatedObjectType) {
+	public fflib_QueryFactory selectField(String fieldName, Schema.sObjectType relatedObjectType) {
 		addField(getFieldPath(fieldName, relatedObjectType));
 		return this;
 	}
@@ -275,7 +275,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @exception InvalidFieldException If the field is null {@code field}.
 	**/
 	@NamespaceAccessible
-    public fflib_QueryFactory selectField(Schema.SObjectField field){
+	public fflib_QueryFactory selectField(Schema.SObjectField field){
 		return selectFields(new Set<Schema.SObjectField>{field});
 	}
 	/**
@@ -283,7 +283,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param fieldNames the Set of field API names to select.
 	**/
 	@NamespaceAccessible
-    public fflib_QueryFactory selectFields(Set<String> fieldNames){
+	public fflib_QueryFactory selectFields(Set<String> fieldNames){
 		return selectStringField(fieldNames.iterator());
 	}
 	/**
@@ -291,7 +291,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param fieldNames the List of field API names to select.
 	**/
 	@NamespaceAccessible
-    public fflib_QueryFactory selectFields(List<String> fieldNames){
+	public fflib_QueryFactory selectFields(List<String> fieldNames){
 		return selectStringField(fieldNames.iterator());
 	}
 	
@@ -308,7 +308,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @exception InvalidFieldException if the fields are null {@code fields}.
 	**/
 	@NamespaceAccessible
-    public fflib_QueryFactory selectFields(Set<Schema.SObjectField> fields){
+	public fflib_QueryFactory selectFields(Set<Schema.SObjectField> fields){
 		return selectSObjectFields(fields.iterator());
 	}
 
@@ -318,7 +318,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @exception InvalidFieldException if the fields are null {@code fields}.	 
 	**/
 	@NamespaceAccessible
-    public fflib_QueryFactory selectFields(List<Schema.SObjectField> fields) {
+	public fflib_QueryFactory selectFields(List<Schema.SObjectField> fields) {
 		return selectSObjectFields(fields.iterator());
 	}
 
@@ -340,7 +340,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @see #selectFieldSet(Schema.FieldSet,Boolean)
 	**/
 	@NamespaceAccessible
-    public fflib_QueryFactory selectFieldSet(Schema.FieldSet fieldSet){
+	public fflib_QueryFactory selectFieldSet(Schema.FieldSet fieldSet){
 		return selectFieldSet(fieldSet,true);
 	}
 	/**
@@ -350,7 +350,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @exception InvalidFieldSetException if the fieldset is invalid for table {@code fields}.	 
 	**/
 	@NamespaceAccessible
-    public fflib_QueryFactory selectFieldSet(Schema.FieldSet fieldSet, Boolean allowCrossObject){ 
+	public fflib_QueryFactory selectFieldSet(Schema.FieldSet fieldSet, Boolean allowCrossObject){ 
 		if(fieldSet.getSObjectType() != table)
 			throw new InvalidFieldSetException('Field set "'+fieldSet.getName()+'" is not for SObject type "'+table+'"');
 		for(Schema.FieldSetMember field: fieldSet.getFields()){
@@ -380,7 +380,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param conditionExpression Sets the WHERE clause to the string provided. Do not include the "WHERE".
 	**/
 	@NamespaceAccessible
-    public fflib_QueryFactory setCondition(String conditionExpression){
+	public fflib_QueryFactory setCondition(String conditionExpression){
 		this.conditionExpression = conditionExpression;
 		return this;
 	}
@@ -388,14 +388,14 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @returns the current value of the WHERE clause, if any, as set by {@link #setCondition}
 	**/
 	@NamespaceAccessible
-    public String getCondition(){
+	public String getCondition(){
 		return this.conditionExpression;
 	}
 	/**
 	 * @param limitCount if not null causes a LIMIT clause to be added to the resulting query.
 	**/
 	@NamespaceAccessible
-    public fflib_QueryFactory setLimit(Integer limitCount){
+	public fflib_QueryFactory setLimit(Integer limitCount){
 		this.limitCount = limitCount;
 		return this;
 	}
@@ -403,14 +403,14 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @returns the current value of the LIMIT clause, if any.
 	**/
 	@NamespaceAccessible
-    public Integer getLimit(){
+	public Integer getLimit(){
 		return this.limitCount;
 	}
 	/**
 	 * @param offsetCount if not null causes a OFFSET clause to be added to the resulting query.
 	**/
 	@NamespaceAccessible
-    public fflib_QueryFactory setOffset(Integer offsetCount){
+	public fflib_QueryFactory setOffset(Integer offsetCount){
 		this.offsetCount = offsetCount;
 		return this;
 	}
@@ -418,14 +418,14 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @returns the current value of the OFFSET clause, if any.
 	**/
 	@NamespaceAccessible
-    public Integer getOffset(){
+	public Integer getOffset(){
 		return this.offsetCount;
 	}
 	/**
 	 * @param o an instance of {@link fflib_QueryFactory.Ordering} to be added to the query's ORDER BY clause.
 	**/
 	@NamespaceAccessible
-    public fflib_QueryFactory addOrdering(Ordering o){
+	public fflib_QueryFactory addOrdering(Ordering o){
 		this.order.add(o);
 		return this;
 	}
@@ -434,7 +434,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param o an instance of {@link fflib_QueryFactory.Ordering} to remove all existing (for instance defaults) and be added to the query's ORDER BY clause.
 	 **/
 	@NamespaceAccessible
-    public fflib_QueryFactory setOrdering(Ordering o){
+	public fflib_QueryFactory setOrdering(Ordering o){
 		this.order = new List<Ordering>{ o };
 		return this;
 	}
@@ -442,7 +442,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @returns the list of orderings that will be used as the query's ORDER BY clause. You may remove elements from the returned list, or otherwise mutate it, to remove previously added orderings.
 	**/
 	@NamespaceAccessible
-    public List<Ordering> getOrderings(){
+	public List<Ordering> getOrderings(){
 		return this.order;
 	}
 
@@ -450,7 +450,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @returns the selected fields
 	 **/
 	@NamespaceAccessible
-    public Set<String> getSelectedFields() { 
+	public Set<String> getSelectedFields() { 
 		return this.fields;
 	}
 
@@ -462,7 +462,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param related The related object type
 	**/
 	@NamespaceAccessible
-    public fflib_QueryFactory subselectQuery(SObjectType related){ 
+	public fflib_QueryFactory subselectQuery(SObjectType related){ 
 		System.debug(LoggingLevel.WARN, 'fflib_QueryFactory.subselectQuery(Schema.SObjectType) is deprecated and will be removed in a future release. Use fflib_QueryFactory.subselectQuery(String) or fflib_QueryFactory.subselectQuery(ChildRelationship) instead.');
 		return setSubselectQuery(getChildRelationship(related), false);
 	}
@@ -476,7 +476,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param assertIsAccessible indicates whether to check if the user has access to the subquery object
 	**/
 	@NamespaceAccessible
-    public fflib_QueryFactory subselectQuery(SObjectType related, Boolean assertIsAccessible){
+	public fflib_QueryFactory subselectQuery(SObjectType related, Boolean assertIsAccessible){
 		System.debug(LoggingLevel.WARN, 'fflib_QueryFactory.subselectQuery(Schema.SObjectType, Boolean) is deprecated and will be removed in a future release. Use fflib_QueryFactory.subselectQuery(String, Boolean) or fflib_QueryFactory.subselectQuery(ChildRelationship, Boolean) instead.'); 
 		return setSubselectQuery(getChildRelationship(related), assertIsAccessible);
 	}
@@ -488,7 +488,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param relationshipName The relationshipName to be added as a subquery
 	**/
 	@NamespaceAccessible
-    public fflib_QueryFactory subselectQuery(String relationshipName){ 
+	public fflib_QueryFactory subselectQuery(String relationshipName){ 
 		return subselectQuery(relationshipName, false);
 	}
 
@@ -500,7 +500,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param assertIsAccessible indicates whether to check if the user has access to the subquery object
 	**/
 	@NamespaceAccessible
-    public fflib_QueryFactory subselectQuery(String relationshipName, Boolean assertIsAccessible){
+	public fflib_QueryFactory subselectQuery(String relationshipName, Boolean assertIsAccessible){
 		Schema.ChildRelationship relationship = getChildRelationship(relationshipName);
 		if (relationship != null) {
 			return setSubselectQuery(relationship, assertIsAccessible);
@@ -515,7 +515,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param relationship The ChildRelationship to be added as a subquery
 	**/
 	@NamespaceAccessible
-    public fflib_QueryFactory subselectQuery(Schema.ChildRelationship relationship){ 
+	public fflib_QueryFactory subselectQuery(Schema.ChildRelationship relationship){ 
 		return subselectQuery(relationship, false);
 	}
 
@@ -527,7 +527,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param assertIsAccessible indicates whether to check if the user has access to the subquery object
 	**/
 	@NamespaceAccessible
-    public fflib_QueryFactory subselectQuery(Schema.ChildRelationship relationship, Boolean assertIsAccessible){
+	public fflib_QueryFactory subselectQuery(Schema.ChildRelationship relationship, Boolean assertIsAccessible){
 		return setSubselectQuery(relationship, assertIsAccessible);
 	}
 
@@ -561,7 +561,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @returns the list of subquery instances of fflib_QueryFactory which will be added to the SOQL as relationship/child/sub-queries.
 	**/
 	@NamespaceAccessible
-    public List<fflib_QueryFactory> getSubselectQueries(){
+	public List<fflib_QueryFactory> getSubselectQueries(){
 		if (subselectQueryMap != null) {
 			return subselectQueryMap.values();
 		}	
@@ -573,28 +573,28 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param objType The object type of the child relationship to get
 	**/
  	private Schema.ChildRelationship getChildRelationship(SObjectType objType){
-        for (Schema.ChildRelationship childRow : table.getDescribe().getChildRelationships()){
-        	//occasionally on some standard objects (Like Contact child of Contact) do not have a relationship name.  
-        	//if there is no relationship name, we cannot query on it, so throw an exception.
-            if (childRow.getChildSObject() == objType && childRow.getRelationshipName() != null){ 
-                return childRow;
-            }   
-        }
-        throw new InvalidSubqueryRelationshipException('Invalid call to subselectQuery.  Invalid relationship for table '+table + ' and objtype='+objType);
-    }
+		for (Schema.ChildRelationship childRow : table.getDescribe().getChildRelationships()){
+			//occasionally on some standard objects (Like Contact child of Contact) do not have a relationship name.  
+			//if there is no relationship name, we cannot query on it, so throw an exception.
+			if (childRow.getChildSObject() == objType && childRow.getRelationshipName() != null){ 
+				return childRow;
+			}   
+		}
+		throw new InvalidSubqueryRelationshipException('Invalid call to subselectQuery.  Invalid relationship for table '+table + ' and objtype='+objType);
+	}
 
 	/**
 	 * Get the ChildRelationship from the Table for the relationship name passed in.
 	 * @param relationshipName The name of the object's ChildRelationship on get
 	**/
  	private Schema.ChildRelationship getChildRelationship(String relationshipName){
-        for (Schema.ChildRelationship childRow : table.getDescribe().getChildRelationships()){
-            if (childRow.getRelationshipName() == relationshipName){ 
-                return childRow;
-            }   
-        }
-        return null;
-    }
+		for (Schema.ChildRelationship childRow : table.getDescribe().getChildRelationships()){
+			if (childRow.getRelationshipName() == relationshipName){ 
+				return childRow;
+			}   
+		}
+		return null;
+	}
 
 	/**
 	 * Add a field to be sorted on.  This may be a direct field or a field 
@@ -607,15 +607,15 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param direction the direction to be sorted on (ASCENDING or DESCENDING)
 	 * @param nullsLast whether to sort null values last (NULLS LAST keyword included).
 	**/  
-    @NamespaceAccessible
-    public fflib_QueryFactory addOrdering(String fieldName, SortOrder direction, Boolean nullsLast){
+	@NamespaceAccessible
+	public fflib_QueryFactory addOrdering(String fieldName, SortOrder direction, Boolean nullsLast){
 		order.add(
 			new Ordering(getFieldPath(fieldName), direction, nullsLast)
 		);	
 		return this;
-    }
+	}
 
-     /**
+	 /**
 	 * Add a field to be sorted on.  This may be a direct field or a field 
 	 * related through an object lookup or master-detail relationship.
 	 * Use the set to store unique field names, since we only want to sort
@@ -626,15 +626,15 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param direction the direction to be sorted on (ASCENDING or DESCENDING)
 	 * @param nullsLast whether to sort null values last (NULLS LAST keyword included).
 	**/
-    @NamespaceAccessible
-    public fflib_QueryFactory addOrdering(SObjectField field, SortOrder direction, Boolean nullsLast){
+	@NamespaceAccessible
+	public fflib_QueryFactory addOrdering(SObjectField field, SortOrder direction, Boolean nullsLast){
 		order.add(
 			new Ordering(getFieldTokenPath(field), direction, nullsLast)
 		);	
 		return this;
-    }
+	}
 
-    /**
+	/**
 	 * Add a field to be sorted on.  This may be a direct field or a field 
 	 * related through an object lookup or master-detail relationship.
 	 * Use the set to store unique field names, since we only want to sort
@@ -646,15 +646,15 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param fieldName The string value of the field to be sorted on
 	 * @param direction the direction to be sorted on (ASCENDING or DESCENDING)
 	**/  
-    @NamespaceAccessible
-    public fflib_QueryFactory addOrdering(String fieldName, SortOrder direction){
+	@NamespaceAccessible
+	public fflib_QueryFactory addOrdering(String fieldName, SortOrder direction){
 		order.add(
 			new Ordering(getFieldPath(fieldName), direction)
 		);	
 		return this;
-    }
+	}
 
-     /**
+	 /**
 	 * Add a field to be sorted on.  This may be a direct field or a field 
 	 * related through an object lookup or master-detail relationship.
 	 * Use the set to store unique field names, since we only want to sort
@@ -666,13 +666,13 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param field The SObjectField to sort.  This can only be a direct reference.
 	 * @param direction the direction to be sorted on (ASCENDING or DESCENDING)
 	**/
-    @NamespaceAccessible
-    public fflib_QueryFactory addOrdering(SObjectField field, SortOrder direction){
+	@NamespaceAccessible
+	public fflib_QueryFactory addOrdering(SObjectField field, SortOrder direction){
 		order.add(
 			new Ordering(getFieldTokenPath(field), direction)
 		);	
 		return this;
-    }
+	}
 
 	/**
 	 * Remove existing ordering and set a field to be sorted on.  This may be a direct field or a field
@@ -686,7 +686,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param nullsLast whether to sort null values last (NULLS LAST keyword included).
 	**/
 	@NamespaceAccessible
-    public fflib_QueryFactory setOrdering(String fieldName, SortOrder direction, Boolean nullsLast){
+	public fflib_QueryFactory setOrdering(String fieldName, SortOrder direction, Boolean nullsLast){
 		Ordering ordr = new Ordering(getFieldPath(fieldName), direction, nullsLast);
 		return setOrdering(ordr);
 	}
@@ -703,7 +703,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param nullsLast whether to sort null values last (NULLS LAST keyword included).
 	**/
 	@NamespaceAccessible
-    public fflib_QueryFactory setOrdering(SObjectField field, SortOrder direction, Boolean nullsLast){
+	public fflib_QueryFactory setOrdering(SObjectField field, SortOrder direction, Boolean nullsLast){
 		Ordering ordr = new Ordering(getFieldTokenPath(field), direction, nullsLast);
 		return setOrdering(ordr);
 	}
@@ -719,7 +719,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param direction the direction to be sorted on (ASCENDING or DESCENDING)
 	**/
 	@NamespaceAccessible
-    public fflib_QueryFactory setOrdering(String fieldName, SortOrder direction){
+	public fflib_QueryFactory setOrdering(String fieldName, SortOrder direction){
 		Ordering ordr = new Ordering(getFieldPath(fieldName), direction);
 		return setOrdering(ordr);
 	}
@@ -735,7 +735,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param direction the direction to be sorted on (ASCENDING or DESCENDING)
 	**/
 	@NamespaceAccessible
-    public fflib_QueryFactory setOrdering(SObjectField field, SortOrder direction){
+	public fflib_QueryFactory setOrdering(SObjectField field, SortOrder direction){
 		Ordering ordr = new Ordering(getFieldTokenPath(field), direction);
 		return setOrdering(ordr);
 	}
@@ -744,7 +744,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * whether an ALL ROWS clause will be added to the resulting query
 	**/
 	@NamespaceAccessible
-    public fflib_QueryFactory setAllRows(){
+	public fflib_QueryFactory setAllRows(){
 		this.allRows = true;
 		return this;
 	}
@@ -754,7 +754,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * Check to see if subqueries queries need to be added after the field list.
 	**/
 	@NamespaceAccessible
-    public String toSOQL(){
+	public String toSOQL(){
 		String result = 'SELECT ';
 		//if no fields have been added, just add the Id field so that the query or subquery will not just fail
 		if (fields.size() == 0){
@@ -816,7 +816,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @return a deep clone of this fflib_QueryFactory
 	**/
 	@NamespaceAccessible
-    public fflib_QueryFactory deepClone(){	
+	public fflib_QueryFactory deepClone(){	
 
 		fflib_QueryFactory clone = new fflib_QueryFactory(this.table)
 			.setLimit(this.limitCount)
@@ -841,13 +841,13 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	}
 	
 	@NamespaceAccessible
-    public class Ordering{
+	public class Ordering{
 		private SortOrder direction;
 		private boolean nullsLast;
 		private String field;
 
 		@NamespaceAccessible
-    public Ordering(String sobjType, String fieldName, SortOrder direction){
+	public Ordering(String sobjType, String fieldName, SortOrder direction){
 			this(
 				fflib_SObjectDescribe.getDescribe(sobjType).getField(fieldName),
 				direction
@@ -858,11 +858,11 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		 * Once constructed it's properties may not be modified.
 		**/
 		@NamespaceAccessible
-    public Ordering(Schema.SObjectField field, SortOrder direction){
+	public Ordering(Schema.SObjectField field, SortOrder direction){
 			this(fflib_QueryFactory.getFieldTokenPath(field), direction, false); //SOQL docs state NULLS FIRST is default behavior
 		}
 		@NamespaceAccessible
-    public Ordering(Schema.SObjectField field, SortOrder direction, Boolean nullsLast){
+	public Ordering(Schema.SObjectField field, SortOrder direction, Boolean nullsLast){
 			this(fflib_QueryFactory.getFieldTokenPath(field), direction, nullsLast);
 		}
 		@TestVisible
@@ -876,15 +876,15 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			this.nullsLast = nullsLast;
 		}
 		@NamespaceAccessible
-    public String getField(){
+	public String getField(){
 			return this.field;
 		}
 		@NamespaceAccessible
-    public SortOrder getDirection(){
+	public SortOrder getDirection(){
 			return direction;
 		}
 		@NamespaceAccessible
-    public String toSOQL(){
+	public String toSOQL(){
 			return field + ' ' + (direction == SortOrder.ASCENDING ? 'ASC' : 'DESC') + (nullsLast ? ' NULLS LAST ' : ' NULLS FIRST ');
 		}
 	}
@@ -892,11 +892,11 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 
 	
 	@NamespaceAccessible
-    public class InvalidFieldException extends Exception{
+	public class InvalidFieldException extends Exception{
 		private String fieldName;
 		private Schema.SObjectType objectType;
 		@NamespaceAccessible
-    public InvalidFieldException(String fieldName, Schema.SObjectType objectType){
+	public InvalidFieldException(String fieldName, Schema.SObjectType objectType){
 			this.objectType = objectType;
 			this.fieldName = fieldName;
 			this.setMessage( 'Invalid field \''+fieldName+'\' for object \''+objectType+'\'' );
@@ -904,9 +904,9 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	}
 
 	@NamespaceAccessible
-    public class InvalidFieldSetException extends Exception{}
+	public class InvalidFieldSetException extends Exception{}
 	@NamespaceAccessible
-    public class NonReferenceFieldException extends Exception{}
+	public class NonReferenceFieldException extends Exception{}
 	@NamespaceAccessible
-    public class InvalidSubqueryRelationshipException extends Exception{}	
+	public class InvalidSubqueryRelationshipException extends Exception{}	
 }
