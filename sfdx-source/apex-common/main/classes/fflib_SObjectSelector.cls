@@ -28,11 +28,11 @@
  * Class providing common database query support for abstracting and encapsulating query logic
  **/
 @NamespaceAccessible
-	public  abstract with sharing class fflib_SObjectSelector
+	public abstract with sharing class fflib_SObjectSelector
 	implements fflib_ISObjectSelector
 {
 	@NamespaceAccessible
-	public  enum DataAccess{LEGACY, USER_MODE, SYSTEM_MODE}
+	public enum DataAccess{LEGACY, USER_MODE, SYSTEM_MODE}
 
 	/**
 	 * Indicates whether the sObject has the currency ISO code field for organisations which have multi-currency
@@ -107,7 +107,7 @@
 	 * Constructs the Selector with the default settings
 	 **/
 	@NamespaceAccessible
-	public  fflib_SObjectSelector() { }
+	public fflib_SObjectSelector() { }
 	
 	/**
 	 * Constructs the Selector
@@ -115,13 +115,13 @@
 	 * @param includeFieldSetFields Set to true if the Selector queries are to include Fieldset fields as well 
 	 **/
 	@NamespaceAccessible
-	public  fflib_SObjectSelector(Boolean includeFieldSetFields)
+	public fflib_SObjectSelector(Boolean includeFieldSetFields)
 	{
 		this(includeFieldSetFields, true, false);
 	}
 
 	@NamespaceAccessible
-	public  fflib_SObjectSelector(Boolean includeFieldSetFields, DataAccess dataAccess)
+	public fflib_SObjectSelector(Boolean includeFieldSetFields, DataAccess dataAccess)
 	{
 		this(includeFieldSetFields, false, false, false, dataAccess);
 	}
@@ -133,7 +133,7 @@
 	 * @deprecated - consider using dataAccess for native platform enforcement of CRUD and FLS
 	 **/
 	@NamespaceAccessible
-	public  fflib_SObjectSelector(Boolean includeFieldSetFields, Boolean enforceCRUD, Boolean enforceFLS)
+	public fflib_SObjectSelector(Boolean includeFieldSetFields, Boolean enforceCRUD, Boolean enforceFLS)
 	{
 		this(includeFieldSetFields, enforceCRUD, enforceFLS, true);
 	}
@@ -148,7 +148,7 @@
 	 * @deprecated - consider using dataAccess for native platform enforcement of CRUD and FLS
 	 **/
 	@NamespaceAccessible
-	public  fflib_SObjectSelector(Boolean includeFieldSetFields, Boolean enforceCRUD, Boolean enforceFLS, Boolean sortSelectFields)
+	public fflib_SObjectSelector(Boolean includeFieldSetFields, Boolean enforceCRUD, Boolean enforceFLS, Boolean sortSelectFields)
 	{
 		this(includeFieldSetFields,enforceCRUD,enforceFLS,sortSelectFields,DataAccess.LEGACY);
 	}
@@ -167,7 +167,7 @@
 	 * Override this method to provide a list of Fieldsets that can optionally drive inclusion of additional fields in the base queries
 	 **/
 	@NamespaceAccessible
-	public  virtual List<Schema.FieldSet> getSObjectFieldSetList()
+	public virtual List<Schema.FieldSet> getSObjectFieldSetList()
 	{
 		return null;
 	}
@@ -177,7 +177,7 @@
 	  * defaults to the name field of the object if it is not encrypted or CreatedDate if there the object has createdDated or Id
 	  **/
 	 @NamespaceAccessible
-	public  virtual String getOrderBy()
+	public virtual String getOrderBy()
 	 {
 		if (m_orderBy == null)
 		{
@@ -209,7 +209,7 @@
 	 * @deprecated -- consider using setDataAccess to enforce native Apex User Mode Operations instead
 	 **/
 	@NamespaceAccessible
-	public  fflib_SObjectSelector enforceFLS()
+	public fflib_SObjectSelector enforceFLS()
 	{
 		m_enforceFLS = true;
 		return this;
@@ -219,7 +219,7 @@
 	 * @description Set the selector to automatically include the FieldSet fields when building queries
 	 **/
 	@NamespaceAccessible
-	public  fflib_SObjectSelector includeFieldSetFields()
+	public fflib_SObjectSelector includeFieldSetFields()
 	{
 		this.m_includeFieldSetFields = true;
 		return this;
@@ -230,21 +230,21 @@
 	 * @return
 	 */
 	@NamespaceAccessible
-	public  fflib_SObjectSelector ignoreCRUD()
+	public fflib_SObjectSelector ignoreCRUD()
 	{
 		this.m_enforceCRUD = false;
 		return this;
 	}
 
 	@NamespaceAccessible
-	public  fflib_SObjectSelector unsortedSelectFields()
+	public fflib_SObjectSelector unsortedSelectFields()
 	{
 		this.m_sortSelectFields = false;
 		return this;
 	}
 
 	@NamespaceAccessible
-	public  fflib_SObjectSelector setDataAccess(DataAccess access){
+	public fflib_SObjectSelector setDataAccess(DataAccess access){
 		this.m_dataAccess = access;
 
 		//You can't mix and match the legacy enforceFls and assertCRUD with the SYSTEM_MODE or USER_MODE
@@ -260,7 +260,7 @@
 	 * Returns True if this Selector instance has been instructed by the caller to include Field Set fields
 	 **/
 	@NamespaceAccessible
-	public  Boolean isIncludeFieldSetFields() 
+	public Boolean isIncludeFieldSetFields() 
 	{
 		return m_includeFieldSetFields;
 	}
@@ -269,7 +269,7 @@
 	 * Returns True if this Selector is enforcing FLS
 	 **/
 	@NamespaceAccessible
-	public  Boolean isEnforcingFLS()
+	public Boolean isEnforcingFLS()
 	{
 		return m_enforceFLS;
 	}
@@ -278,13 +278,13 @@
 	 * Returns True if this Selector is enforcing CRUD Security
 	 **/
 	@NamespaceAccessible
-	public  Boolean isEnforcingCRUD()
+	public Boolean isEnforcingCRUD()
 	{
 		return m_enforceCRUD;
 	}
 
 	@NamespaceAccessible
-	public  DataAccess getDataAccess(){
+	public DataAccess getDataAccess(){
 		return m_dataAccess;
 	}
 
@@ -295,7 +295,7 @@
 	 * @depricated See newQueryFactory
 	 **/
 	@NamespaceAccessible
-	public  fflib_StringBuilder.CommaDelimitedListBuilder getFieldListBuilder()
+	public fflib_StringBuilder.CommaDelimitedListBuilder getFieldListBuilder()
 	{
 		return 
 			new fflib_StringBuilder.CommaDelimitedListBuilder(
@@ -309,7 +309,7 @@
 	 * @depricated See newQueryFactory
 	 **/    
 	@NamespaceAccessible
-	public  void setFieldListBuilder(fflib_StringBuilder.FieldListBuilder fieldListBuilder)
+	public void setFieldListBuilder(fflib_StringBuilder.FieldListBuilder fieldListBuilder)
 	{
 		// TODO: Consider if given the known use cases for this (dynamic selector optimisation) if it's OK to leave this as a null operation
 	}
@@ -320,7 +320,7 @@
 	 * @deprecated See newQueryFactory
 	 **/    
 	@NamespaceAccessible
-	public  String getFieldListString()
+	public String getFieldListString()
 	{
 		return getFieldListBuilder().getStringValue();
 	}
@@ -332,7 +332,7 @@
 	 * @depricated See newQueryFactory
 	 **/    
 	@NamespaceAccessible
-	public  String getRelatedFieldListString(String relation)
+	public String getRelatedFieldListString(String relation)
 	{
 		return getFieldListBuilder().getStringValue(relation + '.');
 	}
@@ -341,7 +341,7 @@
 	 * Returns the string representation of the SObject this selector represents
 	 **/
 	@NamespaceAccessible
-	public  String getSObjectName()
+	public String getSObjectName()
 	{
 		return describeWrapper.getDescribe().getName();
 	}
@@ -355,7 +355,7 @@
 	 * @returns A list of SObject's
 	 **/
 	@NamespaceAccessible
-	public  virtual List<SObject> selectSObjectsById(Set<Id> idSet)
+	public virtual List<SObject> selectSObjectsById(Set<Id> idSet)
 	{
 		return Database.query(buildQuerySObjectById());
 	}
@@ -369,7 +369,7 @@
 	 * @returns A QueryLocator (typically for use in a Batch Apex job)
 	 **/
 	@NamespaceAccessible
-	public  virtual Database.QueryLocator queryLocatorById(Set<Id> idSet)
+	public virtual Database.QueryLocator queryLocatorById(Set<Id> idSet)
 	{
 		return Database.getQueryLocator(buildQuerySObjectById());
 	}
@@ -380,7 +380,7 @@
 	 * @deprecated If you utilise the newQueryFactory method this is automatically done for you (unless disabled by the selector)
 	 **/
 	@NamespaceAccessible
-	public  void assertIsAccessible()
+	public void assertIsAccessible()
 	{
 		if(!getSObjectType().getDescribe().isAccessible())
 		   throw new fflib_SObjectDomain.DomainException(
@@ -389,24 +389,24 @@
 
 	/**
 	 * @NamespaceAccessible
-	public  access for the getSObjectType during Mock registration
+	public access for the getSObjectType during Mock registration
 	 *   (adding @NamespaceAccessible
-	public  to the existing method broken base class API backwards compatibility)
+	public to the existing method broken base class API backwards compatibility)
 	 **/
 	@NamespaceAccessible
-	public  SObjectType getSObjectType2()
+	public SObjectType getSObjectType2()
 	{
 		return getSObjectType();
 	}
 
 	/**
 	 * @NamespaceAccessible
-	public  access for the getSObjectType during Mock registration
+	public access for the getSObjectType during Mock registration
 	 *   (adding @NamespaceAccessible
-	public  to the existing method broken base class API backwards compatibility1)
+	public to the existing method broken base class API backwards compatibility1)
 	 **/
 	@NamespaceAccessible
-	public  SObjectType sObjectType()
+	public SObjectType sObjectType()
 	{
 		return getSObjectType();
 	}
@@ -415,7 +415,7 @@
 	 * Returns a QueryFactory configured with the Selectors object, fields, fieldsets and default order by
 	 **/
 	@NamespaceAccessible
-	public  fflib_QueryFactory newQueryFactory()
+	public fflib_QueryFactory newQueryFactory()
 	{    
 		return newQueryFactory(m_enforceCRUD, m_enforceFLS, true, m_DataAccess);
 	}
@@ -424,7 +424,7 @@
 	 * Returns a QueryFactory configured with the Selectors object, fields, fieldsets and default order by
 	 **/
 	@NamespaceAccessible
-	public  fflib_QueryFactory newQueryFactory(Boolean includeSelectorFields)
+	public fflib_QueryFactory newQueryFactory(Boolean includeSelectorFields)
 	{    
 		return newQueryFactory(m_enforceCRUD, m_enforceFLS, includeSelectorFields, m_DataAccess);
 	}
@@ -434,7 +434,7 @@
 	 * CRUD and FLS read security will be checked if the corresponding inputs are true (overrides that defined in the selector).
 	 **/
 	@NamespaceAccessible
-	public  fflib_QueryFactory newQueryFactory(Boolean assertCRUD, Boolean enforceFLS, Boolean includeSelectorFields)
+	public fflib_QueryFactory newQueryFactory(Boolean assertCRUD, Boolean enforceFLS, Boolean includeSelectorFields)
 	{
 		// Construct QueryFactory around the given SObject
 		return newQueryFactory(
@@ -461,7 +461,7 @@
 	  * // TODO: This should be consistent (ideally) with configureQueryFactory below
 	  **/
 	 @NamespaceAccessible
-	public  void configureQueryFactoryFields(fflib_QueryFactory queryFactory, String relationshipFieldPath)
+	public void configureQueryFactoryFields(fflib_QueryFactory queryFactory, String relationshipFieldPath)
 	 {
 	// Add fields from selector prefixing the relationship path		
 		for(SObjectField field : getSObjectFieldList()) {
@@ -477,7 +477,7 @@
 	 * Adds a subselect QueryFactory based on this selector to the given QueryFactor, returns the child QueryFactory
 	 **/
 	@NamespaceAccessible
-	public  fflib_QueryFactory addQueryFactorySubselect(fflib_QueryFactory parentQueryFactory)
+	public fflib_QueryFactory addQueryFactorySubselect(fflib_QueryFactory parentQueryFactory)
 	{    
 		return addQueryFactorySubselect(parentQueryFactory, true);
 	}
@@ -486,7 +486,7 @@
 	 * Adds a subselect QueryFactory based on this selector to the given QueryFactor
 	 **/
 	@NamespaceAccessible
-	public  fflib_QueryFactory addQueryFactorySubselect(fflib_QueryFactory parentQueryFactory, Boolean includeSelectorFields)
+	public fflib_QueryFactory addQueryFactorySubselect(fflib_QueryFactory parentQueryFactory, Boolean includeSelectorFields)
 	{
 		fflib_QueryFactory subSelectQueryFactory =
 			parentQueryFactory.subselectQuery(getSObjectType2());
@@ -502,7 +502,7 @@
 	  * Adds a subselect QueryFactory based on this selector to the given QueryFactor, returns the child QueryFactory
 	  **/
 	 @NamespaceAccessible
-	public  fflib_QueryFactory addQueryFactorySubselect(fflib_QueryFactory parentQueryFactory, String relationshipName)
+	public fflib_QueryFactory addQueryFactorySubselect(fflib_QueryFactory parentQueryFactory, String relationshipName)
 	 {
 	return addQueryFactorySubselect(parentQueryFactory, relationshipName, TRUE);
 	 }
@@ -511,7 +511,7 @@
 	   * Adds a subselect QueryFactory based on this selector to the given QueryFactor
 	   **/
 	 @NamespaceAccessible
-	public  fflib_QueryFactory addQueryFactorySubselect(fflib_QueryFactory parentQueryFactory, String relationshipName, Boolean includeSelectorFields)
+	public fflib_QueryFactory addQueryFactorySubselect(fflib_QueryFactory parentQueryFactory, String relationshipName, Boolean includeSelectorFields)
 	 {
 		fflib_QueryFactory subSelectQueryFactory = parentQueryFactory.subselectQuery(relationshipName);
 		return configureQueryFactory(subSelectQueryFactory, m_enforceCRUD, m_enforceFLS, includeSelectorFields, m_dataAccess);
