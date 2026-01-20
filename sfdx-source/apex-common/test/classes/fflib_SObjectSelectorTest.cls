@@ -714,18 +714,24 @@ private with sharing class fflib_SObjectSelectorTest
 		//Given		
 
 		CaseCommentSelector ccSelector = new CaseCommentSelector(fflib_SObjectSelector.DataAccess.LEGACY);
+		CaseSelector caseSelector = new CaseSelector();
+		UserSelector userSelector = new UserSelector();
 		fflib_QueryFactory qf = ccSelector.newQueryFactory();
-		new CaseSelector().configureQueryFactoryFields(qf, 'Parent');
-		new UserSelector().configureQueryFactoryFields(qf, 'Parent.Owner');
+		caseSelector.configureQueryFactoryFields(qf, 'Parent');
+		userSelector.configureQueryFactoryFields(qf, 'Parent.Owner');
 
 
 		Set<String> expectedSelectFields = new Set<String>{
 				'Id', 'CommentBody', 'Parent.Id', 'Parent.OwnerId', 'Parent.Owner.Id', 'Parent.Owner.UserRoleId'
 		};
-		if (UserInfo.isMultiCurrencyOrganization()) {
+		if (ccSelector.isCurrencyIsoCodeAvailable()) {
 			expectedSelectFields.add('CurrencyIsoCode');
+		}
+		if (caseSelector.isCurrencyIsoCodeAvailable()) {
 			expectedSelectFields.add('Parent.CurrencyIsoCode');
-			expectedSelectFields.add('Parent.Owner.CurrencyIsoCode');  // Because the Selector is for User; Group would not have
+		}
+		if (userSelector.isCurrencyIsoCodeAvailable()) {
+			expectedSelectFields.add('Parent.Owner.CurrencyIsoCode');
 		}
 
 		//When
@@ -746,21 +752,25 @@ private with sharing class fflib_SObjectSelectorTest
 		//Given
 
 		CaseCommentSelector ccSelector = new CaseCommentSelector(fflib_SObjectSelector.DataAccess.LEGACY);
+		CaseSelector caseSelector = new CaseSelector();
+		GroupSelector groupSelector = new GroupSelector();
 		fflib_QueryFactory qf = ccSelector.newQueryFactory();
-		new CaseSelector().configureQueryFactoryFields(qf, 'Parent');
-		new GroupSelector().configureQueryFactoryFields(qf, 'Parent.Owner');
+		caseSelector.configureQueryFactoryFields(qf, 'Parent');
+		groupSelector.configureQueryFactoryFields(qf, 'Parent.Owner');
 
 
 		Set<String> expectedSelectFields = new Set<String>{
 			'Id', 'CommentBody', 'Parent.Id', 'Parent.OwnerId', 'Parent.Owner.Id'
 		};
 		Set<String> unexpectedSelectFields = new Set<String>();
-		if (UserInfo.isMultiCurrencyOrganization()) {
+		if (ccSelector.isCurrencyIsoCodeAvailable()) {
 			expectedSelectFields.add('CurrencyIsoCode');
-			expectedSelectFields.add('Parent.CurrencyIsoCode');
-
-			unexpectedSelectFields.add('Parent.Owner.CurrencyIsoCode'); // Because Group does NOT have CurrencyIsoCode
 		}
+		if (caseSelector.isCurrencyIsoCodeAvailable()) {
+			expectedSelectFields.add('Parent.CurrencyIsoCode');
+		}
+		// Group does NOT have CurrencyIsoCode field
+		unexpectedSelectFields.add('Parent.Owner.CurrencyIsoCode');
 
 		//When
 		String soql = qf.toSOQL();
@@ -785,24 +795,26 @@ private with sharing class fflib_SObjectSelectorTest
 	@IsTest
 	static void toSOQL_When_SystemModePolymorphicSelect_Expect_RelatedType() {
 		CaseCommentSelector ccSelector = new CaseCommentSelector(fflib_SObjectSelector.DataAccess.SYSTEM_MODE);
+		CaseSelector caseSelector = new CaseSelector();
+		UserSelector userSelector = new UserSelector();
 		fflib_QueryFactory qf = ccSelector.newQueryFactory();
-		new CaseSelector().configureQueryFactoryFields(qf, 'Parent');
-		new UserSelector().configureQueryFactoryFields(qf, 'Parent.Owner');
+		caseSelector.configureQueryFactoryFields(qf, 'Parent');
+		userSelector.configureQueryFactoryFields(qf, 'Parent.Owner');
 
 		List<String> expectedSelectFields = new List<String>();
 		expectedSelectFields.add('id');
 		expectedSelectFields.add('commentbody');
-		if (UserInfo.isMultiCurrencyOrganization()) {
+		if (ccSelector.isCurrencyIsoCodeAvailable()) {
 			expectedSelectFields.add('currencyisocode');
 		}
 		expectedSelectFields.add('parent.ownerid');
 		expectedSelectFields.add('parent.id');
-		if (UserInfo.isMultiCurrencyOrganization()) {
+		if (caseSelector.isCurrencyIsoCodeAvailable()) {
 			expectedSelectFields.add('parent.currencyisocode');
 		}
 		expectedSelectFields.add('parent.owner.userroleid');
 		expectedSelectFields.add('parent.owner.id');
-		if (UserInfo.isMultiCurrencyOrganization()) {
+		if (userSelector.isCurrencyIsoCodeAvailable()) {
 			expectedSelectFields.add('parent.owner.currencyisocode');
 		}
 
@@ -834,16 +846,23 @@ private with sharing class fflib_SObjectSelectorTest
 		fflib_QueryFactory tQF = tSel.addQueryFactorySubselect(listEmailQF);
 
 	String expected = String.format(
-		'SELECT name, id, annualrevenue, accountnumber, ' +
-			'(SELECT id, contractnumber, ' +
-				'(SELECT name, id, amount, closedate, ' +
-					'(SELECT id, name, ' +
-						'(SELECT id, subject FROM Tasks ORDER BY {0} ASC NULLS FIRST )  ' +
-					'FROM ListEmails ORDER BY {1} ASC NULLS FIRST )  ' +
-				'FROM Opportunities ORDER BY {2} ASC NULLS FIRST )  ' +
-			'FROM Contracts ORDER BY {3} ASC NULLS FIRST )  ' +
-		'FROM Account WITH USER_MODE ORDER BY {4} ASC NULLS FIRST ',
-		new List<String>{ tSel.getOrderBy(), listEmailSel.getOrderBy(), oppSel.getOrderBy(), cSel.getOrderBy(), aSel.getOrderBy() }
+		'SELECT name, id, annualrevenue, accountnumber{0}, ' +
+			'(SELECT id, contractnumber{1}, ' +
+				'(SELECT name, id, amount, closedate{2}, ' +
+					'(SELECT id, name{3}, ' +
+						'(SELECT id, subject{4} FROM Tasks ORDER BY {5} ASC NULLS FIRST )  ' +
+					'FROM ListEmails ORDER BY {6} ASC NULLS FIRST )  ' +
+				'FROM Opportunities ORDER BY {7} ASC NULLS FIRST )  ' +
+			'FROM Contracts ORDER BY {8} ASC NULLS FIRST )  ' +
+		'FROM Account WITH USER_MODE ORDER BY {9} ASC NULLS FIRST ',
+		new List<String>{
+			aSel.isCurrencyIsoCodeAvailable() ? ', currencyisocode' : '',
+			cSel.isCurrencyIsoCodeAvailable() ? ', currencyisocode' : '',
+			oppSel.isCurrencyIsoCodeAvailable() ? ', currencyisocode' : '',
+			listEmailSel.isCurrencyIsoCodeAvailable() ? ', currencyisocode' : '',
+			tSel.isCurrencyIsoCodeAvailable() ? ', currencyisocode' : '',
+			tSel.getOrderBy(), listEmailSel.getOrderBy(), oppSel.getOrderBy(), cSel.getOrderBy(), aSel.getOrderBy()
+		}
 	);
 
 		Assert.areEqual(expected,aQF.toSOQL());
