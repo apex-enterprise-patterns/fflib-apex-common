@@ -88,6 +88,73 @@ private class fflib_SObjectsTest
 	}
 
 	@IsTest
+	static void itShouldReturnRecordsByIds()
+	{
+		final Id accountIdA = fflib_IDGenerator.generate(Schema.Account.SObjectType);
+		final Id accountIdB = fflib_IDGenerator.generate(Schema.Account.SObjectType);
+		final Id accountIdC = fflib_IDGenerator.generate(Schema.Account.SObjectType);
+
+		fflib_SObjects domain = new fflib_SObjects(
+				new List<SObject>
+				{
+						new Account(Id = accountIdA, Name = 'A'),
+						new Account(Id = accountIdB, Name = 'B'),
+						new Account(Id = accountIdC, Name = 'C')
+				});
+
+		Set<Id> idsToRetrieve = new Set<Id> {accountIdA, accountIdC};
+
+		// Get just a subset of the domain
+		List<SObject> subSetRecords = domain.getRecords(idsToRetrieve);
+		Set<Id> resultIds = new Map<Id, SObject>(subSetRecords).keySet();
+		System.assertEquals(2, subSetRecords.size(), 'Unexpected amount of record returned');
+		System.assert(resultIds.containsAll(idsToRetrieve), 'Did not retrieve the correct records');
+
+		// Get all the other records
+		List<SObject> allOtherRecords = domain.getRecordsNotIn(idsToRetrieve);
+		System.assertEquals(1, allOtherRecords.size(), 'Unexpected amount of record returned');
+		System.assertEquals(accountIdB, allOtherRecords.get(0).Id, 'Did not retrieve the correct record');
+
+		// Get a single specific record
+		System.assertEquals(accountIdB, domain.getRecord(accountIdB).Id, 'Incorrect record retrieved from domain');
+	}
+
+	@IsTest
+	static void itShouldReturnRecordByIdField()
+	{
+		final Id accountIdA = fflib_IDGenerator.generate(Schema.Account.SObjectType);
+		final Id accountIdB = fflib_IDGenerator.generate(Schema.Account.SObjectType);
+
+		fflib_SObjects domain = new fflib_SObjects(
+				new List<SObject>
+				{
+						new Contact(AccountId = accountIdA),
+						new Contact(AccountId = accountIdB)
+				});
+		Map<Id, SObject> contactByAccountId = domain.getRecordByIdField(Schema.Contact.AccountId);
+		System.assertEquals(2, contactByAccountId.size());
+	}
+
+	@IsTest
+	static void itShouldReturnRecordsByIdField()
+	{
+		final Id accountIdA = fflib_IDGenerator.generate(Schema.Account.SObjectType);
+		final Id accountIdB = fflib_IDGenerator.generate(Schema.Account.SObjectType);
+
+		fflib_SObjects domain = new fflib_SObjects(
+				new List<SObject>
+				{
+						new Contact(AccountId = accountIdA),
+						new Contact(AccountId = accountIdA),
+						new Contact(AccountId = accountIdB)
+				});
+		Map<Id, List<SObject>> contactByAccountId = domain.getRecordsByIdField(Schema.Contact.AccountId);
+		System.assertEquals(2, contactByAccountId.size());
+		System.assertEquals(2, contactByAccountId.get(accountIdA).size());
+		System.assertEquals(1, contactByAccountId.get(accountIdB).size());
+	}
+
+	@IsTest
 	static void itShouldReturnRecordsWithFieldValues()
 	{
 		DomainAccounts domain = generateDomain();
