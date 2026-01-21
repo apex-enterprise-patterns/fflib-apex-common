@@ -79,7 +79,7 @@ public virtual class fflib_SObjects
 	 *
 	 * @param message The error message to add to each record
 	 */
-	protected void addError(String message)
+	public virtual void addError(String message)
 	{
 		for (SObject record : getRecords())
 		{
