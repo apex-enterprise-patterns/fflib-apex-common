@@ -102,6 +102,13 @@ private class fflib_SObjectsTest
 
 		System.assertEquals(3, domain.selectWithoutShippingCountry().size());
 	}
+	@IsTest
+	static void itShouldReturnRecordsWithoutFieldValuesForNonStringFields()
+	{
+		DomainAccounts domain = generateDomain();
+
+		System.assertEquals(4, domain.selectWithoutNumberOfEmployees().size());
+	}
 
 	@IsTest
 	static void itShouldReturnRecordsWithoutAllFieldValues()
@@ -118,13 +125,20 @@ private class fflib_SObjectsTest
 
 		System.assert(domain.selectWithShippingCountry().size() == 4);
 	}
+	@IsTest
+	static void itShouldReturnRecordsWithNumberOfEmployees()
+	{
+		DomainAccounts domain = generateDomain();
+
+		System.assert(domain.selectWithNumberOfEmployees().size() == 3);
+	}
 
 	@IsTest
 	static void itShouldReturnRecordsWithAllFieldValues()
 	{
 		DomainAccounts domain = generateDomain();
 
-		System.assert(domain.selectPopulatedRecords().size() == 4);
+		System.assert(domain.selectPopulatedRecords().size() == 2);
 	}
 
 	@IsTest
@@ -148,6 +162,44 @@ private class fflib_SObjectsTest
 		System.assert(
 				domain.getFieldValues(Schema.Account.ShippingCountry)
 						.equals(expected)
+		);
+	}
+
+	@IsTest
+	static void itShouldReturnFieldValuesForNonStringFields()
+	{
+		DomainAccounts domain = generateDomain();
+
+		final Set<Integer> expectedOriginalType = new Set<Integer>
+		{
+				null,
+				10,
+				20,
+				30
+		};
+
+		System.assert(
+				domain.getFieldValues(Schema.Account.NumberOfEmployees)
+						.equals(expectedOriginalType)
+		);
+	}
+
+	@IsTest
+	static void itShouldReturnStringFieldValuesForNonStringFields()
+	{
+		DomainAccounts domain = generateDomain();
+
+		final Set<String> expectedStrings = new Set<String>
+		{
+				null,
+				'10',
+				'20',
+				'30'
+		};
+
+		System.assert(
+				domain.getStringFieldValues(Schema.Account.NumberOfEmployees)
+						.equals(expectedStrings)
 		);
 	}
 
@@ -212,11 +264,11 @@ private class fflib_SObjectsTest
 				{
 						new Account(Name = 'A', ShippingCountry = 'USA'),
 						new Account(Name = 'B', ShippingCountry = 'Ireland'),
-						new Account(Name = 'C', ShippingCountry = 'UK'),
+						new Account(Name = 'C', ShippingCountry = 'UK', NumberOfEmployees = 10),
 						new Account(Name = 'D', ShippingCountry = ''),
-						new Account(Name = 'E'),
+						new Account(Name = 'E', NumberOfEmployees = 20),
 						new Account(),
-						new Account(Name = 'G', ShippingCountry = 'Canada')
+						new Account(Name = 'G', ShippingCountry = 'Canada', NumberOfEmployees = 30)
 				}
 		);
 		return domain;
@@ -260,13 +312,28 @@ private class fflib_SObjectsTest
 			);
 		}
 
+		public List<Account> selectWithoutNumberOfEmployees()
+		{
+			return (List<Account>) getRecordsWithBlankFieldValues(
+							Schema.Account.NumberOfEmployees
+			);
+		}
+
+		public List<Account> selectWithNumberOfEmployees()
+		{
+			return (List<Account>) getRecordsWithNotBlankFieldValues(
+							Schema.Account.NumberOfEmployees
+			);
+		}
+
 		public List<Account> selectWithEmptyRecord()
 		{
 			return (List<Account>) getRecordsWithAllBlankFieldValues(
 					new Set<Schema.SObjectField>
 					{
 							Schema.Account.Name,
-							Schema.Account.ShippingCountry
+							Schema.Account.ShippingCountry,
+							Schema.Account.NumberOfEmployees
 					}
 			);
 		}
@@ -277,7 +344,8 @@ private class fflib_SObjectsTest
 					new Set<Schema.SObjectField>
 					{
 							Schema.Account.Name,
-							Schema.Account.ShippingCountry
+							Schema.Account.ShippingCountry,
+							Schema.Account.NumberOfEmployees
 					}
 			);
 		}
