@@ -111,14 +111,11 @@ public virtual class fflib_SObjectUnitOfWork
         {
             update objList;
         }
-        public virtual void dmlUpsert(List<SObject> objList, Schema.SObjectField externalId) {
-            if (!objList.isEmpty()) {
-
-                Type objListType = Type.ForName('List<' + objList[0].getSObjectType() + '>');
-                List<SObject> typpedList = (List<SObject>)objListType.newInstance();
-                typpedList.addAll(objList);
-
-                Database.upsert(typpedList, externalId);
+        public virtual void dmlUpsert(List<SObject> objList, Schema.SObjectField externalId)
+        {
+            if (!objList.isEmpty())
+            {
+                Database.upsert(objList, externalId);
             }
         }
         public virtual void dmlDelete(List<SObject> objList)
@@ -166,6 +163,10 @@ public virtual class fflib_SObjectUnitOfWork
 		}
 		public virtual override void dmlDelete(List<SObject> objList){
 			Database.delete(objList,m_accessLevel);
+		}
+		public virtual override void dmlUpsert(List<SObject> objList, Schema.SObjectField externalId)
+		{
+			Database.upsert(objList, externalId, true, m_accessLevel);
 		}
 	}
 
@@ -522,45 +523,65 @@ public virtual class fflib_SObjectUnitOfWork
      * @param relatedToParentField A SObjectField reference to the child field that associates the child record with its parent
      * @param relatedToParentRecord A SObject instance of the parent record (should also be registered as new separately)
      **/
-    public void registerUpsert(SObject record, Schema.SObjectField externalIdField, Schema.sObjectField relatedToParentField, SObject relatedToParentRecord) 
+    public void registerUpsert(SObject record, Schema.SObjectField externalIdField, Schema.sObjectField relatedToParentField, SObject relatedToParentRecord)
     {
-        
         SObjectType sObjectType = record.getSObjectType();
         String sObjName = sObjectType.getDescribe().getName();
 
-		assertForNonEventSObjectType(sObjName);
-		assertForSupportedSObjectType(m_upsertRecordsPerType, sObjName);
+        assertForNonEventSObjectType(sObjName);
+        assertForSupportedSObjectType(m_upsertRecordsPerType, sObjName);
 
-        if (externalIdField == null) 
+        if (externalIdField == null)
+        {
             throw new UnitOfWorkException('Invalid argument: externalIdField. If you want to upsert by id, use the registerUpsert method that has only one argument');
+        }
+
+        Schema.SObjectField registeredExternalId = m_externalIdToUpsertPerType.get(sObjName);
+        if (registeredExternalId == externalIdField)
+        {
+            m_upsertRecordsPerType.get(sObjName).add(record);
+            if (relatedToParentRecord != null && relatedToParentField != null)
+            {
+                registerRelationship(record, relatedToParentField, relatedToParentRecord);
+            }
+            return;
+        }
+        if (registeredExternalId != null)
+        {
+            throw new UnitOfWorkException(String.format(
+                'SObject type {0} has already registered an upsert by external id {1}, you cannot use another in this unit of work.',
+                new List<String> { sObjName, registeredExternalId.getDescribe().getName() }
+            ));
+        }
+        if (!(m_dml instanceof IDML2))
+        {
+            throw new UnitOfWorkException('Upsert by external ID requires IDML2 implementation. Current DML implementation does not support this feature.');
+        }
 
         String externalIdFieldName = externalIdField.getDescribe().getName();
         Boolean relatedHasExternalIdField = sObjectType.getDescribe().fields.getMap().keySet().contains(externalIdFieldName.toLowerCase());
         Boolean externalIdFieldIsValid = externalIdField.getDescribe().isIdLookup();
 
-        if (record.Id != null && !externalIdFieldName.equalsIgnoreCase('id'))
-            throw new UnitOfWorkException('When upserting by external id, the record cannot already have the standard id populated');
-
-        if (!relatedHasExternalIdField)
-            throw new UnitOfWorkException('Invalid argument: externalIdField. Field supplied is not a known field on the target sObject.');
-
-        if (!externalIdFieldIsValid)
-            throw new UnitOfWorkException('Invalid argument: externalIdField. Field supplied cannot be used with upsert.');
-
-        Schema.SObjectField registeredExternalId = m_externalIdToUpsertPerType.get(sObjName);
-        if (registeredExternalId != null && registeredExternalId != externalIdField) 
+        if (record.Id != null && !externalIdFieldName.equalsIgnoreCase('Id'))
         {
-            throw new UnitOfWorkException(String.format(
-                'SObject type {0} has already registered an upsert by external id {1}, you cannot use another is this unit of work.',
-                new List<String> {sObjName, registeredExternalId.getDescribe().getName()}
-			));
+            throw new UnitOfWorkException('When upserting by external id, the record cannot already have the standard id populated');
+        }
+        if (!relatedHasExternalIdField)
+        {
+            throw new UnitOfWorkException('Invalid argument: externalIdField. Field supplied is not a known field on the target sObject.');
+        }
+        if (!externalIdFieldIsValid)
+        {
+            throw new UnitOfWorkException('Invalid argument: externalIdField. Field supplied cannot be used with upsert.');
         }
 
         m_upsertRecordsPerType.get(sObjName).add(record);
         m_externalIdToUpsertPerType.put(sObjName, externalIdField);
 
-        if (relatedToParentRecord!=null && relatedToParentField!=null)
+        if (relatedToParentRecord != null && relatedToParentField != null)
+        {
             registerRelationship(record, relatedToParentField, relatedToParentRecord);
+        }
     }
 
     /**

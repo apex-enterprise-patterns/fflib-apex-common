@@ -650,6 +650,21 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         System.assertEquals(1, [SELECT COUNT() FROM Opportunity WHERE StageName = 'Closed']);
     }
 
+    @isTest
+    private static void testRegisterUpsertByExternalId_When_UserModeDML_Expect_UpsertInUserMode() {
+        // Covers UserModeDML.dmlUpsert (Database.upsert with accessLevel)
+        Opportunity existingOpp = new Opportunity(Name = 'Existing Opportunity', StageName = 'Open', CloseDate = System.today());
+        insert existingOpp;
+        existingOpp.StageName = 'Closed';
+
+        Test.startTest();
+        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS, new fflib_SObjectUnitOfWork.UserModeDML());
+        uow.registerUpsert(new List<Opportunity>{existingOpp}, Opportunity.Id);
+        uow.commitWork();
+        Test.stopTest();
+
+        System.assertEquals(1, [SELECT COUNT() FROM Opportunity WHERE StageName = 'Closed']);
+    }
 
     @isTest
     private static void testRegisterUpsertByExternalIdParentWillResolve() {
@@ -752,14 +767,11 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         MockDML mockDML = new MockDML();
         fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS, mockDML);
 
-        // WHEN we try to register an upsert by external ID
-        uow.registerUpsert(new List<Opportunity>{existingOpp}, Opportunity.Id);
-
-        // THEN an exception should be thrown when committing because MockDML doesn't implement IDML2
+        // WHEN we try to register an upsert by external ID THEN an exception is thrown at registration (MockDML doesn't implement IDML2)
         Boolean exceptionThrown = false;
         fflib_SObjectUnitOfWork.UnitOfWorkException caughtException = null;
         try {
-            uow.commitWork();
+            uow.registerUpsert(new List<Opportunity>{existingOpp}, Opportunity.Id);
         } catch (fflib_SObjectUnitOfWork.UnitOfWorkException e) {
             exceptionThrown = true;
             caughtException = e;
@@ -767,8 +779,70 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 
         System.assert(exceptionThrown, 'Expected UnitOfWorkException to be thrown when using IDML without IDML2');
         System.assert(caughtException != null, 'Expected to catch UnitOfWorkException');
-        System.assert(caughtException.getMessage().contains('Upsert by external ID requires IDML2 implementation'), 
+        System.assert(caughtException.getMessage().contains('Upsert by external ID requires IDML2 implementation'),
             'Expected exception message to mention IDML2 requirement');
+    }
+
+    @isTest
+    private static void testRegisterUpsert_When_NullExternalIdField_Expect_Exception() {
+        Opportunity opp = new Opportunity(Name = 'Test', StageName = 'Open', CloseDate = System.today());
+        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
+        Boolean exceptionThrown = false;
+        try {
+            uow.registerUpsert(opp, null, null, null);
+        } catch (fflib_SObjectUnitOfWork.UnitOfWorkException e) {
+            exceptionThrown = true;
+            System.assert(e.getMessage().contains('externalIdField'), 'Expected message to mention externalIdField');
+        }
+        System.assert(exceptionThrown, 'Expected UnitOfWorkException when externalIdField is null');
+    }
+
+    @isTest
+    private static void testRegisterUpsert_When_FieldNotOnTargetSObject_Expect_Exception() {
+        Opportunity opp = new Opportunity(Name = 'Test', StageName = 'Open', CloseDate = System.today());
+        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
+        Boolean exceptionThrown = false;
+        try {
+            uow.registerUpsert(opp, Account.NumberOfEmployees, null, null);
+        } catch (fflib_SObjectUnitOfWork.UnitOfWorkException e) {
+            exceptionThrown = true;
+            System.assert(e.getMessage().contains('not a known field') || e.getMessage().contains('target sObject'),
+                'Expected message about field not on target sObject');
+        }
+        System.assert(exceptionThrown, 'Expected UnitOfWorkException when externalIdField is not on target sObject');
+    }
+
+    @isTest
+    private static void testRegisterUpsert_When_FieldNotValidForUpsert_Expect_Exception() {
+        Opportunity opp = new Opportunity(Name = 'Test', StageName = 'Open', CloseDate = System.today());
+        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
+        Boolean exceptionThrown = false;
+        try {
+            uow.registerUpsert(opp, Opportunity.StageName, null, null);
+        } catch (fflib_SObjectUnitOfWork.UnitOfWorkException e) {
+            exceptionThrown = true;
+            System.assert(e.getMessage().contains('cannot be used with upsert'),
+                'Expected message about field not valid for upsert');
+        }
+        System.assert(exceptionThrown, 'Expected UnitOfWorkException when externalIdField is not valid for upsert (e.g. not idLookup)');
+    }
+
+    @isTest
+    private static void testRegisterUpsert_When_DifferentExternalIdAlreadyRegisteredForSameType_Expect_Exception() {
+        User runningUser = [SELECT Id, Username FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
+        List<Schema.SObjectType> userTypes = new List<Schema.SObjectType>{ User.SObjectType };
+        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(userTypes);
+        uow.registerUpsert(runningUser, User.Id, null, null);
+        User secondUser = runningUser.clone(false, true);
+        Boolean exceptionThrown = false;
+        try {
+            uow.registerUpsert(secondUser, User.Username, null, null);
+        } catch (fflib_SObjectUnitOfWork.UnitOfWorkException e) {
+            exceptionThrown = true;
+            System.assert(e.getMessage().contains('you cannot use another in this unit of work'),
+                'Expected message about different external id already registered');
+        }
+        System.assert(exceptionThrown, 'Expected UnitOfWorkException when registering same type with different external ID field');
     }
 
     @IsTest
