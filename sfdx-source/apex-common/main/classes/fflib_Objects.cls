@@ -23,33 +23,40 @@
  *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **/
-public virtual class fflib_Objects implements fflib_IObjects
+@NamespaceAccessible
+	public virtual class fflib_Objects implements fflib_IObjects
 {
+	@NamespaceAccessible
 	protected List<Object> objects { get; private set;} { objects = new List<Object>(); }
 
 	/**
 	 * Class constructor
 	 */
+	@NamespaceAccessible
 	public fflib_Objects(List<Object> objects)
 	{
 		this.objects = objects.clone();
 	}
 
+	@NamespaceAccessible
 	public virtual Object getType()
 	{
 		return Object.class;
 	}
 
+	@NamespaceAccessible
 	public List<Object> getObjects()
 	{
 		return this.objects;
 	}
 
+	@NamespaceAccessible
 	public Boolean contains(Object value)
 	{
 		return getObjects()?.contains(value);
 	}
 
+	@NamespaceAccessible
 	public Boolean containsAll(List<Object> values)
 	{
 		if (values == null) return false;
@@ -57,6 +64,7 @@ public virtual class fflib_Objects implements fflib_IObjects
 		return containsAll(new Set<Object>(values));
 	}
 
+	@NamespaceAccessible
 	public Boolean containsAll(Set<Object> values)
 	{
 		if (values == null) return false;
@@ -68,11 +76,13 @@ public virtual class fflib_Objects implements fflib_IObjects
 		return true;
 	}
 
+	@NamespaceAccessible
 	public Boolean containsNot(Object value)
 	{
 		return !contains(value);
 	}
 
+	@NamespaceAccessible
 	public Boolean containsNot(List<Object> values)
 	{
 		if (values == null) return true;
@@ -80,6 +90,7 @@ public virtual class fflib_Objects implements fflib_IObjects
 		return containsNot(new Set<Object>(values));
 	}
 
+	@NamespaceAccessible
 	public Boolean containsNot(Set<Object> values)
 	{
 		if (values == null) return true;
@@ -91,21 +102,25 @@ public virtual class fflib_Objects implements fflib_IObjects
 		return true;
 	}
 
+	@NamespaceAccessible
 	public Boolean isEmpty()
 	{
 		return (getObjects() == null || getObjects().isEmpty());
 	}
 
+	@NamespaceAccessible
 	public Boolean isNotEmpty()
 	{
 		return !isEmpty();
 	}
 
+	@NamespaceAccessible
 	public Integer size()
 	{
 		return getObjects().size();
 	}
 
+	@NamespaceAccessible
 	protected void setObjects(List<Object> objects)
 	{
 		this.objects = objects;

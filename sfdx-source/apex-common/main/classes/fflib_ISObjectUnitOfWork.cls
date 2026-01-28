@@ -27,6 +27,7 @@
 /**
  * @see fflib_SObjectUnitOfWork
  **/
+@NamespaceAccessible
 public interface fflib_ISObjectUnitOfWork
 {
     /**

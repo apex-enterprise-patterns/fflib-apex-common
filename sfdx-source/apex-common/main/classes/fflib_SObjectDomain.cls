@@ -38,6 +38,7 @@
  * http://martinfowler.com/eaaCatalog/domainModel.html
  *
  **/
+@NamespaceAccessible
 public virtual with sharing class fflib_SObjectDomain
 		extends fflib_SObjects
 	implements fflib_ISObjectDomain
@@ -45,6 +46,7 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Provides access to the data represented by this domain class
 	 **/
+	@NamespaceAccessible
 	public List<SObject> Records {
 		get
 		{
@@ -54,9 +56,10 @@ public virtual with sharing class fflib_SObjectDomain
 
 
 	/**
-     * Provides access to Trigger.oldMap and allowing it to be mocked in unit-tests
-     **/
+	 * Provides access to Trigger.oldMap and allowing it to be mocked in unit-tests
+	 **/
 	@TestVisible
+	@NamespaceAccessible
 	protected Map<Id, SObject> ExistingRecords
 	{
 		get
@@ -82,16 +85,19 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Exposes the configuration for this domain class instance
 	 **/ 
+	@NamespaceAccessible
 	public Configuration Configuration {get; private set;}    
 		
 	/**
 	 * DEPRECATED, This property has been moved to fflib_SObjects
 	 **/
+	@NamespaceAccessible
 	public static fflib_SObjectDomain.ErrorFactory Errors {get; private set;}
 	
 	/**
 	 * Useful during unit testing to access mock support for database inserts and updates (testing without DML)
 	 **/
+	@NamespaceAccessible
 	public static TestFactory Test  {get; private set;}
 	
 	/**
@@ -121,6 +127,7 @@ public virtual with sharing class fflib_SObjectDomain
 	 * @param sObjectList A concrete list (e.g. List<Account> vs List<SObject>) of records
 
 	 **/
+	@NamespaceAccessible
 	public fflib_SObjectDomain(List<SObject> sObjectList)
 	{
 		this(sObjectList, sObjectList.getSObjectType());
@@ -135,6 +142,7 @@ public virtual with sharing class fflib_SObjectDomain
 	 * @remark Will support List<SObject> but all records in the list will be assumed to be of
 	 *         the type specified in sObjectType
 	 **/
+	@NamespaceAccessible
 	public fflib_SObjectDomain(List<SObject> sObjectList, SObjectType sObjectType)
 	{
 		// Ensure the domain class has its own copy of the data
@@ -147,146 +155,165 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Override this to apply defaults to the records, this is called by the handleBeforeInsert method
 	 **/
+	@NamespaceAccessible
 	public virtual void onApplyDefaults() { }
 	
 	/**
 	 * Override this to apply general validation to be performed during insert or update, called by the handleAfterInsert and handleAfterUpdate methods
 	 **/
+	@NamespaceAccessible
 	public virtual void onValidate() {	}
 	
 	/**
 	 * Override this to apply validation to be performed during insert, called by the handleAfterUpdate method
 	 **/
+	@NamespaceAccessible
 	public virtual void onValidate(Map<Id,SObject> existingRecords)	{ }
 
 	/**
 	 * Override this to perform processing during the before insert phase, this is called by the handleBeforeInsert method
 	 **/
-    public virtual void onBeforeInsert() { }
-    
+	@NamespaceAccessible
+	public virtual void onBeforeInsert() { }
+	
 	/**
 	 * Override this to perform processing during the before update phase, this is called by the handleBeforeUpdate method
 	 **/
-    public virtual void onBeforeUpdate(Map<Id,SObject> existingRecords) { }
-    
+	@NamespaceAccessible
+	public virtual void onBeforeUpdate(Map<Id,SObject> existingRecords) { }
+	
 	/**
 	 * Override this to perform processing during the before delete phase, this is called by the handleBeforeDelete method
 	 **/
-    public virtual void onBeforeDelete() { }
-    
+	@NamespaceAccessible
+	public virtual void onBeforeDelete() { }
+	
 	/**
 	 * Override this to perform processing during the after insert phase, this is called by the handleAfterInsert method
 	 **/
-    public virtual void onAfterInsert() { }
-    
+	@NamespaceAccessible
+	public virtual void onAfterInsert() { }
+	
 	/**
 	 * Override this to perform processing during the after update phase, this is called by the handleAfterUpdate method
 	 **/    
-    public virtual void onAfterUpdate(Map<Id,SObject> existingRecords) { }
-    
+	@NamespaceAccessible
+	public virtual void onAfterUpdate(Map<Id,SObject> existingRecords) { }
+	
 	/**
 	 * Override this to perform processing during the after delete phase, this is called by the handleAfterDelete method
 	 **/    
-    public virtual void onAfterDelete() { }	
+	@NamespaceAccessible
+	public virtual void onAfterDelete() { }	
 	
 	/**
 	 * Override this to perform processing during the after undelete phase, this is called by the handleAfterDelete method
 	 **/    
-    public virtual void onAfterUndelete() { }	
+	@NamespaceAccessible
+	public virtual void onAfterUndelete() { }	
 	
 	/**
 	 * Base handler for the Apex Trigger event Before Insert, calls the onApplyDefaults method, followed by onBeforeInsert
 	 **/
-    public virtual void handleBeforeInsert() 
-    { 
-    	onApplyDefaults(); 
-    	onBeforeInsert();
-    }
-    
-    /**
-     * Base handler for the Apex Trigger event Before Update, calls the onBeforeUpdate method
-     **/
-    public virtual void handleBeforeUpdate(Map<Id,SObject> existingRecords) 
-    {
-    	onBeforeUpdate(existingRecords);
-    }
-    
-    /**
-     * Base handler for the Apex Trigger event Before Delete, calls the onBeforeDelete method
-     **/
-    public virtual void handleBeforeDelete() 
-    {
-    	onBeforeDelete();
-    }
-    
-    /**
-     * Base handler for the Apex Trigger event After Insert, checks object security and calls the onValidate and onAfterInsert methods
-     *
-     * @throws DomainException if the current user context is not able to create records
-     **/
-    public virtual void handleAfterInsert()
-    {
-    	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isCreateable()) 
-    	   throw new DomainException('Permission to create an ' + SObjectDescribe.getName() + ' denied.');
-    	   
-    	onValidate();
-    	onAfterInsert(); 
-    }
-    
-    /**
-     * Base handler for the Apex Trigger event After Update, checks object security and calls the onValidate, onValidate(Map<Id,SObject>) and onAfterUpdate methods
-     *
-     * @throws DomainException if the current user context is not able to update records
-     **/
-    public virtual void handleAfterUpdate(Map<Id,SObject> existingRecords) 
-    {    	
-    	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isUpdateable()) 			    		
-    	   throw new DomainException('Permission to update an ' + SObjectDescribe.getName() + ' denied.');
-    	
-    	if(Configuration.OldOnUpdateValidateBehaviour)
-    		onValidate();
-    	onValidate(existingRecords);
-    	onAfterUpdate(existingRecords); 
-    }
-    
-    /**
-     * Base handler for the Apex Trigger event After Delete, checks object security and calls the onAfterDelete method
-     *
-     * @throws DomainException if the current user context is not able to delete records
-     **/
-    public virtual void handleAfterDelete() 
-    {
-    	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isDeletable())
-    	   throw new DomainException('Permission to delete an ' + SObjectDescribe.getName() + ' denied.');
-    	   
-    	onAfterDelete();
-    }	
+	@NamespaceAccessible
+	public virtual void handleBeforeInsert() 
+	{ 
+		onApplyDefaults(); 
+		onBeforeInsert();
+	}
+	
+	/**
+	 * Base handler for the Apex Trigger event Before Update, calls the onBeforeUpdate method
+	 **/
+	@NamespaceAccessible
+	public virtual void handleBeforeUpdate(Map<Id,SObject> existingRecords) 
+	{
+		onBeforeUpdate(existingRecords);
+	}
+	
+	/**
+	 * Base handler for the Apex Trigger event Before Delete, calls the onBeforeDelete method
+	 **/
+	@NamespaceAccessible
+	public virtual void handleBeforeDelete() 
+	{
+		onBeforeDelete();
+	}
+	
+	/**
+	 * Base handler for the Apex Trigger event After Insert, checks object security and calls the onValidate and onAfterInsert methods
+	 *
+	 * @throws DomainException if the current user context is not able to create records
+	 **/
+	@NamespaceAccessible
+	public virtual void handleAfterInsert()
+	{
+		if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isCreateable()) 
+		   throw new DomainException('Permission to create an ' + SObjectDescribe.getName() + ' denied.');
+		   
+		onValidate();
+		onAfterInsert(); 
+	}
+	
+	/**
+	 * Base handler for the Apex Trigger event After Update, checks object security and calls the onValidate, onValidate(Map<Id,SObject>) and onAfterUpdate methods
+	 *
+	 * @throws DomainException if the current user context is not able to update records
+	 **/
+	@NamespaceAccessible
+	public virtual void handleAfterUpdate(Map<Id,SObject> existingRecords) 
+	{    	
+		if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isUpdateable()) 			    		
+		   throw new DomainException('Permission to update an ' + SObjectDescribe.getName() + ' denied.');
+		
+		if(Configuration.OldOnUpdateValidateBehaviour)
+			onValidate();
+		onValidate(existingRecords);
+		onAfterUpdate(existingRecords); 
+	}
+	
+	/**
+	 * Base handler for the Apex Trigger event After Delete, checks object security and calls the onAfterDelete method
+	 *
+	 * @throws DomainException if the current user context is not able to delete records
+	 **/
+	@NamespaceAccessible
+	public virtual void handleAfterDelete() 
+	{
+		if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isDeletable())
+		   throw new DomainException('Permission to delete an ' + SObjectDescribe.getName() + ' denied.');
+		   
+		onAfterDelete();
+	}	
 
-    /**
-     * Base handler for the Apex Trigger event After Undelete, checks object security and calls the onAfterUndelete method
-     *
-     * @throws DomainException if the current user context is not able to delete records
-     **/
-    public virtual void handleAfterUndelete() 
-    {
-    	if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isUndeletable())
-    	   throw new DomainException('Permission to undelete an ' + SObjectDescribe.getName() + ' denied.');
-    	   
-    	onAfterUndelete();
-    }	
+	/**
+	 * Base handler for the Apex Trigger event After Undelete, checks object security and calls the onAfterUndelete method
+	 *
+	 * @throws DomainException if the current user context is not able to delete records
+	 **/
+	@NamespaceAccessible
+	public virtual void handleAfterUndelete() 
+	{
+		if(Configuration.EnforcingTriggerCRUDSecurity && !SObjectDescribe.isUndeletable())
+		   throw new DomainException('Permission to undelete an ' + SObjectDescribe.getName() + ' denied.');
+		   
+		onAfterUndelete();
+	}	
 
-    /**
-     * Returns the SObjectType this Domain class represents
-     **/
-    public SObjectType sObjectType()
-    {
-    	return getSObjectType();
-    }
+	/**
+	 * Returns the SObjectType this Domain class represents
+	 **/
+	@NamespaceAccessible
+	public SObjectType sObjectType()
+	{
+		return getSObjectType();
+	}
 
 	/**
 	 * Detects whether any values in context records have changed for given fields as strings
 	 * Returns list of SObject records that have changes in the specified fields
 	 **/
+	@NamespaceAccessible
 	public List<SObject> getChangedRecords(Set<String> fieldNames)
 	{
 		List<SObject> changedRecords = new List<SObject>();
@@ -315,6 +342,7 @@ public virtual with sharing class fflib_SObjectDomain
 	 * Detects whether any values in context records have changed for given fields as tokens
 	 * Returns list of SObject records that have changes in the specified fields
 	 **/
+	@NamespaceAccessible
 	public List<SObject> getChangedRecords(Set<Schema.SObjectField> fieldTokens)
 	{
 		List<SObject> changedRecords = new List<SObject>();
@@ -341,6 +369,7 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Interface used to aid the triggerHandler in constructing instances of Domain classes
 	 **/
+	@NamespaceAccessible
 	public interface IConstructable
 	{
 		fflib_SObjectDomain construct(List<SObject> sObjectList);
@@ -349,6 +378,7 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Interface used to aid the triggerHandler in constructing instances of Domain classes
 	 **/
+	@NamespaceAccessible
 	public interface IConstructable2 extends IConstructable
 	{
 		fflib_SObjectDomain construct(List<SObject> sObjectList, SObjectType sObjectType);
@@ -361,6 +391,7 @@ public virtual with sharing class fflib_SObjectDomain
 	 *   the ITriggerStateful interface. Note this method is sensitive to recursion, meaning
 	 *   it will return the applicable domain instance for the level of recursion
 	 **/ 
+	@NamespaceAccessible
 	public static fflib_SObjectDomain getTriggerInstance(Type domainClass)
 	{
 		List<fflib_SObjectDomain> domains = TriggerStateByClass.get(domainClass);
@@ -373,6 +404,7 @@ public virtual with sharing class fflib_SObjectDomain
 	 * Method constructs the given Domain class with the current Trigger context 
 	 * before calling the applicable override methods such as beforeInsert, beforeUpdate etc.
 	 **/
+	@NamespaceAccessible
 	public static void triggerHandler(Type domainClass)
 	{		
 		// Process the trigger context
@@ -411,15 +443,15 @@ public virtual with sharing class fflib_SObjectDomain
 			IConstructable domainConstructor = (IConstructable) constructableClass.newInstance();
 	
 			// Construct the domain class with the approprite record set		
-	        if(isInsert) domainObject = domainConstructor.construct(newRecords);
-	        else if(isUpdate) domainObject = domainConstructor.construct(newRecords);
-	        else if(isDelete) domainObject = domainConstructor.construct(oldRecordsMap.values());
-	        else if(isUndelete) domainObject = domainConstructor.construct(newRecords);
-	        
-	        // Should this instance be reused on the next trigger invocation?
-	        if(domainObject.Configuration.TriggerStateEnabled)
-	        	// Push this instance onto the stack to be popped during the after phase
-	        	pushTriggerInstance(domainClass, domainObject);	
+			if(isInsert) domainObject = domainConstructor.construct(newRecords);
+			else if(isUpdate) domainObject = domainConstructor.construct(newRecords);
+			else if(isDelete) domainObject = domainConstructor.construct(oldRecordsMap.values());
+			else if(isUndelete) domainObject = domainConstructor.construct(newRecords);
+			
+			// Should this instance be reused on the next trigger invocation?
+			if(domainObject.Configuration.TriggerStateEnabled)
+				// Push this instance onto the stack to be popped during the after phase
+				pushTriggerInstance(domainClass, domainObject);	
 		}
 		
 		// has this event been disabled?
@@ -430,18 +462,18 @@ public virtual with sharing class fflib_SObjectDomain
 
 		// Invoke the applicable handler
 		if(isBefore)
-	    {
-	        if(isInsert) domainObject.handleBeforeInsert();
-	        else if(isUpdate) domainObject.handleBeforeUpdate(oldRecordsMap);
-	        else if(isDelete) domainObject.handleBeforeDelete();
-	    }
-	    else
-	    {
-	        if(isInsert) domainObject.handleAfterInsert();
-	        else if(isUpdate) domainObject.handleAfterUpdate(oldRecordsMap);
-	        else if(isDelete) domainObject.handleAfterDelete();
-	        else if(isUndelete) domainObject.handleAfterUndelete();
-	    }				
+		{
+			if(isInsert) domainObject.handleBeforeInsert();
+			else if(isUpdate) domainObject.handleBeforeUpdate(oldRecordsMap);
+			else if(isDelete) domainObject.handleBeforeDelete();
+		}
+		else
+		{
+			if(isInsert) domainObject.handleAfterInsert();
+			else if(isUpdate) domainObject.handleAfterUpdate(oldRecordsMap);
+			else if(isDelete) domainObject.handleAfterDelete();
+			else if(isUndelete) domainObject.handleAfterUndelete();
+		}				
 	}
 	
 	/**
@@ -469,6 +501,7 @@ public virtual with sharing class fflib_SObjectDomain
 		return domain;
 	}
 	
+	@NamespaceAccessible
 	public static TriggerEvent getTriggerEvent(Type domainClass)
 	{
 		if(!TriggerEventByClass.containsKey(domainClass))
@@ -479,74 +512,104 @@ public virtual with sharing class fflib_SObjectDomain
 		return TriggerEventByClass.get(domainClass);
 	}
 
+	@NamespaceAccessible
 	public class TriggerEvent
 	{
-		public boolean BeforeInsertEnabled {get; private set;}
-		public boolean BeforeUpdateEnabled {get; private set;}
-		public boolean BeforeDeleteEnabled {get; private set;}
+		@NamespaceAccessible
+	public boolean BeforeInsertEnabled {get; private set;}
+		@NamespaceAccessible
+	public boolean BeforeUpdateEnabled {get; private set;}
+		@NamespaceAccessible
+	public boolean BeforeDeleteEnabled {get; private set;}
 
-		public boolean AfterInsertEnabled {get; private set;}
-		public boolean AfterUpdateEnabled {get; private set;}
-		public boolean AfterDeleteEnabled {get; private set;}
-		public boolean AfterUndeleteEnabled {get; private set;}
+		@NamespaceAccessible
+	public boolean AfterInsertEnabled {get; private set;}
+		@NamespaceAccessible
+	public boolean AfterUpdateEnabled {get; private set;}
+		@NamespaceAccessible
+	public boolean AfterDeleteEnabled {get; private set;}
+		@NamespaceAccessible
+	public boolean AfterUndeleteEnabled {get; private set;}
 
-		public TriggerEvent()
+		@NamespaceAccessible
+	public TriggerEvent()
 		{
 			this.enableAll();
 		}
 
 		// befores
-		public TriggerEvent enableBeforeInsert() {BeforeInsertEnabled = true; return this;}
-		public TriggerEvent enableBeforeUpdate() {BeforeUpdateEnabled = true; return this;}
-		public TriggerEvent enableBeforeDelete() {BeforeDeleteEnabled = true; return this;}
+		@NamespaceAccessible
+	public TriggerEvent enableBeforeInsert() {BeforeInsertEnabled = true; return this;}
+		@NamespaceAccessible
+	public TriggerEvent enableBeforeUpdate() {BeforeUpdateEnabled = true; return this;}
+		@NamespaceAccessible
+	public TriggerEvent enableBeforeDelete() {BeforeDeleteEnabled = true; return this;}
 
-		public TriggerEvent disableBeforeInsert() {BeforeInsertEnabled = false; return this;}
-		public TriggerEvent disableBeforeUpdate() {BeforeUpdateEnabled = false; return this;}
-		public TriggerEvent disableBeforeDelete() {BeforeDeleteEnabled = false; return this;}
+		@NamespaceAccessible
+	public TriggerEvent disableBeforeInsert() {BeforeInsertEnabled = false; return this;}
+		@NamespaceAccessible
+	public TriggerEvent disableBeforeUpdate() {BeforeUpdateEnabled = false; return this;}
+		@NamespaceAccessible
+	public TriggerEvent disableBeforeDelete() {BeforeDeleteEnabled = false; return this;}
 		
 		// afters
-		public TriggerEvent enableAfterInsert() 	{AfterInsertEnabled 	= true; return this;}
-		public TriggerEvent enableAfterUpdate() 	{AfterUpdateEnabled 	= true; return this;}
-		public TriggerEvent enableAfterDelete() 	{AfterDeleteEnabled 	= true; return this;}
-		public TriggerEvent enableAfterUndelete() {AfterUndeleteEnabled 	= true; return this;}
+		@NamespaceAccessible
+	public TriggerEvent enableAfterInsert() 	{AfterInsertEnabled 	= true; return this;}
+		@NamespaceAccessible
+	public TriggerEvent enableAfterUpdate() 	{AfterUpdateEnabled 	= true; return this;}
+		@NamespaceAccessible
+	public TriggerEvent enableAfterDelete() 	{AfterDeleteEnabled 	= true; return this;}
+		@NamespaceAccessible
+	public TriggerEvent enableAfterUndelete() {AfterUndeleteEnabled 	= true; return this;}
 
 		
-		public TriggerEvent disableAfterInsert()	{AfterInsertEnabled 	= false; return this;}
-		public TriggerEvent disableAfterUpdate()	{AfterUpdateEnabled 	= false; return this;}
-		public TriggerEvent disableAfterDelete()	{AfterDeleteEnabled 	= false; return this;}
-		public TriggerEvent disableAfterUndelete(){AfterUndeleteEnabled 	= false; return this;}
+		@NamespaceAccessible
+	public TriggerEvent disableAfterInsert()	{AfterInsertEnabled 	= false; return this;}
+		@NamespaceAccessible
+	public TriggerEvent disableAfterUpdate()	{AfterUpdateEnabled 	= false; return this;}
+		@NamespaceAccessible
+	public TriggerEvent disableAfterDelete()	{AfterDeleteEnabled 	= false; return this;}
+		@NamespaceAccessible
+	public TriggerEvent disableAfterUndelete(){AfterUndeleteEnabled 	= false; return this;}
 
-		public TriggerEvent enableAll()
+		@NamespaceAccessible
+	public TriggerEvent enableAll()
 		{
 			return this.enableAllBefore().enableAllAfter();
 		}
 
-		public TriggerEvent disableAll()
+		@NamespaceAccessible
+	public TriggerEvent disableAll()
 		{
 			return this.disableAllBefore().disableAllAfter();
 		}
 
-		public TriggerEvent enableAllBefore()
+		@NamespaceAccessible
+	public TriggerEvent enableAllBefore()
 		{
 			return this.enableBeforeInsert().enableBeforeUpdate().enableBeforeDelete();
 		}
 
-		public TriggerEvent disableAllBefore()
+		@NamespaceAccessible
+	public TriggerEvent disableAllBefore()
 		{
 			return this.disableBeforeInsert().disableBeforeUpdate().disableBeforeDelete();
 		}
 
-		public TriggerEvent enableAllAfter()
+		@NamespaceAccessible
+	public TriggerEvent enableAllAfter()
 		{
 			return this.enableAfterInsert().enableAfterUpdate().enableAfterDelete().enableAfterUndelete();
 		}
 
-		public TriggerEvent disableAllAfter()
+		@NamespaceAccessible
+	public TriggerEvent disableAllAfter()
 		{
 			return this.disableAfterInsert().disableAfterUpdate().disableAfterDelete().disableAfterUndelete();
 		}
 
-		public boolean isEnabled(Boolean isBefore, Boolean isAfter, Boolean isInsert, Boolean isUpdate, Boolean isDelete, Boolean isUndelete)
+		@NamespaceAccessible
+	public boolean isEnabled(Boolean isBefore, Boolean isAfter, Boolean isInsert, Boolean isUpdate, Boolean isDelete, Boolean isUndelete)
 		{
 			if(isBefore)
 			{
@@ -568,26 +631,31 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Fluent style Configuration system for Domain class creation
 	 **/
+	@NamespaceAccessible
 	public class Configuration
 	{
 		/** 
 		 * Backwards compatibility mode for handleAfterUpdate routing to onValidate()
 		 **/
-		public Boolean OldOnUpdateValidateBehaviour {get; private set;}		
+		@NamespaceAccessible
+	public Boolean OldOnUpdateValidateBehaviour {get; private set;}		
 		/**
 		 * True if the base class is checking the users CRUD requirements before invoking trigger methods
 		 **/ 
-		public Boolean EnforcingTriggerCRUDSecurity {get; private set;}
+		@NamespaceAccessible
+	public Boolean EnforcingTriggerCRUDSecurity {get; private set;}
 		
 		/**
 		 * Enables reuse of the same Domain instance between before and after trigger phases (subject to recursive scenarios)
 		 **/
-		public Boolean TriggerStateEnabled {get; private set;}
+		@NamespaceAccessible
+	public Boolean TriggerStateEnabled {get; private set;}
 			
 		/**
 		 * Default configuration 
 		 **/
-		public Configuration()
+		@NamespaceAccessible
+	public Configuration()
 		{
 			EnforcingTriggerCRUDSecurity = true; // Default is true for backwards compatability
 			TriggerStateEnabled = false;
@@ -597,7 +665,8 @@ public virtual with sharing class fflib_SObjectDomain
 		/**
 		 * See associated property
 		 **/
-		public Configuration enableTriggerState()
+		@NamespaceAccessible
+	public Configuration enableTriggerState()
 		{
 			TriggerStateEnabled = true;
 			return this;	
@@ -606,7 +675,8 @@ public virtual with sharing class fflib_SObjectDomain
 		/**
 		 * See associated property
 		 **/
-		public Configuration disableTriggerState()
+		@NamespaceAccessible
+	public Configuration disableTriggerState()
 		{
 			TriggerStateEnabled = false;
 			return this;	
@@ -615,7 +685,8 @@ public virtual with sharing class fflib_SObjectDomain
 		/**
 		 * See associated property
 		 **/
-		public Configuration enforceTriggerCRUDSecurity()
+		@NamespaceAccessible
+	public Configuration enforceTriggerCRUDSecurity()
 		{
 			EnforcingTriggerCRUDSecurity = true;
 			return this;
@@ -624,7 +695,8 @@ public virtual with sharing class fflib_SObjectDomain
 		/**
 		 * See associated property
 		 **/
-		public Configuration disableTriggerCRUDSecurity()
+		@NamespaceAccessible
+	public Configuration disableTriggerCRUDSecurity()
 		{
 			EnforcingTriggerCRUDSecurity = false;
 			return this;
@@ -633,7 +705,8 @@ public virtual with sharing class fflib_SObjectDomain
 		/**
 		 * See associated property
 		 **/
-		public Configuration enableOldOnUpdateValidateBehaviour()
+		@NamespaceAccessible
+	public Configuration enableOldOnUpdateValidateBehaviour()
 		{
 			OldOnUpdateValidateBehaviour = true;
 			return this;
@@ -642,7 +715,8 @@ public virtual with sharing class fflib_SObjectDomain
 		/**
 		 * See associated property
 		 **/
-		public Configuration disableOldOnUpdateValidateBehaviour()
+		@NamespaceAccessible
+	public Configuration disableOldOnUpdateValidateBehaviour()
 		{
 			OldOnUpdateValidateBehaviour = false;
 			return this;
@@ -652,6 +726,7 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * General exception class for the domain layer
 	 **/
+	@NamespaceAccessible
 	public class DomainException extends Exception
 	{
 	}
@@ -659,6 +734,7 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Ensures logging of errors in the Domain context for later assertions in tests
 	 **/
+	@NamespaceAccessible
 	public override String error(String message, SObject record)
 	{
 		return fflib_SObjectDomain.Errors.error(this, message, record);
@@ -667,6 +743,7 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Ensures logging of errors in the Domain context for later assertions in tests
 	 **/
+	@NamespaceAccessible
 	public override String error(String message, SObject record, SObjectField field)
 	{
 		return fflib_SObjectDomain.Errors.error(this, message, record, field);
@@ -675,6 +752,7 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * DEPRECATED, This class has been moved to fflib_SObjects
 	 **/
+	@NamespaceAccessible
 	public class ErrorFactory
 	{
 		private List<Error> errorList = new List<Error>();
@@ -684,7 +762,8 @@ public virtual with sharing class fflib_SObjectDomain
 
 		}
 
-		public String error(String message, SObject record)
+		@NamespaceAccessible
+	public String error(String message, SObject record)
 		{
 			return error(null, message, record);
 		}
@@ -699,7 +778,8 @@ public virtual with sharing class fflib_SObjectDomain
 			return message;
 		}
 
-		public String error(String message, SObject record, SObjectField field)
+		@NamespaceAccessible
+	public String error(String message, SObject record, SObjectField field)
 		{
 			return error(null, message, record, field);
 		}
@@ -715,12 +795,14 @@ public virtual with sharing class fflib_SObjectDomain
 			return message;
 		}
 
-		public List<Error> getAll()
+		@NamespaceAccessible
+	public List<Error> getAll()
 		{
 			return errorList.clone();
 		}
 
-		public void clearAll()
+		@NamespaceAccessible
+	public void clearAll()
 		{
 			errorList.clear();
 		}
@@ -729,11 +811,14 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * DEPRECATED, This class has been moved to fflib_SObjects
 	 **/
+	@NamespaceAccessible
 	public virtual class FieldError extends ObjectError
 	{
-		public SObjectField field;
+		@NamespaceAccessible
+	public SObjectField field;
 
-		public FieldError()
+		@NamespaceAccessible
+	public FieldError()
 		{
 
 		}
@@ -742,11 +827,14 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * DEPRECATED, This class has been moved to fflib_SObjects
 	 **/
+	@NamespaceAccessible
 	public virtual class ObjectError extends Error
 	{
-		public SObject record;
+		@NamespaceAccessible
+	public SObject record;
 
-		public ObjectError()
+		@NamespaceAccessible
+	public ObjectError()
 		{
 
 		}
@@ -755,18 +843,23 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * DEPRECATED, This class has been moved to fflib_SObjects
 	 **/
+	@NamespaceAccessible
 	public abstract class Error
 	{
-		public String message;
-		public fflib_SObjectDomain domain;
+		@NamespaceAccessible
+	public String message;
+		@NamespaceAccessible
+	public fflib_SObjectDomain domain;
 	}
 
 	/**
 	 * Provides test context mocking facilities to unit tests testing domain classes
 	 **/	
+	@NamespaceAccessible
 	public class TestFactory
 	{
-		public MockDatabase Database = new MockDatabase();
+		@NamespaceAccessible
+	public MockDatabase Database = new MockDatabase();
 		 
 		private TestFactory()
 		{		
@@ -777,6 +870,7 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Class used during Unit testing of Domain classes, can be used (not exclusively) to speed up test execution and focus testing
 	 **/
+	@NamespaceAccessible
 	public class MockDatabase
 	{
 		private Boolean isInsert = false;
@@ -800,7 +894,8 @@ public virtual with sharing class fflib_SObjectDomain
 			triggerHandler(domainClass, false, true, isInsert, isUpdate, isDelete, isUndelete, records, oldRecords);
 		}
 		
-		public void onInsert(List<SObject> records)
+		@NamespaceAccessible
+	public void onInsert(List<SObject> records)
 		{
 			this.isInsert = true;
 			this.isUpdate = false;
@@ -809,7 +904,8 @@ public virtual with sharing class fflib_SObjectDomain
 			this.records = records;
 		}
 		
-		public void onUpdate(List<SObject> records, Map<Id, SObject> oldRecords)
+		@NamespaceAccessible
+	public void onUpdate(List<SObject> records, Map<Id, SObject> oldRecords)
 		{
 			this.isInsert = false;
 			this.isUpdate = true;
@@ -819,7 +915,8 @@ public virtual with sharing class fflib_SObjectDomain
 			this.oldRecords = oldRecords;
 		}
 		
-		public void onDelete(Map<Id, SObject> records)
+		@NamespaceAccessible
+	public void onDelete(Map<Id, SObject> records)
 		{
 			this.isInsert = false;
 			this.isUpdate = false;
@@ -828,7 +925,8 @@ public virtual with sharing class fflib_SObjectDomain
 			this.oldRecords = records;
 		}
 		
-		public void onUndelete(List<SObject> records)
+		@NamespaceAccessible
+	public void onUndelete(List<SObject> records)
 		{
 			this.isInsert = false;
 			this.isUpdate = false;
@@ -837,7 +935,8 @@ public virtual with sharing class fflib_SObjectDomain
 			this.records = records;
 		}
 		
-		public Boolean hasRecords()
+		@NamespaceAccessible
+	public Boolean hasRecords()
 		{
 			return records!=null && records.size()>0 || oldRecords!=null && oldRecords.size()>0;
 		}
@@ -846,23 +945,27 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Test domain class (ideally this would be in the test class, however Type.newInstance does not see such classes)
 	 **/
+	@NamespaceAccessible
 	public with sharing class TestSObjectDomain extends fflib_SObjectDomain
 	{
 		private String someState;
 		
-		public TestSObjectDomain(List<Opportunity> sObjectList)
+		@NamespaceAccessible
+	public TestSObjectDomain(List<Opportunity> sObjectList)
 		{
 			// Domain classes are initialised with lists to enforce bulkification throughout
 			super(sObjectList);
 		}
 
-		public TestSObjectDomain(List<Opportunity> sObjectList, SObjectType sObjectType)
+		@NamespaceAccessible
+	public TestSObjectDomain(List<Opportunity> sObjectList, SObjectType sObjectType)
 		{
 			// Domain classes are initialised with lists to enforce bulkification throughout
 			super(sObjectList, sObjectType);
 		}			
 		
-		public override void onApplyDefaults()
+		@NamespaceAccessible
+	public override void onApplyDefaults()
 		{
 			// Not required in production code
 			super.onApplyDefaults();
@@ -874,7 +977,8 @@ public virtual with sharing class fflib_SObjectDomain
 			}
 		}
 	
-		public override void onValidate()	
+		@NamespaceAccessible
+	public override void onValidate()	
 		{
 			// Not required in production code
 			super.onValidate();
@@ -889,7 +993,8 @@ public virtual with sharing class fflib_SObjectDomain
 			}		
 		}
 		
-		public override void onValidate(Map<Id,SObject> existingRecords)
+		@NamespaceAccessible
+	public override void onValidate(Map<Id,SObject> existingRecords)
 		{
 			// Not required in production code	
 			super.onValidate(existingRecords);
@@ -905,7 +1010,8 @@ public virtual with sharing class fflib_SObjectDomain
 			}
 		}
 		
-		public override void onBeforeDelete()
+		@NamespaceAccessible
+	public override void onBeforeDelete()
 		{
 			// Not required in production code
 			super.onBeforeDelete();
@@ -917,19 +1023,22 @@ public virtual with sharing class fflib_SObjectDomain
 			}			
 		}
 		
-		public override void onAfterUndelete()
+		@NamespaceAccessible
+	public override void onAfterUndelete()
 		{
 			// Not required in production code
 			super.onAfterUndelete();
 		}
 		
-		public override void onBeforeInsert()
+		@NamespaceAccessible
+	public override void onBeforeInsert()
 		{
 			// Assert this variable is null in the after insert (since this domain class is stateless)
 			someState = 'This should not survice the trigger after phase';
 		}
 		
-		public override void onAfterInsert()
+		@NamespaceAccessible
+	public override void onAfterInsert()
 		{
 			// This is a stateless domain class, so should not retain anything betweet before and after
 			System.assertEquals(null, someState);
@@ -939,9 +1048,11 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Typically an inner class to the domain class, supported here for test purposes
 	 **/	
+	@NamespaceAccessible
 	public class TestSObjectDomainConstructor implements fflib_SObjectDomain.IConstructable
 	{
-		public fflib_SObjectDomain construct(List<SObject> sObjectList)
+		@NamespaceAccessible
+	public fflib_SObjectDomain construct(List<SObject> sObjectList)
 		{
 			return new TestSObjectDomain(sObjectList);
 		}
@@ -950,12 +1061,15 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Test domain class (ideally this would be in the test class, however Type.newInstance does not see such classes)
 	 **/
+	@NamespaceAccessible
 	public with sharing class TestSObjectStatefulDomain 
 		extends fflib_SObjectDomain 
 	{
-		public String someState;
+		@NamespaceAccessible
+	public String someState;
 		
-		public TestSObjectStatefulDomain(List<Opportunity> sObjectList)
+		@NamespaceAccessible
+	public TestSObjectStatefulDomain(List<Opportunity> sObjectList)
 		{
 			super(sObjectList);
 
@@ -963,7 +1077,8 @@ public virtual with sharing class fflib_SObjectDomain
 			Configuration.enableTriggerState();			
 		}
 		
-		public override void onBeforeInsert() 
+		@NamespaceAccessible
+	public override void onBeforeInsert() 
 		{
 			// This must always be null, as we do not reuse domain instances within recursive scenarios (different record sets)
 			System.assertEquals(null, someState);
@@ -989,7 +1104,8 @@ public virtual with sharing class fflib_SObjectDomain
 			}								
 		}
 		
-		public override void onAfterInsert() 
+		@NamespaceAccessible
+	public override void onAfterInsert() 
 		{ 
 			// Use the state set in the before insert (since this is a stateful domain class)
 			if(someState!=null)
@@ -1001,9 +1117,11 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Typically an inner class to the domain class, supported here for test purposes
 	 **/	
+	@NamespaceAccessible
 	public class TestSObjectStatefulDomainConstructor implements fflib_SObjectDomain.IConstructable
 	{
-		public fflib_SObjectDomain construct(List<SObject> sObjectList)
+		@NamespaceAccessible
+	public fflib_SObjectDomain construct(List<SObject> sObjectList)
 		{
 			return new TestSObjectStatefulDomain(sObjectList);
 		}				
@@ -1012,10 +1130,12 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Test domain class (ideally this would be in the test class, however Type.newInstance does not see such classes)
 	 **/
+	@NamespaceAccessible
 	public with sharing class TestSObjectOnValidateBehaviour 
 		extends fflib_SObjectDomain 
 	{
-		public TestSObjectOnValidateBehaviour(List<Opportunity> sObjectList)
+		@NamespaceAccessible
+	public TestSObjectOnValidateBehaviour(List<Opportunity> sObjectList)
 		{
 			super(sObjectList);
 			
@@ -1024,7 +1144,8 @@ public virtual with sharing class fflib_SObjectDomain
 				Configuration.enableOldOnUpdateValidateBehaviour();
 		}
 		
-		public override void onValidate() 
+		@NamespaceAccessible
+	public override void onValidate() 
 		{
 			// Throw exception to give the test somethign to assert on
 			throw new DomainException('onValidate called');
@@ -1034,9 +1155,11 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Typically an inner class to the domain class, supported here for test purposes
 	 **/	
+	@NamespaceAccessible
 	public class TestSObjectOnValidateBehaviourConstructor implements fflib_SObjectDomain.IConstructable
 	{
-		public fflib_SObjectDomain construct(List<SObject> sObjectList)
+		@NamespaceAccessible
+	public fflib_SObjectDomain construct(List<SObject> sObjectList)
 		{
 			return new TestSObjectOnValidateBehaviour(sObjectList);
 		}				
@@ -1045,10 +1168,12 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Test domain class (ideally this would be in the test class, however Type.newInstance does not see such classes)
 	 **/
+	@NamespaceAccessible
 	public with sharing class TestSObjectChangedRecords 
 		extends fflib_SObjectDomain 
 	{
-		public TestSObjectChangedRecords(List<Opportunity> sObjectList)
+		@NamespaceAccessible
+	public TestSObjectChangedRecords(List<Opportunity> sObjectList)
 		{
 			super(sObjectList);
 		}
@@ -1057,9 +1182,11 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Typically an inner class to the domain class, supported here for test purposes
 	 **/	
+	@NamespaceAccessible
 	public class TestSObjectChangedRecordsConstructor implements fflib_SObjectDomain.IConstructable
 	{
-		public fflib_SObjectDomain construct(List<SObject> sObjectList)
+		@NamespaceAccessible
+	public fflib_SObjectDomain construct(List<SObject> sObjectList)
 		{
 			return new TestSObjectChangedRecords(sObjectList);
 		}				
@@ -1068,45 +1195,54 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Test domain class (ideally this would be in the test class, however Type.newInstance does not see such classes)
 	 **/
+	@NamespaceAccessible
 	public with sharing class TestSObjectDisableBehaviour 
 		extends fflib_SObjectDomain 
 	{
-		public TestSObjectDisableBehaviour(List<Opportunity> sObjectList)
+		@NamespaceAccessible
+	public TestSObjectDisableBehaviour(List<Opportunity> sObjectList)
 		{
 			super(sObjectList);
 		}
 
-		public override void onAfterInsert() {
+		@NamespaceAccessible
+	public override void onAfterInsert() {
 			// Throw exception to give the test somethign to assert on
 			throw new DomainException('onAfterInsert called');
 		}
 
-		public override void onBeforeInsert() {
+		@NamespaceAccessible
+	public override void onBeforeInsert() {
 			// Throw exception to give the test somethign to assert on
 			throw new DomainException('onBeforeInsert called');
 		}
 
-		public override void onAfterUpdate(map<id, SObject> existing) {
+		@NamespaceAccessible
+	public override void onAfterUpdate(map<id, SObject> existing) {
 			// Throw exception to give the test somethign to assert on
 			throw new DomainException('onAfterUpdate called');
 		}
 
-		public override void onBeforeUpdate(map<id, SObject> existing) {
+		@NamespaceAccessible
+	public override void onBeforeUpdate(map<id, SObject> existing) {
 			// Throw exception to give the test somethign to assert on
 			throw new DomainException('onBeforeUpdate called');
 		}
 
-		public override void onAfterDelete() {
+		@NamespaceAccessible
+	public override void onAfterDelete() {
 			// Throw exception to give the test somethign to assert on
 			throw new DomainException('onAfterDelete called');
 		}
 
-		public override void onBeforeDelete() {
+		@NamespaceAccessible
+	public override void onBeforeDelete() {
 			// Throw exception to give the test somethign to assert on
 			throw new DomainException('onBeforeDelete called');
 		}
 
-		public override void onAfterUndelete() {
+		@NamespaceAccessible
+	public override void onAfterUndelete() {
 			// Throw exception to give the test somethign to assert on
 			throw new DomainException('onAfterUndelete called');
 		}
@@ -1115,9 +1251,11 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Typically an inner class to the domain class, supported here for test purposes
 	 **/    
+	@NamespaceAccessible
 	public class TestSObjectDisableBehaviourConstructor implements fflib_SObjectDomain.IConstructable
 	{
-		public fflib_SObjectDomain construct(List<SObject> sObjectList)
+		@NamespaceAccessible
+	public fflib_SObjectDomain construct(List<SObject> sObjectList)
 		{
 			return new TestSObjectDisableBehaviour(sObjectList);
 		}

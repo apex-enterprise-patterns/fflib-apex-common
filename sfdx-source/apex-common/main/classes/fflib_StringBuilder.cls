@@ -29,6 +29,7 @@
  * 
  * NOTE: Aspects of this were developed before recent improvements to String handling, as such could likely be enhanced at this stage.
  **/
+@NamespaceAccessible
 public virtual class fflib_StringBuilder
 {
 	protected List<String> buffer = new List<String>();
@@ -36,11 +37,13 @@ public virtual class fflib_StringBuilder
 	/**
 	 * Construct an empty StringBuilder
 	 **/
+	@NamespaceAccessible
 	public fflib_StringBuilder() {}
 	
 	/**
 	 * Construct a StringBuilder with the given values
 	 **/
+	@NamespaceAccessible
 	public fflib_StringBuilder(List<String> values)
 	{
 		add(values);
@@ -49,6 +52,7 @@ public virtual class fflib_StringBuilder
 	/**
 	 * Add the given values to the StringBuilder
 	 **/
+	@NamespaceAccessible
 	public virtual void add(List<String> values)
 	{
 		buffer.addAll(values);
@@ -57,11 +61,13 @@ public virtual class fflib_StringBuilder
 	/**
 	 * Add the given value to the StringBuilder
 	 **/
+	@NamespaceAccessible
 	public virtual void add(String value)
 	{
 		buffer.add(value);
 	}
 	
+	@NamespaceAccessible
 	public virtual override String toString()
 	{
 		return String.join(buffer, '');
@@ -70,6 +76,7 @@ public virtual class fflib_StringBuilder
 	/**
 	 * Return the state of the StringBuilder
 	 **/
+	@NamespaceAccessible
 	public virtual String getStringValue()
 	{
 		return toString();
@@ -78,35 +85,42 @@ public virtual class fflib_StringBuilder
 	/**
 	 * Subclasses the StringBuilder to produce a comma delimited concatenation of strings
 	 **/
+	@NamespaceAccessible
 	public virtual with sharing class CommaDelimitedListBuilder extends fflib_StringBuilder
 	{
 		String itemPrefix = '';
 		String delimiter = ',';
 		
-		public CommaDelimitedListBuilder() {}
+		@NamespaceAccessible
+	public CommaDelimitedListBuilder() {}
 
-		public CommaDelimitedListBuilder(List<String> values)
+		@NamespaceAccessible
+	public CommaDelimitedListBuilder(List<String> values)
 		{
 			super(values);
 		}
 		
-		public void setItemPrefix(String itemPrefix)
+		@NamespaceAccessible
+	public void setItemPrefix(String itemPrefix)
 		{
 			this.itemPrefix = itemPrefix;
 		}
 		
-		public void setDelimiter(String delimiter)
+		@NamespaceAccessible
+	public void setDelimiter(String delimiter)
 		{
 			this.delimiter = delimiter;
 		}
 		
-		public String getStringValue(String itemPrefix)
+		@NamespaceAccessible
+	public String getStringValue(String itemPrefix)
 		{
 			setItemPrefix(itemPrefix);
 			return toString();
 		}
 		
-		public override String toString()
+		@NamespaceAccessible
+	public override String toString()
 		{
 			return itemPrefix + String.join(buffer, delimiter + itemPrefix);
 		}
@@ -115,14 +129,17 @@ public virtual class fflib_StringBuilder
 	/** 
 	 * Subclasses the StringCommaDelimitedBuilder to accept native SObjectField tokens and optional FieldSet definitions to concatinate when building queries
 	 **/
+	@NamespaceAccessible
 	public virtual with sharing class FieldListBuilder extends CommaDelimitedListBuilder
 	{
-		public FieldListBuilder(List<Schema.SObjectField> values)
+		@NamespaceAccessible
+	public FieldListBuilder(List<Schema.SObjectField> values)
 		{
 			this(values, null);
 		}
 		
-		public FieldListBuilder(List<Schema.SObjectField> values, List<Schema.FieldSet> fieldSets)
+		@NamespaceAccessible
+	public FieldListBuilder(List<Schema.SObjectField> values, List<Schema.FieldSet> fieldSets)
 		{
 			// Create a distinct set of fields (or field paths) to select
 			for(Schema.SObjectField value : values)
@@ -138,14 +155,17 @@ public virtual class fflib_StringBuilder
 	/**
 	 * Subclasses the FieldListBuilder to auto sense and include when needed the CurrencyIsoCode field in the field list
 	 **/
+	@NamespaceAccessible
 	public with sharing class MultiCurrencyFieldListBuilder extends FieldListBuilder
 	{
-		public MultiCurrencyFieldListBuilder(List<Schema.SObjectField> values)
+		@NamespaceAccessible
+	public MultiCurrencyFieldListBuilder(List<Schema.SObjectField> values)
 		{
 			this(values, null);
 		}
 		
-		public MultiCurrencyFieldListBuilder(List<Schema.SObjectField> values, List<Schema.FieldSet> fieldSets)
+		@NamespaceAccessible
+	public MultiCurrencyFieldListBuilder(List<Schema.SObjectField> values, List<Schema.FieldSet> fieldSets)
 		{
 			super(values, fieldSets);
 			

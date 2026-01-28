@@ -36,6 +36,7 @@
  * This allows both upgrading old code to APIv29 by making use of these as a nearly drop in replacement, as well as keeping
  * namespace detection logic encapsulated.
 **/
+@NamespaceAccessible
 public class fflib_SObjectDescribe {
 	//internal implementation details
 	private Schema.SObjectType token;
@@ -85,12 +86,14 @@ public class fflib_SObjectDescribe {
 	/**
 	 * Returns the Schema.SObjectType this fflib_SObjectDescribe instance is based on.
 	**/
+	@NamespaceAccessible
 	public Schema.SObjectType getSObjectType(){
 		return token;
 	}
 	/**
 	 * This method is a convenient shorthand for calling getField(name, true)
 	**/
+	@NamespaceAccessible
 	public Schema.SObjectField getField(String name){
 		return this.getField(name, true);
 	}
@@ -99,6 +102,7 @@ public class fflib_SObjectDescribe {
 	 * Additionally it handles finding the correct SObjectField for relationship notation,
 	 * e.g. getting the Account field on Contact would fail without being referenced as AccountId - both work here.
 	**/
+	@NamespaceAccessible
 	public Schema.SObjectField getField(String fieldName, Boolean implyNamespace){
 		String fieldNameAdjusted = fieldName;
 
@@ -121,6 +125,7 @@ public class fflib_SObjectDescribe {
 	/**
 	* Returns the field where isNameField() is true (if any); otherwise returns null
 	**/
+	@NamespaceAccessible
 	public Schema.SObjectField getNameField()
 	{
 		if(nameField == null) {
@@ -137,6 +142,7 @@ public class fflib_SObjectDescribe {
 	/**
 	 * Returns the raw Schema.DescribeSObjectResult an fflib_SObjectDescribe instance wraps.
 	**/
+	@NamespaceAccessible
 	public Schema.DescribeSObjectResult getDescribe(){
 		return describe;
 	}
@@ -144,12 +150,15 @@ public class fflib_SObjectDescribe {
 	 * This method returns the raw data and provides no namespace handling.
 	 * Due to this, __use of this method is discouraged__ in favor of getFields(). 
 	**/
+	@NamespaceAccessible
 	public Map<String,Schema.SObjectField> getFieldsMap(){
 		return fields;
 	}
+	@NamespaceAccessible
 	public FieldsMap getFields(){
 		return wrappedFields;
 	}
+	@NamespaceAccessible
 	public Map<String,Schema.FieldSet> getFieldSetsMap(){
 		return fieldSets;
 	}
@@ -185,6 +194,7 @@ public class fflib_SObjectDescribe {
 		} 
 		set;
 	}
+	@NamespaceAccessible
 	public static fflib_SObjectDescribe getDescribe(String sObjectName){
 		if(String.isBlank(sObjectName))
 			return null;
@@ -198,6 +208,7 @@ public class fflib_SObjectDescribe {
 		}
 		return result;
 	}
+	@NamespaceAccessible
 	public static fflib_SObjectDescribe getDescribe(Schema.SObjectType token){
 		if(token == null)
 			return null;
@@ -206,6 +217,7 @@ public class fflib_SObjectDescribe {
 			result = new fflib_SObjectDescribe(token);		
 		return result;
 	}
+	@NamespaceAccessible
 	public static fflib_SObjectDescribe getDescribe(Schema.DescribeSObjectResult nativeDescribe){
 		if(nativeDescribe == null)
 			return null;
@@ -214,6 +226,7 @@ public class fflib_SObjectDescribe {
 			result = new fflib_SObjectDescribe(nativeDescribe.getSObjectType());
 		return result;
 	}
+	@NamespaceAccessible
 	public static fflib_SObjectDescribe getDescribe(SObject instance){
 		if(instance == null)
 			return null;
@@ -221,14 +234,17 @@ public class fflib_SObjectDescribe {
 	}
 
 	//returns the same results as the native method, just with caching built in to avoid limits
+	@NamespaceAccessible
 	public static Map<String,SObjectType> getRawGlobalDescribe(){
 		return rawGlobalDescribe;
 	}
+	@NamespaceAccessible
 	public static GlobalDescribeMap getGlobalDescribe(){
 		return wrappedGlobalDescribe;
 	}
 	//Useful when working in heap space constrained environments. 
 	//Existing references to SObjectDescribe instances will continue to work.
+	@NamespaceAccessible
 	public static void flushCache(){
 		rawGlobalDescribe = null;
 		instanceCache = null;
@@ -278,9 +294,11 @@ public class fflib_SObjectDescribe {
 				return null;
 			}
 		}
+
 		public virtual Boolean containsKey(String name){
 			return this.containsKey(name, true);
 		}
+
 		public virtual Boolean containsKey(String name, Boolean implyNamespace){
 			if(name == null) //short-circuit lookup logic since null can't possibly be a valid field name, and it saves us null checking
 				return null;
@@ -318,6 +336,7 @@ public class fflib_SObjectDescribe {
 	/**
 	 * A subclass of NamespacedAttributeMap for handling the data returned by #Schema.DescribeSObjectResult.fields.getMap
 	**/
+	@NamespaceAccessible
 	public class FieldsMap extends NamespacedAttributeMap{
 
 		@TestVisible
@@ -325,12 +344,15 @@ public class fflib_SObjectDescribe {
 			super(values);
 		}
 
+		@NamespaceAccessible
 		public Schema.SObjectField get(String name){
 			return this.get(name, true);
 		}
+		@NamespaceAccessible
 		public Schema.SObjectField get(String name, Boolean implyNamespace){
 			return (Schema.SObjectField) this.getObject(name, implyNamespace);
 		}
+		@NamespaceAccessible
 		public List<Schema.SObjectField> values(){
 			return (List<Schema.SObjectField>) values.values();
 		}
@@ -339,25 +361,32 @@ public class fflib_SObjectDescribe {
 	/**
 	 * A subclass of NamespacedAttributeMap for handling the data returned by #Schema.getGlobalDescribe
 	**/
+	@NamespaceAccessible
 	public class GlobalDescribeMap extends NamespacedAttributeMap{
 		@TestVisible
 		private GlobalDescribeMap(Map<String,Schema.SObjectType> values){
 			super(values);
 		}
 
-		public Schema.SObjectType get(String name){
+		@NamespaceAccessible
+   		public Schema.SObjectType get(String name){
 			return this.get(name, true);
 		}
+		@NamespaceAccessible
 		public Schema.SObjectType get(String name, Boolean implyNamespace){
 			return (Schema.SObjectType) this.getObject(name, implyNamespace);
 		}
+		@NamespaceAccessible
 		public List<Schema.SObjectType> values(){
 			return (List<Schema.SObjectType>) values.values();
 		}
 	}
 
 
+	@NamespaceAccessible
 	public abstract class DescribeException extends Exception{}
+	@NamespaceAccessible
 	public class DuplicateDescribeException extends DescribeException{} //Test coverage for this requires APIv28's @testVisible annotation to force exception cases.
+	@NamespaceAccessible
 	public class InvalidDescribeException extends DescribeException{}
 }
