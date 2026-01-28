@@ -629,6 +629,222 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         System.assertEquals(1, mockDML.recordsForInsert.size());
     }
 
+    @isTest
+    private static void testRegisterUpsertByExternalId() {
+
+        Opportunity existingOpp = new Opportunity(Name = 'Existing Opportunity', StageName = 'Open', CloseDate = System.today());
+        insert existingOpp;
+
+        existingOpp.StageName = 'Closed';
+
+        System.assertEquals(1, [SELECT COUNT() FROM Opportunity]);
+        System.assertEquals(0, [SELECT COUNT() FROM Opportunity WHERE StageName = 'Closed']);
+        
+        Test.startTest();
+            fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
+            uow.registerUpsert(new List<Opportunity>{existingOpp}, Opportunity.Id);
+            uow.commitWork();
+        Test.stopTest();
+
+        System.assertEquals(1, [SELECT COUNT() FROM Opportunity]);
+        System.assertEquals(1, [SELECT COUNT() FROM Opportunity WHERE StageName = 'Closed']);
+    }
+
+    @isTest
+    private static void testRegisterUpsertByExternalId_When_UserModeDML_Expect_UpsertInUserMode() {
+        // Covers UserModeDML.dmlUpsert (Database.upsert with accessLevel)
+        Opportunity existingOpp = new Opportunity(Name = 'Existing Opportunity', StageName = 'Open', CloseDate = System.today());
+        insert existingOpp;
+        existingOpp.StageName = 'Closed';
+
+        Test.startTest();
+        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS, new fflib_SObjectUnitOfWork.UserModeDML());
+        uow.registerUpsert(new List<Opportunity>{existingOpp}, Opportunity.Id);
+        uow.commitWork();
+        Test.stopTest();
+
+        System.assertEquals(1, [SELECT COUNT() FROM Opportunity WHERE StageName = 'Closed']);
+    }
+
+    @isTest
+    private static void testRegisterUpsertByExternalIdParentWillResolve() {
+
+        Opportunity existingOpp = new Opportunity(Name = 'Existing Opportunity', StageName = 'Open', CloseDate = System.today());
+        insert existingOpp;
+
+        existingOpp.StageName = 'Closed';
+
+        System.assertEquals(1, [SELECT COUNT() FROM Opportunity]);
+        System.assertEquals(0, [SELECT COUNT() FROM Opportunity WHERE StageName = 'Closed']);
+        
+        List<Schema.SObjectType> orderWithAccounts = new List<Schema.SObjectType>();
+        orderWithAccounts.add(Account.SObjectType);
+        orderWithAccounts.addAll(MY_SOBJECTS);
+
+        String accName = 'new account';
+        Account newAccount = new Account(Name = accName);
+
+        Test.startTest();
+            fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(orderWithAccounts);
+            uow.registerNew(newAccount);
+            uow.registerUpsert(existingOpp, Opportunity.Id, Opportunity.AccountId, newAccount);
+            uow.commitWork();
+        Test.stopTest();
+
+        System.assertEquals(1, [SELECT COUNT() FROM Opportunity]);
+
+        Opportunity updatedOpp = [SELECT StageName, Account.Name FROM Opportunity];
+        System.assertEquals('Closed', updatedOpp.StageName);
+        System.assertEquals(accName, updatedOpp.Account.Name );
+    }
+
+
+    @isTest
+    private static void testRegisterUpsertByExternalIdChildWillResolve() {
+
+        Opportunity newOpportunity = new Opportunity(Name = 'Existing Opportunity', StageName = 'Closed', CloseDate = System.today());
+
+        Account existingAccount = new Account(Name = 'old account name');
+        insert existingAccount;
+        
+        List<Schema.SObjectType> orderWithAccounts = new List<Schema.SObjectType>();
+        orderWithAccounts.add(Account.SObjectType);
+        orderWithAccounts.addAll(MY_SOBJECTS);
+
+        String accName = 'new account';
+
+        existingAccount.Name = accName;
+
+        Test.startTest();
+            fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(orderWithAccounts);
+            uow.registerDirty(existingAccount);
+            uow.registerUpsert(newOpportunity, Opportunity.Id, Opportunity.AccountId, existingAccount);
+            uow.commitWork();
+        Test.stopTest();
+
+        System.assertEquals(1, [SELECT COUNT() FROM Opportunity]);
+
+        Opportunity updatedOpp = [SELECT StageName, Account.Name FROM Opportunity];
+        System.assertEquals('Closed', updatedOpp.StageName);
+        System.assertEquals(accName, updatedOpp.Account.Name );
+    }
+
+
+    @isTest
+    private static void testRegisterUpsertByExternalIdBothWillResolve() {
+
+        Opportunity newOpportunity = new Opportunity(Name = 'Existing Opportunity', StageName = 'Closed', CloseDate = System.today());
+
+        String accName = 'new account';
+        Account newAccount = new Account(Name = accName);
+        
+        List<Schema.SObjectType> orderWithAccounts = new List<Schema.SObjectType>();
+        orderWithAccounts.add(Account.SObjectType);
+        orderWithAccounts.addAll(MY_SOBJECTS);
+
+        Test.startTest();
+            fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(orderWithAccounts);
+            uow.registerNew(newAccount);
+            uow.registerUpsert(newOpportunity, Opportunity.Id, Opportunity.AccountId, newAccount);
+            uow.commitWork();
+        Test.stopTest();
+
+        System.assertEquals(1, [SELECT COUNT() FROM Opportunity]);
+
+        Opportunity updatedOpp = [SELECT StageName, Account.Name FROM Opportunity];
+        System.assertEquals('Closed', updatedOpp.StageName);
+        System.assertEquals(accName, updatedOpp.Account.Name );
+    }
+
+    @isTest
+    private static void testRegisterUpsertByExternalId_When_CustomIDMLNotIDML2_Expect_Exception() {
+        // GIVEN an existing opportunity and a custom DML that implements IDML but not IDML2
+        Opportunity existingOpp = new Opportunity(Name = 'Existing Opportunity', StageName = 'Open', CloseDate = System.today());
+        insert existingOpp;
+
+        existingOpp.StageName = 'Closed';
+
+        MockDML mockDML = new MockDML();
+        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS, mockDML);
+
+        // WHEN we try to register an upsert by external ID THEN an exception is thrown at registration (MockDML doesn't implement IDML2)
+        Boolean exceptionThrown = false;
+        fflib_SObjectUnitOfWork.UnitOfWorkException caughtException = null;
+        try {
+            uow.registerUpsert(new List<Opportunity>{existingOpp}, Opportunity.Id);
+        } catch (fflib_SObjectUnitOfWork.UnitOfWorkException e) {
+            exceptionThrown = true;
+            caughtException = e;
+        }
+
+        System.assert(exceptionThrown, 'Expected UnitOfWorkException to be thrown when using IDML without IDML2');
+        System.assert(caughtException != null, 'Expected to catch UnitOfWorkException');
+        System.assert(caughtException.getMessage().contains('Upsert by external ID requires IDML2 implementation'),
+            'Expected exception message to mention IDML2 requirement');
+    }
+
+    @isTest
+    private static void testRegisterUpsert_When_NullExternalIdField_Expect_Exception() {
+        Opportunity opp = new Opportunity(Name = 'Test', StageName = 'Open', CloseDate = System.today());
+        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
+        Boolean exceptionThrown = false;
+        try {
+            uow.registerUpsert(opp, null, null, null);
+        } catch (fflib_SObjectUnitOfWork.UnitOfWorkException e) {
+            exceptionThrown = true;
+            System.assert(e.getMessage().contains('externalIdField'), 'Expected message to mention externalIdField');
+        }
+        System.assert(exceptionThrown, 'Expected UnitOfWorkException when externalIdField is null');
+    }
+
+    @isTest
+    private static void testRegisterUpsert_When_FieldNotOnTargetSObject_Expect_Exception() {
+        Opportunity opp = new Opportunity(Name = 'Test', StageName = 'Open', CloseDate = System.today());
+        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
+        Boolean exceptionThrown = false;
+        try {
+            uow.registerUpsert(opp, Account.NumberOfEmployees, null, null);
+        } catch (fflib_SObjectUnitOfWork.UnitOfWorkException e) {
+            exceptionThrown = true;
+            System.assert(e.getMessage().contains('not a known field') || e.getMessage().contains('target sObject'),
+                'Expected message about field not on target sObject');
+        }
+        System.assert(exceptionThrown, 'Expected UnitOfWorkException when externalIdField is not on target sObject');
+    }
+
+    @isTest
+    private static void testRegisterUpsert_When_FieldNotValidForUpsert_Expect_Exception() {
+        Opportunity opp = new Opportunity(Name = 'Test', StageName = 'Open', CloseDate = System.today());
+        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
+        Boolean exceptionThrown = false;
+        try {
+            uow.registerUpsert(opp, Opportunity.StageName, null, null);
+        } catch (fflib_SObjectUnitOfWork.UnitOfWorkException e) {
+            exceptionThrown = true;
+            System.assert(e.getMessage().contains('cannot be used with upsert'),
+                'Expected message about field not valid for upsert');
+        }
+        System.assert(exceptionThrown, 'Expected UnitOfWorkException when externalIdField is not valid for upsert (e.g. not idLookup)');
+    }
+
+    @isTest
+    private static void testRegisterUpsert_When_DifferentExternalIdAlreadyRegisteredForSameType_Expect_Exception() {
+        User runningUser = [SELECT Id, Username FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
+        List<Schema.SObjectType> userTypes = new List<Schema.SObjectType>{ User.SObjectType };
+        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(userTypes);
+        uow.registerUpsert(runningUser, User.Id, null, null);
+        User secondUser = runningUser.clone(false, true);
+        Boolean exceptionThrown = false;
+        try {
+            uow.registerUpsert(secondUser, User.Username, null, null);
+        } catch (fflib_SObjectUnitOfWork.UnitOfWorkException e) {
+            exceptionThrown = true;
+            System.assert(e.getMessage().contains('you cannot use another in this unit of work'),
+                'Expected message about different external id already registered');
+        }
+        System.assert(exceptionThrown, 'Expected UnitOfWorkException when registering same type with different external ID field');
+    }
+
     @IsTest
     private static void constructUserModeDML_When_DefaultConstructor_Expect_UserMode(){
         fflib_SObjectUnitOfWork.UserModeDML dml = new fflib_SObjectUnitOfWork.UserModeDML();
@@ -819,6 +1035,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         public List<SObject> recordsForInsert = new List<SObject>();
         public List<SObject> recordsForUpdate = new List<SObject>();
         public List<SObject> recordsForDelete = new List<SObject>();
+        public List<SObject> recordsForUpsert = new List<SObject>();
         public List<SObject> recordsForRecycleBin = new List<SObject>();
         public List<SObject> recordsForEventPublish = new List<SObject>();
 
@@ -835,6 +1052,11 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         public void dmlDelete(List<SObject> objList)
         {
             this.recordsForDelete.addAll(objList);
+        }
+
+        public void dmlUpsert(List<SObject> objList, Schema.SObjectField externalId)
+        {
+            this.recordsForUpsert.addAll(objList);
         }
 
         public void eventPublish(List<SObject> objList)
