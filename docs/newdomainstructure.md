@@ -1,6 +1,5 @@
 # New domain structure
-The new domain structure allows more flexibility of the object type a domain can contain. 
-This allows for the creation of compound-domains and domains of data-classes. 
+In 2021 a new domain structure was introduced that allows more flexibility of the object type a domain can contain. This allows for the creation of compound-domains and domains of data-classes. 
 
 It also splits the functionality into a Domain Model [as described by Martin Fowler](https://www.martinfowler.com/eaaCatalog/domainModel.html) and a separate trigger handler. 
 This helps to structure the code better and makes it more clear which Apex code should be in the domain and which in the trigger handler.
