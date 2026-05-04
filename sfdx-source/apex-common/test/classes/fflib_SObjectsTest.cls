@@ -204,22 +204,20 @@ public class fflib_SObjectsTest
 	}
 
 	@IsTest
-	static void itShouldReturnStringFieldValuesForNonStringFields()
+	static void getStringFieldValuesShouldThrowClassCastExceptionForNonStringFields()
 	{
 		DomainAccounts domain = generateDomain();
 
-		final Set<String> expectedStrings = new Set<String>
+		try
 		{
-				null,
-				'10',
-				'20',
-				'30'
-		};
-
-		System.assert(
-				domain.getStringFieldValues(Schema.Account.NumberOfEmployees)
-						.equals(expectedStrings)
-		);
+			domain.getStringFieldValues(Schema.Account.NumberOfEmployees);
+			Assert.fail('Expected ClassCastException because NumberOfEmployees is not a Text field');
+		}
+		catch (System.TypeException expected)
+		{
+			System.assert(expected.getMessage().contains('Invalid conversion from runtime type'),
+					'Unexpected exception message: ' + expected.getMessage());
+		}
 	}
 
 	@IsTest
