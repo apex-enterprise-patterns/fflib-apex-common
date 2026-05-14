@@ -62,9 +62,9 @@ private class fflib_SObjectsTest
 	static void itShouldReturnRecordsIds()
 	{
 		SObjectType accountSObjectType = Schema.Account.SObjectType;
-		Id idA = fflib_IDGenerator.generate(accountSObjectType);
-		Id idB = fflib_IDGenerator.generate(accountSObjectType);
-		Id idC = fflib_IDGenerator.generate(accountSObjectType);
+		Id idA = fflib_SObjects.generateTestRecordId(accountSObjectType);
+		Id idB = fflib_SObjects.generateTestRecordId(accountSObjectType);
+		Id idC = fflib_SObjects.generateTestRecordId(accountSObjectType);
 
 		DomainAccounts domain = new DomainAccounts(
 				new List<SObject>

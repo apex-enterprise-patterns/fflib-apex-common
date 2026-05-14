@@ -235,9 +235,9 @@ private with sharing class fflib_SObjectDomainTest
 	{
 		// GIVEN a domain with old and changed records
 
-		Id idLuke = fflib_IDGenerator.generate(Account.SObjectType);
-		Id idHan = fflib_IDGenerator.generate(Account.SObjectType);
-		Id idLeia = fflib_IDGenerator.generate(Account.SObjectType);
+		Id idLuke = fflib_SObjects.generateTestRecordId(Account.SObjectType);
+		Id idHan = fflib_SObjects.generateTestRecordId(Account.SObjectType);
+		Id idLeia = fflib_SObjects.generateTestRecordId(Account.SObjectType);
 		List<Account> oldRecords = new List<Account>
 		{
 				new Account(Id = idLuke, Name = 'Luke', Description = 'Jedi'),
@@ -273,9 +273,9 @@ private with sharing class fflib_SObjectDomainTest
 	{
 		// GIVEN a domain with old and changed records
 
-		Id idLuke = fflib_IDGenerator.generate(Account.SObjectType);
-		Id idHan = fflib_IDGenerator.generate(Account.SObjectType);
-		Id idLeia = fflib_IDGenerator.generate(Account.SObjectType);
+		Id idLuke = fflib_SObjects.generateTestRecordId(Account.SObjectType);
+		Id idHan = fflib_SObjects.generateTestRecordId(Account.SObjectType);
+		Id idLeia = fflib_SObjects.generateTestRecordId(Account.SObjectType);
 		List<Account> oldRecords = new List<Account>
 		{
 				new Account(Id = idLuke, Name = 'Luke', Description = 'Jedi'),

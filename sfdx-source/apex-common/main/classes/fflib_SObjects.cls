@@ -40,6 +40,26 @@ public virtual class fflib_SObjects
 		Errors = new ErrorFactory();
 	}
 
+	private static Integer testFakeIdSequence = 0;
+	private static final String TEST_FAKE_ID_PADDING = '000000000000';
+
+	/**
+	 * Returns a syntactically valid fake Id for the given SObject type. For unit tests only
+	 * (same scheme historically provided by fflib_IDGenerator in ApexMocks).
+	 *
+	 * @param sobjectType The type whose key prefix the fake Id should use
+	 */
+	@TestVisible
+	private static Id generateTestRecordId(Schema.SObjectType sobjectType) {
+		String keyPrefix = sobjectType.getDescribe().getKeyPrefix();
+		testFakeIdSequence++;
+		String prefix = TEST_FAKE_ID_PADDING.substring(
+			0,
+			TEST_FAKE_ID_PADDING.length() - String.valueOf(testFakeIdSequence).length()
+		);
+		return Id.valueOf(keyPrefix + prefix + testFakeIdSequence);
+	}
+
 	/**
 	 * Class constructor
 	 */

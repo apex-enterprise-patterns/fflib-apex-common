@@ -4,7 +4,7 @@ FFLib Apex Common
 ![Push Source and Run Apex Tests](https://github.com/apex-enterprise-patterns/fflib-apex-common/workflows/Create%20a%20Scratch%20Org,%20Push%20Source%20and%20Run%20Apex%20Tests/badge.svg)
 
 
-**Dependencies:** Must deploy [ApexMocks](https://github.com/apex-enterprise-patterns/fflib-apex-mocks) before deploying this library
+**Dependencies:** None for deployment or for running this library’s Apex tests. [ApexMocks](https://github.com/apex-enterprise-patterns/fflib-apex-mocks) remains a useful companion library if your own application tests use Mockito-style mocking; it is not required by `fflib-apex-common` metadata.
 
 <a href="https://githubsfdeploy.herokuapp.com?owner=apex-enterprise-patterns&repo=fflib-apex-common">
   <img alt="Deploy to Salesforce"

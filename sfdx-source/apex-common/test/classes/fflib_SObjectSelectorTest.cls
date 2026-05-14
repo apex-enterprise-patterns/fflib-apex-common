@@ -382,7 +382,7 @@ private with sharing class fflib_SObjectSelectorTest
 		System.runAs(u){
 			try{
 				System.debug(sel.newQueryFactory().toSOQL());
-				sel.selectSObjectsById(new Set<Id>{fflib_IDGenerator.generate(Opportunity.SObjectType)});
+				sel.selectSObjectsById(new Set<Id>{fflib_SObjects.generateTestRecordId(Opportunity.SObjectType)});
 				Assert.fail('Expected a QueryException due to read only user not having access to Opportunity');
 			}
 			catch(QueryException qe){
@@ -401,7 +401,7 @@ private with sharing class fflib_SObjectSelectorTest
 
 		User u = getMinimumAccessUser();
 		System.runAs(u){
-			sel.selectSObjectsById(new Set<Id>{fflib_IDGenerator.generate(Opportunity.SObjectType)});
+			sel.selectSObjectsById(new Set<Id>{fflib_SObjects.generateTestRecordId(Opportunity.SObjectType)});
 		}
 	}
 
@@ -414,7 +414,7 @@ private with sharing class fflib_SObjectSelectorTest
 		System.runAs(u){
 			try{
 				System.debug(sel.newQueryFactory().toSOQL());
-				sel.selectSObjectsById(new Set<Id>{fflib_IDGenerator.generate(Account.SObjectType)});
+				sel.selectSObjectsById(new Set<Id>{fflib_SObjects.generateTestRecordId(Account.SObjectType)});
 				Assert.fail('Expected a QueryException due to read only user not having access to AnnualRevenue');
 			}
 			catch(QueryException qe){
@@ -435,7 +435,7 @@ private with sharing class fflib_SObjectSelectorTest
 		//Account has Read access by the limited read only user but no FLS access
 		User u = getMinimumAccessUser();
 		System.runAs(u){
-			sel.selectSObjectsById(new Set<Id>{fflib_IDGenerator.generate(Account.SObjectType)});
+			sel.selectSObjectsById(new Set<Id>{fflib_SObjects.generateTestRecordId(Account.SObjectType)});
 		}
 	}
 
