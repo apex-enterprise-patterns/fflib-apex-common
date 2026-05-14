@@ -31,7 +31,7 @@ private class fflib_ApplicationTest
 	private static void callingDomainFactoryShouldGiveRegisteredImplsAndMocks()
 	{
 		// Registered Accounts domain class by SObject List
-		Id testAccountId = fflib_SObjects.generateTestRecordId(Account.SObjectType);
+		Id testAccountId = fflib_SObjectsTest.generateTestRecordId(Account.SObjectType);
 		fflib_IDomain domainObjectAcct =
 			Domain.newInstance(
 				new List<Account> 
@@ -42,7 +42,7 @@ private class fflib_ApplicationTest
 		System.assertEquals(testAccountId, getFirstSObject(domainObjectAcct).Id);
 
 		// Registered Accounts domain class by SObject List
-		testAccountId = fflib_SObjects.generateTestRecordId(Account.SObjectType);
+		testAccountId = fflib_SObjectsTest.generateTestRecordId(Account.SObjectType);
 		domainObjectAcct = 
 			Domain.newInstance(
 				new List<SObject> 
@@ -54,7 +54,7 @@ private class fflib_ApplicationTest
 		System.assertEquals(testAccountId, getFirstSObject(domainObjectAcct).Id);
 
 		// Registered Opportunities domain class by SObject List
-		Id testOpportunityId = fflib_SObjects.generateTestRecordId(Opportunity.SObjectType);
+		Id testOpportunityId = fflib_SObjectsTest.generateTestRecordId(Opportunity.SObjectType);
 		fflib_IDomain domainObjectOpp =
 			Domain.newInstance(
 				new List<Opportunity> 
@@ -66,7 +66,7 @@ private class fflib_ApplicationTest
 
 		// Test failure for creating new instance using IConstructable2
 		// for domain class that does not support it
-		testOpportunityId = fflib_SObjects.generateTestRecordId(Opportunity.SObjectType);
+		testOpportunityId = fflib_SObjectsTest.generateTestRecordId(Opportunity.SObjectType);
 		domainObjectOpp = 
 			Domain.newInstance(
 				new List<SObject> 
@@ -114,7 +114,7 @@ private class fflib_ApplicationTest
 	private static void callingDomainFactoryWithIdsShouldGiveRegisteredImpls()
 	{
 		// Given
-		Id testAccountId = fflib_SObjects.generateTestRecordId(Account.SObjectType);
+		Id testAccountId = fflib_SObjectsTest.generateTestRecordId(Account.SObjectType);
 		List<Account> accounts = 
 			new List<Account> 
 				{ new Account( 
@@ -280,8 +280,8 @@ private class fflib_ApplicationTest
 		try {
 			Selector.selectById(
 				new Set<Id> { 
-					fflib_SObjects.generateTestRecordId(Opportunity.SObjectType), 
-					fflib_SObjects.generateTestRecordId(Account.SObjectType) });
+					fflib_SObjectsTest.generateTestRecordId(Opportunity.SObjectType), 
+					fflib_SObjectsTest.generateTestRecordId(Account.SObjectType) });
 			System.assert(true, 'Expected exception');
 		} catch (fflib_Application.DeveloperException e) {
 			System.assertEquals('Unable to determine SObjectType, Set contains Id\'s from different SObject types', e.getMessage());
@@ -292,7 +292,7 @@ private class fflib_ApplicationTest
 	private static void callingSelectoryFactorySelectByIdShouldReturnResults()
 	{	
 		// Given
-		Id testAccountId = fflib_SObjects.generateTestRecordId(Account.SObjectType);
+		Id testAccountId = fflib_SObjectsTest.generateTestRecordId(Account.SObjectType);
 		List<Account> accounts = 
 			new List<Account> 
 				{ new Account( 
@@ -318,8 +318,8 @@ private class fflib_ApplicationTest
 	private static void callingSelectoryFactorySselectByRelationshipPassRelatedIds()
 	{	
 		// Given
-		Id testAccountId = fflib_SObjects.generateTestRecordId(Account.SObjectType);
-		Id testOpportunityId = fflib_SObjects.generateTestRecordId(Opportunity.SObjectType);
+		Id testAccountId = fflib_SObjectsTest.generateTestRecordId(Account.SObjectType);
+		Id testOpportunityId = fflib_SObjectsTest.generateTestRecordId(Opportunity.SObjectType);
 		List<Account> accounts = 
 			new List<Account> 
 				{ new Account( 

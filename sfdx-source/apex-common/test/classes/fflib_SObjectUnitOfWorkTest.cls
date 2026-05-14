@@ -71,7 +71,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     private static void testRegisterNew_ThrowExceptionOnDirtyRecord()
     {
         // GIVEN an existing record
-        Opportunity opportunity = new Opportunity(Id = fflib_SObjects.generateTestRecordId(Schema.Opportunity.SObjectType));
+        Opportunity opportunity = new Opportunity(Id = fflib_SObjectsTest.generateTestRecordId(Schema.Opportunity.SObjectType));
         fflib_SObjectUnitOfWork unitOfWork = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
 
         // WHEN we register the existing record as new
@@ -125,8 +125,8 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     private static void testRegisterDeleted()
     {
         // GIVEN - two existing records
-        Opportunity opportunity = new Opportunity(Id = fflib_SObjects.generateTestRecordId(Schema.Opportunity.SObjectType));
-        Product2 product = new Product2(Id = fflib_SObjects.generateTestRecordId(Schema.Product2.SObjectType));
+        Opportunity opportunity = new Opportunity(Id = fflib_SObjectsTest.generateTestRecordId(Schema.Opportunity.SObjectType));
+        Product2 product = new Product2(Id = fflib_SObjectsTest.generateTestRecordId(Schema.Product2.SObjectType));
         MockDML mockDML = new MockDML();
         fflib_SObjectUnitOfWork unitOfWork = new fflib_SObjectUnitOfWork(MY_SOBJECTS, mockDML);
 
@@ -142,8 +142,8 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     private static void testRegisterPermanentlyDeleted()
     {
         // GIVEN - two existing records
-        Opportunity opportunity = new Opportunity(Id = fflib_SObjects.generateTestRecordId(Schema.Opportunity.SObjectType));
-        Product2 product = new Product2(Id = fflib_SObjects.generateTestRecordId(Schema.Product2.SObjectType));
+        Opportunity opportunity = new Opportunity(Id = fflib_SObjectsTest.generateTestRecordId(Schema.Opportunity.SObjectType));
+        Product2 product = new Product2(Id = fflib_SObjectsTest.generateTestRecordId(Schema.Product2.SObjectType));
         MockDML mockDML = new MockDML();
         fflib_SObjectUnitOfWork unitOfWork = new fflib_SObjectUnitOfWork(MY_SOBJECTS, mockDML);
 
@@ -160,7 +160,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     private static void testRegisterEmptyRecycleBin()
     {
         // GIVEN - an existing record of the recycle bin
-        Opportunity opportunity = new Opportunity(Id = fflib_SObjects.generateTestRecordId(Schema.Opportunity.SObjectType));
+        Opportunity opportunity = new Opportunity(Id = fflib_SObjectsTest.generateTestRecordId(Schema.Opportunity.SObjectType));
         MockDML mockDML = new MockDML();
         fflib_SObjectUnitOfWork unitOfWork = new fflib_SObjectUnitOfWork(MY_SOBJECTS, mockDML);
 
@@ -414,7 +414,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     private static void testRegisterDirty_ExpectReplacement()
     {
         final Opportunity insertedOpp = new Opportunity(
-                Id = fflib_SObjects.generateTestRecordId(Schema.Opportunity.SObjectType),
+                Id = fflib_SObjectsTest.generateTestRecordId(Schema.Opportunity.SObjectType),
                 Name = 'Original',
                 StageName = 'Open',
                 CloseDate = System.today());
@@ -442,7 +442,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     @IsTest
     private static void testRegisterDirty_field() {
         Opportunity opp = new Opportunity(
-                Id = fflib_SObjects.generateTestRecordId(Schema.Opportunity.SObjectType),
+                Id = fflib_SObjectsTest.generateTestRecordId(Schema.Opportunity.SObjectType),
                 Name = 'test name',
                 StageName = 'Open',
                 CloseDate = System.today());
@@ -469,12 +469,12 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     {
         // GIVEN a list of existing records
         Opportunity opportunityA = new Opportunity(
-                Id = fflib_SObjects.generateTestRecordId(Opportunity.SObjectType),
+                Id = fflib_SObjectsTest.generateTestRecordId(Opportunity.SObjectType),
                 Name = 'test name A',
                 StageName = 'Open',
                 CloseDate = System.today());
         Opportunity opportunityB = new Opportunity(
-                Id = fflib_SObjects.generateTestRecordId(Opportunity.SObjectType),
+                Id = fflib_SObjectsTest.generateTestRecordId(Opportunity.SObjectType),
                 Name = 'test name B',
                 StageName = 'Open',
                 CloseDate = System.today());
@@ -536,12 +536,12 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     {
         // GIVEN a list of existing records
         Opportunity opportunityA = new Opportunity(
-                Id = fflib_SObjects.generateTestRecordId(Opportunity.SObjectType),
+                Id = fflib_SObjectsTest.generateTestRecordId(Opportunity.SObjectType),
                 Name = 'test name A',
                 StageName = 'Open',
                 CloseDate = System.today());
         Opportunity opportunityB = new Opportunity(
-                Id = fflib_SObjects.generateTestRecordId(Opportunity.SObjectType),
+                Id = fflib_SObjectsTest.generateTestRecordId(Opportunity.SObjectType),
                 Name = 'test name B',
                 StageName = 'Open',
                 CloseDate = System.today());
@@ -612,7 +612,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     @IsTest
     private static void testRegisterUpsert() {
         Opportunity existingOpp = new Opportunity(
-                Id = fflib_SObjects.generateTestRecordId(Schema.Opportunity.SObjectType),
+                Id = fflib_SObjectsTest.generateTestRecordId(Schema.Opportunity.SObjectType),
                 Name = 'Existing Opportunity',
                 StageName = 'Closed',
                 CloseDate = System.today());
