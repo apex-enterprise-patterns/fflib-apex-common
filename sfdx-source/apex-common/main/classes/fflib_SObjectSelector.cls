@@ -432,7 +432,7 @@ public abstract with sharing class fflib_SObjectSelector
 			queryFactory.selectField(relationshipFieldPath + '.' + field.getDescribe().getName(), this.getSObjectType());
 		}
 		// Automatically select the CurrencyIsoCode for MC orgs (unless the object is a known exception to the rule)
-		if(UserInfo.isMultiCurrencyOrganization() && CURRENCY_ISO_CODE_ENABLED){
+		if(isCurrencyIsoCodeAvailable()){
 			queryFactory.selectField(relationshipFieldPath+'.CurrencyIsoCode', getSObjectType());
 		}
      }
@@ -532,7 +532,7 @@ public abstract with sharing class fflib_SObjectSelector
 	                queryFactory.selectFieldSet(fieldSet);
 	
 	        // Automatically select the CurrencyIsoCode for MC orgs (unless the object is a known exception to the rule)
-	        if(UserInfo.isMultiCurrencyOrganization() && CURRENCY_ISO_CODE_ENABLED)
+	        if(isCurrencyIsoCodeAvailable())
 	            queryFactory.selectField('CurrencyIsoCode', getSObjectType());
         }
         
@@ -555,5 +555,13 @@ public abstract with sharing class fflib_SObjectSelector
         queryFactory.setSortSelectFields(m_sortSelectFields);           
 
         return queryFactory;    
-    }    
+    }
+
+    /**
+     * Returns true if the CurrencyIsoCode field is available on this SObject
+     */
+    @TestVisible
+    private Boolean isCurrencyIsoCodeAvailable() {
+        return UserInfo.isMultiCurrencyOrganization() && CURRENCY_ISO_CODE_ENABLED;
+    }
 }
