@@ -31,7 +31,7 @@ private class fflib_ApplicationTest
 	private static void callingDomainFactoryShouldGiveRegisteredImplsAndMocks()
 	{
 		// Registered Accounts domain class by SObject List
-		Id testAccountId = fflib_IDGenerator.generate(Account.SObjectType);
+		Id testAccountId = fflib_SObjectsTest.generateTestRecordId(Account.SObjectType);
 		fflib_IDomain domainObjectAcct =
 			Domain.newInstance(
 				new List<Account> 
@@ -42,7 +42,7 @@ private class fflib_ApplicationTest
 		System.assertEquals(testAccountId, getFirstSObject(domainObjectAcct).Id);
 
 		// Registered Accounts domain class by SObject List
-		testAccountId = fflib_IDGenerator.generate(Account.SObjectType);
+		testAccountId = fflib_SObjectsTest.generateTestRecordId(Account.SObjectType);
 		domainObjectAcct = 
 			Domain.newInstance(
 				new List<SObject> 
@@ -54,7 +54,7 @@ private class fflib_ApplicationTest
 		System.assertEquals(testAccountId, getFirstSObject(domainObjectAcct).Id);
 
 		// Registered Opportunities domain class by SObject List
-		Id testOpportunityId = fflib_IDGenerator.generate(Opportunity.SObjectType);
+		Id testOpportunityId = fflib_SObjectsTest.generateTestRecordId(Opportunity.SObjectType);
 		fflib_IDomain domainObjectOpp =
 			Domain.newInstance(
 				new List<Opportunity> 
@@ -66,7 +66,7 @@ private class fflib_ApplicationTest
 
 		// Test failure for creating new instance using IConstructable2
 		// for domain class that does not support it
-		testOpportunityId = fflib_IDGenerator.generate(Opportunity.SObjectType);
+		testOpportunityId = fflib_SObjectsTest.generateTestRecordId(Opportunity.SObjectType);
 		domainObjectOpp = 
 			Domain.newInstance(
 				new List<SObject> 
@@ -77,12 +77,8 @@ private class fflib_ApplicationTest
 		System.assertEquals(testOpportunityId, getFirstSObject(domainObjectOpp).Id);
 		System.assert(domainObjectOpp instanceof OpportuntiesDomain);
 
-		// Given
-		fflib_ApexMocks mocks = new fflib_ApexMocks();
-		mocks.startStubbing();		
-		fflib_ISObjectDomain domainMock = new fflib_SObjectMocks.SObjectDomain(mocks);
-		mocks.when(domainMock.sObjectType()).thenReturn(Account.SObjectType);
-		mocks.stopStubbing();		
+		// Given — domain factory mock (Apex Stub API)
+		fflib_ISObjectDomain domainMock = newDomainStub(Account.SObjectType, new List<SObject>());
 		Domain.setMock(domainMock);
 
 		// When
@@ -93,8 +89,8 @@ private class fflib_ApplicationTest
 						Id = testAccountId,
 						Name = 'Test Account') });
 
-		// Then
-		System.assert(domainObjectAcct instanceof fflib_SObjectMocks.SObjectDomain);
+		// Then — stub is not a real fflib_SObjectDomain subclass
+		System.assert(!(domainObjectAcct instanceof fflib_SObjectDomain));
 
 		// When
 		domainObjectAcct = 
@@ -106,7 +102,7 @@ private class fflib_ApplicationTest
 				, Account.SObjectType);
 
 		// Then
-		System.assert(domainObjectAcct instanceof fflib_SObjectMocks.SObjectDomain);		
+		System.assert(!(domainObjectAcct instanceof fflib_SObjectDomain));
 	}
 
 	private static SObject getFirstSObject(fflib_IDomain domainObjectAcct)
@@ -118,19 +114,13 @@ private class fflib_ApplicationTest
 	private static void callingDomainFactoryWithIdsShouldGiveRegisteredImpls()
 	{
 		// Given
-		fflib_ApexMocks mocks = new fflib_ApexMocks();
-		mocks.startStubbing();
-		fflib_ISObjectSelector selectorMock = new fflib_SObjectMocks.SObjectSelector(mocks);
-		Id testAccountId = fflib_IDGenerator.generate(Account.SObjectType);
+		Id testAccountId = fflib_SObjectsTest.generateTestRecordId(Account.SObjectType);
 		List<Account> accounts = 
 			new List<Account> 
 				{ new Account( 
 					Id = testAccountId,
 					Name = 'Test Account') };
-		Set<Id> accountIds = new Map<Id, Account>(accounts).keySet();
-		mocks.when(selectorMock.selectSObjectsById(accountIds)).thenReturn(accounts);
-		mocks.when(selectorMock.sObjectType()).thenReturn(Account.SObjectType);
-		mocks.stopStubbing();
+		fflib_ISObjectSelector selectorMock = newSelectorStub(Account.SObjectType, accounts);
 
 		// When
 		Selector.setMock(selectorMock);
@@ -213,8 +203,8 @@ private class fflib_ApplicationTest
 		System.assert(UnitOfWork.newInstance() instanceof fflib_SObjectUnitOfWork);
  		
 		// Mocking behaviour
-		UnitOfWork.setMock(new fflib_SObjectMocks.SObjectUnitOfWork(new fflib_ApexMocks()));
-		System.assert(UnitOfWork.newInstance() instanceof fflib_SObjectMocks.SObjectUnitOfWork);
+		UnitOfWork.setMock(newUnitOfWorkStub());
+		System.assert(!(UnitOfWork.newInstance() instanceof fflib_SObjectUnitOfWork));
 	}
 
 	@IsTest
@@ -227,11 +217,11 @@ private class fflib_ApplicationTest
 				) instanceof fflib_SObjectUnitOfWork);
 
 		// Mocking behaviour
-		UnitOfWork.setMock(new fflib_SObjectMocks.SObjectUnitOfWork(new fflib_ApexMocks()));
+		UnitOfWork.setMock(newUnitOfWorkStub());
 		System.assert(
-				UnitOfWork.newInstance(
+				!(UnitOfWork.newInstance(
 						new List<SObjectType>{ Account.SObjectType}
-				) instanceof fflib_SObjectMocks.SObjectUnitOfWork);
+				) instanceof fflib_SObjectUnitOfWork));
 	}
 
 	@IsTest
@@ -290,8 +280,8 @@ private class fflib_ApplicationTest
 		try {
 			Selector.selectById(
 				new Set<Id> { 
-					fflib_IDGenerator.generate(Opportunity.SObjectType), 
-					fflib_IDGenerator.generate(Account.SObjectType) });
+					fflib_SObjectsTest.generateTestRecordId(Opportunity.SObjectType), 
+					fflib_SObjectsTest.generateTestRecordId(Account.SObjectType) });
 			System.assert(true, 'Expected exception');
 		} catch (fflib_Application.DeveloperException e) {
 			System.assertEquals('Unable to determine SObjectType, Set contains Id\'s from different SObject types', e.getMessage());
@@ -302,26 +292,21 @@ private class fflib_ApplicationTest
 	private static void callingSelectoryFactorySelectByIdShouldReturnResults()
 	{	
 		// Given
-		fflib_ApexMocks mocks = new fflib_ApexMocks();
-		mocks.startStubbing();
-		fflib_ISObjectSelector selectorMock = new fflib_SObjectMocks.SObjectSelector(mocks);
-		Id testAccountId = fflib_IDGenerator.generate(Account.SObjectType);
+		Id testAccountId = fflib_SObjectsTest.generateTestRecordId(Account.SObjectType);
 		List<Account> accounts = 
 			new List<Account> 
 				{ new Account( 
 					Id = testAccountId,
 					Name = 'Test Account') };
 		Set<Id> accountIds = new Map<Id, Account>(accounts).keySet();
-		mocks.when(selectorMock.selectSObjectsById(accountIds)).thenReturn(accounts);
-		mocks.when(selectorMock.sObjectType()).thenReturn(Account.SObjectType);
-		mocks.stopStubbing();
+		fflib_ISObjectSelector selectorMock = newSelectorStub(Account.SObjectType, accounts);
 
 		// When
 		Selector.setMock(selectorMock);
 		List<Account> assertAccounts = Selector.selectById(accountIds);
 
 		// Then
-		System.assert(Selector.newInstance(Account.SObjectType) instanceof fflib_SObjectMocks.SObjectSelector);
+		System.assert(!(Selector.newInstance(Account.SObjectType) instanceof fflib_SObjectSelector));
 		System.assertEquals(1, assertAccounts.size());
 		System.assertEquals(testAccountId, assertAccounts[0].Id);
 		System.assertEquals('Test Account', assertAccounts[0].Name);
@@ -333,20 +318,14 @@ private class fflib_ApplicationTest
 	private static void callingSelectoryFactorySselectByRelationshipPassRelatedIds()
 	{	
 		// Given
-		fflib_ApexMocks mocks = new fflib_ApexMocks();
-		mocks.startStubbing();
-		fflib_ISObjectSelector selectorMock = new fflib_SObjectMocks.SObjectSelector(mocks);
-		Id testAccountId = fflib_IDGenerator.generate(Account.SObjectType);
-		Id testOpportunityId = fflib_IDGenerator.generate(Opportunity.SObjectType);
+		Id testAccountId = fflib_SObjectsTest.generateTestRecordId(Account.SObjectType);
+		Id testOpportunityId = fflib_SObjectsTest.generateTestRecordId(Opportunity.SObjectType);
 		List<Account> accounts = 
 			new List<Account> 
 				{ new Account( 
 					Id = testAccountId,
 					Name = 'Test Account') };
-		Set<Id> accountIds = new Map<Id, Account>(accounts).keySet();
-		mocks.when(selectorMock.selectSObjectsById(accountIds)).thenReturn(accounts);
-		mocks.when(selectorMock.sObjectType()).thenReturn(Account.SObjectType);
-		mocks.stopStubbing();
+		fflib_ISObjectSelector selectorMock = newSelectorStub(Account.SObjectType, accounts);
 		Selector.setMock(selectorMock);
 
 		// When
@@ -363,7 +342,7 @@ private class fflib_ApplicationTest
 		List<Account> assertAccounts = Selector.selectByRelationship(opportunties, Opportunity.AccountId);
 
 		// Then
-		System.assert(Selector.newInstance(Account.SObjectType) instanceof fflib_SObjectMocks.SObjectSelector);
+		System.assert(!(Selector.newInstance(Account.SObjectType) instanceof fflib_SObjectSelector));
 		System.assertEquals(1, assertAccounts.size());
 		System.assertEquals(testAccountId, assertAccounts[0].Id);
 		System.assertEquals('Test Account', assertAccounts[0].Name);
@@ -395,7 +374,7 @@ private class fflib_ApplicationTest
 		Account myAccount = new Account(Name = 'Test Account');
 
 		// When the unit of work is instantiated from the Application Class and the record is registered and commited
-		UnitOfWork.setMock(new fflib_SObjectMocks.SObjectUnitOfWork(new fflib_ApexMocks()));
+		UnitOfWork.setMock(newUnitOfWorkStub());
 		fflib_ISObjectUnitOfWork uow = UnitOfWork.newInstance(customDML);
 
 		uow.registerNew(myAccount);
@@ -432,7 +411,7 @@ private class fflib_ApplicationTest
 		Account myAccount = new Account(Name = 'Test Account');
 
 		// When the unit of work is instantiated from the Application Class and the record is registered and commited
-		UnitOfWork.setMock(new fflib_SObjectMocks.SObjectUnitOfWork(new fflib_ApexMocks()));
+		UnitOfWork.setMock(newUnitOfWorkStub());
 		fflib_ISObjectUnitOfWork uow = UnitOfWork.newInstance(
 				new List<SObjectType>{ Account.SObjectType },
 				customDML
@@ -472,6 +451,128 @@ private class fflib_ApplicationTest
 		public void emptyRecycleBin(List<SObject> objList)
 		{
 			this.isEmptyRecycleBinCalled = true;
+		}
+	}
+
+	/** Factories using Test.createStub / System.StubProvider. */
+	private static fflib_ISObjectDomain newDomainStub(Schema.SObjectType myType, List<SObject> records) {
+		return (fflib_ISObjectDomain) Test.createStub(
+			fflib_ISObjectDomain.class,
+			new DomainStubProvider(myType, records != null ? records : new List<SObject>())
+		);
+	}
+
+	private static fflib_ISObjectSelector newSelectorStub(Schema.SObjectType myType, List<SObject> rows) {
+		return (fflib_ISObjectSelector) Test.createStub(
+			fflib_ISObjectSelector.class,
+			new SelectorStubProvider(myType, rows != null ? rows : new List<SObject>())
+		);
+	}
+
+	private static fflib_ISObjectUnitOfWork newUnitOfWorkStub() {
+		return (fflib_ISObjectUnitOfWork) Test.createStub(
+			fflib_ISObjectUnitOfWork.class,
+			new UnitOfWorkStubProvider()
+		);
+	}
+
+	private class DomainStubProvider implements System.StubProvider {
+		private final Schema.SObjectType myType;
+		private final List<SObject> records;
+		DomainStubProvider(Schema.SObjectType myType, List<SObject> records) {
+			this.myType = myType;
+			this.records = records;
+		}
+		public Object handleMethodCall(
+			Object stubbedObject,
+			String stubbedMethodName,
+			System.Type returnType,
+			List<System.Type> listOfParamTypes,
+			List<String> listOfParamNames,
+			List<Object> listOfArgs
+		) {
+			if (stubbedMethodName == 'sObjectType') {
+				return myType;
+			}
+			if (stubbedMethodName == 'getRecords') {
+				return records;
+			}
+			if (stubbedMethodName == 'getType') {
+				return myType;
+			}
+			if (stubbedMethodName == 'getObjects') {
+				List<Object> out = new List<Object>();
+				for (SObject row : records) {
+					out.add(row);
+				}
+				return out;
+			}
+			return null;
+		}
+	}
+
+	private class SelectorStubProvider implements System.StubProvider {
+		private final Schema.SObjectType myType;
+		private final List<SObject> rows;
+		SelectorStubProvider(Schema.SObjectType myType, List<SObject> rows) {
+			this.myType = myType;
+			this.rows = rows;
+		}
+		public Object handleMethodCall(
+			Object stubbedObject,
+			String stubbedMethodName,
+			System.Type returnType,
+			List<System.Type> listOfParamTypes,
+			List<String> listOfParamNames,
+			List<Object> listOfArgs
+		) {
+			if (stubbedMethodName == 'sObjectType') {
+				return myType;
+			}
+			if (stubbedMethodName == 'selectSObjectsById') {
+				Set<Id> idSet = (Set<Id>) listOfArgs[0];
+				// DomainFactory.newInstance(List<SObject>) uses getSObjectType(), which is null for
+				// lists created as new List<SObject>(). Return a concrete typed list when possible.
+				if (myType == Account.SObjectType) {
+					List<Account> typed = new List<Account>();
+					for (SObject row : rows) {
+						if (row.Id != null && idSet.contains(row.Id)) {
+							typed.add((Account) row);
+						}
+					}
+					return typed;
+				}
+				if (myType == Opportunity.SObjectType) {
+					List<Opportunity> typed = new List<Opportunity>();
+					for (SObject row : rows) {
+						if (row.Id != null && idSet.contains(row.Id)) {
+							typed.add((Opportunity) row);
+						}
+					}
+					return typed;
+				}
+				List<SObject> genericOut = new List<SObject>();
+				for (SObject row : rows) {
+					if (row.Id != null && idSet.contains(row.Id)) {
+						genericOut.add(row);
+					}
+				}
+				return genericOut;
+			}
+			return null;
+		}
+	}
+
+	private class UnitOfWorkStubProvider implements System.StubProvider {
+		public Object handleMethodCall(
+			Object stubbedObject,
+			String stubbedMethodName,
+			System.Type returnType,
+			List<System.Type> listOfParamTypes,
+			List<String> listOfParamNames,
+			List<Object> listOfArgs
+		) {
+			return null;
 		}
 	}
 

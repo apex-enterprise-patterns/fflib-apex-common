@@ -71,7 +71,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     private static void testRegisterNew_ThrowExceptionOnDirtyRecord()
     {
         // GIVEN an existing record
-        Opportunity opportunity = new Opportunity(Id = fflib_IDGenerator.generate(Schema.Opportunity.SObjectType));
+        Opportunity opportunity = new Opportunity(Id = fflib_SObjectsTest.generateTestRecordId(Schema.Opportunity.SObjectType));
         fflib_SObjectUnitOfWork unitOfWork = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
 
         // WHEN we register the existing record as new
@@ -125,8 +125,8 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     private static void testRegisterDeleted()
     {
         // GIVEN - two existing records
-        Opportunity opportunity = new Opportunity(Id = fflib_IDGenerator.generate(Schema.Opportunity.SObjectType));
-        Product2 product = new Product2(Id = fflib_IDGenerator.generate(Schema.Product2.SObjectType));
+        Opportunity opportunity = new Opportunity(Id = fflib_SObjectsTest.generateTestRecordId(Schema.Opportunity.SObjectType));
+        Product2 product = new Product2(Id = fflib_SObjectsTest.generateTestRecordId(Schema.Product2.SObjectType));
         MockDML mockDML = new MockDML();
         fflib_SObjectUnitOfWork unitOfWork = new fflib_SObjectUnitOfWork(MY_SOBJECTS, mockDML);
 
@@ -142,8 +142,8 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     private static void testRegisterPermanentlyDeleted()
     {
         // GIVEN - two existing records
-        Opportunity opportunity = new Opportunity(Id = fflib_IDGenerator.generate(Schema.Opportunity.SObjectType));
-        Product2 product = new Product2(Id = fflib_IDGenerator.generate(Schema.Product2.SObjectType));
+        Opportunity opportunity = new Opportunity(Id = fflib_SObjectsTest.generateTestRecordId(Schema.Opportunity.SObjectType));
+        Product2 product = new Product2(Id = fflib_SObjectsTest.generateTestRecordId(Schema.Product2.SObjectType));
         MockDML mockDML = new MockDML();
         fflib_SObjectUnitOfWork unitOfWork = new fflib_SObjectUnitOfWork(MY_SOBJECTS, mockDML);
 
@@ -160,7 +160,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     private static void testRegisterEmptyRecycleBin()
     {
         // GIVEN - an existing record of the recycle bin
-        Opportunity opportunity = new Opportunity(Id = fflib_IDGenerator.generate(Schema.Opportunity.SObjectType));
+        Opportunity opportunity = new Opportunity(Id = fflib_SObjectsTest.generateTestRecordId(Schema.Opportunity.SObjectType));
         MockDML mockDML = new MockDML();
         fflib_SObjectUnitOfWork unitOfWork = new fflib_SObjectUnitOfWork(MY_SOBJECTS, mockDML);
 
@@ -414,7 +414,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     private static void testRegisterDirty_ExpectReplacement()
     {
         final Opportunity insertedOpp = new Opportunity(
-                Id = fflib_IDGenerator.generate(Schema.Opportunity.SObjectType),
+                Id = fflib_SObjectsTest.generateTestRecordId(Schema.Opportunity.SObjectType),
                 Name = 'Original',
                 StageName = 'Open',
                 CloseDate = System.today());
@@ -442,7 +442,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     @IsTest
     private static void testRegisterDirty_field() {
         Opportunity opp = new Opportunity(
-                Id = fflib_IDGenerator.generate(Schema.Opportunity.SObjectType),
+                Id = fflib_SObjectsTest.generateTestRecordId(Schema.Opportunity.SObjectType),
                 Name = 'test name',
                 StageName = 'Open',
                 CloseDate = System.today());
@@ -469,12 +469,12 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     {
         // GIVEN a list of existing records
         Opportunity opportunityA = new Opportunity(
-                Id = fflib_IDGenerator.generate(Opportunity.SObjectType),
+                Id = fflib_SObjectsTest.generateTestRecordId(Opportunity.SObjectType),
                 Name = 'test name A',
                 StageName = 'Open',
                 CloseDate = System.today());
         Opportunity opportunityB = new Opportunity(
-                Id = fflib_IDGenerator.generate(Opportunity.SObjectType),
+                Id = fflib_SObjectsTest.generateTestRecordId(Opportunity.SObjectType),
                 Name = 'test name B',
                 StageName = 'Open',
                 CloseDate = System.today());
@@ -499,25 +499,31 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         uow.commitWork();
 
         // THEN the records should be registered with both changed values for Amount and StageName
-        System.assert(
-                new fflib_MatcherDefinitions.SObjectsWith(
-                        new List<Map<SObjectField, Object>>{
-                                new Map<SObjectField, Object>
-                                {
-                                     Opportunity.Id => opportunityA.Id,
-                                     Opportunity.Amount => 250,
-                                     Opportunity.StageName => 'Closed'
-                                },
-                                new Map<SObjectField, Object>
-                                {
-                                     Opportunity.Id => opportunityB.Id,
-                                     Opportunity.Amount => 250,
-                                     Opportunity.StageName => 'Closed'
-                                }
-                        }
-                )
-                        .matches(mockDML.recordsForUpdate),
-                'Records not registered with the correct values'
+        System.assertEquals(2, mockDML.recordsForUpdate.size(), 'Records not registered with the correct values');
+        Map<Id, SObject> byId = new Map<Id, SObject>();
+        for (SObject row : mockDML.recordsForUpdate) {
+            byId.put(row.Id, row);
+        }
+        System.assert(byId.containsKey(opportunityA.Id) && byId.containsKey(opportunityB.Id));
+        System.assertEquals(
+                'Closed',
+                (String) byId.get(opportunityA.Id).get(Opportunity.StageName),
+                'opportunityA StageName'
+        );
+        System.assertEquals(
+                250,
+                (Decimal) byId.get(opportunityA.Id).get(Opportunity.Amount),
+                'opportunityA Amount'
+        );
+        System.assertEquals(
+                'Closed',
+                (String) byId.get(opportunityB.Id).get(Opportunity.StageName),
+                'opportunityB StageName'
+        );
+        System.assertEquals(
+                250,
+                (Decimal) byId.get(opportunityB.Id).get(Opportunity.Amount),
+                'opportunityB Amount'
         );
     }
 
@@ -530,12 +536,12 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     {
         // GIVEN a list of existing records
         Opportunity opportunityA = new Opportunity(
-                Id = fflib_IDGenerator.generate(Opportunity.SObjectType),
+                Id = fflib_SObjectsTest.generateTestRecordId(Opportunity.SObjectType),
                 Name = 'test name A',
                 StageName = 'Open',
                 CloseDate = System.today());
         Opportunity opportunityB = new Opportunity(
-                Id = fflib_IDGenerator.generate(Opportunity.SObjectType),
+                Id = fflib_SObjectsTest.generateTestRecordId(Opportunity.SObjectType),
                 Name = 'test name B',
                 StageName = 'Open',
                 CloseDate = System.today());
@@ -567,51 +573,46 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         uow.commitWork();
 
         // THEN only the first record should be registered with both changed values for Amount and StageName and the second should be the original
+        System.assertEquals(2, mockDML.recordsForUpdate.size());
+        Map<Id, SObject> byId = new Map<Id, SObject>();
+        for (SObject row : mockDML.recordsForUpdate) {
+            byId.put(row.Id, row);
+        }
         System.assert(
-                !new fflib_MatcherDefinitions.SObjectsWith(
-                        new List<Map<SObjectField, Object>>{
-                                new Map<SObjectField, Object>
-                                {
-                                     Opportunity.Id => opportunityA.Id,
-                                     Opportunity.Amount => 250,
-                                     Opportunity.StageName => 'Closed'
-                                },
-                                new Map<SObjectField, Object>
-                                {
-                                     Opportunity.Id => opportunityB.Id,
-                                     Opportunity.Amount => 250,
-                                     Opportunity.StageName => 'Closed'
-                                }
-                        }
-                )
-                        .matches(mockDML.recordsForUpdate),
-                'Not all records should not be registered with the dirty values'
+                !(
+                        'Closed'.equals((String) byId.get(opportunityA.Id).get(Opportunity.StageName))
+                                && (Decimal) byId.get(opportunityA.Id).get(Opportunity.Amount) == 250
+                                && 'Closed'.equals((String) byId.get(opportunityB.Id).get(Opportunity.StageName))
+                                && (Decimal) byId.get(opportunityB.Id).get(Opportunity.Amount) == 250
+                ),
+                'Not all records should be registered with the full dirty values on both rows'
         );
-        System.assert(
-                new fflib_MatcherDefinitions.SObjectsWith(
-                        new List<Map<SObjectField, Object>>{
-                                new Map<SObjectField, Object>
-                                {
-                                     Opportunity.Id => opportunityA.Id,
-                                     Opportunity.Amount => 250,
-                                     Opportunity.StageName => 'Closed'
-                                },
-                                new Map<SObjectField, Object>
-                                {
-                                     Opportunity.Id => opportunityB.Id,
-                                     Opportunity.StageName => 'Open'
-                                }
-                        }
-                )
-                        .matches(mockDML.recordsForUpdate),
-                'The second record should be registered with the original values'
+        System.assertEquals(
+                'Closed',
+                (String) byId.get(opportunityA.Id).get(Opportunity.StageName),
+                'opportunityA StageName'
+        );
+        System.assertEquals(
+                250,
+                (Decimal) byId.get(opportunityA.Id).get(Opportunity.Amount),
+                'opportunityA Amount'
+        );
+        System.assertEquals(
+                'Open',
+                (String) byId.get(opportunityB.Id).get(Opportunity.StageName),
+                'The second record should be registered with the original StageName'
+        );
+        System.assertEquals(
+                'test name B',
+                (String) byId.get(opportunityB.Id).get(Opportunity.Name),
+                'The second record should be registered with the original Name'
         );
     }
 
     @IsTest
     private static void testRegisterUpsert() {
         Opportunity existingOpp = new Opportunity(
-                Id = fflib_IDGenerator.generate(Schema.Opportunity.SObjectType),
+                Id = fflib_SObjectsTest.generateTestRecordId(Schema.Opportunity.SObjectType),
                 Name = 'Existing Opportunity',
                 StageName = 'Closed',
                 CloseDate = System.today());
