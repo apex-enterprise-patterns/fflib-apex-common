@@ -54,7 +54,7 @@ public class fflib_SObjectsTest
 		DomainAccounts domain = new DomainAccounts(new List<Account>{ record });
 		System.assert(!domain.selectByShippingCountry('Holland').isEmpty(), 'Incorrect test data');
 
-		domain.clearShippingCountry();
+		domain.clearField(Schema.Account.ShippingCountry);
 
 		System.assert(domain.selectByShippingCountry('Holland').isEmpty(), 'Field should have been nullified');
 	}
@@ -193,6 +193,22 @@ public class fflib_SObjectsTest
 		);
 
 		System.assert(domain.selectByRating('Hot').size() == 1);
+	}
+
+	@IsTest
+	static void itShouldAllowBulkMutatorsFromOutsideDomainHierarchy()
+	{
+		Account recordA = new Account(Name = 'A', ShippingCountry = 'USA');
+		Account recordB = new Account(Name = 'B', ShippingCountry = 'Canada');
+		DomainAccounts domain = new DomainAccounts(new List<Account>{ recordA, recordB });
+
+		domain.addError('Bulk record error');
+		domain.addError(Schema.Account.Name, 'Bulk field error');
+		domain.clearFields(new Set<Schema.SObjectField>{ Schema.Account.ShippingCountry });
+
+		System.assertEquals(2, domain.getRecords().size());
+		System.assertEquals(null, recordA.ShippingCountry);
+		System.assertEquals(null, recordB.ShippingCountry);
 	}
 
 	@IsTest
