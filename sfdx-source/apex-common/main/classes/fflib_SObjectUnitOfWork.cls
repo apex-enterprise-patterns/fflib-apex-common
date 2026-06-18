@@ -105,19 +105,19 @@ public virtual class fflib_SObjectUnitOfWork
     {
         public virtual void dmlInsert(List<SObject> objList)
         {
-            insert objList;
+            System.Database.insert(objList,AccessLevel.SYSTEM_MODE);
         }
         public virtual void dmlUpdate(List<SObject> objList)
         {
-            update objList;
+            System.Database.update(objList, AccessLevel.SYSTEM_MODE);
         }
         public virtual void dmlUpsert(List<SObject> objList, Schema.SObjectField externalId)
         {
-            Database.upsert(objList, externalId);
+            System.Database.upsert(objList, externalId, AccessLevel.SYSTEM_MODE);
         }
         public virtual void dmlDelete(List<SObject> objList)
         {
-            delete objList;
+            System.Database.delete(objList, AccessLevel.SYSTEM_MODE) ;
         }
         public virtual void eventPublish(List<SObject> objList)
         {
@@ -126,7 +126,7 @@ public virtual class fflib_SObjectUnitOfWork
                 return;
             }
             
-            EventBus.publish(objList);
+            System.EventBus.publish(objList);
         }
 		public virtual void emptyRecycleBin(List<SObject> objList)
 		{
@@ -135,7 +135,7 @@ public virtual class fflib_SObjectUnitOfWork
 				return;
 			}
 
-			Database.emptyRecycleBin(objList);
+			System.Database.emptyRecycleBin(objList);
 		}
     }
 
@@ -153,17 +153,17 @@ public virtual class fflib_SObjectUnitOfWork
 		}
 
 		public virtual override void dmlInsert(List<SObject> objList){
-			Database.insert(objList,m_accessLevel);
+			System.Database.insert(objList,m_accessLevel);
 		}
 		public virtual override void dmlUpdate(List<SObject> objList){
-			Database.update(objList,m_accessLevel);
+			System.Database.update(objList,m_accessLevel);
 		}
 		public virtual override void dmlDelete(List<SObject> objList){
-			Database.delete(objList,m_accessLevel);
+			System.Database.delete(objList,m_accessLevel);
 		}
 		public virtual override void dmlUpsert(List<SObject> objList, Schema.SObjectField externalId)
 		{
-			Database.upsert(objList, externalId, true, m_accessLevel);
+			System.Database.upsert(objList, externalId, true, m_accessLevel);
 		}
 	}
 
