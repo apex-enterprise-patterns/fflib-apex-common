@@ -62,6 +62,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	public Schema.SObjectType table {get; private set;}
 	@TestVisible
 	private Set<String> fields; 
+    private Set<String> setFieldsByLabel;
 	private String conditionExpression;
 	private Integer limitCount;
 	private Integer offsetCount;
@@ -362,6 +363,13 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	**/
 	public fflib_QueryFactory setCondition(String conditionExpression){
 		this.conditionExpression = conditionExpression;
+		return this;
+	}
+    /**
+     * @param setFieldsByLabel set the picklist fields to return the value by picklist Label.
+	**/
+    public fflib_QueryFactory setPicklistFieldsByLabel(Set<String> setFieldsByLabel){
+		this.setFieldsByLabel = setFieldsByLabel;
 		return this;
 	}
 	/**
@@ -724,6 +732,14 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			}	
 		
 			result += String.join(fieldsToQuery,', ');
+            if(setFieldsByLabel != null && !setFieldsByLabel.isEmpty() ){
+                for(String strField : fieldsToQuery){
+                    if(setFieldsByLabel.contains(strField))
+                    {
+                        result = result.replace(strField, 'toLabel('+strField+')');
+                    }
+                }
+            }
 		}
 		
 		if(subselectQueryMap != null && !subselectQueryMap.isEmpty()){
@@ -775,6 +791,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 			.setLimit(this.limitCount)
 			.setOffset(this.offsetCount)
 			.setCondition(this.conditionExpression)
+			.setPicklistFieldsByLabel(this.setFieldsByLabel)
 			.setEnforceFLS(this.mFlsEnforcement);
 
 		Map<Schema.ChildRelationship, fflib_QueryFactory> subqueries = this.subselectQueryMap;
