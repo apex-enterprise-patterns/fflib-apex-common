@@ -610,6 +610,78 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     }
 
     @IsTest
+    private static void testRegisterDirtyWithNewParentWhenChildTypeIsBeforeParentType() {
+        // GIVEN an existing opportunity
+        Opportunity existingOpp = new Opportunity(
+            Id = fflib_SObjectsTest.generateTestRecordId(Schema.Opportunity.SObjectType),
+            Name = 'Existing Opportunity',
+            StageName = 'Closed',
+            CloseDate = System.today()
+        );
+        // AND a new Account to which the existing opportunity will be related to
+        Account newAccount = new Account(
+            Name = 'New Account'
+        );
+
+        // WHEN
+        Test.startTest();
+        MockDML mockDML = new MockDML();
+        List<Schema.SObjectType> mySobjects = new List<Schema.SObjectType>{
+            Opportunity.SObjectType,
+            Account.SObjectType
+        };
+        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(mySobjects, mockDML);
+        uow.registerNew(newAccount);
+        uow.registerDirty(existingOpp, Opportunity.AccountId, newAccount);
+        uow.commitWork();
+        Test.stopTest();
+
+        // THEN
+        System.assertEquals(1, mockDML.recordsForInsert.size(), 'Only the new account should be inserted');
+        SObject insertedAccount = mockDML.recordsForInsert.get(0);
+        System.assertEquals(newAccount.Id, insertedAccount.get(Account.Id), 'The new account Id does not match');
+        System.assertEquals('New Account', insertedAccount.get(Account.Name), 'The new account name does not match');
+
+        // AND
+        System.assertEquals(1, mockDML.recordsForUpdate.size(), 'Only the existing opportunity should be updated');
+        SObject updatedOpportunity = mockDML.recordsForUpdate.get(0);
+        System.assertEquals(existingOpp.Id, updatedOpportunity.get(Opportunity.Id), 'The opportunity Id does not match');
+        System.assertEquals('Existing Opportunity', updatedOpportunity.get(Opportunity.Name), 'The opportunity name does not match');
+        System.assertEquals('Closed', updatedOpportunity.get(Opportunity.StageName), 'The opportunity stage does not match');
+        System.assertEquals(newAccount.Id, updatedOpportunity.get(Opportunity.AccountId), 'The opportunity record should be related to the new Account');
+    }
+
+    @IsTest
+    private static void testRegisterNewRelationshipResolvedDuringInsertDoesNotResolveAgainDuringUpdate() {
+        Product2 product = new Product2(
+            Name = 'Test Product',
+            IsActive = true
+        );
+        PricebookEntry pbe = new PricebookEntry(
+            UnitPrice = 10,
+            IsActive = true,
+            UseStandardPrice = false
+        );
+
+        MockDML mockDML = new MockDML();
+
+        Test.startTest();
+        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS, mockDML);
+        uow.registerNew(product);
+        uow.registerNew(pbe, PricebookEntry.Product2Id, product);
+        uow.commitWork();
+        Test.stopTest();
+
+        System.assertEquals(2, mockDML.recordsForInsert.size(), 'The product and pricebook entry should be inserted');
+        System.assertEquals(0, mockDML.recordsForUpdate.size(), 'No records should be registered for update');
+        System.assertEquals(
+            product.Id,
+            pbe.Product2Id,
+            'The inserted pricebook entry should keep the product relationship resolved during insert'
+        );
+    }
+
+    @IsTest
     private static void testRegisterUpsert() {
         Opportunity existingOpp = new Opportunity(
                 Id = fflib_SObjectsTest.generateTestRecordId(Schema.Opportunity.SObjectType),
@@ -1035,6 +1107,12 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 
         public void dmlInsert(List<SObject> objList)
         {
+            for (SObject obj : objList) {
+                if (obj == null) {
+                    continue;
+                }
+                obj.Id = fflib_SObjectsTest.generateTestRecordId(obj.getSObjectType());
+            }
             this.recordsForInsert.addAll(objList);
         }
 

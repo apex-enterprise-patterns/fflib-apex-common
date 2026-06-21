@@ -799,6 +799,7 @@ public virtual class fflib_SObjectUnitOfWork
 	{
 		for (Schema.SObjectType sObjectType : m_sObjectTypes)
 		{
+			m_relationships.get(sObjectType.getDescribe().getName()).resolve();
 			m_dml.dmlUpdate(m_dirtyMapByType.get(sObjectType.getDescribe().getName()).values());
 		}
 	}
@@ -922,7 +923,6 @@ public virtual class fflib_SObjectUnitOfWork
                     relationship.resolve();
                 }
             }
-
         }
 
         public void add(SObject record, Schema.SObjectField relatedToField, Schema.SObjectField externalIdField, Object externalId)
@@ -1001,7 +1001,6 @@ public virtual class fflib_SObjectUnitOfWork
             relationshipObject.put( ExternalIdField.getDescribe().getName(), this.ExternalId );
             this.Record.putSObject( this.RelationshipName, relationshipObject );
         }
-
 
         public Boolean isResolved()
         {
