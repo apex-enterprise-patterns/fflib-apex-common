@@ -483,7 +483,7 @@ private with sharing class fflib_SObjectSelectorTest
 			super(includeFieldSetFields, enforceCRUD, enforceFLS, sortSelectFields);
 		}
 		
-		public List<Schema.SObjectField> getSObjectFieldList()
+		public override List<Schema.SObjectField> getSObjectFieldList()
 		{
 			return new List<Schema.SObjectField> {
 				Account.Name,
@@ -493,7 +493,7 @@ private with sharing class fflib_SObjectSelectorTest
 			};
 		}
 		
-		public Schema.SObjectType getSObjectType()
+		public override Schema.SObjectType getSObjectType()
 		{
 			return Account.sObjectType;
 		}
@@ -511,7 +511,7 @@ private with sharing class fflib_SObjectSelectorTest
 			super();
 		}
 
-		public List<Schema.SObjectField> getSObjectFieldList()
+		public override List<Schema.SObjectField> getSObjectFieldList()
 		{
 			return new List<Schema.SObjectField> {
 				User.Name,
@@ -521,7 +521,7 @@ private with sharing class fflib_SObjectSelectorTest
 			};
 		}
 
-		public Schema.SObjectType getSObjectType()
+		public override Schema.SObjectType getSObjectType()
 		{
 			return User.SObjectType;
 		}
@@ -535,7 +535,7 @@ private with sharing class fflib_SObjectSelectorTest
 			super(includeFieldSetFields);
 		}
 
-		public List<Schema.SObjectField> getSObjectFieldList()
+		public override List<Schema.SObjectField> getSObjectFieldList()
 		{
 			return new List<Schema.SObjectField> {
 				Account.Name,
@@ -545,7 +545,7 @@ private with sharing class fflib_SObjectSelectorTest
 			};
 		}
 
-		public Schema.SObjectType getSObjectType()
+		public override Schema.SObjectType getSObjectType()
 		{
 			return Account.sObjectType;
 		}
@@ -560,11 +560,11 @@ private with sharing class fflib_SObjectSelectorTest
 			super(false, access);
 		}
 
-		public Schema.SObjectType getSObjectType(){
+		public override Schema.SObjectType getSObjectType(){
 			return Opportunity.sObjectType;
 		}
 
-		public List<Schema.SObjectField> getSObjectFieldList(){
+		public override List<Schema.SObjectField> getSObjectFieldList(){
 			return new List<Schema.SObjectField> {
 					Opportunity.Name,
 					Opportunity.Id,
@@ -605,11 +605,11 @@ private with sharing class fflib_SObjectSelectorTest
 			super(false, access);
 		}
 
-		public Schema.SObjectType getSObjectType(){
+		public override Schema.SObjectType getSObjectType(){
 			return Account.sObjectType;
 		}
 
-		public List<Schema.SObjectField> getSObjectFieldList(){
+		public override List<Schema.SObjectField> getSObjectFieldList(){
 			return new List<Schema.SObjectField> {
 					Account.Name,
 					Account.Id,
@@ -639,11 +639,11 @@ private with sharing class fflib_SObjectSelectorTest
 			super(false,DataAccess.SYSTEM_MODE);
 		}
 
-		public Schema.SObjectType getSObjectType(){
+		public override Schema.SObjectType getSObjectType(){
 			return Contract.SObjectType;
 		}
 
-		public List<Schema.SObjectField> getSObjectFieldList(){
+		public override List<Schema.SObjectField> getSObjectFieldList(){
 			return new List<Schema.SObjectField> {
 					Contract.Id,
 					Contract.ContractNumber
@@ -656,11 +656,11 @@ private with sharing class fflib_SObjectSelectorTest
 			super(false,DataAccess.SYSTEM_MODE);
 		}
 
-		public Schema.SObjectType getSObjectType(){
+		public override Schema.SObjectType getSObjectType(){
 			return ListEmail.SObjectType;
 		}
 
-		public List<Schema.SObjectField> getSObjectFieldList(){
+		public override List<Schema.SObjectField> getSObjectFieldList(){
 			return new List<Schema.SObjectField> {
 					ListEmail.Id,
 					ListEmail.Name
@@ -673,11 +673,11 @@ private with sharing class fflib_SObjectSelectorTest
 			super(false,DataAccess.SYSTEM_MODE);
 		}
 
-		public Schema.SObjectType getSObjectType(){
+		public override Schema.SObjectType getSObjectType(){
 			return Task.SObjectType;
 		}
 
-		public List<Schema.SObjectField> getSObjectFieldList(){
+		public override List<Schema.SObjectField> getSObjectFieldList(){
 			return new List<Schema.SObjectField> {
 					Task.Id,
 					Task.Subject
@@ -874,14 +874,14 @@ private with sharing class fflib_SObjectSelectorTest
 			super(false, access);
 		}
 
-		public List<Schema.SObjectField> getSObjectFieldList() {
+		public override List<Schema.SObjectField> getSObjectFieldList() {
 			return new List<Schema.SObjectField>{
 					CaseComment.Id,
 					CaseComment.CommentBody
 			};
 		}
 
-		public Schema.SObjectType getSObjectType() {
+		public override Schema.SObjectType getSObjectType() {
 			return CaseComment.sObjectType;
 		}
 	}
@@ -891,14 +891,14 @@ private with sharing class fflib_SObjectSelectorTest
 			super();
 		}
 
-		public List<Schema.SObjectField> getSObjectFieldList() {
+		public override List<Schema.SObjectField> getSObjectFieldList() {
 			return new List<Schema.SObjectField>{
 					Case.OwnerId,
 					Case.Id
 			};
 		}
 
-		public Schema.SObjectType getSObjectType() {
+		public override Schema.SObjectType getSObjectType() {
 			return Case.sObjectType;
 		}
 	}
@@ -908,14 +908,14 @@ private with sharing class fflib_SObjectSelectorTest
 			super();
 		}
 
-		public List<Schema.SObjectField> getSObjectFieldList() {
+		public override List<Schema.SObjectField> getSObjectFieldList() {
 			return new List<Schema.SObjectField>{
 					User.UserRoleId,
 					User.Id
 			};
 		}
 
-		public Schema.SObjectType getSObjectType() {
+		public override Schema.SObjectType getSObjectType() {
 			return User.sObjectType;
 		}
 	}
@@ -925,13 +925,13 @@ private with sharing class fflib_SObjectSelectorTest
 			super();
 		}
 
-		public List<Schema.SObjectField> getSObjectFieldList() {
+		public override List<Schema.SObjectField> getSObjectFieldList() {
 			return new List<Schema.SObjectField>{
 				Group.Id
 			};
 		}
 
-		public Schema.SObjectType getSObjectType() {
+		public override Schema.SObjectType getSObjectType() {
 			return Group.sObjectType;
 		}
 	}	
