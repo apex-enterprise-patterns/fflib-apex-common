@@ -680,7 +680,7 @@ private class fflib_ApplicationTest
 
 	class OpportuntiesSelector extends fflib_SObjectSelector
 	{
-		public List<Schema.SObjectField> getSObjectFieldList()
+		public override List<Schema.SObjectField> getSObjectFieldList()
 		{
 			return new List<Schema.SObjectField> {
 				Opportunity.Name,
@@ -688,7 +688,7 @@ private class fflib_ApplicationTest
 			};
 		}
 		
-		public Schema.SObjectType getSObjectType()
+		public override Schema.SObjectType getSObjectType()
 		{
 			return Opportunity.sObjectType;
 		}
@@ -696,7 +696,7 @@ private class fflib_ApplicationTest
 	
 	class AccountsSelector extends fflib_SObjectSelector
 	{
-		public List<Schema.SObjectField> getSObjectFieldList()
+		public override List<Schema.SObjectField> getSObjectFieldList()
 		{
 			return new List<Schema.SObjectField> {
 				Account.Name,
@@ -706,7 +706,7 @@ private class fflib_ApplicationTest
 			};
 		}
 		
-		public Schema.SObjectType getSObjectType()
+		public override Schema.SObjectType getSObjectType()
 		{
 			return Account.sObjectType;
 		}
