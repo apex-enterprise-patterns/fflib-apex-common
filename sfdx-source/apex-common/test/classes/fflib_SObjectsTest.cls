@@ -25,8 +25,27 @@
 **/
 
 @IsTest
-private class fflib_SObjectsTest
+public class fflib_SObjectsTest
 {
+	private static Integer testFakeIdSequence = 0;
+	private static final String TEST_FAKE_ID_PADDING = '000000000000';
+
+	/**
+	 * Returns a syntactically valid fake Id for the given SObject type. For unit tests only
+	 * (same scheme historically provided by fflib_IDGenerator in ApexMocks).
+	 *
+	 * @param sobjectType The type whose key prefix the fake Id should use
+	 */
+	@TestVisible
+	private static Id generateTestRecordId(Schema.SObjectType sobjectType) {
+		String keyPrefix = sobjectType.getDescribe().getKeyPrefix();
+		testFakeIdSequence++;
+		String prefix = TEST_FAKE_ID_PADDING.substring(
+			0,
+			TEST_FAKE_ID_PADDING.length() - String.valueOf(testFakeIdSequence).length()
+		);
+		return Id.valueOf(keyPrefix + prefix + testFakeIdSequence);
+	}
 
 	@IsTest
 	static void itShouldClearTheField()
@@ -35,7 +54,7 @@ private class fflib_SObjectsTest
 		DomainAccounts domain = new DomainAccounts(new List<Account>{ record });
 		System.assert(!domain.selectByShippingCountry('Holland').isEmpty(), 'Incorrect test data');
 
-		domain.clearShippingCountry();
+		domain.clearField(Schema.Account.ShippingCountry);
 
 		System.assert(domain.selectByShippingCountry('Holland').isEmpty(), 'Field should have been nullified');
 	}
@@ -62,9 +81,9 @@ private class fflib_SObjectsTest
 	static void itShouldReturnRecordsIds()
 	{
 		SObjectType accountSObjectType = Schema.Account.SObjectType;
-		Id idA = fflib_IDGenerator.generate(accountSObjectType);
-		Id idB = fflib_IDGenerator.generate(accountSObjectType);
-		Id idC = fflib_IDGenerator.generate(accountSObjectType);
+		Id idA = generateTestRecordId(accountSObjectType);
+		Id idB = generateTestRecordId(accountSObjectType);
+		Id idC = generateTestRecordId(accountSObjectType);
 
 		DomainAccounts domain = new DomainAccounts(
 				new List<SObject>
@@ -102,6 +121,13 @@ private class fflib_SObjectsTest
 
 		System.assertEquals(3, domain.selectWithoutShippingCountry().size());
 	}
+	@IsTest
+	static void itShouldReturnRecordsWithoutFieldValuesForNonStringFields()
+	{
+		DomainAccounts domain = generateDomain();
+
+		System.assertEquals(4, domain.selectWithoutNumberOfEmployees().size());
+	}
 
 	@IsTest
 	static void itShouldReturnRecordsWithoutAllFieldValues()
@@ -118,13 +144,20 @@ private class fflib_SObjectsTest
 
 		System.assert(domain.selectWithShippingCountry().size() == 4);
 	}
+	@IsTest
+	static void itShouldReturnRecordsWithNumberOfEmployees()
+	{
+		DomainAccounts domain = generateDomain();
+
+		System.assert(domain.selectWithNumberOfEmployees().size() == 3);
+	}
 
 	@IsTest
 	static void itShouldReturnRecordsWithAllFieldValues()
 	{
 		DomainAccounts domain = generateDomain();
 
-		System.assert(domain.selectPopulatedRecords().size() == 4);
+		System.assert(domain.selectPopulatedRecords().size() == 2);
 	}
 
 	@IsTest
@@ -152,6 +185,42 @@ private class fflib_SObjectsTest
 	}
 
 	@IsTest
+	static void itShouldReturnFieldValuesForNonStringFields()
+	{
+		DomainAccounts domain = generateDomain();
+
+		final Set<Integer> expectedOriginalType = new Set<Integer>
+		{
+				null,
+				10,
+				20,
+				30
+		};
+
+		System.assert(
+				domain.getFieldValues(Schema.Account.NumberOfEmployees)
+						.equals(expectedOriginalType)
+		);
+	}
+
+	@IsTest
+	static void getStringFieldValuesShouldThrowClassCastExceptionForNonStringFields()
+	{
+		DomainAccounts domain = generateDomain();
+
+		try
+		{
+			domain.getStringFieldValues(Schema.Account.NumberOfEmployees);
+			Assert.fail('Expected ClassCastException because NumberOfEmployees is not a Text field');
+		}
+		catch (System.TypeException expected)
+		{
+			System.assert(expected.getMessage().contains('Invalid conversion from runtime type'),
+					'Unexpected exception message: ' + expected.getMessage());
+		}
+	}
+
+	@IsTest
 	static void itShouldSetFieldValue()
 	{
 		DomainAccounts domain = generateDomain();
@@ -174,6 +243,22 @@ private class fflib_SObjectsTest
 		);
 
 		System.assert(domain.selectByRating('Hot').size() == 1);
+	}
+
+	@IsTest
+	static void itShouldAllowBulkMutatorsFromOutsideDomainHierarchy()
+	{
+		Account recordA = new Account(Name = 'A', ShippingCountry = 'USA');
+		Account recordB = new Account(Name = 'B', ShippingCountry = 'Canada');
+		DomainAccounts domain = new DomainAccounts(new List<Account>{ recordA, recordB });
+
+		domain.addError('Bulk record error');
+		domain.addError(Schema.Account.Name, 'Bulk field error');
+		domain.clearFields(new Set<Schema.SObjectField>{ Schema.Account.ShippingCountry });
+
+		System.assertEquals(2, domain.getRecords().size());
+		System.assertEquals(null, recordA.ShippingCountry);
+		System.assertEquals(null, recordB.ShippingCountry);
 	}
 
 	@IsTest
@@ -212,11 +297,11 @@ private class fflib_SObjectsTest
 				{
 						new Account(Name = 'A', ShippingCountry = 'USA'),
 						new Account(Name = 'B', ShippingCountry = 'Ireland'),
-						new Account(Name = 'C', ShippingCountry = 'UK'),
+						new Account(Name = 'C', ShippingCountry = 'UK', NumberOfEmployees = 10),
 						new Account(Name = 'D', ShippingCountry = ''),
-						new Account(Name = 'E'),
+						new Account(Name = 'E', NumberOfEmployees = 20),
 						new Account(),
-						new Account(Name = 'G', ShippingCountry = 'Canada')
+						new Account(Name = 'G', ShippingCountry = 'Canada', NumberOfEmployees = 30)
 				}
 		);
 		return domain;
@@ -260,13 +345,28 @@ private class fflib_SObjectsTest
 			);
 		}
 
+		public List<Account> selectWithoutNumberOfEmployees()
+		{
+			return (List<Account>) getRecordsWithBlankFieldValues(
+							Schema.Account.NumberOfEmployees
+			);
+		}
+
+		public List<Account> selectWithNumberOfEmployees()
+		{
+			return (List<Account>) getRecordsWithNotBlankFieldValues(
+							Schema.Account.NumberOfEmployees
+			);
+		}
+
 		public List<Account> selectWithEmptyRecord()
 		{
 			return (List<Account>) getRecordsWithAllBlankFieldValues(
 					new Set<Schema.SObjectField>
 					{
 							Schema.Account.Name,
-							Schema.Account.ShippingCountry
+							Schema.Account.ShippingCountry,
+							Schema.Account.NumberOfEmployees
 					}
 			);
 		}
@@ -277,7 +377,8 @@ private class fflib_SObjectsTest
 					new Set<Schema.SObjectField>
 					{
 							Schema.Account.Name,
-							Schema.Account.ShippingCountry
+							Schema.Account.ShippingCountry,
+							Schema.Account.NumberOfEmployees
 					}
 			);
 		}

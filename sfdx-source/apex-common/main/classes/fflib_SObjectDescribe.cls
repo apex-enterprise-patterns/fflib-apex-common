@@ -100,12 +100,18 @@ public class fflib_SObjectDescribe {
 	 * e.g. getting the Account field on Contact would fail without being referenced as AccountId - both work here.
 	**/
 	public Schema.SObjectField getField(String fieldName, Boolean implyNamespace){
-		Schema.SObjectField result = wrappedFields.get( 
-			(fieldName.endsWithIgnoreCase('__r') ? //resolve custom field cross-object (__r) syntax
-			(fieldName.removeEndIgnoreCase('__r')+'__c') :
-			fieldName),
-			implyNamespace
-		); 
+		String fieldNameAdjusted = fieldName;
+
+		if ( fieldName.endsWithIgnoreCase('__r') ) //resolve custom field cross-object (__r) syntax
+		{
+			fieldNameAdjusted = fieldName.removeEndIgnoreCase('__r') + '__c';
+		}
+		else if ( fieldName.endsWithIgnoreCase('__pr') ) //resolve custom field cross-object (__pr) syntax for person accounts
+		{
+			fieldNameAdjusted = fieldName.removeEndIgnoreCase('__pr') + '__pc';
+		}
+
+		Schema.SObjectField result = wrappedFields.get( fieldNameAdjusted, implyNamespace ); 
 		if(result == null){
 			result = wrappedFields.get(fieldName+'Id', implyNamespace); //in case it's a standard lookup in cross-object format
 		}

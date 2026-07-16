@@ -79,7 +79,7 @@ public virtual class fflib_SObjects
 	 *
 	 * @param message The error message to add to each record
 	 */
-	protected void addError(String message)
+	public virtual void addError(String message)
 	{
 		for (SObject record : getRecords())
 		{
@@ -93,8 +93,7 @@ public virtual class fflib_SObjects
 	 * @param field The field where the error should be reported
 	 * @param message The error message to add to the given field on each record
 	 */
-	@TestVisible
-	protected virtual void addError(Schema.SObjectField field, String message)
+	public virtual void addError(Schema.SObjectField field, String message)
 	{
 		for (SObject record : getRecords())
 		{
@@ -106,8 +105,7 @@ public virtual class fflib_SObjects
 	 * Clear the field value on all the records of the domain
 	 * @param field The field to nullify
 	 */
-	@TestVisible
-	protected virtual void clearField(Schema.SObjectField field)
+	public virtual void clearField(Schema.SObjectField field)
 	{
 		clearFields(new Set<Schema.SObjectField>{ field });
 	}
@@ -116,8 +114,7 @@ public virtual class fflib_SObjects
 	 * Clear the field values on all the records of the domain
 	 * @param fields The fields to nullify
 	 */
-	@TestVisible
-	protected virtual void clearFields(Set<Schema.SObjectField> fields)
+	public virtual void clearFields(Set<Schema.SObjectField> fields)
 	{
 		for (SObject record : getRecords())
 		{
@@ -257,7 +254,7 @@ public virtual class fflib_SObjects
 		{
 			for (SObjectField field : fields)
 			{
-				if (String.isNotBlank((String) record.get(field))) continue;
+				if (String.isNotBlank(String.valueOf(record.get(field)))) continue;
 
 				result.add(record);
 				break;
@@ -279,7 +276,7 @@ public virtual class fflib_SObjects
 			Boolean allBlank = true;
 			for (SObjectField field : fields)
 			{
-				if (String.isNotBlank((String) record.get(field)))
+				if (String.isNotBlank(String.valueOf(record.get(field))))
 				{
 					allBlank = false;
 					break;
@@ -314,7 +311,7 @@ public virtual class fflib_SObjects
 		{
 			for (SObjectField field : fields)
 			{
-				if (String.isNotBlank((String) record.get(field)))
+				if (String.isNotBlank(String.valueOf(record.get(field))))
 				{
 					result.add(record);
 					break;
@@ -337,7 +334,7 @@ public virtual class fflib_SObjects
 			Boolean allNonBlank = true;
 			for (SObjectField field : fields)
 			{
-				if (String.isBlank((String) record.get(field)))
+				if (String.isBlank(String.valueOf(record.get(field))))
 				{
 					allNonBlank = false;
 					break;

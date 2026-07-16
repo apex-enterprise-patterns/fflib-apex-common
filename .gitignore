@@ -2,6 +2,8 @@
 .DS_Store
 target/
 temp/
+.tmp/
+tmp/
 /deploy/*
 /debug/
 **/dep-dir.txt
