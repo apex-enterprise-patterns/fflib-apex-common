@@ -76,6 +76,7 @@ public class fflib_SObjectDescribe {
 		set;
 	}
 
+	@TestVisible
 	private fflib_SObjectDescribe(Schema.SObjectType token){	
 		if(token == null)
 			throw new InvalidDescribeException('Invalid SObject type: null');
@@ -147,6 +148,19 @@ public class fflib_SObjectDescribe {
 	public Schema.DescribeSObjectResult getDescribe(){
 		return describe;
 	}
+
+	/**
+     * Returns the Name of the SObjectDescribe instance
+     * Use-case: simplified conversion from SObjectType to String of SObjectType (e.g. frequently used in fflib_SObjectUnitOfWork);
+     * Before: fflib_SObjectDescribe.getDescribe(Account.SObjectType).getDescribe().getName();
+     * After: fflib_SObjectDescribe.getDescribe(Account.SObjectType).getDescribeName();
+     */
+    @NamespaceAccessible
+    public String getDescribeName(){
+        return describe?.getName();
+    }
+
+
 	/**
 	 * This method returns the raw data and provides no namespace handling.
 	 * Due to this, __use of this method is discouraged__ in favor of getFields(). 
@@ -384,8 +398,6 @@ public class fflib_SObjectDescribe {
 
 	@NamespaceAccessible
 	public abstract class DescribeException extends Exception{}
-	@NamespaceAccessible
-	public class DuplicateDescribeException extends DescribeException{} //Test coverage for this requires APIv28's @testVisible annotation to force exception cases.
 	@NamespaceAccessible
 	public class InvalidDescribeException extends DescribeException{}
 }

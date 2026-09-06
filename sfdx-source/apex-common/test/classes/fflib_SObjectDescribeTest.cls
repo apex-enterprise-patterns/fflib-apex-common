@@ -22,54 +22,73 @@
  *  OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-**/
-
+ */
 /**
-	This class adapted from https://github.com/capeterson/Apex-Util
-	Used under a BSD license: https://github.com/capeterson/Apex-Util/blob/master/LICENSE
-**/
-@isTest
-@SuppressWarnings('PMD.ApexUnitTestClassShouldHaveRunAs, PMD.ClassNamingConventions, PMD.MethodNamingConventions')
-private class fflib_SObjectDescribeTest {
+ * This class adapted from https://github.com/capeterson/Apex-Util
+ * Used under a BSD license: https://github.com/capeterson/Apex-Util/blob/master/LICENSE
+ */
+// Coverage pass: added constructor(), getField_variousInputs() and getDescribeName() test methods;
+// extended simpleAccountGetNameField, FieldsMap and GlobalDescribeMap with previously untested branches;
+// normalized all assertions to System.Assert.* per fflib-apex-common convention.
+@IsTest( isParallel = true )
+private with sharing class fflib_SObjectDescribeTest {
+
+	/**
+	 * Verifies that the null-token guard in the private constructor throws InvalidDescribeException,
+	 * and that a valid token is assigned correctly. Only reachable directly because the constructor
+	 * is @TestVisible - the public getDescribe overloads all guard against null before ever calling it.
+	 */
+	@isTest
+	private static void constructor(){
+		try{
+			new fflib_SObjectDescribe(null);
+			System.Assert.fail('Expected InvalidDescribeException for null SObjectType');
+		}catch(fflib_SObjectDescribe.InvalidDescribeException ex){
+			System.Assert.areEqual('Invalid SObject type: null', ex.getMessage(), 'Expected other Exception message');
+		}
+
+		fflib_SObjectDescribe descr = new fflib_SObjectDescribe(Account.SObjectType);
+		System.Assert.areEqual(Account.SObjectType, descr.getSObjectType(), 'Expected token to be set by constructor');
+	}
 
 	/**
 	 * Verify that the different ways of getting your hands on an fflib_SObjectDescribe instance all handle null inputs
 	 * (and blank/empty strings, why not?) by returning null - since there's no possible way to resolve it.
 	**/
 	@isTest
-	static void getDescribe_badInput(){
+	private static void getDescribe_badInput(){
 		String nullStr = null; //having it as a string var makes for unambiguous selection of overloads
 		Schema.SObjectType nullType = null;
 		Schema.DescribeSObjectResult nullDescribe = null;
 		SObject nullSObject = null;
-		System.assertEquals(null, fflib_SObjectDescribe.getDescribe(nullStr));
-		System.assertEquals(null, fflib_SObjectDescribe.getDescribe(''));
-		System.assertEquals(null, fflib_SObjectDescribe.getDescribe(' '));
-		System.assertEquals(null, fflib_SObjectDescribe.getDescribe(nullType));
-		System.assertEquals(null, fflib_SObjectDescribe.getDescribe(nullDescribe));
-		System.assertEquals(null, fflib_SObjectDescribe.getDescribe(nullSObject));
+		System.Assert.areEqual(null, fflib_SObjectDescribe.getDescribe(nullStr));
+		System.Assert.areEqual(null, fflib_SObjectDescribe.getDescribe(''));
+		System.Assert.areEqual(null, fflib_SObjectDescribe.getDescribe(' '));
+		System.Assert.areEqual(null, fflib_SObjectDescribe.getDescribe(nullType));
+		System.Assert.areEqual(null, fflib_SObjectDescribe.getDescribe(nullDescribe));
+		System.Assert.areEqual(null, fflib_SObjectDescribe.getDescribe(nullSObject));
 	}
 
 	@isTest
-	static void NamespacedAttributeMap_implementations(){
+	private static void NamespacedAttributeMap_implementations(){
 		fflib_SObjectDescribe.GlobalDescribeMap gdm = fflib_SObjectDescribe.getGlobalDescribe();
 		Schema.SObjectType accountObjType = gdm.get('AccOunT');
-		System.assertEquals(accountObjType, Account.SobjectType);
-		System.assertEquals(Schema.getGlobalDescribe().size(), gdm.size());
+		System.Assert.areEqual(accountObjType, Account.SobjectType);
+		System.Assert.areEqual(Schema.getGlobalDescribe().size(), gdm.size());
 
 		fflib_SObjectDescribe acccountDescribe = fflib_SObjectDescribe.getDescribe(accountObjType);
 		fflib_SObjectDescribe.FieldsMap fields = acccountDescribe.getFields();
-		System.assert( fields.keySet().containsAll(acccountDescribe.getFieldsMap().keySet()) );
+		System.Assert.isTrue( fields.keySet().containsAll(acccountDescribe.getFieldsMap().keySet()) );
 
-		System.assertEquals(fields.get('name'), Account.SObjectType.fields.name); //behavior of FieldsMap is tested in another method
-		System.assertEquals(Schema.SObjectType.Account.fields.getMap().size(), fields.size());
+		System.Assert.areEqual(fields.get('name'), Account.SObjectType.fields.name); //behavior of FieldsMap is tested in another method
+		System.Assert.areEqual(Schema.SObjectType.Account.fields.getMap().size(), fields.size());
 
-		System.assertEquals(null, fields.get(null), 'Null input should result in null ouput.');
-		System.assertEquals(null, fields.get(''), 'Invalid fieldname input should result in null ouput.');
+		System.Assert.areEqual(null, fields.get(null), 'Null input should result in null ouput.');
+		System.Assert.areEqual(null, fields.get(''), 'Invalid fieldname input should result in null ouput.');
 	}
 
 	@isTest
-	static void FieldsMap(){
+	private static void FieldsMap(){
 		String fakeNamespace = 'fflib_test';
 		Map<String,Schema.SObjectField> fakeFieldData = new Map<String,Schema.SObjectField>{
 			'name__c' => Contact.SObjectType.fields.name, //re-use standard field types since we can't mock them
@@ -79,22 +98,33 @@ private class fflib_SObjectDescribeTest {
 		};
 		fflib_SObjectDescribe.FieldsMap fields = new fflib_SObjectDescribe.FieldsMap(fakeFieldData);
 		fields.currentNamespace = fakeNamespace;
-		System.assertEquals(true, fields.containsKey('name__c') );
-		System.assertEquals(true, fields.containsKey(fakeNamespace.toUpperCase()+'__nAMe__c') );
-		System.assert(fields.get('NAme__c') === fields.get(fakeNamespace+'__namE__c'));
+		System.Assert.areEqual(true, fields.containsKey('name__c') );
+		System.Assert.areEqual(true, fields.containsKey(fakeNamespace.toUpperCase()+'__nAMe__c') );
+		System.Assert.isTrue(fields.get('NAme__c') === fields.get(fakeNamespace+'__namE__c'));
 
-		System.assert(!fields.keySet(false).contains('otherField__c'));
-		System.assert(fields.keySet(false).contains(fakeNamespace+'__otherField__c'));
+		System.Assert.isTrue(!fields.keySet(false).contains('otherField__c'));
+		System.Assert.isTrue(fields.keySet(false).contains(fakeNamespace+'__otherField__c'));
 
-		System.assert(fields.keySet(true).contains('otherField__c'));
-		System.assert(!fields.keySet(true).contains(fakeNamespace+'__otherField__c'));
+		System.Assert.isTrue(fields.keySet(true).contains('otherField__c'));
+		System.Assert.isTrue(!fields.keySet(true).contains(fakeNamespace+'__otherField__c'));
+
+		//keySet() no-arg overload defaults to keySet(false)
+		System.Assert.areEqual(fields.keySet(false), fields.keySet());
+
+		//containsKey: null name short-circuits to null, absent key returns false, implyNamespace=false negative path
+		System.Assert.areEqual(null, fields.containsKey(null));
+		System.Assert.areEqual(false, fields.containsKey('doesNotExist__c'));
+		System.Assert.areEqual(false, fields.containsKey('otherField__c', false));
+
+		//values() returns the raw underlying field values
+		System.Assert.isTrue(fields.values().contains(Contact.SObjectType.fields.name));
 
 		fields.currentNamespace = 'someOtherNamespace';
-		System.assertNotEquals(fields.get('name__C'), fields.get(fakeNamespace.capitalize()+'__nAme__c'));
+		System.Assert.areNotEqual(fields.get('name__C'), fields.get(fakeNamespace.capitalize()+'__nAme__c'));
 	}
 
 	@isTest
-	static void GlobalDescribeMap(){
+	private static void GlobalDescribeMap(){
 		String fakeNamespace = 'fflib_test';
 		Map<String,Schema.SObjectType> fakeFieldData = new Map<String,Schema.SObjectType>{
 			'name__c' => Contact.SObjectType, //re-use stndard object types since we can't mock them
@@ -103,25 +133,40 @@ private class fflib_SObjectDescribeTest {
 		};
 		fflib_SObjectDescribe.GlobalDescribeMap gdm = new fflib_SObjectDescribe.GlobalDescribeMap(fakeFieldData);
 		gdm.currentNamespace = fakeNamespace;
-		System.assertEquals(true, gdm.containsKey('name__c') );
-		System.assertEquals(true, gdm.containsKey(fakeNamespace+'__name__c') );
-		System.assert(gdm.get('name__c') === gdm.get(fakeNamespace+'__name__c'));
+		System.Assert.areEqual(true, gdm.containsKey('name__c') );
+		System.Assert.areEqual(true, gdm.containsKey(fakeNamespace+'__name__c') );
+		System.Assert.isTrue(gdm.get('name__c') === gdm.get(fakeNamespace+'__name__c'));
+
+		//keySet() no-arg overload defaults to keySet(false)
+		System.Assert.areEqual(gdm.keySet(false), gdm.keySet());
+
+		//containsKey: null name short-circuits to null, absent key returns false
+		System.Assert.areEqual(null, gdm.containsKey(null));
+		System.Assert.areEqual(false, gdm.containsKey('doesNotExist__c'));
+
+		//values() returns the raw underlying SObjectType values
+		System.Assert.isTrue(gdm.values().contains(Contact.SObjectType));
 
 		gdm.currentNamespace = 'someOtherNamespace';
-		System.assertNotEquals(gdm.get('name__c'), gdm.get(fakeNamespace+'__name__c'));
+		System.Assert.areNotEqual(gdm.get('name__c'), gdm.get(fakeNamespace+'__name__c'));
 	}
 
 	@isTest //Tests all forms of the getDescribe static
-	static void getAccountDescribes(){
-		fflib_SObjectDescribe d = fflib_SObjectDescribe.getDescribe('Account');
-		fflib_SObjectDescribe d2 = fflib_SObjectDescribe.getDescribe(Account.SObjectType);
-		fflib_SObjectDescribe d3 = fflib_SObjectDescribe.getDescribe(Schema.SObjectType.Account);
-		System.assertEquals('Account', d.getDescribe().getName());
-		System.assert( (d === d2 && d2 === d3) ,'All three getDescribe calls should return the same cached instance.');
+	private static void getAccountDescribes(){
+        fflib_SObjectDescribe d = fflib_SObjectDescribe.getDescribe('Account');
+        fflib_SObjectDescribe d2 = fflib_SObjectDescribe.getDescribe(Account.SObjectType);
+        fflib_SObjectDescribe d3 = fflib_SObjectDescribe.getDescribe(Schema.SObjectType.Account);
+        // fflib_SObjectDescribe d4 = fflib_SObjectDescribe.getDescribe(Account.SObjectType.getDescribe());
+        // fflib_SObjectDescribe d5 = fflib_SObjectDescribe.getDescribe(new Account());
+        System.Assert.areEqual('Account', d.getDescribe().getName());
+        System.Assert.areEqual(d, d2, 'Expected getDescribe by String vs. Account.SObjectType to return the same cached instance.');
+        System.Assert.areEqual(d, d3, 'Expected getDescribe by String vs. Schema.SObjectType.Account to return the same cached instance.');
+        // System.Assert.areEqual(d, d4, 'Expected getDescribe by String vs. Account.SObjectType.getDescribe() to return the same cached instance.');
+        // System.Assert.areEqual(d, d5, 'Expected getDescribe by String vs. new Account() to return the same cached instance.');
 	}
 
 	@isTest
-	static void simpleAccountFieldDescribe(){
+	private static void simpleAccountFieldDescribe(){
 		fflib_SObjectDescribe d = fflib_SObjectDescribe.getDescribe(Account.SObjectType);
 		Map<String,Schema.SObjectField> fields;
 		for(integer i = 0; i < 10; i++){
@@ -136,12 +181,12 @@ private class fflib_SObjectDescribeTest {
 
 		// System.assertEquals(1, Limits.getFieldsDescribes() );
 
-		System.assertEquals(false,fields.isEmpty());
-		System.assertEquals(Account.SObjectType, d.getSObjectType());
+		System.Assert.areEqual(false,fields.isEmpty());
+		System.Assert.areEqual(Account.SObjectType, d.getSObjectType());
 	}
 
 	@isTest
-	static void simpleAccountFieldSetDescribe(){
+	private static void simpleAccountFieldSetDescribe(){
 		fflib_SObjectDescribe d = fflib_SObjectDescribe.getDescribe(Account.SObjectType);
 		Map<String,Schema.FieldSet> fields;
 		for(integer i = 0; i < 10; i++){
@@ -160,25 +205,59 @@ private class fflib_SObjectDescribeTest {
 	}
 
 	@isTest
-    	static void simpleAccountGetNameField(){
-        	fflib_SObjectDescribe d = fflib_SObjectDescribe.getDescribe(Account.SObjectType);
-        	Schema.SObjectField nameField = d.getNameField();
-        	System.assertEquals('Name', nameField.getDescribe().getName());
+	private static void simpleAccountGetNameField(){
+		fflib_SObjectDescribe d = fflib_SObjectDescribe.getDescribe(Account.SObjectType);
+		Schema.SObjectField nameField = d.getNameField();
+		System.Assert.areEqual('Name', nameField.getDescribe().getName());
+
+		//second call should hit the cached nameField branch and return the same reference
+		Schema.SObjectField nameField2 = d.getNameField();
+		System.Assert.isTrue(nameField === nameField2, 'Expected cached nameField reference to be returned');
+
+		//cross-check against getField() normal-path resolution of the same field
+		System.Assert.areEqual(nameField, d.getField('Name'), 'Expected identical field to be retrieved via getField');
+	}
+
+	/**
+	 * Covers getField's relationship-notation handling: the normal path, the custom cross-object
+	 * "__r" and person-account "__pr" suffix resolution, and the standard-lookup "+Id" fallback.
+	**/
+	@isTest
+	private static void getField_variousInputs(){
+		fflib_SObjectDescribe contactDescribe = fflib_SObjectDescribe.getDescribe(Contact.SObjectType);
+
+		//shorthand getField(name) is equivalent to getField(name, true)
+		System.Assert.areEqual(contactDescribe.getField('LastName', true), contactDescribe.getField('LastName'));
+
+		//standard lookup field accessed via cross-object short name falls back to the '+Id' lookup branch
+		System.Assert.areEqual(Contact.SObjectType.fields.ReportsToId, contactDescribe.getField('ReportsTo'));
+
+		//custom field cross-object (__r) syntax resolves to __c; field is absent so result is null,
+		//but the resolution branch is still exercised
+		System.Assert.areEqual(null, contactDescribe.getField('NonExistentField__r'));
+
+		//custom field cross-object (__pr) syntax for person accounts resolves to __pc
+		System.Assert.areEqual(null, contactDescribe.getField('NonExistentField__pr'));
 	}
 
 	@isTest
-	static void flushCache(){
+	private static void getDescribeName(){
+		fflib_SObjectDescribe d = fflib_SObjectDescribe.getDescribe(Account.SObjectType);
+		System.Assert.areEqual('Account', d.getDescribeName());
+	}
+
+	@isTest
+	private static void flushCache(){
 		fflib_SObjectDescribe d = fflib_SObjectDescribe.getDescribe('Account');
 		fflib_SObjectDescribe.flushCache();
 		fflib_SObjectDescribe d2 = fflib_SObjectDescribe.getDescribe('Account');
-		System.assert(d !== d2, 'Second object should be a fresh instance after a cache flush.' );
+		System.Assert.isTrue(d !== d2, 'Second object should be a fresh instance after a cache flush.' );
 	}
 
 	@isTest
-	static void rawGlobalDescribeCheck(){
+	private static void rawGlobalDescribeCheck(){
 		Map<String,Schema.SObjectType> systemGd = Schema.getGlobalDescribe();
 		Map<String,Schema.SObjectType> cachedGd = fflib_SObjectDescribe.getRawGlobalDescribe();
-		System.assertEquals(systemGd.size(),cachedGd.size());
+		System.Assert.areEqual(systemGd.size(),cachedGd.size());
 	}
-
 }
