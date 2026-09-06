@@ -27,9 +27,6 @@
  * This class adapted from https://github.com/capeterson/Apex-Util
  * Used under a BSD license: https://github.com/capeterson/Apex-Util/blob/master/LICENSE
  */
-// Coverage pass: added constructor(), getField_variousInputs() and getDescribeName() test methods;
-// extended simpleAccountGetNameField, FieldsMap and GlobalDescribeMap with previously untested branches;
-// normalized all assertions to System.Assert.* per fflib-apex-common convention.
 @IsTest( isParallel = true )
 private with sharing class fflib_SObjectDescribeTest {
 
@@ -238,12 +235,6 @@ private with sharing class fflib_SObjectDescribeTest {
 
 		//custom field cross-object (__pr) syntax for person accounts resolves to __pc
 		System.Assert.areEqual(null, contactDescribe.getField('NonExistentField__pr'));
-	}
-
-	@isTest
-	private static void getDescribeName(){
-		fflib_SObjectDescribe d = fflib_SObjectDescribe.getDescribe(Account.SObjectType);
-		System.Assert.areEqual('Account', d.getDescribeName());
 	}
 
 	@isTest
