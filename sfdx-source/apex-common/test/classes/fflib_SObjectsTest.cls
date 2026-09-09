@@ -25,7 +25,7 @@
 **/
 @IsTest(isParallel=true)
 @SuppressWarnings('PMD.ApexUnitTestClassShouldHaveRunAs, PMD.ApexDoc, PMD.ClassNamingConventions')
-private with sharing class fflib_SObjectsTest
+public with sharing class fflib_SObjectsTest
 {
 	private static Integer testFakeIdSequence = 0;
 	private static final String TEST_FAKE_ID_PADDING = '000000000000';
