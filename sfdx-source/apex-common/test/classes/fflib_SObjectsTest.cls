@@ -23,33 +23,39 @@
  *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **/
-
-@IsTest
+@IsTest(isParallel=true)
 @SuppressWarnings('PMD.ApexUnitTestClassShouldHaveRunAs, PMD.ApexDoc, PMD.ClassNamingConventions')
-public class fflib_SObjectsTest
+private with sharing class fflib_SObjectsTest
 {
 	private static Integer testFakeIdSequence = 0;
 	private static final String TEST_FAKE_ID_PADDING = '000000000000';
+    private static Map<SObjectType, String> prefixCacheMap = new Map<SObjectType, String>();
 
 	/**
 	 * Returns a syntactically valid fake Id for the given SObject type. For unit tests only
 	 * (same scheme historically provided by fflib_IDGenerator in ApexMocks).
 	 *
-	 * @param sobjectType The type whose key prefix the fake Id should use
+	 * @param sObjectType The type whose key prefix the fake Id should use
 	 */
 	@TestVisible
-	private static Id generateTestRecordId(Schema.SObjectType sobjectType) {
-		String keyPrefix = sobjectType.getDescribe().getKeyPrefix();
-		testFakeIdSequence++;
-		String prefix = TEST_FAKE_ID_PADDING.substring(
+	private static Id generateTestRecordId(Schema.SObjectType sObjectType) {
+        // Avoid describing sObject multiple times
+        String keyPrefix = prefixCacheMap.get(sObjectType);
+        if(keyPrefix == null){
+            keyPrefix = sObjectType.getDescribe().getKeyPrefix();
+            prefixCacheMap.put(sObjectType, keyPrefix);
+        }
+
+        testFakeIdSequence++;
+        String fakeIdPrefix = TEST_FAKE_ID_PADDING.substring(
 			0,
 			TEST_FAKE_ID_PADDING.length() - String.valueOf(testFakeIdSequence).length()
 		);
-		return Id.valueOf(keyPrefix + prefix + testFakeIdSequence);
+        return Id.valueOf(keyPrefix + fakeIdPrefix + testFakeIdSequence);
 	}
 
 	@IsTest
-	static void itShouldClearTheField()
+	private static void itShouldClearTheField()
 	{
 		Account record = new Account(ShippingCountry = 'Holland');
 		DomainAccounts domain = new DomainAccounts(new List<Account>{ record });
@@ -61,7 +67,7 @@ public class fflib_SObjectsTest
 	}
 
 	@IsTest
-	static void itShouldReturnTheDomainsType()
+	private static void itShouldReturnTheDomainsType()
 	{
 		System.assertEquals(
 				(Object) Schema.Account.SObjectType,
@@ -79,7 +85,7 @@ public class fflib_SObjectsTest
 
 
 	@IsTest
-	static void itShouldReturnRecordsIds()
+	private static void itShouldReturnRecordsIds()
 	{
 		SObjectType accountSObjectType = Schema.Account.SObjectType;
 		Id idA = generateTestRecordId(accountSObjectType);
@@ -108,7 +114,49 @@ public class fflib_SObjectsTest
 	}
 
 	@IsTest
-	static void itShouldReturnRecordsWithFieldValues()
+	private static void itShouldReturnRecordIdsFromField()
+	{
+		Id idA = generateTestRecordId(Schema.Account.SObjectType);
+		Id idB = generateTestRecordId(Schema.Account.SObjectType);
+		List<Account> accounts = new List<Account>
+		{
+				new Account(Name = 'A', ParentId = idA),
+				new Account(Name = 'B', ParentId = idB),
+				new Account(Name = 'C', ParentId = null)
+		};
+		DomainAccounts domain = new DomainAccounts(accounts);
+
+		Set<Id> idsExcludingNulls = domain.getRecordIds(Schema.Account.ParentId);
+		System.assertEquals(2, idsExcludingNulls.size(), 'Should exclude null ParentId values by default');
+		System.assert(idsExcludingNulls.contains(idA));
+		System.assert(idsExcludingNulls.contains(idB));
+
+		Set<Id> idsIncludingNulls = domain.getRecordIds(Schema.Account.ParentId, true);
+		System.assertEquals(3, idsIncludingNulls.size(), 'Should include the null ParentId value when requested');
+		System.assert(idsIncludingNulls.contains(null));
+	}
+
+	@IsTest
+	private static void itShouldReturnRecordIdsFromRelationship()
+	{
+		Id ownerIdA = generateTestRecordId(Schema.User.SObjectType);
+		Id ownerIdB = generateTestRecordId(Schema.User.SObjectType);
+		List<Account> accounts = new List<Account>
+		{
+				new Account(Name = 'A', Parent = new Account(OwnerId = ownerIdA)),
+				new Account(Name = 'B', Parent = new Account(OwnerId = ownerIdB)),
+				new Account(Name = 'C')
+		};
+		DomainAccounts domain = new DomainAccounts(accounts);
+
+		Set<Id> relationshipIds = domain.getRecordIdsFromRelationship('Parent.OwnerId');
+		System.assertEquals(2, relationshipIds.size(), 'Should only include Ids resolvable via the relationship path');
+		System.assert(relationshipIds.contains(ownerIdA));
+		System.assert(relationshipIds.contains(ownerIdB));
+	}
+
+	@IsTest
+	private static void itShouldReturnRecordsWithFieldValues()
 	{
 		DomainAccounts domain = generateDomain();
 
@@ -116,14 +164,14 @@ public class fflib_SObjectsTest
 	}
 
 	@IsTest
-	static void itShouldReturnRecordsWithoutFieldValues()
+	private static void itShouldReturnRecordsWithoutFieldValues()
 	{
 		DomainAccounts domain = generateDomain();
 
 		System.assertEquals(3, domain.selectWithoutShippingCountry().size());
 	}
 	@IsTest
-	static void itShouldReturnRecordsWithoutFieldValuesForNonStringFields()
+	private static void itShouldReturnRecordsWithoutFieldValuesForNonStringFields()
 	{
 		DomainAccounts domain = generateDomain();
 
@@ -131,7 +179,7 @@ public class fflib_SObjectsTest
 	}
 
 	@IsTest
-	static void itShouldReturnRecordsWithoutAllFieldValues()
+	private static void itShouldReturnRecordsWithoutAllFieldValues()
 	{
 		DomainAccounts domain = generateDomain();
 
@@ -139,14 +187,14 @@ public class fflib_SObjectsTest
 	}
 
 	@IsTest
-	static void itShouldReturnRecordsWithShippingCountry()
+	private static void itShouldReturnRecordsWithShippingCountry()
 	{
 		DomainAccounts domain = generateDomain();
 
 		System.assert(domain.selectWithShippingCountry().size() == 4);
 	}
 	@IsTest
-	static void itShouldReturnRecordsWithNumberOfEmployees()
+	private static void itShouldReturnRecordsWithNumberOfEmployees()
 	{
 		DomainAccounts domain = generateDomain();
 
@@ -154,7 +202,7 @@ public class fflib_SObjectsTest
 	}
 
 	@IsTest
-	static void itShouldReturnRecordsWithAllFieldValues()
+	private static void itShouldReturnRecordsWithAllFieldValues()
 	{
 		DomainAccounts domain = generateDomain();
 
@@ -162,7 +210,7 @@ public class fflib_SObjectsTest
 	}
 
 	@IsTest
-	static void itShouldReturnFieldValues()
+	private static void itShouldReturnFieldValues()
 	{
 		DomainAccounts domain = generateDomain();
 
@@ -186,7 +234,25 @@ public class fflib_SObjectsTest
 	}
 
 	@IsTest
-	static void itShouldReturnFieldValuesForNonStringFields()
+	private static void itShouldReturnStringFieldValuesExcludingBlanks()
+	{
+		DomainAccounts domain = generateDomain();
+
+		final Set<String> expectedExcludingBlanks = new Set<String>
+		{
+				'Canada',
+				'Ireland',
+				'UK',
+				'USA'
+		};
+
+		System.assert(
+				domain.getStringFieldValues(Schema.Account.ShippingCountry, false).equals(expectedExcludingBlanks)
+		);
+	}
+
+	@IsTest
+	private static void itShouldReturnFieldValuesForNonStringFields()
 	{
 		DomainAccounts domain = generateDomain();
 
@@ -205,7 +271,7 @@ public class fflib_SObjectsTest
 	}
 
 	@IsTest
-	static void getStringFieldValuesShouldThrowClassCastExceptionForNonStringFields()
+	private static void getStringFieldValuesShouldThrowClassCastExceptionForNonStringFields()
 	{
 		DomainAccounts domain = generateDomain();
 
@@ -222,7 +288,7 @@ public class fflib_SObjectsTest
 	}
 
 	@IsTest
-	static void itShouldSetFieldValue()
+	private static void itShouldSetFieldValue()
 	{
 		DomainAccounts domain = generateDomain();
 		String country = 'Holland';
@@ -233,7 +299,7 @@ public class fflib_SObjectsTest
 
 
 	@IsTest
-	static void itShouldSetFieldValueByCondition()
+	private static void itShouldSetFieldValueByCondition()
 	{
 		DomainAccounts domain = generateDomain();
 		domain.setRatingByShippingCountry(
@@ -247,7 +313,7 @@ public class fflib_SObjectsTest
 	}
 
 	@IsTest
-	static void itShouldAllowBulkMutatorsFromOutsideDomainHierarchy()
+	private static void itShouldAllowBulkMutatorsFromOutsideDomainHierarchy()
 	{
 		Account recordA = new Account(Name = 'A', ShippingCountry = 'USA');
 		Account recordB = new Account(Name = 'B', ShippingCountry = 'Canada');
@@ -263,7 +329,7 @@ public class fflib_SObjectsTest
 	}
 
 	@IsTest
-	static void testDomainErrorLogging()
+	private static void testDomainErrorLogging()
 	{
 		// Test static helpers for raise none domain object instance errors
 		final String errorMessage = 'Test Error';
@@ -277,7 +343,7 @@ public class fflib_SObjectsTest
 	}
 
 	@IsTest
-	static void testErrorLogging()
+	private static void testErrorLogging()
 	{
 		// Test static helpers for raise none domain object instance errors
 		Opportunity opp = new Opportunity ( Name = 'Test', Type = 'Existing Account' );
@@ -289,6 +355,167 @@ public class fflib_SObjectsTest
 		System.assertEquals(Opportunity.Type, ((fflib_SObjects.FieldError) fflib_SObjects.Errors.getAll()[1]).field);
 		fflib_SObjects.Errors.clearAll();
 		System.assertEquals(0, fflib_SObjects.Errors.getAll().size());
+	}
+
+	@IsTest
+	private static void groupRecordsByFieldValue_success()
+	{
+		DomainAccounts domain = new DomainAccounts(
+				new List<Account>
+				{
+						new Account(Name = 'Acme Inc'),
+						new Account(Name = 'ACME INC'),
+						new Account(Name = 'Globex')
+				}
+		);
+
+		Map<String, List<SObject>> grouped = domain.groupRecordsByFieldValue(Schema.Account.Name);
+
+		System.assertEquals(3, grouped.keySet().size(), 'Case-sensitive grouping should keep differently-cased names apart');
+		System.assertEquals(1, grouped.get('Globex').size());
+	}
+
+	@IsTest
+	private static void groupRecordsByFieldValue_lowerCase()
+	{
+		DomainAccounts domain = new DomainAccounts(
+				new List<Account>
+				{
+						new Account(Name = 'Acme Inc'),
+						new Account(Name = 'ACME INC'),
+						new Account(Name = 'Globex')
+				}
+		);
+
+		Map<String, List<SObject>> grouped = domain.groupRecordsByFieldValue(Schema.Account.Name, true);
+
+		System.assertEquals(2, grouped.keySet().size(), 'Lower-cased grouping should merge differently-cased duplicates');
+		System.assertEquals(2, grouped.get('acme inc').size());
+	}
+
+	@IsTest
+	private static void groupRecordsByFieldValue_blankValue()
+	{
+		DomainAccounts domain = new DomainAccounts(new List<Account>{ new Account() });
+
+		try
+		{
+			domain.groupRecordsByFieldValue(Schema.Account.ShippingCountry);
+			System.assert(false, 'Expected an InvalidValueException to be thrown for a blank identifier value');
+		}
+		catch (fflib_Objects.InvalidValueException expected)
+		{
+			System.assert(expected.getMessage().contains('ShippingCountry'),
+					'Expected the field name to be present in the exception message: ' + expected.getMessage());
+		}
+	}
+
+	@IsTest
+	private static void groupRecordsByFieldValue_wrongSObject()
+	{
+		DomainAccounts domain = new DomainAccounts(new List<Account>{ new Account() });
+
+		try
+		{
+			domain.groupRecordsByFieldValue(Contact.LastName);
+			System.assert(false, 'Expected a System.SObjectException for a field belonging to another SObjectType');
+		}
+		catch (System.SObjectException expected)
+		{
+			System.assert(true);
+		}
+	}
+
+	@IsTest
+	private static void getPicklistValues_validReturn()
+	{
+		List<Schema.PicklistEntry> expected = Schema.Account.Rating.getDescribe().getPicklistValues();
+
+		DomainAccounts domain = generateDomain();
+		List<Schema.PicklistEntry> actual = domain.getPicklistValues('Account', 'Rating');
+
+		System.assertEquals(expected.size(), actual.size());
+	}
+
+	@IsTest
+	private static void getPicklistValues_invalidField()
+	{
+		DomainAccounts domain = generateDomain();
+
+		try
+		{
+			domain.getPicklistValues('Account', 'NonExistingField123');
+			System.assert(false, 'Expected an InvalidValueException for an unknown field');
+		}
+		catch (fflib_Objects.InvalidValueException expected)
+		{
+			System.assert(expected.getMessage().contains('NonExistingField123'));
+		}
+	}
+
+	@IsTest
+	private static void getPicklistValues_invalidObject()
+	{
+		DomainAccounts domain = generateDomain();
+
+		try
+		{
+			domain.getPicklistValues('NonExistingObject123', 'Rating');
+			System.assert(false, 'Expected an InvalidValueException for an unknown SObjectType');
+		}
+		catch (fflib_Objects.InvalidValueException expected)
+		{
+			System.assert(expected.getMessage().contains('NonExistingObject123'));
+		}
+	}
+
+	@IsTest
+	private static void getPicklistValuesToStrings_returnsUpperCasedLabels()
+	{
+		DomainAccounts domain = generateDomain();
+		List<String> values = domain.getPicklistValuesToStrings('Account', 'Rating');
+
+		System.assert(values.contains('HOT'), 'Expected the Hot picklist label, upper-cased, to be present');
+	}
+
+	@IsTest
+	private static void isValidPicklistValue_success()
+	{
+		DomainAccounts domain = generateDomain();
+
+		System.assert(domain.isValidPicklistValue(Schema.Account.Rating, Schema.Account.SObjectType, 'Hot'));
+	}
+
+	@IsTest
+	private static void isValidPicklistValue_blankValue()
+	{
+		DomainAccounts domain = generateDomain();
+
+		System.assertEquals(false, domain.isValidPicklistValue(Schema.Account.Rating, Schema.Account.SObjectType, null));
+	}
+
+	@IsTest
+	private static void isValidPicklistValue_invalidValue()
+	{
+		DomainAccounts domain = generateDomain();
+
+		System.assertEquals(false, domain.isValidPicklistValue(Schema.Account.Rating, Schema.Account.SObjectType, 'NotARealValue'));
+	}
+
+	@IsTest
+	private static void isValidPicklistValue_wrongSObjectType()
+	{
+		DomainAccounts domain = generateDomain();
+
+		try
+		{
+			domain.isValidPicklistValue(Schema.Account.Rating, Schema.Contact.SObjectType, 'Hot');
+			System.assert(false, 'Expected an InvalidValueException since Rating does not exist on Contact');
+		}
+		catch (fflib_Objects.InvalidValueException expected)
+		{
+			System.assert(expected.getMessage().contains('Rating'));
+		}
 	}
 
 	private static DomainAccounts generateDomain()
