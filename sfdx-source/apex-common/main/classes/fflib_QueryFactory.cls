@@ -576,28 +576,28 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param objType The object type of the child relationship to get
 	**/
  	private Schema.ChildRelationship getChildRelationship(SObjectType objType){
-        for (Schema.ChildRelationship childRow : table.getDescribe().getChildRelationships()){
-        	//occasionally on some standard objects (Like Contact child of Contact) do not have a relationship name.  
-        	//if there is no relationship name, we cannot query on it, so throw an exception.
-            if (childRow.getChildSObject() == objType && childRow.getRelationshipName() != null){ 
-                return childRow;
-            }   
-        }
-        throw new InvalidSubqueryRelationshipException('Invalid call to subselectQuery.  Invalid relationship for table '+table + ' and objtype='+objType);
-    }
+		for (Schema.ChildRelationship childRow : table.getDescribe().getChildRelationships()){
+			//occasionally on some standard objects (Like Contact child of Contact) do not have a relationship name.  
+			//if there is no relationship name, we cannot query on it, so throw an exception.
+			if (childRow.getChildSObject() == objType && childRow.getRelationshipName() != null){ 
+				return childRow;
+			}   
+		}
+		throw new InvalidSubqueryRelationshipException('Invalid call to subselectQuery.  Invalid relationship for table '+table + ' and objtype='+objType);
+	}
 
 	/**
 	 * Get the ChildRelationship from the Table for the relationship name passed in.
 	 * @param relationshipName The name of the object's ChildRelationship on get
 	**/
  	private Schema.ChildRelationship getChildRelationship(String relationshipName){
-        for (Schema.ChildRelationship childRow : table.getDescribe().getChildRelationships()){
-            if (childRow.getRelationshipName() == relationshipName){ 
-                return childRow;
-            }   
-        }
-        return null;
-    }
+		for (Schema.ChildRelationship childRow : table.getDescribe().getChildRelationships()){
+			if (childRow.getRelationshipName() == relationshipName){ 
+				return childRow;
+			}   
+		}
+		return null;
+	}
 
 	/**
 	 * Add a field to be sorted on.  This may be a direct field or a field 
@@ -610,15 +610,15 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param direction the direction to be sorted on (ASCENDING or DESCENDING)
 	 * @param nullsLast whether to sort null values last (NULLS LAST keyword included).
 	**/  
-    @NamespaceAccessible
-    public fflib_QueryFactory addOrdering(String fieldName, SortOrder direction, Boolean nullsLast){
+	@NamespaceAccessible
+	public fflib_QueryFactory addOrdering(String fieldName, SortOrder direction, Boolean nullsLast){
 		order.add(
 			new Ordering(getFieldPath(fieldName), direction, nullsLast)
 		);	
 		return this;
-    }
+	}
 
-     /**
+	 /**
 	 * Add a field to be sorted on.  This may be a direct field or a field 
 	 * related through an object lookup or master-detail relationship.
 	 * Use the set to store unique field names, since we only want to sort
@@ -629,15 +629,15 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param direction the direction to be sorted on (ASCENDING or DESCENDING)
 	 * @param nullsLast whether to sort null values last (NULLS LAST keyword included).
 	**/
-    @NamespaceAccessible
-    public fflib_QueryFactory addOrdering(SObjectField field, SortOrder direction, Boolean nullsLast){
+	@NamespaceAccessible
+	public fflib_QueryFactory addOrdering(SObjectField field, SortOrder direction, Boolean nullsLast){
 		order.add(
 			new Ordering(getFieldTokenPath(field), direction, nullsLast)
 		);	
 		return this;
-    }
+	}
 
-    /**
+	/**
 	 * Add a field to be sorted on.  This may be a direct field or a field 
 	 * related through an object lookup or master-detail relationship.
 	 * Use the set to store unique field names, since we only want to sort
@@ -649,15 +649,15 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param fieldName The string value of the field to be sorted on
 	 * @param direction the direction to be sorted on (ASCENDING or DESCENDING)
 	**/  
-    @NamespaceAccessible
-    public fflib_QueryFactory addOrdering(String fieldName, SortOrder direction){
+	@NamespaceAccessible
+	public fflib_QueryFactory addOrdering(String fieldName, SortOrder direction){
 		order.add(
 			new Ordering(getFieldPath(fieldName), direction)
 		);	
 		return this;
-    }
+	}
 
-     /**
+	 /**
 	 * Add a field to be sorted on.  This may be a direct field or a field 
 	 * related through an object lookup or master-detail relationship.
 	 * Use the set to store unique field names, since we only want to sort
@@ -669,13 +669,13 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param field The SObjectField to sort.  This can only be a direct reference.
 	 * @param direction the direction to be sorted on (ASCENDING or DESCENDING)
 	**/
-    @NamespaceAccessible
-    public fflib_QueryFactory addOrdering(SObjectField field, SortOrder direction){
+	@NamespaceAccessible
+	public fflib_QueryFactory addOrdering(SObjectField field, SortOrder direction){
 		order.add(
 			new Ordering(getFieldTokenPath(field), direction)
 		);	
 		return this;
-    }
+	}
 
 	/**
 	 * Remove existing ordering and set a field to be sorted on.  This may be a direct field or a field
@@ -744,11 +744,23 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	}
 
 	/**
-	 * whether an ALL ROWS clause will be added to the resulting query
+	 * Method that sets flag to append 'ALL ROWS' results to the query
+	 * @return  Returns this fflib_QueryFactory instance
 	**/
 	@NamespaceAccessible
 	public fflib_QueryFactory setAllRows(){
-		this.allRows = true;
+		return this.setAllRows(true);
+	}
+
+	/**
+	 * Method that (un)sets flag to append 'ALL ROWS' results to the query
+	 *
+	 * @param   allRows     whether 'ALL ROWS' should be appended to the query
+	 * @return  Returns this fflib_QueryFactory instance
+	 */
+	@NamespaceAccessible
+	public fflib_QueryFactory setAllRows( Boolean allRows ){
+		this.allRows = allRows;
 		return this;
 	}
 
