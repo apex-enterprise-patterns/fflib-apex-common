@@ -22,8 +22,7 @@
  *  OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-**/
-
+ */
 /**
  * fflib_SObjectDescribe is a semi-intelligent wrapper for standard apex Schema methods.
  * It provides an internal caching layer, to avoid hitting describe limits from repeated use,
@@ -35,7 +34,7 @@
  * and allow an older API style of omitting the namespace when working with fields or global describe maps.
  * This allows both upgrading old code to APIv29 by making use of these as a nearly drop in replacement, as well as keeping
  * namespace detection logic encapsulated.
-**/
+ */
 @NamespaceAccessible
 @SuppressWarnings('PMD.ApexDoc, PMD.ClassNamingConventions, PMD.AvoidBooleanMethodParameters, PMD.CognitiveComplexity')
 public class fflib_SObjectDescribe {
@@ -44,24 +43,27 @@ public class fflib_SObjectDescribe {
 	private Schema.SObjectField nameField;
 	private Schema.DescribeSObjectResult describe { //lazy load - keep this lightweight until we need more data
 		get{
-			if(describe == null)
+			if(describe == null){
 				describe = token.getDescribe();
+			}
 			return describe;
 		}
 		set;
 	}
 	private Map<String,Schema.SObjectField> fields {
 		get{
-			if(fields == null)
+			if(fields == null){
 				fields = describe.fields.getMap();
+			}
 			return fields;
 		}
 		set;
 	}
 	private Map<String,Schema.FieldSet> fieldSets {
 		get{
-			if(fieldSets == null)
+			if(fieldSets == null){
 				fieldSets = describe.fieldSets.getMap();
+			}
 			return fieldSets;
 		}
 		set;
@@ -76,9 +78,11 @@ public class fflib_SObjectDescribe {
 		set;
 	}
 
+	@TestVisible
 	private fflib_SObjectDescribe(Schema.SObjectType token){	
-		if(token == null)
+		if(token == null){
 			throw new InvalidDescribeException('Invalid SObject type: null');
+		}
 		this.token = token;
 		instanceCache.put( String.valueOf(token).toLowerCase() , this);
 	}
@@ -116,16 +120,13 @@ public class fflib_SObjectDescribe {
 			fieldNameAdjusted = fieldName.removeEndIgnoreCase('__pr') + '__pc';
 		}
 
-		Schema.SObjectField result = wrappedFields.get( fieldNameAdjusted, implyNamespace ); 
-		if(result == null){
-			result = wrappedFields.get(fieldName+'Id', implyNamespace); //in case it's a standard lookup in cross-object format
-		}
-		return result;
+		return wrappedFields.get( fieldNameAdjusted, implyNamespace )
+			?? wrappedFields.get(fieldName+'Id', implyNamespace); //in case it's a standard lookup in cross-object format
 	}
 	
 	/**
-	* Returns the field where isNameField() is true (if any); otherwise returns null
-	**/
+	 * @return Field where isNameField() is true (if any); otherwise returns null
+	 */
 	@NamespaceAccessible
 	public Schema.SObjectField getNameField()
 	{
@@ -141,16 +142,17 @@ public class fflib_SObjectDescribe {
 	}
 	
 	/**
-	 * Returns the raw Schema.DescribeSObjectResult an fflib_SObjectDescribe instance wraps.
-	**/
+	 * @return Raw Schema.DescribeSObjectResult an fflib_SObjectDescribe instance wraps.
+	 */
 	@NamespaceAccessible
 	public Schema.DescribeSObjectResult getDescribe(){
 		return describe;
 	}
+
 	/**
 	 * This method returns the raw data and provides no namespace handling.
 	 * Due to this, __use of this method is discouraged__ in favor of getFields(). 
-	**/
+	 */
 	@NamespaceAccessible
 	public Map<String,Schema.SObjectField> getFieldsMap(){
 		return fields;
@@ -168,8 +170,9 @@ public class fflib_SObjectDescribe {
 
 	private static Map<String,Schema.SObjectType> rawGlobalDescribe {
 		get{
-			if(rawGlobalDescribe == null)
+			if(rawGlobalDescribe == null){
 				rawGlobalDescribe = Schema.getGlobalDescribe();
+			}
 			return rawGlobalDescribe;
 		}
 		set;
@@ -183,54 +186,61 @@ public class fflib_SObjectDescribe {
 		}
 		set;
 	}
+
 	/**
 	 * This is used to cache fflib_SObjectDescribe instances as they're constructed
 	 * to prevent repeatedly re-constructing the same type.
 	 * These instances are not guaranteed to be, but typically will be, unique per sObject type due to the presence of flushCache.
-	**/
+	 */
 	private static Map<String,fflib_SObjectDescribe> instanceCache {get{
-			if(instanceCache == null)
+			if(instanceCache == null){
 				instanceCache = new Map<String,fflib_SObjectDescribe>();
+			}
 			return instanceCache;
 		} 
 		set;
 	}
+
 	@NamespaceAccessible
 	public static fflib_SObjectDescribe getDescribe(String sObjectName){
-		if(String.isBlank(sObjectName))
+		if(String.isBlank(sObjectName)){
 			return null;
+		}
 		fflib_SObjectDescribe result = instanceCache.get(sObjectName.toLowerCase());
 		if(result == null){
 			Schema.SObjectType token = wrappedGlobalDescribe.get(sObjectName.toLowerCase());
-			if(token == null)
+			if(token == null){
 				result = null;
-			else
+			} else{
 				result = new fflib_SObjectDescribe(token);
+			}
 		}
 		return result;
 	}
+
 	@NamespaceAccessible
 	public static fflib_SObjectDescribe getDescribe(Schema.SObjectType token){
-		if(token == null)
+		if(token == null){
 			return null;
-		fflib_SObjectDescribe result = instanceCache.get(String.valueOf(token).toLowerCase());
-		if(result == null)
-			result = new fflib_SObjectDescribe(token);		
-		return result;
+		}
+		return instanceCache.get(String.valueOf(token).toLowerCase())
+			?? new fflib_SObjectDescribe(token);
 	}
+
 	@NamespaceAccessible
 	public static fflib_SObjectDescribe getDescribe(Schema.DescribeSObjectResult nativeDescribe){
-		if(nativeDescribe == null)
+		if(nativeDescribe == null){
 			return null;
-		fflib_SObjectDescribe result = instanceCache.get(nativeDescribe.getName().toLowerCase());
-		if(result == null)
-			result = new fflib_SObjectDescribe(nativeDescribe.getSObjectType());
-		return result;
+		}
+		return instanceCache.get(nativeDescribe?.getName()?.toLowerCase())
+			?? new fflib_SObjectDescribe(nativeDescribe.getSObjectType());
 	}
+
 	@NamespaceAccessible
 	public static fflib_SObjectDescribe getDescribe(SObject instance){
-		if(instance == null)
+		if(instance == null){
 			return null;
+		}
 		return getDescribe(instance.getSObjectType());
 	}
 
@@ -249,6 +259,7 @@ public class fflib_SObjectDescribe {
 	public static void flushCache(){
 		rawGlobalDescribe = null;
 		instanceCache = null;
+		wrappedGlobalDescribe = null;
 	}
 
 
@@ -284,8 +295,9 @@ public class fflib_SObjectDescribe {
 		 *  
 		**/
 		protected virtual Object getObject(String name, Boolean implyNamespace){
-			if(name == null) //short-circuit lookup logic since null can't possibly be a valid field name, and it saves us null checking
+			if(name == null){ //short-circuit lookup logic since null can't possibly be a valid field name, and it saves us null checking
 				return null;
+			}
 			String preferredValue = ((implyNamespace ? currentNamespace+'__' : '') + name).toLowerCase();
 			if(values.containsKey(preferredValue)){
 				return values.get(preferredValue);
@@ -299,8 +311,9 @@ public class fflib_SObjectDescribe {
 			return this.containsKey(name, true);
 		}
 		public virtual Boolean containsKey(String name, Boolean implyNamespace){
-			if(name == null) //short-circuit lookup logic since null can't possibly be a valid field name, and it saves us null checking
+			if(name == null){ //short-circuit lookup logic since null can't possibly be a valid field name, and it saves us null checking
 				return null;
+			}
 			String preferredValue = ((implyNamespace ? currentNamespace+'__' : '') + name).toLowerCase();
 			return (
 				values.containsKey(preferredValue) ||
@@ -384,8 +397,6 @@ public class fflib_SObjectDescribe {
 
 	@NamespaceAccessible
 	public abstract class DescribeException extends Exception{}
-	@NamespaceAccessible
-	public class DuplicateDescribeException extends DescribeException{} //Test coverage for this requires APIv28's @testVisible annotation to force exception cases.
 	@NamespaceAccessible
 	public class InvalidDescribeException extends DescribeException{}
 }
