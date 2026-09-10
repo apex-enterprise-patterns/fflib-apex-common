@@ -150,6 +150,23 @@ public interface fflib_ISObjectUnitOfWork
      **/
     void registerUpsert(List<SObject> records);
     /**
+     * Register a list of mix of new and existing records to be upserted during the commitWork method by an external id
+     *
+     * @param records A list of mix of existing and new records
+     * @param externalIdField External id field to use for the upsert operation
+     **/
+    void registerUpsert(List<SObject> records, Schema.SObjectField externalIdField);
+    /**
+     * Register an existing or new record to be upserted when commitWork is called using an external id field,
+     *   you may also provide a reference to the parent record instance (should also be registered as new separately)
+     *
+     * @param record A newly created SObject instance to be inserted during commitWork
+     * @param externalIdField External id field to use for the upsert operation
+     * @param relatedToParentField A SObjectField reference to the child field that associates the child record with its parent
+     * @param relatedToParentRecord A SObject instance of the parent record (should also be registered as new separately)
+     **/
+    void registerUpsert(SObject record, Schema.SObjectField externalIdField, Schema.SObjectField relatedToParentField, SObject relatedToParentRecord);
+    /**
      * Register an existing record to be deleted during the commitWork method
      *
      * @param record An existing record
