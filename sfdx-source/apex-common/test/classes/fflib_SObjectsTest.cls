@@ -55,6 +55,15 @@ public with sharing class fflib_SObjectsTest
 	}
 
 	@IsTest
+	private static void itShouldConstructWithoutSObjectType()
+	{
+		Account record = new Account(Name = 'A');
+		fflib_SObjects domain = new fflib_SObjects(new List<SObject>{ record });
+
+		System.assertEquals(1, domain.getRecords().size(), 'The single-arg constructor should still expose the provided records');
+	}
+
+	@IsTest
 	private static void itShouldClearTheField()
 	{
 		Account record = new Account(ShippingCountry = 'Holland');
@@ -153,6 +162,22 @@ public with sharing class fflib_SObjectsTest
 		System.assertEquals(2, relationshipIds.size(), 'Should only include Ids resolvable via the relationship path');
 		System.assert(relationshipIds.contains(ownerIdA));
 		System.assert(relationshipIds.contains(ownerIdB));
+	}
+
+	@IsTest
+	private static void itShouldReturnRecordIdsFromDeepRelationship()
+	{
+		Id ownerIdA = generateTestRecordId(Schema.User.SObjectType);
+		List<Account> accounts = new List<Account>
+		{
+				new Account(Name = 'A', Parent = new Account(Parent = new Account(OwnerId = ownerIdA))),
+				new Account(Name = 'B', Parent = new Account())
+		};
+		DomainAccounts domain = new DomainAccounts(accounts);
+
+		Set<Id> relationshipIds = domain.getRecordIdsFromRelationship('Parent.Parent.OwnerId');
+		System.assertEquals(1, relationshipIds.size(), 'Should resolve arbitrary-depth relationship paths');
+		System.assert(relationshipIds.contains(ownerIdA));
 	}
 
 	@IsTest
@@ -432,40 +457,56 @@ public with sharing class fflib_SObjectsTest
 		List<Schema.PicklistEntry> expected = Schema.Account.Rating.getDescribe().getPicklistValues();
 
 		DomainAccounts domain = generateDomain();
-		List<Schema.PicklistEntry> actual = domain.getPicklistValues('Account', 'Rating');
+		List<Schema.PicklistEntry> actual = domain.getPicklistValues(Schema.Account.SObjectType, Schema.Account.Rating);
 
 		System.assertEquals(expected.size(), actual.size());
 	}
 
 	@IsTest
-	private static void getPicklistValues_invalidField()
+	private static void getPicklistValues_fieldNotOnObject()
 	{
 		DomainAccounts domain = generateDomain();
 
 		try
 		{
-			domain.getPicklistValues('Account', 'NonExistingField123');
-			System.assert(false, 'Expected an InvalidValueException for an unknown field');
+			domain.getPicklistValues(Schema.Account.SObjectType, Schema.Contact.LastName);
+			System.assert(false, 'Expected an InvalidValueException for a field not belonging to the given SObjectType');
 		}
 		catch (fflib_Objects.InvalidValueException expected)
 		{
-			System.assert(expected.getMessage().contains('NonExistingField123'));
+			System.assert(expected.getMessage().contains('LastName'));
 		}
 	}
 
 	@IsTest
-	private static void getPicklistValues_invalidObject()
+	private static void getPicklistValues_nullObjectType()
 	{
 		DomainAccounts domain = generateDomain();
 
 		try
 		{
-			domain.getPicklistValues('NonExistingObject123', 'Rating');
-			System.assert(false, 'Expected an InvalidValueException for an unknown SObjectType');
+			domain.getPicklistValues(null, Schema.Account.Rating);
+			System.assert(false, 'Expected an InvalidValueException for a null SObjectType');
 		}
 		catch (fflib_Objects.InvalidValueException expected)
 		{
-			System.assert(expected.getMessage().contains('NonExistingObject123'));
+			System.assert(true);
+		}
+	}
+
+	@IsTest
+	private static void getPicklistValues_nullField()
+	{
+		DomainAccounts domain = generateDomain();
+
+		try
+		{
+			domain.getPicklistValues(Schema.Account.SObjectType, null);
+			System.assert(false, 'Expected an InvalidValueException for a null SObjectField');
+		}
+		catch (fflib_Objects.InvalidValueException expected)
+		{
+			System.assert(true);
 		}
 	}
 
@@ -473,7 +514,7 @@ public with sharing class fflib_SObjectsTest
 	private static void getPicklistValuesToStrings_returnsUpperCasedLabels()
 	{
 		DomainAccounts domain = generateDomain();
-		List<String> values = domain.getPicklistValuesToStrings('Account', 'Rating');
+		List<String> values = domain.getPicklistValuesToStrings(Schema.Account.SObjectType, Schema.Account.Rating);
 
 		System.assert(values.contains('HOT'), 'Expected the Hot picklist label, upper-cased, to be present');
 	}

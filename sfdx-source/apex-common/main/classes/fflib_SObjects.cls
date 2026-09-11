@@ -45,22 +45,6 @@ public virtual class fflib_SObjects
 	}
 
 	/**
-	 * Cached record count of the domain, avoiding repeated calls to getRecords().size() in tight loops
-	 */
-	private Integer numRecords
-	{
-		get
-		{
-			if (numRecords == null)
-			{
-				numRecords = getRecords().size();
-			}
-			return numRecords;
-		}
-		private set;
-	}
-
-	/**
 	 * Class constructor
 	 */
 	@NamespaceAccessible
@@ -120,7 +104,7 @@ public virtual class fflib_SObjects
 	{
 		Set<Id> result = new Set<Id>();
 		List<SObject> records = getRecords();
-		for (Integer i = 0; i < numRecords; i++)
+		for (Integer i = 0, j = records.size(); i < j; i++)
 		{
 			Id foundId = (Id) records[i].get(field);
 			if (foundId != null || includeNulls)
@@ -132,7 +116,9 @@ public virtual class fflib_SObjects
 	}
 
 	/**
-	 * Method to 'pluck' Id's out of a collection of SObjects via a dotted relationship path
+	 * Method to 'pluck' Id's out of a collection of SObjects via a dotted relationship path.
+	 * Supports any depth of relationship (e.g. 'Owner.ContactId' or 'Parent.Owner.ManagerId'),
+	 * short-circuiting to no value whenever an intermediate relationship is unpopulated.
 	 *
 	 * @param fieldWithDotRelation The dotted relationship path (e.g. 'Owner.ContactId') to pluck the Id's from
 	 *
@@ -143,12 +129,16 @@ public virtual class fflib_SObjects
 	{
 		Set<Id> result = new Set<Id>();
 		List<String> relationshipParts = fieldWithDotRelation.split('\\.');
+		Integer lastIndex = relationshipParts.size() - 1;
 		List<SObject> records = getRecords();
-		for (Integer i = 0; i < numRecords; i++)
-		{
-			Id foundId = (Id) records[i].getSObject(relationshipParts[0])?.get(relationshipParts[1]);
-			if (foundId != null)
-			{
+		for (Integer i = 0, j = records.size(); i < j; i++){
+			SObject current = records[i];
+			// Traverse the relationship path up to the last part, short-circuiting if any intermediate relationship is null
+			for (Integer p = 0; p < lastIndex && current != null; p++){
+				current = current.getSObject(relationshipParts[p]);
+			}
+			Id foundId = ( Id ) current?.get(relationshipParts[lastIndex]);
+			if (foundId != null){
 				result.add(foundId);
 			}
 		}
@@ -179,7 +169,7 @@ public virtual class fflib_SObjects
 	public virtual void addError(String message)
 	{
 		List<SObject> records = getRecords();
-		for (Integer i = 0; i < numRecords; i++)
+		for (Integer i = 0, j = records.size(); i < j; i++)
 		{
 			SObject record = records[i];
 			record.addError(error(message, record));
@@ -196,7 +186,7 @@ public virtual class fflib_SObjects
 	public virtual void addError(Schema.SObjectField field, String message)
 	{
 		List<SObject> records = getRecords();
-		for (Integer i = 0; i < numRecords; i++)
+		for (Integer i = 0, j = records.size(); i < j; i++)
 		{
 			SObject record = records[i];
 			record.addError(field, error(message, record, field));
@@ -221,7 +211,7 @@ public virtual class fflib_SObjects
 	public virtual void clearFields(Set<Schema.SObjectField> fields)
 	{
 		List<SObject> records = getRecords();
-		for (Integer i = 0; i < numRecords; i++)
+		for (Integer i = 0, j = records.size(); i < j; i++)
 		{
 			SObject record = records[i];
 			for (SObjectField field : fields)
@@ -271,7 +261,7 @@ public virtual class fflib_SObjects
 	{
 		Set<Id> result = new Set<Id>();
 		List<SObject> records = getRecords();
-		for (Integer i = 0; i < numRecords; i++)
+		for (Integer i = 0, j = records.size(); i < j; i++)
 		{
 			result.add((Id) records[i].get(field));
 		}
@@ -302,7 +292,7 @@ public virtual class fflib_SObjects
 	{
 		Set<String> result = new Set<String>();
 		List<SObject> records = getRecords();
-		for (Integer i = 0; i < numRecords; i++)
+		for (Integer i = 0, j = records.size(); i < j; i++)
 		{
 			String foundString = (String) records[i].get(field);
 			if (String.isNotBlank(foundString) || includeNulls)
@@ -324,7 +314,7 @@ public virtual class fflib_SObjects
 	{
 		Set<Object> result = new Set<Object>();
 		List<SObject> records = getRecords();
-		for (Integer i = 0; i < numRecords; i++)
+		for (Integer i = 0, j = records.size(); i < j; i++)
 		{
 			result.add(records[i].get(field));
 		}
@@ -354,7 +344,7 @@ public virtual class fflib_SObjects
 	{
 		List<SObject> result = new List<SObject>();
 		List<SObject> records = getRecords();
-		for (Integer i = 0; i < numRecords; i++)
+		for (Integer i = 0, j = records.size(); i < j; i++)
 		{
 			SObject record = records[i];
 			if (values?.contains(record.get(field)))
@@ -388,7 +378,7 @@ public virtual class fflib_SObjects
 	{
 		List<SObject> result = new List<SObject>();
 		List<SObject> records = getRecords();
-		for (Integer i = 0; i < numRecords; i++)
+		for (Integer i = 0, j = records.size(); i < j; i++)
 		{
 			SObject record = records[i];
 			for (SObjectField field : fields)
@@ -412,7 +402,7 @@ public virtual class fflib_SObjects
 	{
 		List<SObject> result = new List<SObject>();
 		List<SObject> records = getRecords();
-		for (Integer i = 0; i < numRecords; i++)
+		for (Integer i = 0, j = records.size(); i < j; i++)
 		{
 			SObject record = records[i];
 			Boolean allBlank = true;
@@ -452,7 +442,7 @@ public virtual class fflib_SObjects
 	{
 		List<SObject> result = new List<SObject>();
 		List<SObject> records = getRecords();
-		for (Integer i = 0; i < numRecords; i++)
+		for (Integer i = 0, j = records.size(); i < j; i++)
 		{
 			SObject record = records[i];
 			for (SObjectField field : fields)
@@ -477,7 +467,7 @@ public virtual class fflib_SObjects
 	{
 		List<SObject> result = new List<SObject>();
 		List<SObject> records = getRecords();
-		for (Integer i = 0; i < numRecords; i++)
+		for (Integer i = 0, j = records.size(); i < j; i++)
 		{
 			SObject record = records[i];
 			Boolean allNonBlank = true;
@@ -504,7 +494,7 @@ public virtual class fflib_SObjects
 	protected virtual void setFieldValue(Schema.SObjectField field, Object value)
 	{
 		List<SObject> records = getRecords();
-		for (Integer i = 0; i < numRecords; i++)
+		for (Integer i = 0, j = records.size(); i < j; i++)
 		{
 			records[i].put(field, value);
 		}
@@ -522,7 +512,7 @@ public virtual class fflib_SObjects
 			Map<Object, Object> values)
 	{
 		List<SObject> records = getRecords();
-		for (Integer i = 0; i < numRecords; i++)
+		for (Integer i = 0, j = records.size(); i < j; i++)
 		{
 			SObject record = records[i];
 			Object keyValue = record.get(fieldToCheck);
@@ -550,7 +540,7 @@ public virtual class fflib_SObjects
 	{
 		Map<String, List<SObject>> result = new Map<String, List<SObject>>();
 		List<SObject> records = getRecords();
-		for (Integer i = 0; i < numRecords; i++)
+		for (Integer i = 0, j = records.size(); i < j; i++)
 		{
 			SObject record = records[i];
 			String recordKey = String.valueOf(record.get(identifierField));
@@ -597,26 +587,23 @@ public virtual class fflib_SObjects
 	/**
 	 * Method to retrieve a list of Schema.PicklistEntry with label and (api) value for any object
 	 *
-	 * @param objectType String value of the object
-	 * @param selectedField String value of the picklist (multi-select) field
+	 * @param objectType The SObjectType of the object
+	 * @param selectedField The SObjectField of the picklist (multi-select) field
 	 *
 	 * @return List containing the picklist entry describes
 	 *
-	 * @throws fflib_Objects.InvalidValueException when the SObjectType or field cannot be found
+	 * @throws fflib_Objects.InvalidValueException when either inputs are null, or the field doesn't belong to the given SObjectType
 	 */
 	@NamespaceAccessible
-	public virtual List<Schema.PicklistEntry> getPicklistValues(String objectType, String selectedField)
-	{
-		fflib_SObjectDescribe objectDescribe = fflib_SObjectDescribe.getDescribe(objectType);
-		if (objectDescribe == null)
-		{
-			throw new fflib_Objects.InvalidValueException('The provided SObjectType ' + objectType + ' seems to be invalid (not found in Global Describe)');
-		}
+	public virtual List<Schema.PicklistEntry> getPicklistValues(Schema.SObjectType objectType, Schema.SObjectField selectedField){
+		if(objectType == null){ throw new fflib_Objects.InvalidValueException('The provided SObjectType cannot be null'); }
+		if(selectedField == null){ throw new fflib_Objects.InvalidValueException('The provided SObjectField cannot be null'); }
 
-		SObjectField field = objectDescribe.getDescribe().fields.getMap().get(selectedField.toLowerCase());
-		if (field == null)
-		{
-			throw new fflib_Objects.InvalidValueException('No ' + selectedField + ' field seems to exist on ' + objectType);
+		fflib_SObjectDescribe objectDescribe = fflib_SObjectDescribe.getDescribe(objectType);
+		String fieldName = selectedField.getDescribe().getName();
+		Schema.SObjectField field = objectDescribe.getField(fieldName);
+		if (field == null){
+			throw new fflib_Objects.InvalidValueException('No ' + fieldName + ' field seems to exist on ' + objectType);
 		}
 
 		return field.getDescribe().getPicklistValues();
@@ -625,18 +612,16 @@ public virtual class fflib_SObjects
 	/**
 	 * Method to retrieve a list of Strings with the (upper-cased) label values of a picklist
 	 *
-	 * @param objectType String value of the object
-	 * @param selectedField String value of the picklist (multi-select) field
+	 * @param objectType The SObjectType of the object
+	 * @param selectedField The SObjectField of the picklist (multi-select) field
 	 *
 	 * @return List containing the picklist values as upper-cased strings
 	 */
 	@NamespaceAccessible
-	public virtual List<String> getPicklistValuesToStrings(String objectType, String selectedField)
-	{
+	public virtual List<String> getPicklistValuesToStrings(Schema.SObjectType objectType, Schema.SObjectField selectedField){
 		List<Schema.PicklistEntry> picklistValues = getPicklistValues(objectType, selectedField);
 		List<String> result = new List<String>();
-		for (Integer i = 0, j = picklistValues.size(); i < j; i++)
-		{
+		for (Integer i = 0, j = picklistValues.size(); i < j; i++){
 			result.add(picklistValues[i].getLabel().toUpperCase());
 		}
 		return result;
@@ -657,7 +642,7 @@ public virtual class fflib_SObjects
 			return false;
 		}
 
-		List<Schema.PicklistEntry> picklistValues = getPicklistValues(String.valueOf(sObjType), String.valueOf(sObjField));
+		List<Schema.PicklistEntry> picklistValues = getPicklistValues(sObjType, sObjField);
 		for (Integer i = 0, j = picklistValues.size(); i < j; i++)
 		{
 			if (picklistValues[i].getValue().equalsIgnoreCase(value))
