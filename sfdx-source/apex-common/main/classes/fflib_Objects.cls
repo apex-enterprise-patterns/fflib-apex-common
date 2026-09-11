@@ -126,4 +126,10 @@ public virtual class fflib_Objects implements fflib_IObjects
 	{
 		this.objects = objects;
 	}
+
+	/**
+	 * Centralised Exception to allow reuse on any invalid input/field value
+	 */
+	@NamespaceAccessible
+	public virtual class InvalidValueException extends Exception{}
 }
