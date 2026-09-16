@@ -528,130 +528,34 @@ public virtual class fflib_SObjects
 	 * E.g. used when preparing queried records to be easily accessible (grouped) by a queried field
 	 *
 	 * @param identifierField SObjectField whose value should be used as the record-identifier (map key)
-	 * @param toLowerCase Set to true to lowercase the resulting map keys (case-insensitive grouping)
 	 *
-	 * @return Map keyed by the identifierField value, containing the List of SObjects sharing that value
+	 * @return Map keyed by the (native-typed) identifierField value, containing the List of SObjects sharing that value
 	 *
 	 * @throws fflib_Objects.InvalidValueException when a record has no value for the requested identifier field
 	 * @throws System.SObjectException when the SObjectField doesn't belong/exist on the provided record
 	 */
 	@NamespaceAccessible
-	public virtual Map<String, List<SObject>> groupRecordsByFieldValue(Schema.SObjectField identifierField, Boolean toLowerCase)
+	public virtual Map<Object, List<SObject>> groupRecordsByFieldValue(Schema.SObjectField identifierField)
 	{
-		Map<String, List<SObject>> result = new Map<String, List<SObject>>();
+		Map<Object, List<SObject>> result = new Map<Object, List<SObject>>();
 		List<SObject> records = getRecords();
 		for (Integer i = 0, j = records.size(); i < j; i++)
 		{
 			SObject record = records[i];
-			String recordKey = String.valueOf(record.get(identifierField));
+			Object recordKey = record.get(identifierField);
 
-			if (String.isBlank(recordKey))
-			{
+			if (recordKey == null){
 				throw new fflib_Objects.InvalidValueException('No value was set for ' + identifierField + ' on ' + record);
-			}
-			if (toLowerCase)
-			{
-				recordKey = recordKey.toLowerCase();
 			}
 
 			List<SObject> existingRecordsForKey = result.get(recordKey);
-			if (existingRecordsForKey != null)
-			{
+			if (existingRecordsForKey != null){
 				existingRecordsForKey.add(record);
-			}
-			else
-			{
+			} else{
 				result.put(recordKey, new List<SObject>{ record });
 			}
 		}
 		return result;
-	}
-
-	/**
-	 * Method to easily construct a Map from a List of SObjects, having a field from the SObject being set as key.
-	 * E.g. used when preparing queried records to be easily accessible (grouped) by a queried field
-	 *
-	 * @param identifierField SObjectField whose value should be used as the record-identifier (map key)
-	 *
-	 * @return Map keyed by the identifierField value, containing the List of SObjects sharing that value
-	 *
-	 * @throws fflib_Objects.InvalidValueException when a record has no value for the requested identifier field
-	 * @throws System.SObjectException when the SObjectField doesn't belong/exist on the provided record
-	 */
-	@NamespaceAccessible
-	public virtual Map<String, List<SObject>> groupRecordsByFieldValue(Schema.SObjectField identifierField)
-	{
-		return groupRecordsByFieldValue(identifierField, false);
-	}
-
-	/**
-	 * Method to retrieve a list of Schema.PicklistEntry with label and (api) value for any object
-	 *
-	 * @param objectType The SObjectType of the object
-	 * @param selectedField The SObjectField of the picklist (multi-select) field
-	 *
-	 * @return List containing the picklist entry describes
-	 *
-	 * @throws fflib_Objects.InvalidValueException when either inputs are null, or the field doesn't belong to the given SObjectType
-	 */
-	@NamespaceAccessible
-	public virtual List<Schema.PicklistEntry> getPicklistValues(Schema.SObjectType objectType, Schema.SObjectField selectedField){
-		if(objectType == null){ throw new fflib_Objects.InvalidValueException('The provided SObjectType cannot be null'); }
-		if(selectedField == null){ throw new fflib_Objects.InvalidValueException('The provided SObjectField cannot be null'); }
-
-		fflib_SObjectDescribe objectDescribe = fflib_SObjectDescribe.getDescribe(objectType);
-		String fieldName = selectedField.getDescribe().getName();
-		Schema.SObjectField field = objectDescribe.getField(fieldName);
-		if (field == null){
-			throw new fflib_Objects.InvalidValueException('No ' + fieldName + ' field seems to exist on ' + objectType);
-		}
-
-		return field.getDescribe().getPicklistValues();
-	}
-
-	/**
-	 * Method to retrieve a list of Strings with the (upper-cased) label values of a picklist
-	 *
-	 * @param objectType The SObjectType of the object
-	 * @param selectedField The SObjectField of the picklist (multi-select) field
-	 *
-	 * @return List containing the picklist values as upper-cased strings
-	 */
-	@NamespaceAccessible
-	public virtual List<String> getPicklistValuesToStrings(Schema.SObjectType objectType, Schema.SObjectField selectedField){
-		List<Schema.PicklistEntry> picklistValues = getPicklistValues(objectType, selectedField);
-		List<String> result = new List<String>();
-		for (Integer i = 0, j = picklistValues.size(); i < j; i++){
-			result.add(picklistValues[i].getLabel().toUpperCase());
-		}
-		return result;
-	}
-
-	/**
-	 * @param sObjField The Picklist field in which the provided value should be checked
-	 * @param sObjType The SObjectType to which the picklist belongs (cannot be reliably derived from SObjectField alone, hence a separate input)
-	 * @param value The value which is checked
-	 *
-	 * @return True when the value is a valid entry for the provided picklist field, false otherwise or when value was blank
-	 */
-	@NamespaceAccessible
-	public virtual Boolean isValidPicklistValue(Schema.SObjectField sObjField, Schema.SObjectType sObjType, String value)
-	{
-		if (String.isBlank(value))
-		{
-			return false;
-		}
-
-		List<Schema.PicklistEntry> picklistValues = getPicklistValues(sObjType, sObjField);
-		for (Integer i = 0, j = picklistValues.size(); i < j; i++)
-		{
-			if (picklistValues[i].getValue().equalsIgnoreCase(value))
-			{
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	/**

@@ -363,26 +363,10 @@ public with sharing class fflib_SObjectsTest{
 				}
 		);
 
-		Map<String, List<SObject>> grouped = domain.groupRecordsByFieldValue(Schema.Account.Name);
+		Map<Object, List<SObject>> grouped = domain.groupRecordsByFieldValue(Schema.Account.Name);
 
 		System.Assert.areEqual(3, grouped.keySet().size(), 'Case-sensitive grouping should keep differently-cased names apart');
 		System.Assert.areEqual(1, grouped.get('Globex').size(), 'Expected exactly one Globex record');
-	}
-
-	@IsTest
-	private static void groupRecordsByFieldValue_lowerCase(){
-		DomainAccounts domain = new DomainAccounts(
-				new List<Account>{
-						new Account(Name = 'Acme Inc'),
-						new Account(Name = 'ACME INC'),
-						new Account(Name = 'Globex')
-				}
-		);
-
-		Map<String, List<SObject>> grouped = domain.groupRecordsByFieldValue(Schema.Account.Name, true);
-
-		System.Assert.areEqual(2, grouped.keySet().size(), 'Lower-cased grouping should merge differently-cased duplicates');
-		System.Assert.areEqual(2, grouped.get('acme inc').size(), 'Expected 2 records grouped under acme inc');
 	}
 
 	@IsTest
@@ -391,7 +375,7 @@ public with sharing class fflib_SObjectsTest{
 
 		try {
 			domain.groupRecordsByFieldValue(Schema.Account.ShippingCountry);
-			System.Assert.fail('Expected a fflib_Objects.InvalidValueException because the Account record has a blank ShippingCountry and groupRecordsByFieldValue requires a non-blank identifier value');
+			System.Assert.fail('Expected a fflib_Objects.InvalidValueException because the Account record has a null ShippingCountry and groupRecordsByFieldValue requires a non-null identifier value');
 		} catch (Exception ex){
 			System.Assert.isInstanceOfType(ex, fflib_Objects.InvalidValueException.class, 'Expected fflib_Objects.InvalidValueException but got ' + ex);
 			System.Assert.isTrue(
@@ -410,101 +394,6 @@ public with sharing class fflib_SObjectsTest{
 			System.Assert.fail('Expected a System.SObjectException because Contact.LastName does not exist on the Account records held by this domain');
 		} catch (Exception ex){
 			System.Assert.isInstanceOfType(ex, System.SObjectException.class, 'Expected System.SObjectException but got ' + ex);
-		}
-	}
-
-	@IsTest
-	private static void getPicklistValues_validReturn(){
-		List<Schema.PicklistEntry> expected = Schema.Account.Rating.getDescribe().getPicklistValues();
-
-		DomainAccounts domain = generateDomain();
-		List<Schema.PicklistEntry> actual = domain.getPicklistValues(Schema.Account.SObjectType, Schema.Account.Rating);
-
-		System.Assert.areEqual(expected.size(), actual.size(), 'Expected the same number of picklist entries as returned by the platform describe');
-	}
-
-	@IsTest
-	private static void getPicklistValues_fieldNotOnObject(){
-		DomainAccounts domain = generateDomain();
-
-		try {
-			domain.getPicklistValues(Schema.Account.SObjectType, Schema.Contact.LastName);
-			System.Assert.fail('Expected a fflib_Objects.InvalidValueException because Contact.LastName does not exist on the Account SObjectType');
-		} catch (Exception ex){
-			System.Assert.isInstanceOfType(ex, fflib_Objects.InvalidValueException.class, 'Expected fflib_Objects.InvalidValueException but got ' + ex);
-			System.Assert.isTrue(
-				ex.getMessage().contains('LastName'),
-				'Expected the field name LastName to be present in the exception message: ' + ex.getMessage()
-			);
-		}
-	}
-
-	@IsTest
-	private static void getPicklistValues_nullObjectType(){
-		DomainAccounts domain = generateDomain();
-
-		try {
-			domain.getPicklistValues(null, Schema.Account.Rating);
-			System.Assert.fail('Expected a fflib_Objects.InvalidValueException because a null SObjectType was passed in and cannot be described');
-		} catch (Exception ex){
-			System.Assert.isInstanceOfType(ex, fflib_Objects.InvalidValueException.class, 'Expected fflib_Objects.InvalidValueException but got ' + ex);
-		}
-	}
-
-	@IsTest
-	private static void getPicklistValues_nullField(){
-		DomainAccounts domain = generateDomain();
-
-		try {
-			domain.getPicklistValues(Schema.Account.SObjectType, null);
-			System.Assert.fail('Expected a fflib_Objects.InvalidValueException because a null SObjectField was passed in and cannot be described');
-		} catch (Exception ex){
-			System.Assert.isInstanceOfType(ex, fflib_Objects.InvalidValueException.class, 'Expected fflib_Objects.InvalidValueException but got ' + ex);
-		}
-	}
-
-	@IsTest
-	private static void getPicklistValuesToStrings_returnsUpperCasedLabels(){
-		DomainAccounts domain = generateDomain();
-		List<String> values = domain.getPicklistValuesToStrings(Schema.Account.SObjectType, Schema.Account.Rating);
-
-		System.Assert.isTrue(values.contains('HOT'), 'Expected the Hot picklist label, upper-cased, to be present');
-	}
-
-	@IsTest
-	private static void isValidPicklistValue_success(){
-		DomainAccounts domain = generateDomain();
-
-		System.Assert.isTrue(domain.isValidPicklistValue(Schema.Account.Rating, Schema.Account.SObjectType, 'Hot'), 'Expected Hot to be a valid picklist value for Account.Rating');
-	}
-
-	@IsTest
-	private static void isValidPicklistValue_blankValue(){
-		DomainAccounts domain = generateDomain();
-
-		System.Assert.areEqual(false, domain.isValidPicklistValue(Schema.Account.Rating, Schema.Account.SObjectType, null), 'Expected a null value to be considered invalid');
-	}
-
-	@IsTest
-	private static void isValidPicklistValue_invalidValue(){
-		DomainAccounts domain = generateDomain();
-
-		System.Assert.areEqual(false, domain.isValidPicklistValue(Schema.Account.Rating, Schema.Account.SObjectType, 'NotARealValue'), 'Expected an unknown picklist value to be considered invalid');
-	}
-
-	@IsTest
-	private static void isValidPicklistValue_wrongSObjectType(){
-		DomainAccounts domain = generateDomain();
-
-		try {
-			domain.isValidPicklistValue(Schema.Account.Rating, Schema.Contact.SObjectType, 'Hot');
-			System.Assert.fail('Expected a fflib_Objects.InvalidValueException because Account.Rating does not exist on the Contact SObjectType');
-		} catch (Exception ex){
-			System.Assert.isInstanceOfType(ex, fflib_Objects.InvalidValueException.class, 'Expected fflib_Objects.InvalidValueException but got ' + ex);
-			System.Assert.isTrue(
-				ex.getMessage().contains('Rating'),
-				'Expected the field name Rating to be present in the exception message: ' + ex.getMessage()
-			);
 		}
 	}
 
