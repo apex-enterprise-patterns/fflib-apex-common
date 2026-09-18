@@ -251,4 +251,54 @@ private with sharing class fflib_SObjectDescribeTest {
 		Map<String,Schema.SObjectType> cachedGd = fflib_SObjectDescribe.getRawGlobalDescribe();
 		System.Assert.areEqual(systemGd.size(),cachedGd.size());
 	}
+
+	@isTest
+	private static void getPicklistValues_validReturn(){
+		List<Schema.PicklistEntry> expected = Schema.Account.Rating.getDescribe().getPicklistValues();
+
+		List<Schema.PicklistEntry> actual = fflib_SObjectDescribe.getPicklistValues(Schema.Account.Rating);
+
+		System.Assert.areEqual(expected.size(), actual.size(), 'Expected the same number of picklist entries as returned by the platform describe');
+	}
+
+	@isTest
+	private static void getPicklistValues_nullField(){
+		try {
+			fflib_SObjectDescribe.getPicklistValues(null);
+			System.Assert.fail('Expected a fflib_Objects.InvalidValueException because a null SObjectField was passed in and cannot be described');
+		} catch (Exception ex){
+			System.Assert.isInstanceOfType(ex, fflib_Objects.InvalidValueException.class, 'Expected fflib_Objects.InvalidValueException but got ' + ex);
+		}
+	}
+
+	@isTest
+	private static void getPicklistValues_nonPicklistField(){
+		System.Assert.areEqual(
+			new List<Schema.PicklistEntry>(),
+			fflib_SObjectDescribe.getPicklistValues(Schema.Account.Name),
+			'Expected an empty list for a non-picklist field'
+		);
+	}
+
+	@isTest
+	private static void getPicklistLabels_returnsLabels(){
+		List<String> values = fflib_SObjectDescribe.getPicklistLabels(Schema.Account.Rating);
+
+		System.Assert.isTrue(values.contains('Hot'), 'Expected the Hot picklist label to be present, unmodified (no upper-casing)');
+	}
+
+	@isTest
+	private static void isValidPicklistValue_success(){
+		System.Assert.isTrue(fflib_SObjectDescribe.isValidPicklistValue(Schema.Account.Rating, 'Hot'), 'Expected Hot to be a valid picklist value for Account.Rating');
+	}
+
+	@isTest
+	private static void isValidPicklistValue_blankValue(){
+		System.Assert.areEqual(false, fflib_SObjectDescribe.isValidPicklistValue(Schema.Account.Rating, null), 'Expected a null value to be considered invalid');
+	}
+
+	@isTest
+	private static void isValidPicklistValue_invalidValue(){
+		System.Assert.areEqual(false, fflib_SObjectDescribe.isValidPicklistValue(Schema.Account.Rating, 'NotARealValue'), 'Expected an unknown picklist value to be considered invalid');
+	}
 }

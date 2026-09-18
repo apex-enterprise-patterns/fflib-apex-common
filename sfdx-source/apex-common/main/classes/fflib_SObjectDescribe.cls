@@ -262,6 +262,61 @@ public class fflib_SObjectDescribe {
 		wrappedGlobalDescribe = null;
 	}
 
+	/**
+	 * Method to retrieve a list of Schema.PicklistEntry with label and (api) value for a picklist field.
+	 * Note, no Exception is thrown for non-picklist fields; the platform returns an empty-list.
+	 *
+	 * @param selectedField The SObjectField of the picklist (multi-select) field
+	 *
+	 * @return List containing the picklist entry describes, or an empty list if the field is not a picklist
+	 *
+	 * @throws fflib_Objects.InvalidValueException when the provided SObjectField is null
+	 */
+	@NamespaceAccessible
+	public static List<Schema.PicklistEntry> getPicklistValues(Schema.SObjectField selectedField){
+		if(selectedField == null){ throw new fflib_Objects.InvalidValueException('The provided SObjectField cannot be null'); }
+
+		return selectedField.getDescribe().getPicklistValues();
+	}
+
+	/**
+	 * Method to retrieve a list of Strings with the label values of a picklist field.
+	 *
+	 * @param selectedField The SObjectField of the picklist (multi-select) field
+	 *
+	 * @return List containing the picklist LABEL values as strings
+	 */
+	@NamespaceAccessible
+	public static List<String> getPicklistLabels(Schema.SObjectField selectedField){
+		List<Schema.PicklistEntry> picklistValues = getPicklistValues(selectedField);
+		List<String> result = new List<String>();
+		for (Integer i = 0, j = picklistValues.size(); i < j; i++){
+			result.add(picklistValues[i].getLabel());
+		}
+		return result;
+	}
+
+	/**
+	 * @param sObjField The Picklist field in which the provided value should be checked
+	 * @param value The value which is checked (with ignore case)
+	 *
+	 * @return True when the value is a valid entry for the provided picklist field, false otherwise or when value was blank
+	 */
+	@NamespaceAccessible
+	public static Boolean isValidPicklistValue(Schema.SObjectField sObjField, String value){
+		if (String.isBlank(value)){
+			return false;
+		}
+
+		List<Schema.PicklistEntry> picklistEntries = getPicklistValues(sObjField);
+		for (Integer i = 0, j = picklistEntries.size(); i < j; i++){
+			if (picklistEntries[i].getValue().equalsIgnoreCase(value)){
+				return true;
+			}
+		}
+		return false;
+	}
+
 
 	/**
 	 * This class handles emulating a Map<String,Object>'s non-mutating instance methods and helps navigate the complex topic of
