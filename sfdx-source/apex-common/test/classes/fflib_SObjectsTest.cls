@@ -127,13 +127,13 @@ public with sharing class fflib_SObjectsTest{
 		};
 		DomainAccounts domain = new DomainAccounts(accounts);
 
-		Set<Id> idsExcludingNulls = domain.getRecordIds(Schema.Account.ParentId);
-		System.Assert.areEqual(2, idsExcludingNulls.size(), 'Should exclude null ParentId values by default');
+		Set<Id> idsExcludingNulls = domain.getIdFieldValues(Schema.Account.ParentId, false);
+		System.Assert.areEqual(2, idsExcludingNulls.size(), 'Should exclude null ParentId values when requested');
 		System.Assert.isTrue(idsExcludingNulls.contains(idA), 'Expected idsExcludingNulls to contain idA');
 		System.Assert.isTrue(idsExcludingNulls.contains(idB), 'Expected idsExcludingNulls to contain idB');
 
-		Set<Id> idsIncludingNulls = domain.getRecordIds(Schema.Account.ParentId, true);
-		System.Assert.areEqual(3, idsIncludingNulls.size(), 'Should include the null ParentId value when requested');
+		Set<Id> idsIncludingNulls = domain.getIdFieldValues(Schema.Account.ParentId);
+		System.Assert.areEqual(3, idsIncludingNulls.size(), 'Should include the null ParentId value by default');
 		System.Assert.isTrue(idsIncludingNulls.contains(null), 'Expected idsIncludingNulls to contain null');
 	}
 
@@ -148,7 +148,7 @@ public with sharing class fflib_SObjectsTest{
 		};
 		DomainAccounts domain = new DomainAccounts(accounts);
 
-		Set<Id> relationshipIds = domain.getRecordIdsFromRelationship('Parent.OwnerId');
+		Set<Id> relationshipIds = domain.getParentIdFieldValues('Parent.OwnerId');
 		System.Assert.areEqual(2, relationshipIds.size(), 'Should only include Ids resolvable via the relationship path');
 		System.Assert.isTrue(relationshipIds.contains(ownerIdA), 'Expected relationshipIds to contain ownerIdA');
 		System.Assert.isTrue(relationshipIds.contains(ownerIdB), 'Expected relationshipIds to contain ownerIdB');
@@ -163,7 +163,7 @@ public with sharing class fflib_SObjectsTest{
 		};
 		DomainAccounts domain = new DomainAccounts(accounts);
 
-		Set<Id> relationshipIds = domain.getRecordIdsFromRelationship('Parent.Parent.OwnerId');
+		Set<Id> relationshipIds = domain.getParentIdFieldValues('Parent.Parent.OwnerId');
 		System.Assert.areEqual(1, relationshipIds.size(), 'Should resolve arbitrary-depth relationship paths');
 		System.Assert.isTrue(relationshipIds.contains(ownerIdA), 'Expected relationshipIds to contain ownerIdA');
 	}

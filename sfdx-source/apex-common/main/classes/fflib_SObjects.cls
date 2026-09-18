@@ -78,73 +78,6 @@ public virtual class fflib_SObjects
 		return new Map<Id, SObject>(getRecords()).keySet();
 	}
 
-	/**
-	 * Method to 'pluck' Id's out of a collection of SObjects, from a given Id field
-	 *
-	 * @param field The Id field to fetch values from
-	 *
-	 * @return Set of (unique) Id's listed in the specified field, excluding null values
-	 */
-	@NamespaceAccessible
-	public virtual Set<Id> getRecordIds(Schema.SObjectField field)
-	{
-		return getRecordIds(field, false);
-	}
-
-	/**
-	 * Method to 'pluck' Id's out of a collection of SObjects, from a given Id field
-	 *
-	 * @param field The Id field to fetch values from
-	 * @param includeNulls Set to true to include null values in the returned set
-	 *
-	 * @return Set of (unique) Id's populated from the given field
-	 */
-	@NamespaceAccessible
-	public virtual Set<Id> getRecordIds(Schema.SObjectField field, Boolean includeNulls)
-	{
-		Set<Id> result = new Set<Id>();
-		List<SObject> records = getRecords();
-		for (Integer i = 0, j = records.size(); i < j; i++)
-		{
-			Id foundId = (Id) records[i].get(field);
-			if (foundId != null || includeNulls)
-			{
-				result.add(foundId);
-			}
-		}
-		return result;
-	}
-
-	/**
-	 * Method to 'pluck' Id's out of a collection of SObjects via a dotted relationship path.
-	 * Supports any depth of relationship (e.g. 'Owner.ContactId' or 'Parent.Owner.ManagerId'),
-	 * short-circuiting to no value whenever an intermediate relationship is unpopulated.
-	 *
-	 * @param fieldWithDotRelation The dotted relationship path (e.g. 'Owner.ContactId') to pluck the Id's from
-	 *
-	 * @return Set of Id's populated from the resolved relationship field, excluding null values
-	 */
-	@NamespaceAccessible
-	public virtual Set<Id> getRecordIdsFromRelationship(String fieldWithDotRelation)
-	{
-		Set<Id> result = new Set<Id>();
-		List<String> relationshipParts = fieldWithDotRelation.split('\\.');
-		Integer lastIndex = relationshipParts.size() - 1;
-		List<SObject> records = getRecords();
-		for (Integer i = 0, j = records.size(); i < j; i++){
-			SObject current = records[i];
-			// Traverse the relationship path up to the last part, short-circuiting if any intermediate relationship is null
-			for (Integer p = 0; p < lastIndex && current != null; p++){
-				current = current.getSObject(relationshipParts[p]);
-			}
-			Id foundId = ( Id ) current?.get(relationshipParts[lastIndex]);
-			if (foundId != null){
-				result.add(foundId);
-			}
-		}
-		return result;
-	}
-
 	@NamespaceAccessible
 	public virtual override Object getType()
 	{
@@ -251,19 +184,66 @@ public virtual class fflib_SObjects
 	}
 
 	/**
+	 * Method to 'pluck' Id's out of a collection of SObjects, from a given Id field
+	 * 
 	 * @param field The SObjectField reference of the type Id
 	 *
-	 * @return Return a set with all the Id values of the given field
+	 * @return Return a set with all the Id values of the given field, including null values
 	 */
 	@TestVisible
 	@NamespaceAccessible
-	protected Set<Id> getIdFieldValues(Schema.SObjectField field)
-	{
+	protected Set<Id> getIdFieldValues(Schema.SObjectField field){
+		return getIdFieldValues(field, true);
+	}
+
+	/**
+	 * Method to 'pluck' Id's out of a collection of SObjects, from a given Id field
+	 *
+	 * @param field The Id field to fetch values from
+	 * @param includeNulls Set to true to include null values in the returned set
+	 *
+	 * @return Set of (unique) Id's populated from the given field
+	 */
+	@TestVisible
+	@NamespaceAccessible
+	protected Set<Id> getIdFieldValues(Schema.SObjectField field, Boolean includeNulls){
 		Set<Id> result = new Set<Id>();
 		List<SObject> records = getRecords();
-		for (Integer i = 0, j = records.size(); i < j; i++)
-		{
-			result.add((Id) records[i].get(field));
+		for (Integer i = 0, j = records.size(); i < j; i++){
+			Id foundId = (Id) records[i].get(field);
+			if (foundId != null || includeNulls){
+				result.add(foundId);
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Method to 'pluck' Id's out of a collection of SObjects via a dotted relationship path.
+	 * Supports any depth of relationship (e.g. 'Owner.ContactId' or 'Parent.Owner.ManagerId'),
+	 * short-circuiting to no value whenever an intermediate relationship is unpopulated.
+	 *
+	 * @param fieldWithDotRelation The dotted relationship path (e.g. 'Owner.ContactId') to pluck the Id's from
+	 *
+	 * @return Set of Id's populated from the resolved relationship field, excluding null values
+	 */
+	@NamespaceAccessible
+	public virtual Set<Id> getParentIdFieldValues(String fieldWithDotRelation)
+	{
+		Set<Id> result = new Set<Id>();
+		List<String> relationshipParts = fieldWithDotRelation.split('\\.');
+		Integer lastIndex = relationshipParts.size() - 1;
+		List<SObject> records = getRecords();
+		for (Integer i = 0, j = records.size(); i < j; i++){
+			SObject current = records[i];
+			// Traverse the relationship path up to the last part, short-circuiting if any intermediate relationship is null
+			for (Integer p = 0; p < lastIndex && current != null; p++){
+				current = current.getSObject(relationshipParts[p]);
+			}
+			Id foundId = ( Id ) current?.get(relationshipParts[lastIndex]);
+			if (foundId != null){
+				result.add(foundId);
+			}
 		}
 		return result;
 	}

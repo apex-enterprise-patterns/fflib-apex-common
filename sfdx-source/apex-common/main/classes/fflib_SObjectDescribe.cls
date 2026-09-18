@@ -287,7 +287,7 @@ public class fflib_SObjectDescribe {
 	 * @return List containing the picklist LABEL values as strings
 	 */
 	@NamespaceAccessible
-	public static List<String> getPicklistLabelsToStrings(Schema.SObjectField selectedField){
+	public static List<String> getPicklistLabels(Schema.SObjectField selectedField){
 		List<Schema.PicklistEntry> picklistValues = getPicklistValues(selectedField);
 		List<String> result = new List<String>();
 		for (Integer i = 0, j = picklistValues.size(); i < j; i++){

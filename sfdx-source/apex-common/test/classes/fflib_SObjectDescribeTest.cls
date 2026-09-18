@@ -281,8 +281,8 @@ private with sharing class fflib_SObjectDescribeTest {
 	}
 
 	@isTest
-	private static void getPicklistLabelsToStrings_returnsLabels(){
-		List<String> values = fflib_SObjectDescribe.getPicklistLabelsToStrings(Schema.Account.Rating);
+	private static void getPicklistLabels_returnsLabels(){
+		List<String> values = fflib_SObjectDescribe.getPicklistLabels(Schema.Account.Rating);
 
 		System.Assert.isTrue(values.contains('Hot'), 'Expected the Hot picklist label to be present, unmodified (no upper-casing)');
 	}
