@@ -163,7 +163,10 @@ public class fflib_SObjectDescribe {
 		return fieldSets;
 	}
 
-
+	@NamespaceAccessible
+	public String getDescribeName(){
+		return describe.getName();
+	}
 
 	private static Map<String,Schema.SObjectType> rawGlobalDescribe {
 		get{

@@ -156,6 +156,7 @@ private with sharing class fflib_SObjectDescribeTest {
         // fflib_SObjectDescribe d4 = fflib_SObjectDescribe.getDescribe(Account.SObjectType.getDescribe());
         // fflib_SObjectDescribe d5 = fflib_SObjectDescribe.getDescribe(new Account());
         System.Assert.areEqual('Account', d.getDescribe().getName());
+        System.Assert.areEqual('Account', d.getDescribeName(), 'Expected getDescribeName() to return the same value as getDescribe().getName().');
         System.Assert.areEqual(d, d2, 'Expected getDescribe by String vs. Account.SObjectType to return the same cached instance.');
         System.Assert.areEqual(d, d3, 'Expected getDescribe by String vs. Schema.SObjectType.Account to return the same cached instance.');
         // System.Assert.areEqual(d, d4, 'Expected getDescribe by String vs. Account.SObjectType.getDescribe() to return the same cached instance.');
