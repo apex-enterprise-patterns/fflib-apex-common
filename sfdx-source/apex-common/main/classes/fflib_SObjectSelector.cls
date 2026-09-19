@@ -183,9 +183,10 @@ public abstract with sharing class fflib_SObjectSelector
         if (m_orderBy == null)
         {
             Schema.SObjectField nameField = describeWrapper.getNameField();
-            if (nameField != null && !nameField.getDescribe().isEncrypted())
+            Schema.DescribeFieldResult nameFieldDescribe = nameField != null ? fflib_SObjectDescribe.getFieldDescribe(nameField) : null;
+            if (nameFieldDescribe != null && !nameFieldDescribe.isEncrypted())
             {
-                m_orderBy = nameField.getDescribe().getName();
+                m_orderBy = nameFieldDescribe.getName();
             }
             else
             {
@@ -344,7 +345,7 @@ public abstract with sharing class fflib_SObjectSelector
     @NamespaceAccessible
     public String getSObjectName()
     {
-        return describeWrapper.getDescribe().getName();
+        return describeWrapper.getDescribeName();
     }
     
     /**
@@ -383,9 +384,10 @@ public abstract with sharing class fflib_SObjectSelector
     @NamespaceAccessible
     public void assertIsAccessible()
     {
-        if(!getSObjectType().getDescribe().isAccessible())
+        fflib_SObjectDescribe describe = fflib_SObjectDescribe.getDescribe(getSObjectType());
+        if(!describe.getDescribe().isAccessible())
            throw new fflib_SObjectDomain.DomainException(
-                'Permission to access an ' + getSObjectType().getDescribe().getName() + ' denied.');       
+                'Permission to access an ' + describe.getDescribeName() + ' denied.');       
     }
 
     /**
@@ -462,7 +464,7 @@ public abstract with sharing class fflib_SObjectSelector
      {
 	// Add fields from selector prefixing the relationship path		
 		for(SObjectField field : getSObjectFieldList()) {
-			queryFactory.selectField(relationshipFieldPath + '.' + field.getDescribe().getName(), this.getSObjectType());
+			queryFactory.selectField(relationshipFieldPath + '.' + fflib_SObjectDescribe.getFieldDescribe(field).getName(), this.getSObjectType());
 		}
 		// Automatically select the CurrencyIsoCode for MC orgs (unless the object is a known exception to the rule)
 		if(isCurrencyIsoCodeAvailable()){
@@ -541,7 +543,7 @@ public abstract with sharing class fflib_SObjectSelector
         	} catch (fflib_SecurityUtils.CrudException e) {
         		// Marshal exception into DomainException for backwards compatibility
 				throw new fflib_SObjectDomain.DomainException(
-	                'Permission to access an ' + getSObjectType().getDescribe().getName() + ' denied.');               		
+	                'Permission to access an ' + fflib_SObjectDescribe.getDescribe(getSObjectType()).getDescribeName() + ' denied.');               		
         	}
         }
 

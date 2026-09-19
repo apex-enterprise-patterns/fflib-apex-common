@@ -129,7 +129,7 @@ public class fflib_SObjectDescribe {
 	{
 		if(nameField == null) {
 			for(Schema.SObjectField field : wrappedFields.values()) {
-				if(field.getDescribe().isNameField()) {
+				if(getFieldDescribe(field).isNameField()) {
 					nameField = field;
 					break;
 				}

@@ -57,7 +57,7 @@ public virtual class fflib_SObjects
 	public fflib_SObjects(List<SObject> records, Schema.SObjectType sObjectType)
 	{
 		super(records);
-		this.sObjectDescribe = sObjectType.getDescribe();
+		this.sObjectDescribe = fflib_SObjectDescribe.getDescribe(sObjectType).getDescribe();
 	}
 
 	/**

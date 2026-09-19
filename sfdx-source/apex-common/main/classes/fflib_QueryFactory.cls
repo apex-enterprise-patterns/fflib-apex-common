@@ -111,7 +111,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 				fflib_SecurityUtils.checkFieldIsReadable(this.table, token);
 			}
 
-			return token.getDescribe().getName();
+			return fflib_SObjectDescribe.getFieldDescribe(token).getName();
 		}
 
 		//traversing FK relationship(s)
@@ -121,7 +121,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		while(i.hasNext()){
 			String field = i.next();
 			Schema.SObjectField token = fflib_SObjectDescribe.getDescribe(lastSObjectType).getField(field.toLowerCase());
-			DescribeFieldResult tokenDescribe = token != null ? token.getDescribe() : null;
+			DescribeFieldResult tokenDescribe = token != null ? fflib_SObjectDescribe.getFieldDescribe(token) : null;
 			
 			if (token != null && mFlsEnforcement == FLSEnforcement.LEGACY) {
 				fflib_SecurityUtils.checkFieldIsReadable(lastSObjectType, token);
@@ -136,7 +136,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 				}
 				else{
 					for (Schema.sObjectType sot : relatedObjs) {
-						if (fflib_SObjectDescribe.getDescribe(sot).getDescribe().getSObjectType() == relatedSObjectType) {
+						if (sot == relatedSObjectType) {
 							lastSObjectType = sot;
 							break;
 						}
@@ -166,7 +166,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		if(field == null){
 			throw new InvalidFieldException('Invalid field: null');		
 		}
-		return field.getDescribe().getLocalName();
+		return fflib_SObjectDescribe.getFieldDescribe(field).getLocalName();
 	}
 
 	/**
@@ -508,11 +508,11 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		if (relationship != null) {
 			return setSubselectQuery(relationship, assertIsAccessible);
 		}
-		throw new InvalidSubqueryRelationshipException('Invalid call to subselectQuery with relationshipName = '+relationshipName +'.  Relationship does not exist for ' + table.getDescribe().getName());	
+		throw new InvalidSubqueryRelationshipException('Invalid call to subselectQuery with relationshipName = '+relationshipName +'.  Relationship does not exist for ' + fflib_SObjectDescribe.getDescribe(table).getDescribeName());	
 	}
 
 	/**
-	 * Add a subquery query to this query.  If a subquery for this relationshipName already exists, it will be returned.
+	 * Add a subquery query to this query.  If a subquery for this relationship already exists, it will be returned.
 	 * If not, a new one will be created and returned.
 	 * @exception InvalidSubqueryRelationshipException If this method is called on a subselectQuery or with an invalid relationship 
 	 * @param relationship The ChildRelationship to be added as a subquery
@@ -576,7 +576,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param objType The object type of the child relationship to get
 	**/
  	private Schema.ChildRelationship getChildRelationship(SObjectType objType){
-		for (Schema.ChildRelationship childRow : table.getDescribe().getChildRelationships()){
+		for (Schema.ChildRelationship childRow : fflib_SObjectDescribe.getDescribe(table).getDescribe().getChildRelationships()){
 			//occasionally on some standard objects (Like Contact child of Contact) do not have a relationship name.  
 			//if there is no relationship name, we cannot query on it, so throw an exception.
 			if (childRow.getChildSObject() == objType && childRow.getRelationshipName() != null){ 
@@ -591,7 +591,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param relationshipName The name of the object's ChildRelationship on get
 	**/
  	private Schema.ChildRelationship getChildRelationship(String relationshipName){
-		for (Schema.ChildRelationship childRow : table.getDescribe().getChildRelationships()){
+		for (Schema.ChildRelationship childRow : fflib_SObjectDescribe.getDescribe(table).getDescribe().getChildRelationships()){
 			if (childRow.getRelationshipName() == relationshipName){ 
 				return childRow;
 			}   
@@ -792,7 +792,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 				result += ', (' + childRow.toSOQL() + ') ';
 			}	
 		}
-		result += ' FROM ' + (relationship != null ? relationship.getRelationshipName() : table.getDescribe().getName());
+		result += ' FROM ' + (relationship != null ? relationship.getRelationshipName() : fflib_SObjectDescribe.getDescribe(table).getDescribeName());
 
 		if(conditionExpression != null) {
 			result += ' WHERE ' + conditionExpression;
