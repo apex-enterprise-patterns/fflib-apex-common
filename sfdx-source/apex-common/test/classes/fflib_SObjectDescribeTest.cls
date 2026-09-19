@@ -238,6 +238,24 @@ private with sharing class fflib_SObjectDescribeTest {
 	}
 
 	@isTest
+	private static void getFieldDescribe_returnsDescribe(){
+		Schema.DescribeFieldResult result = fflib_SObjectDescribe.getFieldDescribe(Account.Name);
+		System.Assert.areEqual('Name', result.getName());
+	}
+
+	@isTest
+	private static void getFieldDescribe_returnsCachedInstance(){
+		Schema.DescribeFieldResult first = fflib_SObjectDescribe.getFieldDescribe(Account.Rating);
+		Schema.DescribeFieldResult second = fflib_SObjectDescribe.getFieldDescribe(Account.Rating);
+		System.Assert.isTrue(first === second, 'Expected the second call to return the same cached DescribeFieldResult reference');
+	}
+
+	@isTest
+	private static void getFieldDescribe_nullField(){
+		System.Assert.areEqual(null, fflib_SObjectDescribe.getFieldDescribe(null), 'Null input should result in null output.');
+	}
+
+	@isTest
 	private static void flushCache(){
 		fflib_SObjectDescribe d = fflib_SObjectDescribe.getDescribe('Account');
 		fflib_SObjectDescribe.flushCache();
