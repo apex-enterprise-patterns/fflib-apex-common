@@ -22,8 +22,7 @@
  *  OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-**/
-
+ */
 /**
  * Utility class for checking FLS/CRUD. NOTE: all "check" methods will throw a SecurityException (or subclass) if the
  * user does not have the proper security granted.
@@ -71,7 +70,7 @@ public class fflib_SecurityUtils
     			String.format(
     				this.getMessage(),
     				new List<String>{
-    					objectType.getDescribe().getName()
+    					fflib_SObjectDescribe.getDescribe(objectType).getDescribeName()
     				} 
     			)
     		);
@@ -100,8 +99,8 @@ public class fflib_SecurityUtils
     			String.format(
 	    			this.getMessage(),
 	    			new List<String>{
-	    				objectType.getDescribe().getName(),
-	    				fieldToken.getDescribe().getName()
+	    				fflib_SObjectDescribe.getDescribe(objectType).getDescribeName(),
+	    				fflib_SObjectDescribe.getFieldDescribe(fieldToken).getName()
 	    			}
 	    		)
     		);
@@ -232,7 +231,7 @@ public class fflib_SecurityUtils
     @NamespaceAccessible
     public static void checkFieldIsInsertable(SObjectType objType, SObjectField fieldToken)
     {
-        checkFieldIsInsertable(objType, fieldToken.getDescribe());
+        checkFieldIsInsertable(objType, fflib_SObjectDescribe.getFieldDescribe(fieldToken));
     }
 
     /**
@@ -265,7 +264,7 @@ public class fflib_SecurityUtils
     @NamespaceAccessible
     public static void checkFieldIsReadable(SObjectType objType, SObjectField fieldToken)
     {
-    	checkFieldIsReadable(objType, fieldToken.getDescribe());
+    	checkFieldIsReadable(objType, fflib_SObjectDescribe.getFieldDescribe(fieldToken));
     }
 
     /**
@@ -299,7 +298,7 @@ public class fflib_SecurityUtils
     @NamespaceAccessible
     public static void checkFieldIsUpdateable(SObjectType objType, SObjectField fieldToken)
     {
-        checkFieldIsUpdateable(objType, fieldToken.getDescribe());
+        checkFieldIsUpdateable(objType, fflib_SObjectDescribe.getFieldDescribe(fieldToken));
     }
 
     /**
@@ -328,7 +327,7 @@ public class fflib_SecurityUtils
     {
     	if (BYPASS_INTERNAL_FLS_AND_CRUD)
             return;
-    	if (!objType.getDescribe().isCreateable())
+    	if (!fflib_SObjectDescribe.getDescribe(objType).getDescribe().isCreateable())
     	{
     		throw new CrudException(OperationType.CREATE, objType);
     	}
@@ -343,7 +342,7 @@ public class fflib_SecurityUtils
     {
     	if (BYPASS_INTERNAL_FLS_AND_CRUD)
             return;
-        if (!objType.getDescribe().isAccessible())
+        if (!fflib_SObjectDescribe.getDescribe(objType).getDescribe().isAccessible())
         	throw new CrudException(OperationType.READ, objType);
     }
 
@@ -356,7 +355,7 @@ public class fflib_SecurityUtils
     {
     	if (BYPASS_INTERNAL_FLS_AND_CRUD)
             return;
-        if (!objType.getDescribe().isUpdateable())
+        if (!fflib_SObjectDescribe.getDescribe(objType).getDescribe().isUpdateable())
         	throw new CrudException(OperationType.MODIFY, objType);
     }
 
@@ -369,7 +368,7 @@ public class fflib_SecurityUtils
     {
     	if (BYPASS_INTERNAL_FLS_AND_CRUD)
             return;
-        if (!objType.getDescribe().isDeletable())
+        if (!fflib_SObjectDescribe.getDescribe(objType).getDescribe().isDeletable())
             throw new CrudException(OperationType.DEL, objType);
     }
 }

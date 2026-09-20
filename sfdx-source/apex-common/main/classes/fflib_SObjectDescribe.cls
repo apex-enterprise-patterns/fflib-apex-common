@@ -111,16 +111,13 @@ public class fflib_SObjectDescribe {
 	public Schema.SObjectField getField(String fieldName, Boolean implyNamespace){
 		String fieldNameAdjusted = fieldName;
 
-		if ( fieldName.endsWithIgnoreCase('__r') ) //resolve custom field cross-object (__r) syntax
-		{
+		if(fieldName.endsWithIgnoreCase('__r')){ //resolve custom field cross-object (__r) syntax
 			fieldNameAdjusted = fieldName.removeEndIgnoreCase('__r') + '__c';
-		}
-		else if ( fieldName.endsWithIgnoreCase('__pr') ) //resolve custom field cross-object (__pr) syntax for person accounts
-		{
+		} else if(fieldName.endsWithIgnoreCase('__pr')){ //resolve custom field cross-object (__pr) syntax for person accounts
 			fieldNameAdjusted = fieldName.removeEndIgnoreCase('__pr') + '__pc';
 		}
 
-		return wrappedFields.get( fieldNameAdjusted, implyNamespace )
+		return wrappedFields.get(fieldNameAdjusted, implyNamespace)
 			?? wrappedFields.get(fieldName+'Id', implyNamespace); //in case it's a standard lookup in cross-object format
 	}
 	
@@ -132,7 +129,7 @@ public class fflib_SObjectDescribe {
 	{
 		if(nameField == null) {
 			for(Schema.SObjectField field : wrappedFields.values()) {
-				if(field.getDescribe().isNameField()) {
+				if(getFieldDescribe(field).isNameField()) {
 					nameField = field;
 					break;
 				}
@@ -166,7 +163,10 @@ public class fflib_SObjectDescribe {
 		return fieldSets;
 	}
 
-
+	@NamespaceAccessible
+	public String getDescribeName(){
+		return describe.getName();
+	}
 
 	private static Map<String,Schema.SObjectType> rawGlobalDescribe {
 		get{
@@ -260,6 +260,43 @@ public class fflib_SObjectDescribe {
 		rawGlobalDescribe = null;
 		instanceCache = null;
 		wrappedGlobalDescribe = null;
+		fieldDescribeCache = null;
+	}
+
+	/**
+	 * This is used to cache Schema.DescribeFieldResult instances as they're requested,
+	 * to prevent repeatedly hitting field-level describe costs when the same field is described multiple times
+	 * (e.g. across a list of records sharing the same field, or across multiple relationship registrations).
+	 */
+	private static Map<Schema.SObjectField,Schema.DescribeFieldResult> fieldDescribeCache {
+		get{
+			if(fieldDescribeCache == null){
+				fieldDescribeCache = new Map<Schema.SObjectField,Schema.DescribeFieldResult>();
+			}
+			return fieldDescribeCache;
+		}
+		set;
+	}
+
+	/**
+	 * Returns the Schema.DescribeFieldResult for the given field, with caching built in to avoid repeatedly
+	 * hitting describe limits when the same field is described multiple times.
+	 *
+	 * @param field The SObjectField to describe
+	 *
+	 * @return The (possibly cached) DescribeFieldResult for the field, or null when field is null
+	 */
+	@NamespaceAccessible
+	public static Schema.DescribeFieldResult getFieldDescribe(Schema.SObjectField field){
+		if(field == null){
+			return null;
+		}
+		Schema.DescribeFieldResult result = fieldDescribeCache.get(field);
+		if(result == null){
+			result = field.getDescribe();
+			fieldDescribeCache.put(field, result);
+		}
+		return result;
 	}
 
 	/**
@@ -276,7 +313,7 @@ public class fflib_SObjectDescribe {
 	public static List<Schema.PicklistEntry> getPicklistValues(Schema.SObjectField selectedField){
 		if(selectedField == null){ throw new fflib_Objects.InvalidValueException('The provided SObjectField cannot be null'); }
 
-		return selectedField.getDescribe().getPicklistValues();
+		return getFieldDescribe(selectedField).getPicklistValues();
 	}
 
 	/**
