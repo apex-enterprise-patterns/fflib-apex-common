@@ -881,13 +881,8 @@ public virtual class fflib_SObjectUnitOfWork
 		{
 			String sObjectName = fflib_SObjectDescribe.getDescribe(sObjectType).getDescribeName();
 			m_relationships.get(sObjectName).resolve();
-			performUpdate(m_dirtyMapByType.get(sObjectName).values());
+			m_dml.dmlUpdate(m_dirtyMapByType.get(sObjectName).values());
 		}
-	}
-
-	private void performUpdate(List<SObject> objList)
-	{
-		m_dml.dmlUpdate(objList);
 	}
 
 	private void upsertDmlByType()
@@ -1027,7 +1022,6 @@ public virtual class fflib_SObjectUnitOfWork
             Schema.SObjectType relatedObject = relatedObjects[0];
 
             Schema.DescribeFieldResult externalIdFieldDescribe = fflib_SObjectDescribe.getFieldDescribe(externalIdField);
-            String externalIdFieldName = externalIdFieldDescribe.getName();
             Boolean relatedHasExternalIdField = externalIdFieldDescribe.getSObjectType() == relatedObject;
             Boolean externalIdFieldIsValid = externalIdFieldDescribe.isExternalId();
 
