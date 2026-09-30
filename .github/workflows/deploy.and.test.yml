@@ -38,7 +38,7 @@ jobs:
         run: cd temp/fflib-apex-mocks && sf project deploy start --ignore-conflicts --target-org fflibapexcommon && cd ../..
       - name: Install sample code project to verify with
         # run: sf shane github src install --convert --githubuser apex-enterprise-patterns --repo fflib-apex-common-samplecode --path sfdx-source/apex-common-samplecode
-        run: git clone https://github.com/apex-enterprise-patterns/fflib-apex-common-samplecode.git "temp/fflib-apex-common-samplecode" && cd temp/fflib-apex-common-samplecode && sf project deploy start --ignore-conflicts --target-org fflibapexcommon  && cd ../..
+        run: git clone -b apex-override-for-upstream https://github.com/apex-enterprise-patterns/fflib-apex-common-samplecode.git "temp/fflib-apex-common-samplecode" && cd temp/fflib-apex-common-samplecode && sf project deploy start --ignore-conflicts --target-org fflibapexcommon  && cd ../..
       - name: Run the core framework tests and the sample code project tests
         run: sf apex run test --wait 5
       - name: Destroy scratch org
