@@ -53,7 +53,7 @@
  **/
 @NamespaceAccessible
 @SuppressWarnings('PMD.EmptyStatementBlock, PMD.ClassNamingConventions, PMD.MethodNamingConventions, PMD.FieldNamingConventions, PMD.PropertyNamingConventions, PMD.ApexDoc, PMD.AvoidBooleanMethodParameters, PMD.ExcessiveParameterList, PMD.CyclomaticComplexity, PMD.CognitiveComplexity, PMD.ExcessivePublicCount, PMD.NcssMethodCount, PMD.ExcessiveClassLength')
-public virtual class fflib_SObjectUnitOfWork
+public virtual inherited sharing class fflib_SObjectUnitOfWork
     implements fflib_ISObjectUnitOfWork
 {
     @NamespaceAccessible
