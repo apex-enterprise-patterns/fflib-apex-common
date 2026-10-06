@@ -70,7 +70,7 @@ public class fflib_SecurityUtils
     			String.format(
     				this.getMessage(),
     				new List<String>{
-    					fflib_SObjectDescribe.getDescribe(objectType).getDescribeName()
+    					objectType.getDescribe().getName()
     				} 
     			)
     		);
@@ -99,8 +99,8 @@ public class fflib_SecurityUtils
     			String.format(
 	    			this.getMessage(),
 	    			new List<String>{
-	    				fflib_SObjectDescribe.getDescribe(objectType).getDescribeName(),
-	    				fflib_SObjectDescribe.getFieldDescribe(fieldToken).getName()
+	    				objectType.getDescribe().getName(),
+	    				fieldToken.getDescribe().getName()
 	    			}
 	    		)
     		);
@@ -231,7 +231,7 @@ public class fflib_SecurityUtils
     @NamespaceAccessible
     public static void checkFieldIsInsertable(SObjectType objType, SObjectField fieldToken)
     {
-        checkFieldIsInsertable(objType, fflib_SObjectDescribe.getFieldDescribe(fieldToken));
+        checkFieldIsInsertable(objType, fieldToken.getDescribe());
     }
 
     /**
@@ -264,7 +264,7 @@ public class fflib_SecurityUtils
     @NamespaceAccessible
     public static void checkFieldIsReadable(SObjectType objType, SObjectField fieldToken)
     {
-    	checkFieldIsReadable(objType, fflib_SObjectDescribe.getFieldDescribe(fieldToken));
+    	checkFieldIsReadable(objType, fieldToken.getDescribe());
     }
 
     /**
@@ -298,7 +298,7 @@ public class fflib_SecurityUtils
     @NamespaceAccessible
     public static void checkFieldIsUpdateable(SObjectType objType, SObjectField fieldToken)
     {
-        checkFieldIsUpdateable(objType, fflib_SObjectDescribe.getFieldDescribe(fieldToken));
+        checkFieldIsUpdateable(objType, fieldToken.getDescribe());
     }
 
     /**
@@ -327,7 +327,7 @@ public class fflib_SecurityUtils
     {
     	if (BYPASS_INTERNAL_FLS_AND_CRUD)
             return;
-    	if (!fflib_SObjectDescribe.getDescribe(objType).getDescribe().isCreateable())
+    	if (!objType.getDescribe().isCreateable())
     	{
     		throw new CrudException(OperationType.CREATE, objType);
     	}
@@ -342,7 +342,7 @@ public class fflib_SecurityUtils
     {
     	if (BYPASS_INTERNAL_FLS_AND_CRUD)
             return;
-        if (!fflib_SObjectDescribe.getDescribe(objType).getDescribe().isAccessible())
+        if (!objType.getDescribe().isAccessible())
         	throw new CrudException(OperationType.READ, objType);
     }
 
@@ -355,7 +355,7 @@ public class fflib_SecurityUtils
     {
     	if (BYPASS_INTERNAL_FLS_AND_CRUD)
             return;
-        if (!fflib_SObjectDescribe.getDescribe(objType).getDescribe().isUpdateable())
+        if (!objType.getDescribe().isUpdateable())
         	throw new CrudException(OperationType.MODIFY, objType);
     }
 
@@ -368,7 +368,7 @@ public class fflib_SecurityUtils
     {
     	if (BYPASS_INTERNAL_FLS_AND_CRUD)
             return;
-        if (!fflib_SObjectDescribe.getDescribe(objType).getDescribe().isDeletable())
+        if (!objType.getDescribe().isDeletable())
             throw new CrudException(OperationType.DEL, objType);
     }
 }

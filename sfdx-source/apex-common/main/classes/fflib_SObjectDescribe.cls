@@ -40,7 +40,6 @@
 public class fflib_SObjectDescribe {
 	//internal implementation details
 	private Schema.SObjectType token;
-	private Schema.SObjectField nameField;
 	private Schema.DescribeSObjectResult describe { //lazy load - keep this lightweight until we need more data
 		get{
 			if(describe == null){
@@ -123,23 +122,43 @@ public class fflib_SObjectDescribe {
 	
 	/**
 	 * @return Field where isNameField() is true (if any); otherwise returns null
+	 *
+	 * @deprecated Use the static fflib_SObjectDescribe.getNameField(Schema.SObjectType) instead,
+	 * which resolves the name field without requiring a describe instance.
 	 */
 	@NamespaceAccessible
-	public Schema.SObjectField getNameField()
-	{
-		if(nameField == null) {
-			for(Schema.SObjectField field : wrappedFields.values()) {
-				if(getFieldDescribe(field).isNameField()) {
-					nameField = field;
-					break;
-				}
+	public Schema.SObjectField getNameField(){
+		return getNameField(token);
+	}
+
+	/**
+	 * Returns the field where isNameField() is true for the given SObjectType.
+	 * There is no native Schema equivalent, so this centralizes the loop over the native fields map.
+	 *
+	 * @param sObjectType The SObjectType to retrieve the name field for
+	 *
+	 * @return The name field of the SObjectType, or null when sObjectType is null or has no name field
+	 */
+	@NamespaceAccessible
+	public static Schema.SObjectField getNameField(Schema.SObjectType sObjectType){
+		if(sObjectType == null){
+			return null;
+		}
+		List<Schema.SObjectField> sObjectFields = sObjectType.getDescribe().fields.getMap().values();
+		for (Integer i = 0, j = sObjectFields.size(); i < j; i++){
+			if(sObjectFields[i].getDescribe().isNameField()){
+				return sObjectFields[i];
 			}
 		}
-		return nameField;
+		return null;
 	}
 	
 	/**
 	 * @return Raw Schema.DescribeSObjectResult an fflib_SObjectDescribe instance wraps.
+	 *
+	 * @deprecated Performance: the platform caches native Schema describes - call getSObjectType().getDescribe()
+	 * directly instead. Keep using this class only when you need its manipulation convenience
+	 * elsewhere (relationship-name resolution, namespace handling, name-field lookup, picklist helpers).
 	 */
 	@NamespaceAccessible
 	public Schema.DescribeSObjectResult getDescribe(){
@@ -149,6 +168,10 @@ public class fflib_SObjectDescribe {
 	/**
 	 * This method returns the raw data and provides no namespace handling.
 	 * Due to this, __use of this method is discouraged__ in favor of getFields(). 
+	 *
+	 * @deprecated Performance: use getSObjectType().getDescribe().fields.getMap() directly - the platform
+	 * caches native Schema describes. Keep using this class only when you need its manipulation
+	 * convenience elsewhere (relationship-name resolution, namespace handling, picklist helpers).
 	 */
 	@NamespaceAccessible
 	public Map<String,Schema.SObjectField> getFieldsMap(){
@@ -158,14 +181,16 @@ public class fflib_SObjectDescribe {
 	public FieldsMap getFields(){
 		return wrappedFields;
 	}
+	/**
+	 * Returns the raw field sets of the described SObject, keyed by developer name, with no namespace handling.
+	 *
+	 * @deprecated Performance: use getSObjectType().getDescribe().fieldSets.getMap() directly - the platform
+	 * caches native Schema describes. Keep using this class only when you need its manipulation
+	 * convenience elsewhere (relationship-name resolution, namespace handling, picklist helpers).
+	 */
 	@NamespaceAccessible
 	public Map<String,Schema.FieldSet> getFieldSetsMap(){
 		return fieldSets;
-	}
-
-	@NamespaceAccessible
-	public String getDescribeName(){
-		return describe.getName();
 	}
 
 	private static Map<String,Schema.SObjectType> rawGlobalDescribe {
@@ -201,6 +226,13 @@ public class fflib_SObjectDescribe {
 		set;
 	}
 
+	/**
+	 * @deprecated Prefer getDescribe(Schema.SObjectType) or getDescribe(SObject) instead.
+	 * Resolving by String requires a name-to-type lookup (dynamic Type resolution, with a
+	 * Schema.getGlobalDescribe() fallback for non-instantiable pseudo-objects) that
+	 * SObjectType-based overloads skip entirely. SObjectType references also give the
+	 * Apex compiler a real dependency edge to the referenced object, which this overload cannot.
+	 */
 	@NamespaceAccessible
 	public static fflib_SObjectDescribe getDescribe(String sObjectName){
 		if(String.isBlank(sObjectName)){
@@ -260,43 +292,6 @@ public class fflib_SObjectDescribe {
 		rawGlobalDescribe = null;
 		instanceCache = null;
 		wrappedGlobalDescribe = null;
-		fieldDescribeCache = null;
-	}
-
-	/**
-	 * This is used to cache Schema.DescribeFieldResult instances as they're requested,
-	 * to prevent repeatedly hitting field-level describe costs when the same field is described multiple times
-	 * (e.g. across a list of records sharing the same field, or across multiple relationship registrations).
-	 */
-	private static Map<Schema.SObjectField,Schema.DescribeFieldResult> fieldDescribeCache {
-		get{
-			if(fieldDescribeCache == null){
-				fieldDescribeCache = new Map<Schema.SObjectField,Schema.DescribeFieldResult>();
-			}
-			return fieldDescribeCache;
-		}
-		set;
-	}
-
-	/**
-	 * Returns the Schema.DescribeFieldResult for the given field, with caching built in to avoid repeatedly
-	 * hitting describe limits when the same field is described multiple times.
-	 *
-	 * @param field The SObjectField to describe
-	 *
-	 * @return The (possibly cached) DescribeFieldResult for the field, or null when field is null
-	 */
-	@NamespaceAccessible
-	public static Schema.DescribeFieldResult getFieldDescribe(Schema.SObjectField field){
-		if(field == null){
-			return null;
-		}
-		Schema.DescribeFieldResult result = fieldDescribeCache.get(field);
-		if(result == null){
-			result = field.getDescribe();
-			fieldDescribeCache.put(field, result);
-		}
-		return result;
 	}
 
 	/**
@@ -313,7 +308,7 @@ public class fflib_SObjectDescribe {
 	public static List<Schema.PicklistEntry> getPicklistValues(Schema.SObjectField selectedField){
 		if(selectedField == null){ throw new fflib_Objects.InvalidValueException('The provided SObjectField cannot be null'); }
 
-		return getFieldDescribe(selectedField).getPicklistValues();
+		return selectedField.getDescribe().getPicklistValues();
 	}
 
 	/**

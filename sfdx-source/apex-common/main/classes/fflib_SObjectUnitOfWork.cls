@@ -272,7 +272,7 @@ public virtual class fflib_SObjectUnitOfWork
      */
     private void handleRegisterType(Schema.SObjectType sObjectType)
     {
-        String sObjectName = fflib_SObjectDescribe.getDescribe(sObjectType).getDescribeName();
+        String sObjectName = sObjectType.getDescribe().getName();
 
         // add type to dml operation tracking
         m_newListByType.put(sObjectName, new List<SObject>());
@@ -316,7 +316,7 @@ public virtual class fflib_SObjectUnitOfWork
 	@NamespaceAccessible
 	public void registerEmptyRecycleBin(SObject record)
 	{
-		String sObjectType = fflib_SObjectDescribe.getDescribe(record.getSObjectType()).getDescribeName();
+		String sObjectType = record.getSObjectType().getDescribe().getName();
 		assertForSupportedSObjectType(m_emptyRecycleBinMapByType, sObjectType);
 
 		m_emptyRecycleBinMapByType.get(sObjectType).put(record.Id, record);
@@ -374,7 +374,7 @@ public virtual class fflib_SObjectUnitOfWork
     {
         if (record.Id != null)
             throw new UnitOfWorkException('Only new records can be registered as new');
-        String sObjectType = fflib_SObjectDescribe.getDescribe(record.getSObjectType()).getDescribeName();
+        String sObjectType = record.getSObjectType().getDescribe().getName();
 
 		assertForNonEventSObjectType(sObjectType);
 		assertForSupportedSObjectType(m_newListByType, sObjectType);
@@ -395,7 +395,7 @@ public virtual class fflib_SObjectUnitOfWork
     @NamespaceAccessible
     public void registerRelationship(SObject record, Schema.SObjectField relatedToField, SObject relatedTo)
     {
-        String sObjectType = fflib_SObjectDescribe.getDescribe(record.getSObjectType()).getDescribeName();
+        String sObjectType = record.getSObjectType().getDescribe().getName();
 
 		assertForNonEventSObjectType(sObjectType);
 		assertForSupportedSObjectType(m_newListByType, sObjectType);
@@ -434,7 +434,7 @@ public virtual class fflib_SObjectUnitOfWork
     public void registerRelationship(SObject record, Schema.SObjectField relatedToField, Schema.SObjectField externalIdField, Object externalId)
     {
         // NOTE: Due to the lack of ExternalID references on Standard Objects, this method can not be provided a standardized Unit Test. - Rick Parker
-        String sObjectType = fflib_SObjectDescribe.getDescribe(record.getSObjectType()).getDescribeName();
+        String sObjectType = record.getSObjectType().getDescribe().getName();
         if(!m_newListByType.containsKey(sObjectType))
             throw new UnitOfWorkException(String.format('SObject type {0} is not supported by this unit of work', new String[] { sObjectType }));
         m_relationships.get(sObjectType).add(record, relatedToField, externalIdField, externalId);
@@ -477,7 +477,7 @@ public virtual class fflib_SObjectUnitOfWork
     {
         if (record.Id == null)
             throw new UnitOfWorkException('New records cannot be registered as dirty');
-        String sObjectType = fflib_SObjectDescribe.getDescribe(record.getSObjectType()).getDescribeName();
+        String sObjectType = record.getSObjectType().getDescribe().getName();
 
 		assertForNonEventSObjectType(sObjectType);
 		assertForSupportedSObjectType(m_dirtyMapByType, sObjectType);
@@ -590,7 +590,7 @@ public virtual class fflib_SObjectUnitOfWork
     public void registerUpsert(SObject record, Schema.SObjectField externalIdField, Schema.sObjectField relatedToParentField, SObject relatedToParentRecord)
     {
         SObjectType sObjectType = record.getSObjectType();
-        String sObjName = fflib_SObjectDescribe.getDescribe(sObjectType).getDescribeName();
+        String sObjName = sObjectType.getDescribe().getName();
 
         assertForNonEventSObjectType(sObjName);
         assertForSupportedSObjectType(m_upsertRecordsPerType, sObjName);
@@ -608,14 +608,14 @@ public virtual class fflib_SObjectUnitOfWork
         if (registeredExternalId != null) {
             throw new UnitOfWorkException(String.format(
                 'SObject type {0} has already registered an upsert by external id {1}, you cannot use another in this unit of work.',
-                new List<String> { sObjName, fflib_SObjectDescribe.getFieldDescribe(registeredExternalId).getName() }
+                new List<String> { sObjName, registeredExternalId.getDescribe().getName() }
             ));
         }
         if (!(m_dml instanceof IDMLUpsertable)) {
             throw new UnitOfWorkException('Upsert by external ID requires IDMLUpsertable implementation. Current IDML implementation does not support this feature.');
         }
 
-        DescribeFieldResult fieldDescribe = fflib_SObjectDescribe.getFieldDescribe(externalIdField);
+        DescribeFieldResult fieldDescribe = externalIdField.getDescribe();
 
         if (record.Id != null && !fieldDescribe.getName().equalsIgnoreCase('Id')) {
             throw new UnitOfWorkException('When upserting by external id, the record cannot already have the standard Id populated');
@@ -649,7 +649,7 @@ public virtual class fflib_SObjectUnitOfWork
     {
         if (record.Id == null)
             throw new UnitOfWorkException('New records cannot be registered for deletion');
-        String sObjectType = fflib_SObjectDescribe.getDescribe(record.getSObjectType()).getDescribeName();
+        String sObjectType = record.getSObjectType().getDescribe().getName();
 
 		assertForNonEventSObjectType(sObjectType);
 		assertForSupportedSObjectType(m_deletedMapByType, sObjectType);
@@ -703,7 +703,7 @@ public virtual class fflib_SObjectUnitOfWork
     @NamespaceAccessible
     public void registerPublishBeforeTransaction(SObject record)
     {
-        String sObjectType = fflib_SObjectDescribe.getDescribe(record.getSObjectType()).getDescribeName();
+        String sObjectType = record.getSObjectType().getDescribe().getName();
 
 		assertForEventSObjectType(sObjectType);
 		assertForSupportedSObjectType(m_publishBeforeListByType, sObjectType);
@@ -733,7 +733,7 @@ public virtual class fflib_SObjectUnitOfWork
     @NamespaceAccessible
     public void registerPublishAfterSuccessTransaction(SObject record)
     {
-        String sObjectType = fflib_SObjectDescribe.getDescribe(record.getSObjectType()).getDescribeName();
+        String sObjectType = record.getSObjectType().getDescribe().getName();
 
 		assertForEventSObjectType(sObjectType);
 		assertForSupportedSObjectType(m_publishAfterSuccessListByType, sObjectType);
@@ -762,7 +762,7 @@ public virtual class fflib_SObjectUnitOfWork
     @NamespaceAccessible
     public void registerPublishAfterFailureTransaction(SObject record)
     {
-        String sObjectType = fflib_SObjectDescribe.getDescribe(record.getSObjectType()).getDescribeName();
+        String sObjectType = record.getSObjectType().getDescribe().getName();
 
 		assertForEventSObjectType(sObjectType);
 		assertForSupportedSObjectType(m_publishAfterFailureListByType, sObjectType);
@@ -861,7 +861,7 @@ public virtual class fflib_SObjectUnitOfWork
 	{
 		for (Schema.SObjectType sObjectType : m_sObjectTypes)
 		{
-			m_dml.eventPublish(m_publishBeforeListByType.get(fflib_SObjectDescribe.getDescribe(sObjectType).getDescribeName()));
+			m_dml.eventPublish(m_publishBeforeListByType.get(sObjectType.getDescribe().getName()));
 		}
 	}
 
@@ -869,7 +869,7 @@ public virtual class fflib_SObjectUnitOfWork
 	{
 		for (Schema.SObjectType sObjectType : m_sObjectTypes)
 		{
-			String sObjectName = fflib_SObjectDescribe.getDescribe(sObjectType).getDescribeName();
+			String sObjectName = sObjectType.getDescribe().getName();
 			m_relationships.get(sObjectName).resolve();
 			m_dml.dmlInsert(m_newListByType.get(sObjectName));
 		}
@@ -879,7 +879,7 @@ public virtual class fflib_SObjectUnitOfWork
 	{
 		for (Schema.SObjectType sObjectType : m_sObjectTypes)
 		{
-			String sObjectName = fflib_SObjectDescribe.getDescribe(sObjectType).getDescribeName();
+			String sObjectName = sObjectType.getDescribe().getName();
 			m_relationships.get(sObjectName).resolve();
 			m_dml.dmlUpdate(m_dirtyMapByType.get(sObjectName).values());
 		}
@@ -889,7 +889,7 @@ public virtual class fflib_SObjectUnitOfWork
 	{
 		String sobjName;
 		for (Schema.SObjectType sObjectType : m_sObjectTypes) {
-			sobjName = fflib_SObjectDescribe.getDescribe(sObjectType).getDescribeName();
+			sobjName = sObjectType.getDescribe().getName();
 			List<SObject> upsertRecords = m_upsertRecordsPerType.get(sobjName);
 			if (upsertRecords != null && !upsertRecords.isEmpty()) {
 				m_relationships.get(sobjName).resolve();
@@ -904,7 +904,7 @@ public virtual class fflib_SObjectUnitOfWork
 		Integer objectIdx = m_sObjectTypes.size() - 1;
 		while (objectIdx >= 0)
 		{
-			m_dml.dmlDelete(m_deletedMapByType.get(fflib_SObjectDescribe.getDescribe(m_sObjectTypes[objectIdx--]).getDescribeName()).values());
+			m_dml.dmlDelete(m_deletedMapByType.get(m_sObjectTypes[objectIdx--].getDescribe().getName()).values());
 		}
 	}
 
@@ -913,7 +913,7 @@ public virtual class fflib_SObjectUnitOfWork
 		Integer objectIdx = m_sObjectTypes.size() - 1;
 		while (objectIdx >= 0)
 		{
-			m_dml.emptyRecycleBin(m_emptyRecycleBinMapByType.get(fflib_SObjectDescribe.getDescribe(m_sObjectTypes[objectIdx--]).getDescribeName()).values());
+			m_dml.emptyRecycleBin(m_emptyRecycleBinMapByType.get(m_sObjectTypes[objectIdx--].getDescribe().getName()).values());
 		}
 	}
 
@@ -935,7 +935,7 @@ public virtual class fflib_SObjectUnitOfWork
 	{
 		for (Schema.SObjectType sObjectType : m_sObjectTypes)
 		{
-			m_dml.eventPublish(m_publishAfterSuccessListByType.get(fflib_SObjectDescribe.getDescribe(sObjectType).getDescribeName()));
+			m_dml.eventPublish(m_publishAfterSuccessListByType.get(sObjectType.getDescribe().getName()));
 		}
 	}
 
@@ -943,7 +943,7 @@ public virtual class fflib_SObjectUnitOfWork
 	{
 		for (Schema.SObjectType sObjectType : m_sObjectTypes)
 		{
-			m_dml.eventPublish(m_publishAfterFailureListByType.get(fflib_SObjectDescribe.getDescribe(sObjectType).getDescribeName()));
+			m_dml.eventPublish(m_publishAfterFailureListByType.get(sObjectType.getDescribe().getName()));
 		}
 	}
 
@@ -1012,7 +1012,7 @@ public virtual class fflib_SObjectUnitOfWork
                 throw new UnitOfWorkException('Invalid argument: relatedToField.');
             }
 
-            Schema.DescribeFieldResult relatedToFieldDescribe = fflib_SObjectDescribe.getFieldDescribe(relatedToField);
+            Schema.DescribeFieldResult relatedToFieldDescribe = relatedToField.getDescribe();
             String relationshipName = relatedToFieldDescribe.getRelationshipName();
             if (String.isBlank(relationshipName)) {
                 throw new UnitOfWorkException('Invalid argument: relatedToField. Field supplied is not a relationship field.');
@@ -1021,7 +1021,7 @@ public virtual class fflib_SObjectUnitOfWork
             List<Schema.SObjectType> relatedObjects = relatedToFieldDescribe.getReferenceTo();
             Schema.SObjectType relatedObject = relatedObjects[0];
 
-            Schema.DescribeFieldResult externalIdFieldDescribe = fflib_SObjectDescribe.getFieldDescribe(externalIdField);
+            Schema.DescribeFieldResult externalIdFieldDescribe = externalIdField.getDescribe();
             Boolean relatedHasExternalIdField = externalIdFieldDescribe.getSObjectType() == relatedObject;
             Boolean externalIdFieldIsValid = externalIdFieldDescribe.isExternalId();
 
@@ -1080,7 +1080,7 @@ public virtual class fflib_SObjectUnitOfWork
         public void resolve()
         {
             SObject relationshipObject = this.RelatedTo.newSObject();
-            relationshipObject.put( fflib_SObjectDescribe.getFieldDescribe(ExternalIdField).getName(), this.ExternalId );
+            relationshipObject.put( ExternalIdField.getDescribe().getName(), this.ExternalId );
             this.Record.putSObject( this.RelationshipName, relationshipObject );
         }
 
