@@ -869,8 +869,9 @@ public virtual class fflib_SObjectUnitOfWork
 	{
 		for (Schema.SObjectType sObjectType : m_sObjectTypes)
 		{
-			m_relationships.get(sObjectType.getDescribe().getName()).resolve();
-			m_dml.dmlInsert(m_newListByType.get(sObjectType.getDescribe().getName()));
+			String sObjectName = sObjectType.getDescribe().getName();
+			m_relationships.get(sObjectName).resolve();
+			m_dml.dmlInsert(m_newListByType.get(sObjectName));
 		}
 	}
 
@@ -878,8 +879,9 @@ public virtual class fflib_SObjectUnitOfWork
 	{
 		for (Schema.SObjectType sObjectType : m_sObjectTypes)
 		{
-			m_relationships.get(sObjectType.getDescribe().getName()).resolve();
-			m_dml.dmlUpdate(m_dirtyMapByType.get(sObjectType.getDescribe().getName()).values());
+			String sObjectName = sObjectType.getDescribe().getName();
+			m_relationships.get(sObjectName).resolve();
+			m_dml.dmlUpdate(m_dirtyMapByType.get(sObjectName).values());
 		}
 	}
 
@@ -1010,17 +1012,18 @@ public virtual class fflib_SObjectUnitOfWork
                 throw new UnitOfWorkException('Invalid argument: relatedToField.');
             }
 
-            String relationshipName = relatedToField.getDescribe().getRelationshipName();
+            Schema.DescribeFieldResult relatedToFieldDescribe = relatedToField.getDescribe();
+            String relationshipName = relatedToFieldDescribe.getRelationshipName();
             if (String.isBlank(relationshipName)) {
                 throw new UnitOfWorkException('Invalid argument: relatedToField. Field supplied is not a relationship field.');
             }
 
-            List<Schema.SObjectType> relatedObjects = relatedToField.getDescribe().getReferenceTo();
+            List<Schema.SObjectType> relatedObjects = relatedToFieldDescribe.getReferenceTo();
             Schema.SObjectType relatedObject = relatedObjects[0];
 
-            String externalIdFieldName = externalIdField.getDescribe().getName();
-            Boolean relatedHasExternalIdField = relatedObject.getDescribe().fields.getMap().keySet().contains(externalIdFieldName.toLowerCase());
-            Boolean externalIdFieldIsValid = externalIdField.getDescribe().isExternalId();
+            Schema.DescribeFieldResult externalIdFieldDescribe = externalIdField.getDescribe();
+            Boolean relatedHasExternalIdField = externalIdFieldDescribe.getSObjectType() == relatedObject;
+            Boolean externalIdFieldIsValid = externalIdFieldDescribe.isExternalId();
 
             if (!relatedHasExternalIdField) {
                 throw new UnitOfWorkException('Invalid argument: externalIdField. Field supplied is not a known field on the target sObject.');

@@ -136,7 +136,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 				}
 				else{
 					for (Schema.sObjectType sot : relatedObjs) {
-						if (fflib_SObjectDescribe.getDescribe(sot).getDescribe().getSObjectType() == relatedSObjectType) {
+						if (sot == relatedSObjectType) {
 							lastSObjectType = sot;
 							break;
 						}
@@ -512,7 +512,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	}
 
 	/**
-	 * Add a subquery query to this query.  If a subquery for this relationshipName already exists, it will be returned.
+	 * Add a subquery query to this query.  If a subquery for this relationship already exists, it will be returned.
 	 * If not, a new one will be created and returned.
 	 * @exception InvalidSubqueryRelationshipException If this method is called on a subselectQuery or with an invalid relationship 
 	 * @param relationship The ChildRelationship to be added as a subquery
