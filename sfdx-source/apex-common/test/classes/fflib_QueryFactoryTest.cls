@@ -25,7 +25,7 @@
 **/
 
 @isTest( isParallel = true )
-private class fflib_QueryFactoryTest {
+private inherited sharing class fflib_QueryFactoryTest {
 
 	@isTest
 	static void fieldSelections(){

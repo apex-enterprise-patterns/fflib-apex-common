@@ -25,7 +25,7 @@
 **/
 
 @IsTest
-public class fflib_SObjectsTest
+public inherited sharing class fflib_SObjectsTest
 {
 	private static Integer testFakeIdSequence = 0;
 	private static final String TEST_FAKE_ID_PADDING = '000000000000';
@@ -308,7 +308,7 @@ public class fflib_SObjectsTest
 	}
 
 
-	private class DomainAccounts extends fflib_SObjects
+	private inherited sharing class DomainAccounts extends fflib_SObjects
 	{
 		public DomainAccounts(List<SObject> records)
 		{

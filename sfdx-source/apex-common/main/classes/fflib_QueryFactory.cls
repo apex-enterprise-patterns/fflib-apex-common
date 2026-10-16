@@ -51,7 +51,7 @@
  * There is a google doc providing additional guidance on the use of this class with field sets at
  * https://docs.google.com/a/financialforce.com/document/d/1I4cxN4xHT4UJj_3Oi0YBL_MJ5chm-KG8kMN1D1un8-g/edit?usp=sharing
 **/
-public class fflib_QueryFactory { //No explicit sharing declaration - inherit from caller
+public inherited sharing class fflib_QueryFactory {
 	public enum SortOrder {ASCENDING, DESCENDING}
 	public enum FLSEnforcement{NONE, LEGACY, USER_MODE, SYSTEM_MODE}
 
@@ -793,7 +793,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		return clone;
 	}
 	
-	public class Ordering{
+	public inherited sharing class Ordering{
 		private SortOrder direction;
 		private boolean nullsLast;
 		private String field;
@@ -837,7 +837,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 
 
 	
-	public class InvalidFieldException extends Exception{
+	public inherited sharing class InvalidFieldException extends Exception{
 		private String fieldName;
 		private Schema.SObjectType objectType;
 		public InvalidFieldException(String fieldName, Schema.SObjectType objectType){
@@ -847,7 +847,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		}
 	}
 
-	public class InvalidFieldSetException extends Exception{}
-	public class NonReferenceFieldException extends Exception{}
-	public class InvalidSubqueryRelationshipException extends Exception{}	
+	public inherited sharing class InvalidFieldSetException extends Exception{}
+	public inherited sharing class NonReferenceFieldException extends Exception{}
+	public inherited sharing class InvalidSubqueryRelationshipException extends Exception{}	
 }

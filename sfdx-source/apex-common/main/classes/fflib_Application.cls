@@ -29,12 +29,12 @@
  * of the Apex Enterprise Patterns, Service, Unit Of Work, Selector and Domain.
  *   See the sample applications Application.cls file for an example
  **/
-public virtual class fflib_Application
+public virtual inherited sharing class fflib_Application
 {
 	/**
 	 * Class implements a Unit of Work factory
 	 **/
-	public virtual class UnitOfWorkFactory implements fflib_IUnitOfWorkFactory
+	public virtual inherited sharing class UnitOfWorkFactory implements fflib_IUnitOfWorkFactory
 	{
 		protected List<SObjectType> m_objectTypes;
 		protected fflib_ISObjectUnitOfWork m_mockUow;
@@ -122,7 +122,7 @@ public virtual class fflib_Application
 	/**
 	 * Simple Service Factory implementation
 	 **/
-	public virtual class ServiceFactory implements fflib_IServiceFactory
+	public virtual inherited sharing class ServiceFactory implements fflib_IServiceFactory
 	{
 		protected Map<Type, Type> m_serviceInterfaceTypeByServiceImplType;
 
@@ -178,7 +178,7 @@ public virtual class fflib_Application
 	/**
 	 * Class implements a Selector class factory
 	 **/
-	public virtual class SelectorFactory implements fflib_ISelectorFactory
+	public virtual inherited sharing class SelectorFactory implements fflib_ISelectorFactory
 	{
 		protected Map<SObjectType, Type> m_sObjectBySelectorType;
 		protected Map<SObjectType, fflib_ISObjectSelector> m_sObjectByMockSelector;
@@ -287,7 +287,7 @@ public virtual class fflib_Application
 	/**
 	 * Class implements a Domain class factory
 	 **/
-	public virtual class DomainFactory implements fflib_IDomainFactory
+	public virtual inherited sharing class DomainFactory implements fflib_IDomainFactory
 	{
 		protected fflib_Application.SelectorFactory m_selectorFactory;
 
@@ -452,10 +452,10 @@ public virtual class fflib_Application
 		}
 	}
 
-	public class ApplicationException extends Exception { }			
+	public inherited sharing class ApplicationException extends Exception { }			
 
 	/**
 	 * Exception representing a developer coding error, not intended for end user eyes
 	 **/
-	public class DeveloperException extends Exception { } 
+	public inherited sharing class DeveloperException extends Exception { } 
 }

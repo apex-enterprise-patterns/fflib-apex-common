@@ -470,7 +470,7 @@ private with sharing class fflib_SObjectSelectorTest
 	}
 
 
-	private class AccountSelector extends fflib_SObjectSelector
+	private inherited sharing class AccountSelector extends fflib_SObjectSelector
 	{
 		public AccountSelector()
 		{
@@ -503,7 +503,7 @@ private with sharing class fflib_SObjectSelectorTest
 		}
 	}
 
-	private class Testfflib_UserSObjectSelector extends fflib_SObjectSelector
+	private inherited sharing class Testfflib_UserSObjectSelector extends fflib_SObjectSelector
 	{
 		public Testfflib_UserSObjectSelector()
 		{
@@ -527,7 +527,7 @@ private with sharing class fflib_SObjectSelectorTest
 
 	}
 
-	private class DefaultSortingAccountSelector extends fflib_SObjectSelector
+	private inherited sharing class DefaultSortingAccountSelector extends fflib_SObjectSelector
 	{
 		public DefaultSortingAccountSelector(Boolean includeFieldSetFields)
 		{
@@ -550,7 +550,7 @@ private with sharing class fflib_SObjectSelectorTest
 		}
 	}
 
-	private class AccessLevelOpportunitySelector extends fflib_SObjectSelector{
+	private inherited sharing class AccessLevelOpportunitySelector extends fflib_SObjectSelector{
 		public AccessLevelOpportunitySelector(){
 			this(DataAccess.USER_MODE);
 		}
@@ -595,7 +595,7 @@ private with sharing class fflib_SObjectSelectorTest
 		}
 	}
 
-	private class AccessLevelAccountSelector extends fflib_SObjectSelector{
+	private inherited sharing class AccessLevelAccountSelector extends fflib_SObjectSelector{
 		public AccessLevelAccountSelector(){
 			this(DataAccess.USER_MODE);
 		}
@@ -633,7 +633,7 @@ private with sharing class fflib_SObjectSelectorTest
 		}
 	}
 
-	private class ContractSelector extends fflib_SObjectSelector{
+	private inherited sharing class ContractSelector extends fflib_SObjectSelector{
 		public ContractSelector(){
 			super(false,DataAccess.SYSTEM_MODE);
 		}
@@ -650,7 +650,7 @@ private with sharing class fflib_SObjectSelectorTest
 		}
 	}
 
-	private class ListEmailSelector extends fflib_SObjectSelector{
+	private inherited sharing class ListEmailSelector extends fflib_SObjectSelector{
 		public ListEmailSelector(){
 			super(false,DataAccess.SYSTEM_MODE);
 		}
@@ -667,7 +667,7 @@ private with sharing class fflib_SObjectSelectorTest
 		}
 	}
 
-	private class TaskSelector extends fflib_SObjectSelector{
+	private inherited sharing class TaskSelector extends fflib_SObjectSelector{
 		public TaskSelector(){
 			super(false,DataAccess.SYSTEM_MODE);
 		}
@@ -868,7 +868,7 @@ private with sharing class fflib_SObjectSelectorTest
 		Assert.areEqual(expected,aQF.toSOQL());
 	}
 
-	private class CaseCommentSelector extends fflib_SObjectSelector {
+	private inherited sharing class CaseCommentSelector extends fflib_SObjectSelector {
 		public CaseCommentSelector(DataAccess access) {
 			super(false, access);
 		}
@@ -885,7 +885,7 @@ private with sharing class fflib_SObjectSelectorTest
 		}
 	}
 
-	private class CaseSelector extends fflib_SObjectSelector {
+	private inherited sharing class CaseSelector extends fflib_SObjectSelector {
 		public CaseSelector() {
 			super();
 		}
@@ -902,7 +902,7 @@ private with sharing class fflib_SObjectSelectorTest
 		}
 	}
 
-	private class UserSelector extends fflib_SObjectSelector {
+	private inherited sharing class UserSelector extends fflib_SObjectSelector {
 		public UserSelector() {
 			super();
 		}
@@ -919,7 +919,7 @@ private with sharing class fflib_SObjectSelectorTest
 		}
 	}
 
-	private class GroupSelector extends fflib_SObjectSelector {
+	private inherited sharing class GroupSelector extends fflib_SObjectSelector {
 		public GroupSelector() {
 			super();
 		}

@@ -25,7 +25,7 @@
 **/
 
 @IsTest
-private class fflib_ApplicationTest 
+private inherited sharing class fflib_ApplicationTest 
 {
 	@IsTest
 	private static void callingDomainFactoryShouldGiveRegisteredImplsAndMocks()
@@ -423,7 +423,7 @@ private class fflib_ApplicationTest
 		System.assert(!customDML.isInsertCalled, 'Oops, custom DML was called');
 	}
 
-	public class CustomDML implements fflib_SObjectUnitOfWork.IDML
+	public inherited sharing class CustomDML implements fflib_SObjectUnitOfWork.IDML
 	{
 		public boolean isInsertCalled = false;
 		public boolean isUpdateCalled = false;
@@ -476,7 +476,7 @@ private class fflib_ApplicationTest
 		);
 	}
 
-	private class DomainStubProvider implements System.StubProvider {
+	private inherited sharing class DomainStubProvider implements System.StubProvider {
 		private final Schema.SObjectType myType;
 		private final List<SObject> records;
 		DomainStubProvider(Schema.SObjectType myType, List<SObject> records) {
@@ -511,7 +511,7 @@ private class fflib_ApplicationTest
 		}
 	}
 
-	private class SelectorStubProvider implements System.StubProvider {
+	private inherited sharing class SelectorStubProvider implements System.StubProvider {
 		private final Schema.SObjectType myType;
 		private final List<SObject> rows;
 		SelectorStubProvider(Schema.SObjectType myType, List<SObject> rows) {
@@ -563,7 +563,7 @@ private class fflib_ApplicationTest
 		}
 	}
 
-	private class UnitOfWorkStubProvider implements System.StubProvider {
+	private inherited sharing class UnitOfWorkStubProvider implements System.StubProvider {
 		public Object handleMethodCall(
 			Object stubbedObject,
 			String stubbedMethodName,
@@ -607,7 +607,7 @@ private class fflib_ApplicationTest
 					Opportunity.SObjectType => OpportuntiesConstructor.class,
 					Contact.SObjectType => ContactsConstructor.class });
 
-	public class AccountsDomain extends fflib_SObjectDomain
+	public inherited sharing class AccountsDomain extends fflib_SObjectDomain
 	{
 		public AccountsDomain(List<Account> sObjectList)
 		{
@@ -620,7 +620,7 @@ private class fflib_ApplicationTest
 		}
 	}			
 
-	public class AccountsConstructor implements fflib_SObjectDomain.IConstructable2
+	public inherited sharing class AccountsConstructor implements fflib_SObjectDomain.IConstructable2
 	{
 		public fflib_SObjectDomain construct(List<SObject> sObjectList)
 		{
@@ -633,7 +633,7 @@ private class fflib_ApplicationTest
 		}		
 	}	
 
-	public class OpportuntiesDomain extends fflib_SObjectDomain
+	public inherited sharing class OpportuntiesDomain extends fflib_SObjectDomain
 	{
 		public OpportuntiesDomain(List<Opportunity> sObjectList)
 		{
@@ -646,7 +646,7 @@ private class fflib_ApplicationTest
 		}		
 	}	
 
-	public class OpportuntiesConstructor implements fflib_SObjectDomain.IConstructable2
+	public inherited sharing class OpportuntiesConstructor implements fflib_SObjectDomain.IConstructable2
 	{
 		public fflib_SObjectDomain construct(List<SObject> sObjectList)
 		{
@@ -659,7 +659,7 @@ private class fflib_ApplicationTest
 		}		
 	}
 
-	public class ContactsDomain extends fflib_SObjectDomain
+	public inherited sharing class ContactsDomain extends fflib_SObjectDomain
 	{
 		public ContactsDomain(List<Opportunity> sObjectList)
 		{
@@ -673,12 +673,12 @@ private class fflib_ApplicationTest
 	}			
 
 	// Intentionally does not support IConstructable or IConstructable2 interfaces in order to support testing
-	public class ContactsConstructor
+	public inherited sharing class ContactsConstructor
 	{
 
 	}		
 
-	class OpportuntiesSelector extends fflib_SObjectSelector
+	inherited sharing class OpportuntiesSelector extends fflib_SObjectSelector
 	{
 		public override List<Schema.SObjectField> getSObjectFieldList()
 		{
@@ -694,7 +694,7 @@ private class fflib_ApplicationTest
 		}
 	}
 	
-	class AccountsSelector extends fflib_SObjectSelector
+	inherited sharing class AccountsSelector extends fflib_SObjectSelector
 	{
 		public override List<Schema.SObjectField> getSObjectFieldList()
 		{
@@ -718,9 +718,9 @@ private class fflib_ApplicationTest
 
 	public interface IAccountService { }
 
-	public class OpportunitiesServiceImpl implements IOpportunitiesService { }
+	public inherited sharing class OpportunitiesServiceImpl implements IOpportunitiesService { }
 
-	public class AccountsServiceImpl implements IAccountService { }
+	public inherited sharing class AccountsServiceImpl implements IAccountService { }
 
-	public class AccountsServiceMock implements IAccountService { }
+	public inherited sharing class AccountsServiceMock implements IAccountService { }
 }

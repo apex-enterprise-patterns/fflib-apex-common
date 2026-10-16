@@ -25,7 +25,7 @@
 **/
 
 @isTest @TestVisible
-private class fflib_SecurityUtilsTest {
+private inherited sharing class fflib_SecurityUtilsTest {
 
 	@TestSetup @TestVisible
 	static void testSetup() {

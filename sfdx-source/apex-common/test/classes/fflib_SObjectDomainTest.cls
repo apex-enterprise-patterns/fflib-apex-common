@@ -494,7 +494,7 @@ private with sharing class fflib_SObjectDomainTest
 
 
 
-	private class Accounts extends fflib_SObjectDomain
+	private inherited sharing class Accounts extends fflib_SObjectDomain
 	{
 		public Accounts(List<SObject> records)
 		{

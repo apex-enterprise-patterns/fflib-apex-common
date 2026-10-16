@@ -25,7 +25,7 @@
 **/
 
 @IsTest
-private class fflib_ObjectsTest
+private inherited sharing class fflib_ObjectsTest
 {
 	private static final fflib_ObjectsTest.DataTransferObject TRANSFER_OBJECT_A = new DataTransferObject('Test A');
 	private static final fflib_ObjectsTest.DataTransferObject TRANSFER_OBJECT_B = new DataTransferObject('Test B');
@@ -173,7 +173,7 @@ private class fflib_ObjectsTest
 		};
 	}
 
-	private class Domain extends fflib_Objects
+	private inherited sharing class Domain extends fflib_Objects
 	{
 		public Domain(List<Object> objects)
 		{
@@ -186,7 +186,7 @@ private class fflib_ObjectsTest
 		}
 	}
 
-	private class DataTransferObject
+	private inherited sharing class DataTransferObject
 	{
 		public String MyProperty { get; set; }
 

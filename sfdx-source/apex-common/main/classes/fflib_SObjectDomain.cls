@@ -479,7 +479,7 @@ public virtual with sharing class fflib_SObjectDomain
 		return TriggerEventByClass.get(domainClass);
 	}
 
-	public class TriggerEvent
+	public inherited sharing class TriggerEvent
 	{
 		public boolean BeforeInsertEnabled {get; private set;}
 		public boolean BeforeUpdateEnabled {get; private set;}
@@ -568,7 +568,7 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Fluent style Configuration system for Domain class creation
 	 **/
-	public class Configuration
+	public inherited sharing class Configuration
 	{
 		/** 
 		 * Backwards compatibility mode for handleAfterUpdate routing to onValidate()
@@ -652,7 +652,7 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * General exception class for the domain layer
 	 **/
-	public class DomainException extends Exception
+	public inherited sharing class DomainException extends Exception
 	{
 	}
 
@@ -675,7 +675,7 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * DEPRECATED, This class has been moved to fflib_SObjects
 	 **/
-	public class ErrorFactory
+	public inherited sharing class ErrorFactory
 	{
 		private List<Error> errorList = new List<Error>();
 
@@ -729,7 +729,7 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * DEPRECATED, This class has been moved to fflib_SObjects
 	 **/
-	public virtual class FieldError extends ObjectError
+	public virtual inherited sharing class FieldError extends ObjectError
 	{
 		public SObjectField field;
 
@@ -742,7 +742,7 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * DEPRECATED, This class has been moved to fflib_SObjects
 	 **/
-	public virtual class ObjectError extends Error
+	public virtual inherited sharing class ObjectError extends Error
 	{
 		public SObject record;
 
@@ -755,7 +755,7 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * DEPRECATED, This class has been moved to fflib_SObjects
 	 **/
-	public abstract class Error
+	public abstract inherited sharing class Error
 	{
 		public String message;
 		public fflib_SObjectDomain domain;
@@ -764,7 +764,7 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Provides test context mocking facilities to unit tests testing domain classes
 	 **/	
-	public class TestFactory
+	public inherited sharing class TestFactory
 	{
 		public MockDatabase Database = new MockDatabase();
 		 
@@ -777,7 +777,7 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Class used during Unit testing of Domain classes, can be used (not exclusively) to speed up test execution and focus testing
 	 **/
-	public class MockDatabase
+	public inherited sharing class MockDatabase
 	{
 		private Boolean isInsert = false;
 		private Boolean isUpdate = false;
@@ -939,7 +939,7 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Typically an inner class to the domain class, supported here for test purposes
 	 **/	
-	public class TestSObjectDomainConstructor implements fflib_SObjectDomain.IConstructable
+	public inherited sharing class TestSObjectDomainConstructor implements fflib_SObjectDomain.IConstructable
 	{
 		public fflib_SObjectDomain construct(List<SObject> sObjectList)
 		{
@@ -1001,7 +1001,7 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Typically an inner class to the domain class, supported here for test purposes
 	 **/	
-	public class TestSObjectStatefulDomainConstructor implements fflib_SObjectDomain.IConstructable
+	public inherited sharing class TestSObjectStatefulDomainConstructor implements fflib_SObjectDomain.IConstructable
 	{
 		public fflib_SObjectDomain construct(List<SObject> sObjectList)
 		{
@@ -1034,7 +1034,7 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Typically an inner class to the domain class, supported here for test purposes
 	 **/	
-	public class TestSObjectOnValidateBehaviourConstructor implements fflib_SObjectDomain.IConstructable
+	public inherited sharing class TestSObjectOnValidateBehaviourConstructor implements fflib_SObjectDomain.IConstructable
 	{
 		public fflib_SObjectDomain construct(List<SObject> sObjectList)
 		{
@@ -1057,7 +1057,7 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Typically an inner class to the domain class, supported here for test purposes
 	 **/	
-	public class TestSObjectChangedRecordsConstructor implements fflib_SObjectDomain.IConstructable
+	public inherited sharing class TestSObjectChangedRecordsConstructor implements fflib_SObjectDomain.IConstructable
 	{
 		public fflib_SObjectDomain construct(List<SObject> sObjectList)
 		{
@@ -1115,7 +1115,7 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Typically an inner class to the domain class, supported here for test purposes
 	 **/    
-	public class TestSObjectDisableBehaviourConstructor implements fflib_SObjectDomain.IConstructable
+	public inherited sharing class TestSObjectDisableBehaviourConstructor implements fflib_SObjectDomain.IConstructable
 	{
 		public fflib_SObjectDomain construct(List<SObject> sObjectList)
 		{

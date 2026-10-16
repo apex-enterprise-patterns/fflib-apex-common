@@ -29,7 +29,7 @@
 	Used under a BSD license: https://github.com/capeterson/Apex-Util/blob/master/LICENSE
 **/
 @isTest
-private class fflib_SObjectDescribeTest {
+private inherited sharing class fflib_SObjectDescribeTest {
 
 	/**
 	 * Verify that the different ways of getting your hands on an fflib_SObjectDescribe instance all handle null inputs

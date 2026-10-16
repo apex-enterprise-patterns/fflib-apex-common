@@ -36,7 +36,7 @@
  * This allows both upgrading old code to APIv29 by making use of these as a nearly drop in replacement, as well as keeping
  * namespace detection logic encapsulated.
 **/
-public class fflib_SObjectDescribe {
+public inherited sharing class fflib_SObjectDescribe {
 	//internal implementation details
 	private Schema.SObjectType token;
 	private Schema.SObjectField nameField;
@@ -243,7 +243,7 @@ public class fflib_SObjectDescribe {
 	 * Due to the lack of language support for covariant return types subclasses are responsible for implementing the get methods.
 	 * A minimal implementation of these would be a cast and returning getObject's result.
 	**/
-	private abstract class NamespacedAttributeMap{
+	private abstract inherited sharing class NamespacedAttributeMap{
 		@TestVisible
 		protected String currentNamespace;
 		protected Map<String,Object> values;
@@ -318,7 +318,7 @@ public class fflib_SObjectDescribe {
 	/**
 	 * A subclass of NamespacedAttributeMap for handling the data returned by #Schema.DescribeSObjectResult.fields.getMap
 	**/
-	public class FieldsMap extends NamespacedAttributeMap{
+	public inherited sharing class FieldsMap extends NamespacedAttributeMap{
 
 		@TestVisible
 		private FieldsMap(Map<String,Schema.SObjectField> values){
@@ -339,7 +339,7 @@ public class fflib_SObjectDescribe {
 	/**
 	 * A subclass of NamespacedAttributeMap for handling the data returned by #Schema.getGlobalDescribe
 	**/
-	public class GlobalDescribeMap extends NamespacedAttributeMap{
+	public inherited sharing class GlobalDescribeMap extends NamespacedAttributeMap{
 		@TestVisible
 		private GlobalDescribeMap(Map<String,Schema.SObjectType> values){
 			super(values);
@@ -357,7 +357,7 @@ public class fflib_SObjectDescribe {
 	}
 
 
-	public abstract class DescribeException extends Exception{}
-	public class DuplicateDescribeException extends DescribeException{} //Test coverage for this requires APIv28's @testVisible annotation to force exception cases.
-	public class InvalidDescribeException extends DescribeException{}
+	public abstract inherited sharing class DescribeException extends Exception{}
+	public inherited sharing class DuplicateDescribeException extends DescribeException{} //Test coverage for this requires APIv28's @testVisible annotation to force exception cases.
+	public inherited sharing class InvalidDescribeException extends DescribeException{}
 }

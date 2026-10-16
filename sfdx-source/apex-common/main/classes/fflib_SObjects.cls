@@ -23,7 +23,7 @@
  *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **/
-public virtual class fflib_SObjects
+public virtual inherited sharing class fflib_SObjects
 		extends fflib_Objects
 		implements fflib_ISObjects
 {
@@ -382,7 +382,7 @@ public virtual class fflib_SObjects
 	/**
      * Ensures logging of errors in the Domain context for later assertions in tests
      **/
-	public virtual class ErrorFactory
+	public virtual inherited sharing class ErrorFactory
 	{
 		private List<Error> errorList = new List<Error>();
 
@@ -433,7 +433,7 @@ public virtual class fflib_SObjects
 	/**
 	 * Ensures logging of errors in the Domain context for later assertions in tests
 	 **/
-	public virtual class FieldError extends ObjectError
+	public virtual inherited sharing class FieldError extends ObjectError
 	{
 		public SObjectField field;
 
@@ -443,7 +443,7 @@ public virtual class fflib_SObjects
 	/**
 	 * Ensures logging of errors in the Domain context for later assertions in tests
 	 **/
-	public virtual class ObjectError extends Error
+	public virtual inherited sharing class ObjectError extends Error
 	{
 		public SObject record;
 
@@ -453,7 +453,7 @@ public virtual class fflib_SObjects
 	/**
 	 * Ensures logging of errors in the Domain context for later assertions in tests
 	 **/
-	public abstract class Error
+	public abstract inherited sharing class Error
 	{
 		public String message;
 		public fflib_ISObjects domain;

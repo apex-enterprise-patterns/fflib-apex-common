@@ -875,7 +875,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     /**
      * DoWork implementation that throws exception during processing
      */
-    private class FailDoingWork implements fflib_SObjectUnitOfWork.IDoWork
+    private inherited sharing class FailDoingWork implements fflib_SObjectUnitOfWork.IDoWork
     {
         public void doWork()
         {
@@ -886,7 +886,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     /**
      * Derived unit of work that tracks event notifications and handle registration of type
      */
-    private class DerivedUnitOfWork extends fflib_SObjectUnitOfWork
+    private inherited sharing class DerivedUnitOfWork extends fflib_SObjectUnitOfWork
     {
         private List<String> m_commitWorkEventsFired = new List<String>();
         private Set<Schema.SObjectType> m_registeredTypes = new Set<Schema.SObjectType>();
@@ -1003,7 +1003,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     /**
      * Mock implementation of fflib_SObjectUnitOfWork.SendEmailWork
      **/
-    private class Mock_SendEmailWork implements fflib_SObjectUnitOfWork.IEmailWork
+    private inherited sharing class Mock_SendEmailWork implements fflib_SObjectUnitOfWork.IEmailWork
     {
         public Mock_SendEmailWork()
         {
@@ -1024,7 +1024,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         private Boolean doWorkWasCalled = false;
     }
 
-    private class MockDML implements fflib_SObjectUnitOfWork.IDML
+    private inherited sharing class MockDML implements fflib_SObjectUnitOfWork.IDML
     {
         public List<SObject> recordsForInsert = new List<SObject>();
         public List<SObject> recordsForUpdate = new List<SObject>();
@@ -1064,6 +1064,6 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         }
     }
 
-    public class DerivedUnitOfWorkException extends Exception {}
-    public class FailDoingWorkException extends Exception {}
+    public inherited sharing class DerivedUnitOfWorkException extends Exception {}
+    public inherited sharing class FailDoingWorkException extends Exception {}
 }

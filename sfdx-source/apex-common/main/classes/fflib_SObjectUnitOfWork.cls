@@ -101,7 +101,7 @@ public virtual inherited sharing class fflib_SObjectUnitOfWork
         void dmlUpsert(List<SObject> objList, Schema.SObjectField externalId);
     }
 
-    public virtual class SimpleDML implements IDML, IDMLUpsertable
+    public virtual inherited sharing class SimpleDML implements IDML, IDMLUpsertable
     {
         public virtual void dmlInsert(List<SObject> objList)
         {
@@ -139,7 +139,7 @@ public virtual inherited sharing class fflib_SObjectUnitOfWork
 		}
     }
 
-	public virtual class UserModeDML extends SimpleDML{
+	public virtual inherited sharing class UserModeDML extends SimpleDML{
 		@TestVisible
 		private AccessLevel m_accessLevel;
 
@@ -908,7 +908,7 @@ public virtual inherited sharing class fflib_SObjectUnitOfWork
 		}
 	}
 
-    private class Relationships
+    private inherited sharing class Relationships
     {
         private List<IRelationship> m_relationships = new List<IRelationship>();
 
@@ -986,7 +986,7 @@ public virtual inherited sharing class fflib_SObjectUnitOfWork
         Boolean isResolved();
     }
 
-    private class RelationshipByExternalId implements IRelationship
+    private inherited sharing class RelationshipByExternalId implements IRelationship
     {
         public SObject Record;
         public Schema.SObjectField RelatedToField;
@@ -1009,7 +1009,7 @@ public virtual inherited sharing class fflib_SObjectUnitOfWork
         }
     }
 
-    private class Relationship implements IRelationship
+    private inherited sharing class Relationship implements IRelationship
     {
         public SObject Record;
         public Schema.SObjectField RelatedToField;
@@ -1029,7 +1029,7 @@ public virtual inherited sharing class fflib_SObjectUnitOfWork
         }
     }
 
-    private class EmailRelationship implements IRelationship
+    private inherited sharing class EmailRelationship implements IRelationship
     {
         public Messaging.SingleEmailMessage email;
         public SObject relatedTo;
@@ -1048,7 +1048,7 @@ public virtual inherited sharing class fflib_SObjectUnitOfWork
     /**
      * UnitOfWork Exception
      **/
-    public class UnitOfWorkException extends Exception {}
+    public inherited sharing class UnitOfWorkException extends Exception {}
 
     /**
      * Internal implementation of Messaging.sendEmail, see outer class registerEmail method
@@ -1058,7 +1058,7 @@ public virtual inherited sharing class fflib_SObjectUnitOfWork
         void registerEmail(Messaging.Email email);
     }
 
-    private class SendEmailWork implements IEmailWork
+    private inherited sharing class SendEmailWork implements IEmailWork
     {
         private List<Messaging.Email> emails;
 

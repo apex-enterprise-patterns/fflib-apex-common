@@ -29,7 +29,7 @@
  * 
  * NOTE: Aspects of this were developed before recent improvements to String handling, as such could likely be enhanced at this stage.
  **/
-public virtual class fflib_StringBuilder
+public virtual inherited sharing class fflib_StringBuilder
 {
 	protected List<String> buffer = new List<String>();
 	
