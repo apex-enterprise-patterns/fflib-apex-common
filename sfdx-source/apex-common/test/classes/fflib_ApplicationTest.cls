@@ -25,7 +25,6 @@
 **/
 
 @IsTest
-@SuppressWarnings('PMD.ApexUnitTestClassShouldHaveRunAs, PMD.ApexDoc, PMD.ClassNamingConventions, PMD.FieldNamingConventions, PMD.FieldDeclarationsShouldBeAtStart, PMD.ExcessiveParameterList, PMD.CyclomaticComplexity, PMD.CognitiveComplexity, PMD.AvoidDeeplyNestedIfStmts, PMD.StdCyclomaticComplexity')
 private class fflib_ApplicationTest 
 {
 	@IsTest

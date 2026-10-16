@@ -25,7 +25,7 @@
 **/
 @NamespaceAccessible
 @SuppressWarnings('PMD.ApexDoc, PMD.ClassNamingConventions')
-public virtual class fflib_Objects implements fflib_IObjects
+public virtual inherited sharing class fflib_Objects implements fflib_IObjects
 {
 	@NamespaceAccessible
 	protected List<Object> objects { get; private set;} { objects = new List<Object>(); }
@@ -131,5 +131,5 @@ public virtual class fflib_Objects implements fflib_IObjects
 	 * Centralised Exception to allow reuse on any invalid input/field value
 	 */
 	@NamespaceAccessible
-	public virtual class InvalidValueException extends Exception{}
+	public inherited sharing virtual class InvalidValueException extends Exception{}
 }

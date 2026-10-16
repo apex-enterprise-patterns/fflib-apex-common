@@ -26,7 +26,7 @@
 /**
  * This class adapted from https://github.com/capeterson/Apex-Util
  * Used under a BSD license: https://github.com/capeterson/Apex-Util/blob/master/LICENSE
- */
+ **/
 @IsTest( isParallel = true )
 private with sharing class fflib_SObjectDescribeTest {
 

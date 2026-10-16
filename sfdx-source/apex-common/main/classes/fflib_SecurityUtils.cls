@@ -30,7 +30,7 @@
  **/
 @NamespaceAccessible
 @SuppressWarnings('PMD.ClassNamingConventions, PMD.MethodNamingConventions, PMD.FieldNamingConventions, PMD.PropertyNamingConventions, PMD.ApexDoc, PMD.CyclomaticComplexity, PMD.CognitiveComplexity, PMD.FieldDeclarationsShouldBeAtStart')
-public class fflib_SecurityUtils  
+public inherited sharing class fflib_SecurityUtils
 {
     @TestVisible
     private enum OperationType { CREATE, READ, MODIFY, DEL } //UPDATE and DELETE are reserved words
@@ -41,7 +41,7 @@ public class fflib_SecurityUtils
      * in the event you wish to handle CRUD and FLS violations the same way (e.g. die and display an error)
     **/
     @NamespaceAccessible
-    public virtual class SecurityException extends Exception {
+	public virtual inherited sharing class SecurityException extends Exception {
         @NamespaceAccessible
         protected OperationType m_operation;
         @NamespaceAccessible
@@ -53,8 +53,8 @@ public class fflib_SecurityUtils
      * level. Sharing and field level security issues will never cause this.
      **/
     @NamespaceAccessible
-    public class CrudException extends SecurityException{
-    	
+    public inherited sharing class CrudException extends SecurityException{
+
     	private CrudException(OperationType operation, Schema.SObjectType objectType){
     		this.m_operation = operation;
     		this.m_objectType = objectType;
@@ -82,7 +82,7 @@ public class fflib_SecurityUtils
      * Sharing and CRUD security issues will never cause this to be thrown.
      **/
     @NamespaceAccessible
-    public class FlsException extends SecurityException{
+    public inherited sharing class FlsException extends SecurityException{
     	private Schema.SObjectField m_fieldToken;
 
     	private FlsException(OperationType operation, Schema.SObjectType objectType, Schema.SObjectField fieldToken){

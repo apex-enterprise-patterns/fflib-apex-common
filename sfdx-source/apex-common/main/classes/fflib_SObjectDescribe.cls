@@ -34,10 +34,10 @@
  * and allow an older API style of omitting the namespace when working with fields or global describe maps.
  * This allows both upgrading old code to APIv29 by making use of these as a nearly drop in replacement, as well as keeping
  * namespace detection logic encapsulated.
- */
+ **/
 @NamespaceAccessible
 @SuppressWarnings('PMD.ApexDoc, PMD.ClassNamingConventions, PMD.AvoidBooleanMethodParameters, PMD.CognitiveComplexity')
-public class fflib_SObjectDescribe {
+public inherited sharing class fflib_SObjectDescribe {
 	//internal implementation details
 	private Schema.SObjectType token;
 	private Schema.SObjectField nameField;
@@ -326,7 +326,7 @@ public class fflib_SObjectDescribe {
 	 * Due to the lack of language support for covariant return types subclasses are responsible for implementing the get methods.
 	 * A minimal implementation of these would be a cast and returning getObject's result.
 	**/
-	private abstract class NamespacedAttributeMap{
+	private abstract inherited sharing class NamespacedAttributeMap{
 		@TestVisible
 		protected String currentNamespace;
 		protected Map<String,Object> values;
@@ -404,7 +404,7 @@ public class fflib_SObjectDescribe {
 	 * A subclass of NamespacedAttributeMap for handling the data returned by #Schema.DescribeSObjectResult.fields.getMap
 	**/
 	@NamespaceAccessible
-	public class FieldsMap extends NamespacedAttributeMap{
+	public inherited sharing class FieldsMap extends NamespacedAttributeMap{
 
 		@TestVisible
 		private FieldsMap(Map<String,Schema.SObjectField> values){
@@ -429,7 +429,7 @@ public class fflib_SObjectDescribe {
 	 * A subclass of NamespacedAttributeMap for handling the data returned by #Schema.getGlobalDescribe
 	**/
 	@NamespaceAccessible
-	public class GlobalDescribeMap extends NamespacedAttributeMap{
+	public inherited sharing class GlobalDescribeMap extends NamespacedAttributeMap{
 		@TestVisible
 		private GlobalDescribeMap(Map<String,Schema.SObjectType> values){
 			super(values);
@@ -451,7 +451,7 @@ public class fflib_SObjectDescribe {
 
 
 	@NamespaceAccessible
-	public abstract class DescribeException extends Exception{}
+	public abstract inherited sharing class DescribeException extends Exception{}
 	@NamespaceAccessible
-	public class InvalidDescribeException extends DescribeException{}
+	public inherited sharing class InvalidDescribeException extends DescribeException{}
 }
