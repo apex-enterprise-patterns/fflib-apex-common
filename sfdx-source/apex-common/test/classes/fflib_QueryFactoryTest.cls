@@ -687,8 +687,28 @@ private inherited sharing class fflib_QueryFactoryTest {
 		//When
 		String actualSoql = qf.toSOQL();
 
-		//Then		
+		//Then
 		System.assertEquals(allRowsQuery, actualSoql);
+	}
+
+	@isTest
+	static void testSoql_legacySystemMode(){
+		//Given
+		fflib_QueryFactory qf = new fflib_QueryFactory(Account.SObjectType)
+			.setEnforceFLS(fflib_QueryFactory.FLSEnforcement.LEGACY)
+			.setLegacySystemMode(true);
+		qf.selectField('Id');
+		qf.subselectQuery('Contacts').selectField('Id');
+
+		//When
+		String actualSoql = qf.toSOQL();
+
+		//Then
+		System.assert(actualSoql.endsWith(' FROM Account WITH SYSTEM_MODE'), actualSoql);
+		System.assertEquals(1, actualSoql.countMatches('WITH SYSTEM_MODE'), 'Subselects must not state a mode: ' + actualSoql);
+		System.assertEquals(actualSoql, qf.deepClone().toSOQL());
+		System.assert(!new fflib_QueryFactory(Account.SObjectType).selectField('Id').toSOQL().contains(' WITH '),
+			'Expected no mode when legacySystemMode is not set');
 	}
 
 	public static User createTestUser_noAccess(){
