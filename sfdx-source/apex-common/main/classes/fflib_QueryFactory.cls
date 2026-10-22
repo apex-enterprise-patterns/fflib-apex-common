@@ -73,6 +73,12 @@ public inherited sharing class fflib_QueryFactory {
 	**/
 	private FLSEnforcement mFlsEnforcement;
 
+	/**
+	 * States WITH SYSTEM_MODE when FLS enforcement is NONE or LEGACY, so the query executes in System Mode
+	 * regardless of the API version of the class that executes it (API 67 made User Mode the default)
+	**/
+	private Boolean mLegacySystemMode = false;
+
 	private Boolean sortSelectFields = true;
 	private Boolean allRows = false;
 	
@@ -222,6 +228,14 @@ public inherited sharing class fflib_QueryFactory {
 
 	public fflib_QueryFactory setEnforceFLS(FLSEnforcement enforcement){
 		this.mFlsEnforcement = enforcement;
+		return this;
+	}
+
+	/**
+	 * When FLS enforcement is NONE or LEGACY, states WITH SYSTEM_MODE in the SOQL; see mLegacySystemMode
+	 **/
+	public fflib_QueryFactory setLegacySystemMode(Boolean legacySystemMode){
+		this.mLegacySystemMode = legacySystemMode;
 		return this;
 	}
 
@@ -741,7 +755,7 @@ public inherited sharing class fflib_QueryFactory {
 		if(relationship == null && mFlsEnforcement == FLSEnforcement.USER_MODE){
 			result += ' WITH USER_MODE';
 		}
-		else if(relationship == null && mFlsEnforcement == FLSEnforcement.SYSTEM_MODE){
+		else if(relationship == null && (mFlsEnforcement == FLSEnforcement.SYSTEM_MODE || mLegacySystemMode)){
 			result += ' WITH SYSTEM_MODE';
 		}
 
@@ -775,7 +789,8 @@ public inherited sharing class fflib_QueryFactory {
 			.setLimit(this.limitCount)
 			.setOffset(this.offsetCount)
 			.setCondition(this.conditionExpression)
-			.setEnforceFLS(this.mFlsEnforcement);
+			.setEnforceFLS(this.mFlsEnforcement)
+			.setLegacySystemMode(this.mLegacySystemMode);
 
 		Map<Schema.ChildRelationship, fflib_QueryFactory> subqueries = this.subselectQueryMap;
 		if(subqueries != null) {

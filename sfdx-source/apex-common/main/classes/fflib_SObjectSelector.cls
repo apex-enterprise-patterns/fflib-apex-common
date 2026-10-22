@@ -66,7 +66,40 @@ public abstract with sharing class fflib_SObjectSelector
      **/
     private String m_orderBy;
 
-    private DataAccess m_dataAccess = DataAccess.LEGACY;
+    /**
+     * fflib_CommonSettings__mdt.Default, read once per transaction. Not an instance initializer block:
+     * an initializer block in this class causes an internal Salesforce error whenever a selector is constructed
+     **/
+    private static DataAccess DEFAULT_DATA_ACCESS {
+        get {
+            if(DEFAULT_DATA_ACCESS == null){
+                fflib_CommonSettings__mdt settings = fflib_CommonSettingsSelector.newInstance().selectDefault();
+                switch on settings?.DefaultDataAccess__c
+                {
+                    when 'LEGACY'
+                    {
+                        DEFAULT_DATA_ACCESS = DataAccess.SYSTEM_MODE;
+                    }
+                    when 'SYSTEM_MODE'
+                    {
+                        DEFAULT_DATA_ACCESS = DataAccess.SYSTEM_MODE;
+                    }
+                    when else
+                    {
+                        DEFAULT_DATA_ACCESS = DataAccess.USER_MODE;
+                    }
+                }
+            }
+            return DEFAULT_DATA_ACCESS;
+        }
+		set;
+    }
+
+    /**
+     * Defaults to fflib_CommonSettings__mdt.Default; constructors and setDataAccess() can override it.
+     * When the Default record or its value is missing, USER_MODE applies.
+     **/
+    private DataAccess m_dataAccess = DEFAULT_DATA_ACCESS;
 
     /**
      * Sort the query fields in the select statement (defaults to true, at the expense of performance).
@@ -99,7 +132,7 @@ public abstract with sharing class fflib_SObjectSelector
     /**
      * Implement this method to inform the base class of the common fields to be queried or listed by the base class methods
      **/
-    public abstract List<Schema.SObjectField> getSObjectFieldList();
+    protected abstract List<Schema.SObjectField> getSObjectFieldList();
 
     /**
      * Constructs the Selector with the default settings
@@ -333,25 +366,8 @@ public abstract with sharing class fflib_SObjectSelector
      **/
     public virtual List<SObject> selectSObjectsById(Set<Id> idSet)
     {
-        //When Summer '26 (API 67) introduced User Mode as the default for Database.query, we needed
-        //to shim the existing behavior of this method (and getQueryLocatorById() below) so that it continued
-        //to execute the query in System Mode unless the caller has declared explicit intent (via USER_MODE or SYSTEM_MODE)
-        //To be clear, the caller may still have passed TRUE for the legacy enforceCRUD and enforceFLS methods which
-        //will use the legacy Describe methodology for enforcing 'user mode' and throw an Exception during construction
-        //of the SOQL string -- it's just that the query itself will execute in System Mode at the Apex level.
-        //It's noteworthy to point out that these two methods (selectSObjectsById and  queryLocatorById) are the only
-        //two methods in fflib-apex-common that execute the SOQL query. The normal pattern is for the Selector's concrete
-        //implementation to get the SOQL string (via toSOQL()) from the QueryFactory. It is then the API version
-        //of that concrete implementation class that determines User Mode vs System Mode in the absence of it being
-        //defined in the SOQL string.
-        if(m_dataAccess == DataAccess.LEGACY) {
-            return Database.query(buildQuerySObjectById(),AccessLevel.SYSTEM_MODE);
-        }
-        else{
-            //If m_dataAccess is not LEGACY, there will be a 'WITH SYSTEM_MODE' or 'WITH USER_MODE' in the SOQL query
-            //so we don't need to use the overloaded version of Database.query to pass in an accessLevel
-            return Database.query(buildQuerySObjectById());
-        }
+        //The SOQL states 'WITH SYSTEM_MODE' or 'WITH USER_MODE' (see configureQueryFactory)
+        return Database.query(buildQuerySObjectById());
     }
         
     /**
@@ -364,13 +380,8 @@ public abstract with sharing class fflib_SObjectSelector
      **/
     public virtual Database.QueryLocator queryLocatorById(Set<Id> idSet)
     {
-        //See rationale in code comment above in selectSObjectsById()
-        if(m_dataAccess == DataAccess.LEGACY) {
-            return Database.getQueryLocator(buildQuerySObjectById(),AccessLevel.SYSTEM_MODE);
-        }
-        else {
-            return Database.getQueryLocator(buildQuerySObjectById());
-        }
+        //The SOQL states 'WITH SYSTEM_MODE' or 'WITH USER_MODE' (see configureQueryFactory)
+        return Database.getQueryLocator(buildQuerySObjectById());
     }
     
     /**
@@ -531,18 +542,20 @@ public abstract with sharing class fflib_SObjectSelector
         	}
         }
 
-        fflib_QueryFactory.FLSEnforcement fls = fflib_QueryFactory.FLSEnforcement.NONE;
+        //Every top-level selector query states its mode so it doesn't depend on the API version of the class that
+        //executes it (API 67 made User Mode the default). LEGACY executed in System Mode prior to API 67, so it maps
+        //to SYSTEM_MODE, unless legacy FLS enforcement was requested: that keeps the legacy FLS checks (FlsException
+        //while building the query) and states System Mode for execution
+        fflib_QueryFactory.FLSEnforcement fls = fflib_QueryFactory.FLSEnforcement.SYSTEM_MODE;
         if(access == DataAccess.USER_MODE){
             fls = fflib_QueryFactory.FLSEnforcement.USER_MODE;
         }
-        else if(access == DataAccess.SYSTEM_MODE){
-            fls = fflib_QueryFactory.FLSEnforcement.SYSTEM_MODE;
-        }
-        else if(enforceFLS){
+        else if(access == DataAccess.LEGACY && enforceFLS){
             fls = fflib_QueryFactory.FLSEnforcement.LEGACY;
         }
 
         queryFactory.setEnforceFLS(fls);
+        queryFactory.setLegacySystemMode(fls == fflib_QueryFactory.FLSEnforcement.LEGACY);
                 
         // Configure the QueryFactory with the Selector fields?        
         if(includeSelectorFields)

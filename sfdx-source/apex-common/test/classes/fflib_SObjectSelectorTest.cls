@@ -45,7 +45,7 @@ private with sharing class fflib_SObjectSelectorTest
 		List<Account> accountList = new List<Account> {
 			new Account(Name='TestAccount2',AccountNumber='A2',AnnualRevenue=12345.67),
 			new Account(Name='TestAccount1',AccountNumber='A1',AnnualRevenue=76543.21) };		
-		insert accountList;		
+		Database.insert(accountList, AccessLevel.SYSTEM_MODE);		
 		Set<Id> idSet = new Set<Id>();
 		for(Account item : accountList)
 			idSet.add(item.Id);
@@ -70,7 +70,7 @@ private with sharing class fflib_SObjectSelectorTest
 		List<Account> accountList = new List<Account> {
 			new Account(Name='TestAccount2',AccountNumber='A2',AnnualRevenue=12345.67),
 			new Account(Name='TestAccount1',AccountNumber='A1',AnnualRevenue=76543.21) };		
-		insert accountList;		
+		Database.insert(accountList, AccessLevel.SYSTEM_MODE);		
 		Set<Id> idSet = new Set<Id>();
 		for(Account item : accountList)
 			idSet.add(item.Id);
@@ -99,7 +99,7 @@ private with sharing class fflib_SObjectSelectorTest
 		List<Account> accountList = new List<Account> {
 			new Account(Name='TestAccount2',AccountNumber='A2',AnnualRevenue=12345.67),
 			new Account(Name='TestAccount1',AccountNumber='A1',AnnualRevenue=76543.21) };		
-		insert accountList;		
+		Database.insert(accountList, AccessLevel.SYSTEM_MODE);		
 		Set<Id> idSet = new Set<Id>();
 		for(Account item : accountList)
 			idSet.add(item.Id);
@@ -128,7 +128,7 @@ private with sharing class fflib_SObjectSelectorTest
 		List<Account> accountList = new List<Account> {
 			new Account(Name='TestAccount2',AccountNumber='A2',AnnualRevenue=12345.67),
 			new Account(Name='TestAccount1',AccountNumber='A1',AnnualRevenue=76543.21) };		
-		insert accountList;		
+		Database.insert(accountList, AccessLevel.SYSTEM_MODE);		
 		Set<Id> idSet = new Set<Id>();
 		for(Account item : accountList)
 			idSet.add(item.Id);
@@ -155,7 +155,8 @@ private with sharing class fflib_SObjectSelectorTest
 	{
 		AccountSelector selector = new AccountSelector();
 		String soql = selector.newQueryFactory().toSOQL();
-		Pattern p = Pattern.compile('SELECT (.*) FROM Account ORDER BY AccountNumber DESC NULLS FIRST , AnnualRevenue ASC NULLS LAST ');
+		// The default constructor takes its mode from fflib_CommonSettings__mdt.Default, which subscribers control
+		Pattern p = Pattern.compile('SELECT (.*) FROM Account WITH (?:SYSTEM_MODE|USER_MODE) ORDER BY AccountNumber DESC NULLS FIRST , AnnualRevenue ASC NULLS LAST ');
 		Matcher m = p.matcher(soql);
 		System.assert(m.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
 		System.assertEquals(1, m.groupCount(), 'Unexpected number of groups captured.');
@@ -167,7 +168,7 @@ private with sharing class fflib_SObjectSelectorTest
 	{
 		DefaultSortingAccountSelector selector = new DefaultSortingAccountSelector(false);
 		String soql = selector.newQueryFactory().toSOQL();
-		Pattern p = Pattern.compile(String.format('SELECT (.*) FROM Account ORDER BY {0} ASC NULLS FIRST ',
+		Pattern p = Pattern.compile(String.format('SELECT (.*) FROM Account WITH SYSTEM_MODE ORDER BY {0} ASC NULLS FIRST ',
 			new List<String>{selector.getOrderBy()}));
 		Matcher m = p.matcher(soql);
 		System.assert(m.matches(), 'Generated SOQL does not match expected pattern. Here is the generated SOQL: ' + soql);
@@ -182,7 +183,8 @@ private with sharing class fflib_SObjectSelectorTest
 		System.assertEquals(false, selector.isEnforcingFLS());
 		System.assertEquals(true, selector.isEnforcingCRUD());
 		System.assertEquals(false, selector.isIncludeFieldSetFields());
-		System.assertEquals(fflib_SObjectSelector.DataAccess.LEGACY, selector.getDataAccess());
+		// fflib_CommonSettings__mdt.Default never resolves to LEGACY: its LEGACY value maps to SYSTEM_MODE
+		System.assertNotEquals(fflib_SObjectSelector.DataAccess.LEGACY, selector.getDataAccess());
 		
 		System.assertEquals('Account', selector.getSObjectName());
 		System.assertEquals(Account.SObjectType, selector.getSObjectType2());
@@ -194,16 +196,16 @@ private with sharing class fflib_SObjectSelectorTest
 		System.assertEquals(UserInfo.isMultiCurrencyOrganization() ? 5 : 4, fieldList.size()); 
 		Set<String> fieldSet = new Set<String>();
 		fieldSet.addAll(fieldList);
-		String expected = prefixString + 'AccountNumber';
+		String expected = prefixString + 'accountnumber';
 		System.assert(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
-		expected = prefixString + 'AnnualRevenue';
+		expected = prefixString + 'annualrevenue';
 		System.assert(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
-		expected = prefixString + 'Id';
+		expected = prefixString + 'id';
 		System.assert(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
-		expected = prefixString + 'Name';
+		expected = prefixString + 'name';
 		System.assert(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
 		if (UserInfo.isMultiCurrencyOrganization()) {
-			expected = prefixString + 'CurrencyIsoCode';
+			expected = prefixString + 'currencyisocode';
 			System.assert(fieldSet.contains(expected), expected + ' missing from field list string: ' + fieldListString);
 		}
 	}
@@ -216,17 +218,17 @@ private with sharing class fflib_SObjectSelectorTest
 		AccountSelector selector = new AccountSelector(false, false, false, false);
 		fflib_QueryFactory qf = selector.newQueryFactory();
 		
-		Set<String> expectedSelectFields = new Set<String>{ 'Name', 'Id', 'AccountNumber', 'AnnualRevenue' };
+		Set<String> expectedSelectFields = new Set<String>{ 'name', 'id', 'accountnumber', 'annualrevenue' };
 		if (UserInfo.isMultiCurrencyOrganization())
 		{
-			expectedSelectFields.add('CurrencyIsoCode');
+			expectedSelectFields.add('currencyisocode');
 		}
 
 		//When
 		String soql = qf.toSOQL();
 
 		//Then
-		Pattern soqlPattern = Pattern.compile('SELECT (.*) FROM Account ORDER BY AccountNumber DESC NULLS FIRST , AnnualRevenue ASC NULLS LAST ');
+		Pattern soqlPattern = Pattern.compile('SELECT (.*) FROM Account WITH SYSTEM_MODE ORDER BY AccountNumber DESC NULLS FIRST , AnnualRevenue ASC NULLS LAST ');
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
 		soqlMatcher.matches();
 
@@ -243,17 +245,17 @@ private with sharing class fflib_SObjectSelectorTest
 		fflib_QueryFactory qf = selector.newQueryFactory();
 		
 		// Add in the expected fields
-		Set<String> expectedSelectFields = new Set<String>{ 'Name', 'Id', 'AccountNumber', 'AnnualRevenue' };
+		Set<String> expectedSelectFields = new Set<String>{ 'name', 'id', 'accountnumber', 'annualrevenue' };
 		if (UserInfo.isMultiCurrencyOrganization())
 		{
-			expectedSelectFields.add('CurrencyIsoCode');
+			expectedSelectFields.add('currencyisocode');
 		}
 
 		// Generate the SOQL string
 		String soql = qf.toSOQL();
 
 		// Assert that the
-		Pattern soqlPattern = Pattern.compile('SELECT (.*) FROM Account ORDER BY AccountNumber DESC NULLS FIRST , AnnualRevenue ASC NULLS LAST ');
+		Pattern soqlPattern = Pattern.compile('SELECT (.*) FROM Account WITH SYSTEM_MODE ORDER BY AccountNumber DESC NULLS FIRST , AnnualRevenue ASC NULLS LAST ');
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
 		system.assert(soqlMatcher.matches(), 'The SOQL should have that expected.');
 	}
@@ -289,10 +291,10 @@ private with sharing class fflib_SObjectSelectorTest
 		Testfflib_UserSObjectSelector selector = new Testfflib_UserSObjectSelector();
 		fflib_QueryFactory qf = new fflib_QueryFactory(Account.SObjectType);
 
-		Set<String> expectedSelectFields = new Set<String>{ 'Name', 'Id', 'Username', 'LastLoginDate' };
+		Set<String> expectedSelectFields = new Set<String>{ 'name', 'id', 'username', 'lastlogindate' };
 		if (UserInfo.isMultiCurrencyOrganization())
 		{
-			expectedSelectFields.add('CurrencyIsoCode');
+			expectedSelectFields.add('currencyisocode');
 		}
 
 		//When
@@ -314,10 +316,10 @@ private with sharing class fflib_SObjectSelectorTest
 		Testfflib_UserSObjectSelector selector = new Testfflib_UserSObjectSelector();
 		fflib_QueryFactory qf = new fflib_QueryFactory(Account.SObjectType);
 
-		Set<String> expectedSelectFields = new Set<String>{ 'Name', 'Id', 'Username', 'LastLoginDate' };
+		Set<String> expectedSelectFields = new Set<String>{ 'name', 'id', 'username', 'lastlogindate' };
 		if (UserInfo.isMultiCurrencyOrganization())
 		{
-			expectedSelectFields.add('CurrencyIsoCode');
+			expectedSelectFields.add('currencyisocode');
 		}
 
 		//When
@@ -340,10 +342,10 @@ private with sharing class fflib_SObjectSelectorTest
 		Testfflib_UserSObjectSelector selector = new Testfflib_UserSObjectSelector();
 		fflib_QueryFactory qf = new fflib_QueryFactory(Account.SObjectType);
 
-		Set<String> expectedSelectFields = new Set<String>{ 'Name', 'Id', 'Username', 'LastLoginDate' };
+		Set<String> expectedSelectFields = new Set<String>{ 'name', 'id', 'username', 'lastlogindate' };
 		if (UserInfo.isMultiCurrencyOrganization())
 		{
-			expectedSelectFields.add('CurrencyIsoCode');
+			expectedSelectFields.add('currencyisocode');
 		}
 
 		//When
@@ -359,10 +361,10 @@ private with sharing class fflib_SObjectSelectorTest
 		//Given
 		Testfflib_UserSObjectSelector selector = new Testfflib_UserSObjectSelector();
 
-		Set<String> expectedSelectFields = new Set<String>{ 'Owner.Name', 'Owner.Id', 'Owner.Username', 'Owner.LastLoginDate' };
+		Set<String> expectedSelectFields = new Set<String>{ 'Owner.name', 'Owner.id', 'Owner.username', 'Owner.lastlogindate' };
 		if (UserInfo.isMultiCurrencyOrganization())
 		{
-			expectedSelectFields.add('Owner.CurrencyIsoCode');
+			expectedSelectFields.add('Owner.currencyisocode');
 		}
 
 		//When
@@ -722,23 +724,23 @@ private with sharing class fflib_SObjectSelectorTest
 
 
 		Set<String> expectedSelectFields = new Set<String>{
-				'Id', 'CommentBody', 'Parent.Id', 'Parent.OwnerId', 'Parent.Owner.Id', 'Parent.Owner.UserRoleId'
+				'id', 'commentbody', 'parent.id', 'parent.ownerid', 'parent.owner.id', 'parent.owner.userroleid'
 		};
 		if (ccSelector.isCurrencyIsoCodeAvailable()) {
-			expectedSelectFields.add('CurrencyIsoCode');
+			expectedSelectFields.add('currencyisocode');
 		}
 		if (caseSelector.isCurrencyIsoCodeAvailable()) {
-			expectedSelectFields.add('Parent.CurrencyIsoCode');
+			expectedSelectFields.add('parent.currencyisocode');
 		}
 		if (userSelector.isCurrencyIsoCodeAvailable()) {
-			expectedSelectFields.add('Parent.Owner.CurrencyIsoCode');
+			expectedSelectFields.add('parent.owner.currencyisocode');
 		}
 
 		//When
 		String soql = qf.toSOQL();
 
 		//Then
-		Pattern soqlPattern = Pattern.compile(String.format('SELECT (.*) FROM CaseComment ORDER BY {0} ASC NULLS FIRST ',
+		Pattern soqlPattern = Pattern.compile(String.format('SELECT (.*) FROM CaseComment WITH SYSTEM_MODE ORDER BY {0} ASC NULLS FIRST ',
 		new List<String>{ccSelector.getOrderBy()}));
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
 		soqlMatcher.matches();
@@ -760,24 +762,24 @@ private with sharing class fflib_SObjectSelectorTest
 
 
 		Set<String> expectedSelectFields = new Set<String>{
-			'Id', 'CommentBody', 'Parent.Id', 'Parent.OwnerId', 'Parent.Owner.Id'
+			'id', 'commentbody', 'parent.id', 'parent.ownerid', 'parent.owner.id'
 		};
 		Set<String> unexpectedSelectFields = new Set<String>();
 		if (ccSelector.isCurrencyIsoCodeAvailable()) {
-			expectedSelectFields.add('CurrencyIsoCode');
+			expectedSelectFields.add('currencyisocode');
 		}
 		if (caseSelector.isCurrencyIsoCodeAvailable()) {
-			expectedSelectFields.add('Parent.CurrencyIsoCode');
+			expectedSelectFields.add('parent.currencyisocode');
 		}
 		// Group does NOT have CurrencyIsoCode field
-		unexpectedSelectFields.add('Parent.Owner.CurrencyIsoCode');
+		unexpectedSelectFields.add('parent.owner.currencyisocode');
 
 		//When
 		String soql = qf.toSOQL();
 		System.debug(soql);
 
 		//Then
-		Pattern soqlPattern = Pattern.compile('SELECT (.*) FROM CaseComment ORDER BY CreatedDate ASC NULLS FIRST ');
+		Pattern soqlPattern = Pattern.compile('SELECT (.*) FROM CaseComment WITH SYSTEM_MODE ORDER BY CreatedDate ASC NULLS FIRST ');
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
 		soqlMatcher.matches();
 

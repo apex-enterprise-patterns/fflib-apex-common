@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>DefaultDataAccess__c</fullName>
+    <description>Data access used by fflib_SObjectSelector subclasses whose constructor does not specify one. LEGACY preserves the behavior prior to API 67 (system mode). When the Default record is missing or this field is blank, USER_MODE is used. The unit of work is not affected; choose its data access with an IDML implementation.</description>
+    <externalId>false</externalId>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <inlineHelpText>LEGACY preserves the behavior prior to API 67 (system mode). SYSTEM_MODE and USER_MODE apply native Apex system or user mode.</inlineHelpText>
+    <label>Default Data Access</label>
+    <required>false</required>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>LEGACY</fullName>
+                <default>true</default>
+                <label>LEGACY</label>
+            </value>
+            <value>
+                <fullName>SYSTEM_MODE</fullName>
+                <default>false</default>
+                <label>SYSTEM_MODE</label>
+            </value>
+            <value>
+                <fullName>USER_MODE</fullName>
+                <default>false</default>
+                <label>USER_MODE</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>
