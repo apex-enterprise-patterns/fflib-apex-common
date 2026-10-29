@@ -230,7 +230,7 @@ public abstract with sharing class fflib_SObjectSelector
         return this;
     }
 
-    public fflib_SObjectSelector setDataAccess(DataAccess access){
+    public fflib_ISObjectSelector setDataAccess(DataAccess access){
         this.m_dataAccess = access;
 
         //You can't mix and match the legacy enforceFls and assertCRUD with the SYSTEM_MODE or USER_MODE

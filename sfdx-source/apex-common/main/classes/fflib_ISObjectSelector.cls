@@ -34,5 +34,10 @@ public interface fflib_ISObjectSelector
 	/**
 	 * Selects by Id records using the fields defined by the Selector configuration
 	 **/
-	List<SObject> selectSObjectsById(Set<Id> idSet);	
+	List<SObject> selectSObjectsById(Set<Id> idSet);
+
+	/**
+	 * Allows setting of the selectors DataAccess level outside of the selector constructor
+	 */
+	fflib_ISObjectSelector setDataAccess(fflib_SObjectSelector.DataAccess access);
 }
