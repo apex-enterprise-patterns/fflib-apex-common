@@ -45,7 +45,8 @@ private with sharing class fflib_SObjectSelectorTest
 		List<Account> accountList = new List<Account> {
 			new Account(Name='TestAccount2',AccountNumber='A2',AnnualRevenue=12345.67),
 			new Account(Name='TestAccount1',AccountNumber='A1',AnnualRevenue=76543.21) };		
-		insert accountList;		
+		Database.insert(accountList,AccessLevel.SYSTEM_MODE);
+		
 		Set<Id> idSet = new Set<Id>();
 		for(Account item : accountList)
 			idSet.add(item.Id);
@@ -70,7 +71,8 @@ private with sharing class fflib_SObjectSelectorTest
 		List<Account> accountList = new List<Account> {
 			new Account(Name='TestAccount2',AccountNumber='A2',AnnualRevenue=12345.67),
 			new Account(Name='TestAccount1',AccountNumber='A1',AnnualRevenue=76543.21) };		
-		insert accountList;		
+		Database.insert(accountList,AccessLevel.SYSTEM_MODE);
+
 		Set<Id> idSet = new Set<Id>();
 		for(Account item : accountList)
 			idSet.add(item.Id);
@@ -99,7 +101,8 @@ private with sharing class fflib_SObjectSelectorTest
 		List<Account> accountList = new List<Account> {
 			new Account(Name='TestAccount2',AccountNumber='A2',AnnualRevenue=12345.67),
 			new Account(Name='TestAccount1',AccountNumber='A1',AnnualRevenue=76543.21) };		
-		insert accountList;		
+		Database.insert(accountList, AccessLevel.SYSTEM_MODE);
+
 		Set<Id> idSet = new Set<Id>();
 		for(Account item : accountList)
 			idSet.add(item.Id);
@@ -128,7 +131,8 @@ private with sharing class fflib_SObjectSelectorTest
 		List<Account> accountList = new List<Account> {
 			new Account(Name='TestAccount2',AccountNumber='A2',AnnualRevenue=12345.67),
 			new Account(Name='TestAccount1',AccountNumber='A1',AnnualRevenue=76543.21) };		
-		insert accountList;		
+		Database.insert(accountList,AccessLevel.SYSTEM_MODE);
+
 		Set<Id> idSet = new Set<Id>();
 		for(Account item : accountList)
 			idSet.add(item.Id);
