@@ -433,6 +433,20 @@ public abstract with sharing class fflib_SObjectSelector
                 DataAccess.LEGACY);
     }
 
+    /**
+     * Returns a QueryFactory configured with the Selectors object, fields, fieldsets and default order by
+     * using DataAccess security level supplied.
+     **/
+    public fflib_QueryFactory newQueryFactory(Boolean includeSelectorFields, DataAccess dataAccess)
+    {
+        // Construct QueryFactory around the given SObject
+        return newQueryFactory(
+                m_enforceCRUD,
+                m_enforceFLS,
+                includeSelectorFields,
+                dataAccess);
+    }
+
     private fflib_QueryFactory newQueryFactory(Boolean assertCRUD, Boolean enforceFLS, Boolean includeSelectorFields, DataAccess dataAccess)
     {
         // Construct QueryFactory around the given SObject
