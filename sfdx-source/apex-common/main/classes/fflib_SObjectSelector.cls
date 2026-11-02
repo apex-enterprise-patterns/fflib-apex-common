@@ -293,7 +293,7 @@ public abstract with sharing class fflib_SObjectSelector
      * Provides access to the builder containing the list of fields base queries are using, this is demand
      *   created if one has not already been defined via setFieldListBuilder
      *
-     * @depricated See newQueryFactory
+     * @deprecated See newQueryFactory
      **/
     @NamespaceAccessible
     public fflib_StringBuilder.CommaDelimitedListBuilder getFieldListBuilder()
@@ -307,7 +307,7 @@ public abstract with sharing class fflib_SObjectSelector
      * Use this method to override the default FieldListBuilder (created on demand via getFieldListBuilder) with a custom one, 
      *   warning, this will bypass anything getSObjectFieldList or getSObjectFieldSetList returns
      *
-     * @depricated See newQueryFactory
+     * @deprecated See newQueryFactory
      **/    
     @NamespaceAccessible
     public void setFieldListBuilder(fflib_StringBuilder.FieldListBuilder fieldListBuilder)
@@ -330,7 +330,7 @@ public abstract with sharing class fflib_SObjectSelector
      * Returns in string form a comma delimited list of fields as defined via getSObjectFieldList and optionally getSObjectFieldSetList
      * @param relation Will prefix fields with the given relation, e.g. MyLookupField__r
      *
-     * @depricated See newQueryFactory
+     * @deprecated See newQueryFactory
      **/    
     @NamespaceAccessible
     public String getRelatedFieldListString(String relation)
@@ -453,6 +453,7 @@ public abstract with sharing class fflib_SObjectSelector
     /**
      * Returns a QueryFactory configured with the Selectors object, fields, fieldsets and default order by
      * CRUD and FLS read security will be checked if the corresponding inputs are true (overrides that defined in the selector).
+     * @deprecated - consider using dataAccess for native platform enforcement of CRUD and FLS
      **/
     @NamespaceAccessible
     public fflib_QueryFactory newQueryFactory(Boolean assertCRUD, Boolean enforceFLS, Boolean includeSelectorFields)

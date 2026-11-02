@@ -461,19 +461,30 @@ private with sharing class fflib_SObjectSelectorTest
 	static void toSOQL_When_SystemModeAndChildRelationship_Expect_WellFormedSOQL(){
 		AccessLevelAccountSelector sel = new AccessLevelAccountSelector(fflib_SObjectSelector.DataAccess.SYSTEM_MODE);
 
-	AccessLevelOpportunitySelector innerSelector = new AccessLevelOpportunitySelector();
+		AccessLevelOpportunitySelector innerSelector = new AccessLevelOpportunitySelector();
 
-	String soql = sel.createSelectAccountWithOpportunitiesSOQL();
+		String soql = sel.createSelectAccountWithOpportunitiesSOQL();
 
-	String expected = String.format(
-	  'SELECT name, id, annualrevenue, accountnumber, (currencyisocode, )?\\(SELECT name, id, amount, closedate(, currencyisocode)? FROM Opportunities ORDER BY {0} ASC NULLS FIRST \\)  FROM Account WITH SYSTEM_MODE ORDER BY {1} ASC NULLS FIRST ',
-	  new List<String>{ innerSelector.getOrderBy(), sel.getOrderBy() }
-	);
+		String expected = String.format(
+		  'SELECT name, id, annualrevenue, accountnumber, (currencyisocode, )?\\(SELECT name, id, amount, closedate(, currencyisocode)? FROM Opportunities ORDER BY {0} ASC NULLS FIRST \\)  FROM Account WITH SYSTEM_MODE ORDER BY {1} ASC NULLS FIRST ',
+		  new List<String>{ innerSelector.getOrderBy(), sel.getOrderBy() }
+		);
+		
 		Pattern soqlPattern = Pattern.compile(expected);
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
 		System.assert(soqlMatcher.matches(),'Expected: ' + expected + ' Actual:' + soql);
 	}
 
+	//Ensure that the overload for creating a QueryFactory with the DataAccess argument generates SOQL with the appropriate user/system mode clause
+	static void toSOQL_When_SelectiveElevation_Expect_WellFormedSOQL(){
+		AccessLevelAccountSelector sel = new AccessLevelAccountSelector(fflib_SObjectSelector.DataAccess.SYSTEM_MODE);
+
+		String soql = sel.newQueryFactory().toSOQL();
+		Assert.isTrue(soql.contains('WITH SYSTEM_MODE'),'Expected SOQL to contain WITH SYSTEM_MODE; Actual:' + soql);
+
+		soql = sel.newQueryFactory(true, fflib_SObjectSelector.DataAccess.USER_MODE).toSOQL();
+		Assert.isTrue(soql.contains('WITH USER_MODE'),'Expected SOQL to contain WITH USER_MODE; Actual:' + soql);
+	}
 
 	private inherited sharing class AccountSelector extends fflib_SObjectSelector
 	{
