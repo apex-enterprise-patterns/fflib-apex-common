@@ -25,7 +25,8 @@
 **/
 
 @IsTest
-private class fflib_ApplicationTest 
+@SuppressWarnings('PMD.ApexUnitTestClassShouldHaveRunAs, PMD.ApexDoc, PMD.ClassNamingConventions, PMD.FieldNamingConventions, PMD.FieldDeclarationsShouldBeAtStart, PMD.ExcessiveParameterList, PMD.CyclomaticComplexity, PMD.CognitiveComplexity, PMD.AvoidDeeplyNestedIfStmts, PMD.StdCyclomaticComplexity')
+private inherited sharing class fflib_ApplicationTest
 {
 	@IsTest
 	private static void callingDomainFactoryShouldGiveRegisteredImplsAndMocks()
