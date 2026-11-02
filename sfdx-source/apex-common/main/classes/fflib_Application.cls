@@ -36,14 +36,18 @@ public inherited sharing virtual class fflib_Application
 	/**
 	 * Class implements a Unit of Work factory
 	 **/
+	@NamespaceAccessible
 	public virtual class UnitOfWorkFactory implements fflib_IUnitOfWorkFactory
 	{
+		@NamespaceAccessible
 		protected List<SObjectType> m_objectTypes;
+		@NamespaceAccessible
 		protected fflib_ISObjectUnitOfWork m_mockUow;
 
 		/**
 		 * Constructs a Unit Of Work factory
 		 **/
+		@NamespaceAccessible
 		public UnitOfWorkFactory() { }
 
 		/**
@@ -51,6 +55,7 @@ public inherited sharing virtual class fflib_Application
 		 *
 		 * @param objectTypes List of SObjectTypes in dependency order
 		 **/
+		@NamespaceAccessible
 		public UnitOfWorkFactory(List<SObjectType> objectTypes)
 		{
 			m_objectTypes = objectTypes.clone();
@@ -61,6 +66,7 @@ public inherited sharing virtual class fflib_Application
 		 *   SObjectType list provided in the constructor, returns a Mock implementation
 		 *   if set via the setMock method
 		 **/
+		@NamespaceAccessible
 		public virtual fflib_ISObjectUnitOfWork newInstance()
 		{
 			// Mock?
@@ -74,6 +80,7 @@ public inherited sharing virtual class fflib_Application
 		 *   SObjectType list provided in the constructor, returns a Mock implementation
 		 *   if set via the setMock method
 		 **/
+		@NamespaceAccessible
 		public virtual fflib_ISObjectUnitOfWork newInstance(fflib_SObjectUnitOfWork.IDML dml)
 		{
 			// Mock?
@@ -90,6 +97,7 @@ public inherited sharing virtual class fflib_Application
 		 * @remark If mock is set, the list of SObjectType in the mock could be different
 		 *         than the list of SObjectType specified in this method call
 		 **/
+		@NamespaceAccessible
 		public virtual fflib_ISObjectUnitOfWork newInstance(List<SObjectType> objectTypes)
 		{
 			// Mock?
@@ -106,6 +114,7 @@ public inherited sharing virtual class fflib_Application
 		 * @remark If mock is set, the list of SObjectType in the mock could be different
 		 *         than the list of SObjectType specified in this method call
 		 **/
+		@NamespaceAccessible
 		public virtual fflib_ISObjectUnitOfWork newInstance(List<SObjectType> objectTypes, fflib_SObjectUnitOfWork.IDML dml)
 		{
 			// Mock?
@@ -115,6 +124,7 @@ public inherited sharing virtual class fflib_Application
 		}
 
 		@TestVisible
+		@NamespaceAccessible
 		protected virtual void setMock(fflib_ISObjectUnitOfWork mockUow)
 		{
 			m_mockUow = mockUow;
@@ -124,15 +134,19 @@ public inherited sharing virtual class fflib_Application
 	/**
 	 * Simple Service Factory implementation
 	 **/
+	@NamespaceAccessible
 	public virtual class ServiceFactory implements fflib_IServiceFactory
 	{
+		@NamespaceAccessible
 		protected Map<Type, Type> m_serviceInterfaceTypeByServiceImplType;
 
+		@NamespaceAccessible
 		protected Map<Type, Object> m_serviceInterfaceTypeByMockService;
 
 		/**
 		 * Constructs a simple Service Factory
 		 **/
+		@NamespaceAccessible
 		public ServiceFactory() { }
 
 		/**
@@ -143,6 +157,7 @@ public inherited sharing virtual class fflib_Application
 		 *
 		 * @param serviceInterfaceTypeByServiceImplType Map of interfaces to classes
 		 **/
+		@NamespaceAccessible
 		public ServiceFactory(Map<Type, Type> serviceInterfaceTypeByServiceImplType)
 		{
 			m_serviceInterfaceTypeByServiceImplType = serviceInterfaceTypeByServiceImplType;
@@ -157,6 +172,7 @@ public inherited sharing virtual class fflib_Application
 		 * @param serviceInterfaceType Apex interface type
 		 * @exception Is thrown if there is no registered Apex class for the interface type
 		 **/
+		@NamespaceAccessible
 		public virtual Object newInstance(Type serviceInterfaceType)
 		{
 			// Mock implementation?
@@ -171,6 +187,7 @@ public inherited sharing virtual class fflib_Application
 		}
 
 		@TestVisible
+		@NamespaceAccessible
 		protected virtual void setMock(Type serviceInterfaceType, Object serviceImpl)
 		{
 			m_serviceInterfaceTypeByMockService.put(serviceInterfaceType, serviceImpl);
@@ -180,14 +197,18 @@ public inherited sharing virtual class fflib_Application
 	/**
 	 * Class implements a Selector class factory
 	 **/
+	@NamespaceAccessible
 	public virtual class SelectorFactory implements fflib_ISelectorFactory
 	{
+		@NamespaceAccessible
 		protected Map<SObjectType, Type> m_sObjectBySelectorType;
+		@NamespaceAccessible
 		protected Map<SObjectType, fflib_ISObjectSelector> m_sObjectByMockSelector;
 
 		/**
 		 * Constructs a simple Selector Factory
 		 **/
+		@NamespaceAccessible
 		public SelectorFactory() { }
 
 		/**
@@ -197,6 +218,7 @@ public inherited sharing virtual class fflib_Application
 		 *
 		 * @param sObjectBySelectorType Map of SObjectType's to Selector Apex Classes
 		 **/
+		@NamespaceAccessible
 		public SelectorFactory(Map<SObjectType, Type> sObjectBySelectorType)
 		{
 			m_sObjectBySelectorType = sObjectBySelectorType;
@@ -209,6 +231,7 @@ public inherited sharing virtual class fflib_Application
 		 *
 		 * @param sObjectType An SObjectType token, e.g. Account.SObjectType
 		 **/
+		@NamespaceAccessible
 		public virtual fflib_ISObjectSelector newInstance(SObjectType sObjectType)
 		{
 			// Mock implementation?
@@ -232,6 +255,7 @@ public inherited sharing virtual class fflib_Application
 		 * @param recordIds The SObject record Ids, must be all the same SObjectType
 		 * @exception Is thrown if the record Ids are not all the same or the SObjectType is not registered
 		 **/
+		@NamespaceAccessible
 		public virtual List<SObject> selectById(Set<Id> recordIds)
 		{
 			// No point creating an empty Domain class, nor can we determine the SObjectType anyway
@@ -260,6 +284,7 @@ public inherited sharing virtual class fflib_Application
 		 * @param relatedRecords used to extract the related record Ids, e.g. Opportunity records
 		 * @param relationshipField field in the passed records that contains the relationship records to query, e.g. Opportunity.AccountId
 		 **/
+		@NamespaceAccessible
 		public virtual List<SObject> selectByRelationship(List<SObject> relatedRecords, SObjectField relationshipField)
 		{
 			Set<Id> relatedIds = new Set<Id>();
@@ -273,6 +298,7 @@ public inherited sharing virtual class fflib_Application
 		}
 
 		@TestVisible
+		@NamespaceAccessible
 		protected virtual void setMock(fflib_ISObjectSelector selectorInstance)
 		{
 			System.debug(System.LoggingLevel.INFO, '*** fflib - Please note your mocked class should have sObjectType() stubbed, or use setMock( SObjectType, SelectorMock )');
@@ -280,6 +306,7 @@ public inherited sharing virtual class fflib_Application
 		}
 
 		@TestVisible
+		@NamespaceAccessible
 		protected virtual void setMock(SObjectType sType, fflib_ISObjectSelector selectorInstance)
 		{
 			m_sObjectByMockSelector.put(sType, selectorInstance);
@@ -289,17 +316,22 @@ public inherited sharing virtual class fflib_Application
 	/**
 	 * Class implements a Domain class factory
 	 **/
+	@NamespaceAccessible
 	public virtual class DomainFactory implements fflib_IDomainFactory
 	{
+		@NamespaceAccessible
 		protected fflib_Application.SelectorFactory m_selectorFactory;
 
+		@NamespaceAccessible
 		protected Map<Object, Type> constructorTypeByObject;
 
+		@NamespaceAccessible
 		protected Map<Object, fflib_IDomain> mockDomainByObject;
 
         /**
 		 * Constructs a Domain factory
 		 **/
+		@NamespaceAccessible
 		public DomainFactory() { }
 
 		/**
@@ -311,6 +343,7 @@ public inherited sharing virtual class fflib_Application
 		 * @param selectorFactory , e.g. Application.Selector
 		 * @param constructorTypeByObject Map of Domain classes by ObjectType
 		 **/
+		@NamespaceAccessible
 		public DomainFactory(fflib_Application.SelectorFactory selectorFactory,
 			Map<Object, Type> constructorTypeByObject)
 		{
@@ -328,6 +361,7 @@ public inherited sharing virtual class fflib_Application
 		 * @param selectorFactory, e.g. Application.Selector
 		 * @param sObjectByDomainConstructorType Map of Apex classes by SObjectType
 		 **/
+		@NamespaceAccessible
 		public DomainFactory(fflib_Application.SelectorFactory selectorFactory,
 			Map<SObjectType, Type> sObjectByDomainConstructorType)
 		{
@@ -344,6 +378,7 @@ public inherited sharing virtual class fflib_Application
 		 * @param recordIds A list of Id's of the same type
 		 * @exception Throws an exception via the Selector Factory if the Ids are not all of the same SObjectType
 		 **/
+		@NamespaceAccessible
 		public virtual fflib_IDomain newInstance(Set<Id> recordIds)
 		{
 			return newInstance(m_selectorFactory.selectById(recordIds));
@@ -358,6 +393,7 @@ public inherited sharing virtual class fflib_Application
 		 * @exception Throws an exception if the SObjectType cannot be determined from the list
 		 *              or the constructor for Domain class was not registered for the SObjectType
 		 **/
+		@NamespaceAccessible
 		public virtual fflib_IDomain newInstance(List<SObject> records)
 		{
 			SObjectType domainSObjectType = records.getSObjectType();
@@ -367,6 +403,7 @@ public inherited sharing virtual class fflib_Application
 			return newInstance((List<Object>) records, (Object) domainSObjectType);
 		}
 
+		@NamespaceAccessible
 		public virtual fflib_IDomain newInstance(List<Object> objects, Object objectType)
 		{
 			// Mock implementation?
@@ -410,6 +447,7 @@ public inherited sharing virtual class fflib_Application
 		 * @remark Will support List<SObject> but all records in the list will be assumed to be of
 		 *         the type specified in sObjectType
 		 **/
+		@NamespaceAccessible
 		public virtual fflib_IDomain newInstance(List<SObject> records, SObjectType domainSObjectType)
 		{
 			if(domainSObjectType==null)
@@ -422,6 +460,7 @@ public inherited sharing virtual class fflib_Application
 		}
 
 		@TestVisible
+		@NamespaceAccessible
 		protected virtual void setMock(fflib_ISObjectDomain mockDomain)
 		{
 			System.debug(System.LoggingLevel.INFO, '*** fflib - Please note your mocked class should have sObjectType() stubbed, or use setMock( SObjectType, SelectorMock )');
@@ -429,17 +468,20 @@ public inherited sharing virtual class fflib_Application
 		}
 
 		@TestVisible
+		@NamespaceAccessible
 		protected virtual void setMock(SObjectType sType, fflib_ISObjectDomain mockDomain)
 		{
 			mockDomainByObject.put((Object)sType, (fflib_IDomain)mockDomain);
 		}
 
 		@TestVisible
+		@NamespaceAccessible
 		protected virtual void setMock(fflib_IDomain mockDomain)
 		{
 			mockDomainByObject.put(mockDomain.getType(), mockDomain);
 		}
 
+		@NamespaceAccessible
 		protected virtual Map<Object, Type> getConstructorTypeByObject(Map<SObjectType, Type> constructorTypeBySObjectType)
 		{
 			Map<Object, Type> result = new Map<Object, Type>();
@@ -454,10 +496,12 @@ public inherited sharing virtual class fflib_Application
 		}
 	}
 
-	public class ApplicationException extends Exception { }			
+	@NamespaceAccessible
+	public class ApplicationException extends Exception { }
 
 	/**
 	 * Exception representing a developer coding error, not intended for end user eyes
 	 **/
-	public class DeveloperException extends Exception { } 
+	@NamespaceAccessible
+	public class DeveloperException extends Exception { }
 }
