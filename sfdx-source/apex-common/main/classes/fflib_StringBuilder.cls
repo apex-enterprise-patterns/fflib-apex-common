@@ -31,7 +31,7 @@
  **/
 @NamespaceAccessible
 @SuppressWarnings('PMD.EmptyStatementBlock, PMD.ClassNamingConventions, PMD.MethodNamingConventions, PMD.FieldNamingConventions, PMD.PropertyNamingConventions, PMD.ApexDoc')
-public virtual class fflib_StringBuilder
+public virtual inherited sharing class fflib_StringBuilder
 {
 	@NamespaceAccessible
 	protected List<String> buffer = new List<String>();

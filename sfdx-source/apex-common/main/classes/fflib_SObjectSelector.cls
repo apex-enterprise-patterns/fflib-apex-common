@@ -97,12 +97,12 @@ public abstract with sharing class fflib_SObjectSelector
     /**
      * Implement this method to inform the base class of the SObject (custom or standard) to be queried
      **/
-    abstract Schema.SObjectType getSObjectType();
+    protected abstract Schema.SObjectType getSObjectType();
     
     /**
      * Implement this method to inform the base class of the common fields to be queried or listed by the base class methods
      **/
-    abstract List<Schema.SObjectField> getSObjectFieldList();
+    public abstract List<Schema.SObjectField> getSObjectFieldList();
 
     /**
      * Constructs the Selector with the default settings
@@ -293,7 +293,7 @@ public abstract with sharing class fflib_SObjectSelector
      * Provides access to the builder containing the list of fields base queries are using, this is demand
      *   created if one has not already been defined via setFieldListBuilder
      *
-     * @depricated See newQueryFactory
+     * @deprecated See newQueryFactory
      **/
     @NamespaceAccessible
     public fflib_StringBuilder.CommaDelimitedListBuilder getFieldListBuilder()
@@ -307,7 +307,7 @@ public abstract with sharing class fflib_SObjectSelector
      * Use this method to override the default FieldListBuilder (created on demand via getFieldListBuilder) with a custom one, 
      *   warning, this will bypass anything getSObjectFieldList or getSObjectFieldSetList returns
      *
-     * @depricated See newQueryFactory
+     * @deprecated See newQueryFactory
      **/    
     @NamespaceAccessible
     public void setFieldListBuilder(fflib_StringBuilder.FieldListBuilder fieldListBuilder)
@@ -330,7 +330,7 @@ public abstract with sharing class fflib_SObjectSelector
      * Returns in string form a comma delimited list of fields as defined via getSObjectFieldList and optionally getSObjectFieldSetList
      * @param relation Will prefix fields with the given relation, e.g. MyLookupField__r
      *
-     * @depricated See newQueryFactory
+     * @deprecated See newQueryFactory
      **/    
     @NamespaceAccessible
     public String getRelatedFieldListString(String relation)
@@ -353,12 +353,30 @@ public abstract with sharing class fflib_SObjectSelector
      *   - From the SObject described by getSObjectType
      *   - Where the Id's match those provided in the set
      *   - Ordered by the fields returned via getOrderBy
-     * @returns A list of SObject's
+     * @returns A list of SObject
      **/
     @NamespaceAccessible
     public virtual List<SObject> selectSObjectsById(Set<Id> idSet)
     {
-        return Database.query(buildQuerySObjectById());
+        //When Summer '26 (API 67) introduced User Mode as the default for Database.query, we needed
+        //to shim the existing behavior of this method (and getQueryLocatorById() below) so that it continued
+        //to execute the query in System Mode unless the caller has declared explicit intent (via USER_MODE or SYSTEM_MODE)
+        //To be clear, the caller may still have passed TRUE for the legacy enforceCRUD and enforceFLS methods which
+        //will use the legacy Describe methodology for enforcing 'user mode' and throw an Exception during construction
+        //of the SOQL string -- it's just that the query itself will execute in System Mode at the Apex level.
+        //It's noteworthy to point out that these two methods (selectSObjectsById and  queryLocatorById) are the only
+        //two methods in fflib-apex-common that execute the SOQL query. The normal pattern is for the Selector's concrete
+        //implementation to get the SOQL string (via toSOQL()) from the QueryFactory. It is then the API version
+        //of that concrete implementation class that determines User Mode vs System Mode in the absence of it being
+        //defined in the SOQL string.
+        if(m_dataAccess == DataAccess.LEGACY) {
+            return Database.query(buildQuerySObjectById(),AccessLevel.SYSTEM_MODE);
+        }
+        else{
+            //If m_dataAccess is not LEGACY, there will be a 'WITH SYSTEM_MODE' or 'WITH USER_MODE' in the SOQL query
+            //so we don't need to use the overloaded version of Database.query to pass in an accessLevel
+            return Database.query(buildQuerySObjectById());
+        }
     }
         
     /**
@@ -372,7 +390,13 @@ public abstract with sharing class fflib_SObjectSelector
     @NamespaceAccessible
     public virtual Database.QueryLocator queryLocatorById(Set<Id> idSet)
     {
-        return Database.getQueryLocator(buildQuerySObjectById());
+        //See rationale in code comment above in selectSObjectsById()
+        if(m_dataAccess == DataAccess.LEGACY) {
+            return Database.getQueryLocator(buildQuerySObjectById(),AccessLevel.SYSTEM_MODE);
+        }
+        else {
+            return Database.getQueryLocator(buildQuerySObjectById());
+        }
     }
     
     /**
@@ -429,6 +453,7 @@ public abstract with sharing class fflib_SObjectSelector
     /**
      * Returns a QueryFactory configured with the Selectors object, fields, fieldsets and default order by
      * CRUD and FLS read security will be checked if the corresponding inputs are true (overrides that defined in the selector).
+     * @deprecated - consider using dataAccess for native platform enforcement of CRUD and FLS
      **/
     @NamespaceAccessible
     public fflib_QueryFactory newQueryFactory(Boolean assertCRUD, Boolean enforceFLS, Boolean includeSelectorFields)
@@ -439,6 +464,20 @@ public abstract with sharing class fflib_SObjectSelector
                 enforceFLS,
                 includeSelectorFields,
                 DataAccess.LEGACY);
+    }
+
+    /**
+     * Returns a QueryFactory configured with the Selectors object, fields, fieldsets and default order by
+     * using DataAccess security level supplied.
+     **/
+    public fflib_QueryFactory newQueryFactory(Boolean includeSelectorFields, DataAccess dataAccess)
+    {
+        // Construct QueryFactory around the given SObject
+        return newQueryFactory(
+                m_enforceCRUD,
+                m_enforceFLS,
+                includeSelectorFields,
+                dataAccess);
     }
 
     private fflib_QueryFactory newQueryFactory(Boolean assertCRUD, Boolean enforceFLS, Boolean includeSelectorFields, DataAccess dataAccess)
