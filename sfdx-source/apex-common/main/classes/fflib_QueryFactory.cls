@@ -53,7 +53,7 @@
 **/
 @NamespaceAccessible
 @SuppressWarnings('PMD.CognitiveComplexity, PMD.CyclomaticComplexity, PMD.ExcessivePublicCount, PMD.AvoidBooleanMethodParameters, PMD.ExcessiveParameterList, PMD.ClassNamingConventions, PMD.MethodNamingConventions, PMD.FieldNamingConventions, PMD.PropertyNamingConventions, PMD.FieldDeclarationsShouldBeAtStart, PMD.LocalVariableNamingConventions, PMD.ApexDoc, PMD.StdCyclomaticComplexity, PMD.NcssMethodCount, PMD.ExcessiveClassLength')
-public class fflib_QueryFactory { //No explicit sharing declaration - inherit from caller
+public inherited sharing class fflib_QueryFactory {
 	@NamespaceAccessible
 	public enum SortOrder {ASCENDING, DESCENDING}
 	@NamespaceAccessible
@@ -856,7 +856,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	}
 	
 	@NamespaceAccessible
-	public class Ordering{
+	public inherited sharing class Ordering{
 		private SortOrder direction;
 		private boolean nullsLast;
 		private String field;
@@ -907,7 +907,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 
 	
 	@NamespaceAccessible
-	public class InvalidFieldException extends Exception{
+	public inherited sharing class InvalidFieldException extends Exception{
 		private String fieldName;
 		private Schema.SObjectType objectType;
 		@NamespaceAccessible
@@ -919,9 +919,9 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	}
 
 	@NamespaceAccessible
-	public class InvalidFieldSetException extends Exception{}
+	public inherited sharing class InvalidFieldSetException extends Exception{}
 	@NamespaceAccessible
-	public class NonReferenceFieldException extends Exception{}
+	public inherited sharing class NonReferenceFieldException extends Exception{}
 	@NamespaceAccessible
-	public class InvalidSubqueryRelationshipException extends Exception{}	
+	public inherited sharing class InvalidSubqueryRelationshipException extends Exception{}
 }

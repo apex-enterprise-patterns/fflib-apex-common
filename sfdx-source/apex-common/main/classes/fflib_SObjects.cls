@@ -22,10 +22,10 @@
  *  OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+ **/
 @NamespaceAccessible
 @SuppressWarnings('PMD.EmptyStatementBlock, PMD.ClassNamingConventions, PMD.MethodNamingConventions, PMD.FieldNamingConventions, PMD.PropertyNamingConventions, PMD.ApexDoc, PMD.ExcessiveParameterList, PMD.CyclomaticComplexity, PMD.CognitiveComplexity')
-public virtual class fflib_SObjects
+public virtual inherited sharing class fflib_SObjects
 		extends fflib_Objects
 		implements fflib_ISObjects
 {
@@ -540,9 +540,9 @@ public virtual class fflib_SObjects
 
 	/**
 	 * Ensures logging of errors in the Domain context for later assertions in tests
-	 */
+	 **/
 	@NamespaceAccessible
-	public virtual class ErrorFactory
+	public virtual inherited sharing class ErrorFactory
 	{
 		private List<Error> errorList = new List<Error>();
 
@@ -600,7 +600,7 @@ public virtual class fflib_SObjects
 	 * Ensures logging of errors in the Domain context for later assertions in tests
 	 **/
 	@NamespaceAccessible
-	public virtual class FieldError extends ObjectError
+	public virtual inherited sharing class FieldError extends ObjectError
 	{
 		@NamespaceAccessible
 		public SObjectField field;
@@ -613,7 +613,7 @@ public virtual class fflib_SObjects
 	 * Ensures logging of errors in the Domain context for later assertions in tests
 	 **/
 	@NamespaceAccessible
-	public virtual class ObjectError extends Error
+	public virtual inherited sharing class ObjectError extends Error
 	{
 		@NamespaceAccessible
 		public SObject record;
@@ -626,7 +626,7 @@ public virtual class fflib_SObjects
 	 * Ensures logging of errors in the Domain context for later assertions in tests
 	 **/
 	@NamespaceAccessible
-	public abstract class Error
+	public abstract inherited sharing class Error
 	{
 		@NamespaceAccessible
 		public String message;

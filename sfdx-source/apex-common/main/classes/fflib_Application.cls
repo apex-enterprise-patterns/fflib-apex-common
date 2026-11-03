@@ -31,7 +31,7 @@
  **/
 @NamespaceAccessible
 @SuppressWarnings('PMD.EmptyStatementBlock, PMD.CognitiveComplexity, PMD.ClassNamingConventions, PMD.FieldNamingConventions, PMD.ApexDoc')
-public virtual class fflib_Application
+public inherited sharing virtual class fflib_Application
 {
 	/**
 	 * Class implements a Unit of Work factory
@@ -497,11 +497,11 @@ public virtual class fflib_Application
 	}
 
 	@NamespaceAccessible
-	public class ApplicationException extends Exception { }			
+	public class ApplicationException extends Exception { }
 
 	/**
 	 * Exception representing a developer coding error, not intended for end user eyes
 	 **/
 	@NamespaceAccessible
-	public class DeveloperException extends Exception { } 
+	public class DeveloperException extends Exception { }
 }

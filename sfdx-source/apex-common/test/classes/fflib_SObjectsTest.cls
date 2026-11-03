@@ -25,7 +25,8 @@
 **/
 @IsTest(isParallel=true)
 @SuppressWarnings('PMD.ApexUnitTestClassShouldHaveRunAs, PMD.ApexDoc, PMD.ClassNamingConventions')
-public with sharing class fflib_SObjectsTest{
+public inherited sharing class fflib_SObjectsTest
+{
 	private static Integer testFakeIdSequence = 0;
 	private static final String TEST_FAKE_ID_PADDING = '000000000000';
 	private static Map<SObjectType, String> prefixCacheMap = new Map<SObjectType, String>();
@@ -413,7 +414,7 @@ public with sharing class fflib_SObjectsTest{
 	}
 
 
-	private class DomainAccounts extends fflib_SObjects {
+	private inherited sharing class DomainAccounts extends fflib_SObjects {
 		public DomainAccounts(List<SObject> records){
 			super(records, Schema.Account.SObjectType);
 		}

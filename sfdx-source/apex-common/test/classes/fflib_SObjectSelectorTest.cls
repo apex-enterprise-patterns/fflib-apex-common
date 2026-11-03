@@ -46,7 +46,8 @@ private with sharing class fflib_SObjectSelectorTest
 		List<Account> accountList = new List<Account> {
 			new Account(Name='TestAccount2',AccountNumber='A2',AnnualRevenue=12345.67),
 			new Account(Name='TestAccount1',AccountNumber='A1',AnnualRevenue=76543.21) };		
-		insert accountList;		
+		Database.insert(accountList,AccessLevel.SYSTEM_MODE);
+		
 		Set<Id> idSet = new Set<Id>();
 		for(Account item : accountList)
 			idSet.add(item.Id);
@@ -71,7 +72,8 @@ private with sharing class fflib_SObjectSelectorTest
 		List<Account> accountList = new List<Account> {
 			new Account(Name='TestAccount2',AccountNumber='A2',AnnualRevenue=12345.67),
 			new Account(Name='TestAccount1',AccountNumber='A1',AnnualRevenue=76543.21) };		
-		insert accountList;		
+		Database.insert(accountList,AccessLevel.SYSTEM_MODE);
+
 		Set<Id> idSet = new Set<Id>();
 		for(Account item : accountList)
 			idSet.add(item.Id);
@@ -100,7 +102,8 @@ private with sharing class fflib_SObjectSelectorTest
 		List<Account> accountList = new List<Account> {
 			new Account(Name='TestAccount2',AccountNumber='A2',AnnualRevenue=12345.67),
 			new Account(Name='TestAccount1',AccountNumber='A1',AnnualRevenue=76543.21) };		
-		insert accountList;		
+		Database.insert(accountList, AccessLevel.SYSTEM_MODE);
+
 		Set<Id> idSet = new Set<Id>();
 		for(Account item : accountList)
 			idSet.add(item.Id);
@@ -129,7 +132,8 @@ private with sharing class fflib_SObjectSelectorTest
 		List<Account> accountList = new List<Account> {
 			new Account(Name='TestAccount2',AccountNumber='A2',AnnualRevenue=12345.67),
 			new Account(Name='TestAccount1',AccountNumber='A1',AnnualRevenue=76543.21) };		
-		insert accountList;		
+		Database.insert(accountList,AccessLevel.SYSTEM_MODE);
+
 		Set<Id> idSet = new Set<Id>();
 		for(Account item : accountList)
 			idSet.add(item.Id);
@@ -457,21 +461,32 @@ private with sharing class fflib_SObjectSelectorTest
 	static void toSOQL_When_SystemModeAndChildRelationship_Expect_WellFormedSOQL(){
 		AccessLevelAccountSelector sel = new AccessLevelAccountSelector(fflib_SObjectSelector.DataAccess.SYSTEM_MODE);
 
-	AccessLevelOpportunitySelector innerSelector = new AccessLevelOpportunitySelector();
+		AccessLevelOpportunitySelector innerSelector = new AccessLevelOpportunitySelector();
 
-	String soql = sel.createSelectAccountWithOpportunitiesSOQL();
+		String soql = sel.createSelectAccountWithOpportunitiesSOQL();
 
-	String expected = String.format(
-	  'SELECT name, id, annualrevenue, accountnumber, (currencyisocode, )?\\(SELECT name, id, amount, closedate(, currencyisocode)? FROM Opportunities ORDER BY {0} ASC NULLS FIRST \\)  FROM Account WITH SYSTEM_MODE ORDER BY {1} ASC NULLS FIRST ',
-	  new List<String>{ innerSelector.getOrderBy(), sel.getOrderBy() }
-	);
+		String expected = String.format(
+		  'SELECT name, id, annualrevenue, accountnumber, (currencyisocode, )?\\(SELECT name, id, amount, closedate(, currencyisocode)? FROM Opportunities ORDER BY {0} ASC NULLS FIRST \\)  FROM Account WITH SYSTEM_MODE ORDER BY {1} ASC NULLS FIRST ',
+		  new List<String>{ innerSelector.getOrderBy(), sel.getOrderBy() }
+		);
+		
 		Pattern soqlPattern = Pattern.compile(expected);
 		Matcher soqlMatcher = soqlPattern.matcher(soql);
 		System.assert(soqlMatcher.matches(),'Expected: ' + expected + ' Actual:' + soql);
 	}
 
+	//Ensure that the overload for creating a QueryFactory with the DataAccess argument generates SOQL with the appropriate user/system mode clause
+	static void toSOQL_When_SelectiveElevation_Expect_WellFormedSOQL(){
+		AccessLevelAccountSelector sel = new AccessLevelAccountSelector(fflib_SObjectSelector.DataAccess.SYSTEM_MODE);
 
-	private class AccountSelector extends fflib_SObjectSelector
+		String soql = sel.newQueryFactory().toSOQL();
+		Assert.isTrue(soql.contains('WITH SYSTEM_MODE'),'Expected SOQL to contain WITH SYSTEM_MODE; Actual:' + soql);
+
+		soql = sel.newQueryFactory(true, fflib_SObjectSelector.DataAccess.USER_MODE).toSOQL();
+		Assert.isTrue(soql.contains('WITH USER_MODE'),'Expected SOQL to contain WITH USER_MODE; Actual:' + soql);
+	}
+
+	private inherited sharing class AccountSelector extends fflib_SObjectSelector
 	{
 		public AccountSelector()
 		{
@@ -483,7 +498,7 @@ private with sharing class fflib_SObjectSelectorTest
 			super(includeFieldSetFields, enforceCRUD, enforceFLS, sortSelectFields);
 		}
 		
-		public List<Schema.SObjectField> getSObjectFieldList()
+		public override List<Schema.SObjectField> getSObjectFieldList()
 		{
 			return new List<Schema.SObjectField> {
 				Account.Name,
@@ -493,7 +508,7 @@ private with sharing class fflib_SObjectSelectorTest
 			};
 		}
 		
-		public Schema.SObjectType getSObjectType()
+		public override Schema.SObjectType getSObjectType()
 		{
 			return Account.sObjectType;
 		}
@@ -504,14 +519,14 @@ private with sharing class fflib_SObjectSelectorTest
 		}
 	}
 
-	private class Testfflib_UserSObjectSelector extends fflib_SObjectSelector
+	private inherited sharing class Testfflib_UserSObjectSelector extends fflib_SObjectSelector
 	{
 		public Testfflib_UserSObjectSelector()
 		{
 			super();
 		}
 
-		public List<Schema.SObjectField> getSObjectFieldList()
+		public override List<Schema.SObjectField> getSObjectFieldList()
 		{
 			return new List<Schema.SObjectField> {
 				User.Name,
@@ -521,21 +536,21 @@ private with sharing class fflib_SObjectSelectorTest
 			};
 		}
 
-		public Schema.SObjectType getSObjectType()
+		public override Schema.SObjectType getSObjectType()
 		{
 			return User.SObjectType;
 		}
 
 	}
 
-	private class DefaultSortingAccountSelector extends fflib_SObjectSelector
+	private inherited sharing class DefaultSortingAccountSelector extends fflib_SObjectSelector
 	{
 		public DefaultSortingAccountSelector(Boolean includeFieldSetFields)
 		{
 			super(includeFieldSetFields);
 		}
 
-		public List<Schema.SObjectField> getSObjectFieldList()
+		public override List<Schema.SObjectField> getSObjectFieldList()
 		{
 			return new List<Schema.SObjectField> {
 				Account.Name,
@@ -545,13 +560,13 @@ private with sharing class fflib_SObjectSelectorTest
 			};
 		}
 
-		public Schema.SObjectType getSObjectType()
+		public override Schema.SObjectType getSObjectType()
 		{
 			return Account.sObjectType;
 		}
 	}
 
-	private class AccessLevelOpportunitySelector extends fflib_SObjectSelector{
+	private inherited sharing class AccessLevelOpportunitySelector extends fflib_SObjectSelector{
 		public AccessLevelOpportunitySelector(){
 			this(DataAccess.USER_MODE);
 		}
@@ -560,11 +575,11 @@ private with sharing class fflib_SObjectSelectorTest
 			super(false, access);
 		}
 
-		public Schema.SObjectType getSObjectType(){
+		public override Schema.SObjectType getSObjectType(){
 			return Opportunity.sObjectType;
 		}
 
-		public List<Schema.SObjectField> getSObjectFieldList(){
+		public override List<Schema.SObjectField> getSObjectFieldList(){
 			return new List<Schema.SObjectField> {
 					Opportunity.Name,
 					Opportunity.Id,
@@ -596,7 +611,7 @@ private with sharing class fflib_SObjectSelectorTest
 		}
 	}
 
-	private class AccessLevelAccountSelector extends fflib_SObjectSelector{
+	private inherited sharing class AccessLevelAccountSelector extends fflib_SObjectSelector{
 		public AccessLevelAccountSelector(){
 			this(DataAccess.USER_MODE);
 		}
@@ -605,11 +620,11 @@ private with sharing class fflib_SObjectSelectorTest
 			super(false, access);
 		}
 
-		public Schema.SObjectType getSObjectType(){
+		public override Schema.SObjectType getSObjectType(){
 			return Account.sObjectType;
 		}
 
-		public List<Schema.SObjectField> getSObjectFieldList(){
+		public override List<Schema.SObjectField> getSObjectFieldList(){
 			return new List<Schema.SObjectField> {
 					Account.Name,
 					Account.Id,
@@ -634,16 +649,16 @@ private with sharing class fflib_SObjectSelectorTest
 		}
 	}
 
-	private class ContractSelector extends fflib_SObjectSelector{
+	private inherited sharing class ContractSelector extends fflib_SObjectSelector{
 		public ContractSelector(){
 			super(false,DataAccess.SYSTEM_MODE);
 		}
 
-		public Schema.SObjectType getSObjectType(){
+		public override Schema.SObjectType getSObjectType(){
 			return Contract.SObjectType;
 		}
 
-		public List<Schema.SObjectField> getSObjectFieldList(){
+		public override List<Schema.SObjectField> getSObjectFieldList(){
 			return new List<Schema.SObjectField> {
 					Contract.Id,
 					Contract.ContractNumber
@@ -651,16 +666,16 @@ private with sharing class fflib_SObjectSelectorTest
 		}
 	}
 
-	private class ListEmailSelector extends fflib_SObjectSelector{
+	private inherited sharing class ListEmailSelector extends fflib_SObjectSelector{
 		public ListEmailSelector(){
 			super(false,DataAccess.SYSTEM_MODE);
 		}
 
-		public Schema.SObjectType getSObjectType(){
+		public override Schema.SObjectType getSObjectType(){
 			return ListEmail.SObjectType;
 		}
 
-		public List<Schema.SObjectField> getSObjectFieldList(){
+		public override List<Schema.SObjectField> getSObjectFieldList(){
 			return new List<Schema.SObjectField> {
 					ListEmail.Id,
 					ListEmail.Name
@@ -668,16 +683,16 @@ private with sharing class fflib_SObjectSelectorTest
 		}
 	}
 
-	private class TaskSelector extends fflib_SObjectSelector{
+	private inherited sharing class TaskSelector extends fflib_SObjectSelector{
 		public TaskSelector(){
 			super(false,DataAccess.SYSTEM_MODE);
 		}
 
-		public Schema.SObjectType getSObjectType(){
+		public override Schema.SObjectType getSObjectType(){
 			return Task.SObjectType;
 		}
 
-		public List<Schema.SObjectField> getSObjectFieldList(){
+		public override List<Schema.SObjectField> getSObjectFieldList(){
 			return new List<Schema.SObjectField> {
 					Task.Id,
 					Task.Subject
@@ -869,69 +884,69 @@ private with sharing class fflib_SObjectSelectorTest
 		Assert.areEqual(expected,aQF.toSOQL());
 	}
 
-	private class CaseCommentSelector extends fflib_SObjectSelector {
+	private inherited sharing class CaseCommentSelector extends fflib_SObjectSelector {
 		public CaseCommentSelector(DataAccess access) {
 			super(false, access);
 		}
 
-		public List<Schema.SObjectField> getSObjectFieldList() {
+		public override List<Schema.SObjectField> getSObjectFieldList() {
 			return new List<Schema.SObjectField>{
 					CaseComment.Id,
 					CaseComment.CommentBody
 			};
 		}
 
-		public Schema.SObjectType getSObjectType() {
+		public override Schema.SObjectType getSObjectType() {
 			return CaseComment.sObjectType;
 		}
 	}
 
-	private class CaseSelector extends fflib_SObjectSelector {
+	private inherited sharing class CaseSelector extends fflib_SObjectSelector {
 		public CaseSelector() {
 			super();
 		}
 
-		public List<Schema.SObjectField> getSObjectFieldList() {
+		public override List<Schema.SObjectField> getSObjectFieldList() {
 			return new List<Schema.SObjectField>{
 					Case.OwnerId,
 					Case.Id
 			};
 		}
 
-		public Schema.SObjectType getSObjectType() {
+		public override Schema.SObjectType getSObjectType() {
 			return Case.sObjectType;
 		}
 	}
 
-	private class UserSelector extends fflib_SObjectSelector {
+	private inherited sharing class UserSelector extends fflib_SObjectSelector {
 		public UserSelector() {
 			super();
 		}
 
-		public List<Schema.SObjectField> getSObjectFieldList() {
+		public override List<Schema.SObjectField> getSObjectFieldList() {
 			return new List<Schema.SObjectField>{
 					User.UserRoleId,
 					User.Id
 			};
 		}
 
-		public Schema.SObjectType getSObjectType() {
+		public override Schema.SObjectType getSObjectType() {
 			return User.sObjectType;
 		}
 	}
 
-	private class GroupSelector extends fflib_SObjectSelector {
+	private inherited sharing class GroupSelector extends fflib_SObjectSelector {
 		public GroupSelector() {
 			super();
 		}
 
-		public List<Schema.SObjectField> getSObjectFieldList() {
+		public override List<Schema.SObjectField> getSObjectFieldList() {
 			return new List<Schema.SObjectField>{
 				Group.Id
 			};
 		}
 
-		public Schema.SObjectType getSObjectType() {
+		public override Schema.SObjectType getSObjectType() {
 			return Group.sObjectType;
 		}
 	}	
