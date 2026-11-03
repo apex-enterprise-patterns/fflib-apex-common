@@ -6,15 +6,18 @@ on:
         description: 'api version in the format XX e.g 58'
         required: true
         type: string
+permissions:
+  contents: write
+  pull-requests: write
 jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7
       - uses: apex-enterprise-patterns/manage-sf-api-version@v1.0.0
         with:
           api-version: ${{inputs.api-version}}
-      - uses: peter-evans/create-pull-request@v5
+      - uses: peter-evans/create-pull-request@v8
         with:
           title: 'Bump API Versions to ${{inputs.api-version}}.0'
           body: 'Automatically bumped by GitHub Actions '

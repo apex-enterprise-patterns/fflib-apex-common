@@ -5,14 +5,20 @@ on:
   pull_request_target:
   workflow_dispatch:
   
+permissions:
+  contents: read
+
 jobs:
   build:
 
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v7
         with:
+          persist-credentials: false
+          # Required by checkout v7 to check out fork PR code under pull_request_target (existing behavior, kept explicit)
+          allow-unsafe-pr-checkout: true
           ref: ${{github.event.pull_request.head.ref}}
           repository: ${{github.event.pull_request.head.repo.full_name}}
       - name: Install SF CLI and authorize DevHub
