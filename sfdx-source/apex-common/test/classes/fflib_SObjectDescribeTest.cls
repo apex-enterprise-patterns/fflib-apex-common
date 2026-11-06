@@ -207,12 +207,25 @@ private with sharing class fflib_SObjectDescribeTest {
 		Schema.SObjectField nameField = d.getNameField();
 		System.Assert.areEqual('Name', nameField.getDescribe().getName());
 
-		//second call should hit the cached nameField branch and return the same reference
+		//instance method delegates to the static getNameField and should resolve the same field
 		Schema.SObjectField nameField2 = d.getNameField();
-		System.Assert.isTrue(nameField === nameField2, 'Expected cached nameField reference to be returned');
+		System.Assert.areEqual(nameField, nameField2, 'Expected identical namefields to be retrieved');
 
 		//cross-check against getField() normal-path resolution of the same field
 		System.Assert.areEqual(nameField, d.getField('Name'), 'Expected identical field to be retrieved via getField');
+	}
+
+	@isTest
+	private static void getNameField_staticBasics(){
+		Schema.SObjectField nameField = fflib_SObjectDescribe.getNameField(Account.SObjectType);
+		System.Assert.areEqual(Account.Name, nameField, 'Expected Account.Name to be returned as name field');
+		System.Assert.areEqual(Contact.Name, fflib_SObjectDescribe.getNameField(Contact.SObjectType), 'Expected compound Contact.Name to be returned as name field');
+	}
+
+	@isTest
+	private static void getNameField_staticNullInput(){
+		Schema.SObjectType nullType = null;
+		System.Assert.isNull(fflib_SObjectDescribe.getNameField(nullType), 'Expected null input to result in null output');
 	}
 
 	/**
